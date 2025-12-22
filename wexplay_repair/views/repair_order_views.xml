@@ -38,10 +38,11 @@
                             <!-- Columna derecha -->
                             <group string="Desbloqueo">
                                 <field name="x_unlock_type"/>
-                                <field name="x_unlock_code" attrs="{'invisible': [('x_unlock_type', 'in', ['none','unknown'])]}"/>
-                                <field name="x_unlock_pattern" attrs="{'invisible': [('x_unlock_type', '!=', 'pattern')]}"/>
+                                <field name="x_unlock_code" invisible="x_unlock_type in ('none', 'unknown')"/>
+                                <field name="x_unlock_pattern" invisible="x_unlock_type != 'pattern'"/>
                                 <field name="x_unlock_notes"/>
                             </group>
+
                         </group>
                     </page>
 
