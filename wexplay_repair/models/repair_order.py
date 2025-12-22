@@ -28,7 +28,7 @@ class RepairOrder(models.Model):
     x_brand_id = fields.Many2one(
         "wex.repair.brand",
         string="Marca",
-        related="x_model_id.brand_id",
+        compute="_compute_brand_from_model",
         store=True,
         readonly=True,
     )
