@@ -76,7 +76,7 @@ class RepairOrder(models.Model):
             rec.x_model_id = False
 #            rec.x_brand_id = False
 
-   @api.onchange("x_model_id")
+    @api.onchange("x_model_id")
     def _onchange_x_model_id_set_brand(self):
        """Al escoger un modelo, rellenamos automáticamente la marca."""
         for rec in self:
