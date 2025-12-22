@@ -23,12 +23,20 @@ class RepairOrder(models.Model):
         ],
         string="Tipo de dispositivo",
     )
+
     x_partner_mobile = fields.Char(
         string="Móvil",
         related="partner_id.mobile",
         readonly=True,
         store=False,
     )
+    x_partner_phone = fields.Char(
+    string="Teléfono",
+    related="partner_id.phone",
+    readonly=True,
+    store=False,
+)
+
 
     x_brand = fields.Char(string="Marca")
     x_model = fields.Char(string="Modelo")
