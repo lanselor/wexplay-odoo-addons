@@ -38,21 +38,21 @@ class RepairOrder(models.Model):
         domain="[('device_type', '=', x_device_type)]",
     )
 
-        # Desbloqueo
-        x_unlock_type = fields.Selection(
-            [
-                ("pin", "PIN"),
-                ("pattern", "Patrón"),
-                ("password", "Contraseña"),
-                ("none", "Sin bloqueo"),
-                ("unknown", "No indicado"),
-            ],
-            string="Tipo de desbloqueo",
-        )
+    # Desbloqueo
+    x_unlock_type = fields.Selection(
+        [
+            ("pin", "PIN"),
+            ("pattern", "Patrón"),
+            ("password", "Contraseña"),
+            ("none", "Sin bloqueo"),
+            ("unknown", "No indicado"),
+        ],
+        string="Tipo de desbloqueo",
+    )
 
-        x_unlock_code = fields.Char(string="Código / Contraseña")
-        x_unlock_pattern = fields.Char(string="Patrón (descripción)")
-        x_unlock_notes = fields.Text(string="Notas de desbloqueo")
+    x_unlock_code = fields.Char(string="Código / Contraseña")
+    x_unlock_pattern = fields.Char(string="Patrón (descripción)")
+    x_unlock_notes = fields.Text(string="Notas de desbloqueo")
 
 
 
