@@ -5,7 +5,7 @@
     <record id="view_repair_order_form_wexplay" model="ir.ui.view">
         <field name="name">repair.order.form.wexplay</field>
         <field name="model">repair.order</field>
-        <field name="inherit_id" ref="mrp_repair.repair_order_form_view"/>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
 
             <!-- Añadimos un bloque con datos del dispositivo debajo del producto -->
