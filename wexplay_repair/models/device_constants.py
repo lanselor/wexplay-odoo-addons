@@ -1,0 +1,16 @@
+DEVICE_TYPE_SELECTION = [
+    ("mobile", "Móvil"),
+    ("tablet", "Tablet"),
+    ("laptop", "Portátil"),
+    ("desktop", "Sobremesa"),
+    ("all_in_one", "Todo en Uno"),
+    ("mini_pc", "Mini PC"),
+    ("imac", "iMac"),
+    ("monitor", "Monitor"),
+    ("gpu", "Gráfica"),
+    ("motherboard", "Placa base"),
+    ("smartwatch", "Smartwatch"),
+    ("console", "Consola"),
+    ("pos", "TPV"),
+    ("other", "Otros"),
+]
