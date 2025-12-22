@@ -26,26 +26,32 @@
                     <field name="x_internal_notes"/>
                 </group>
             </xpath> -->
-            <xpath expr="//notebook" position="inside">
-                <page string="Dispositivo">
-                    <group>
-                        <group string="Datos del dispositivo">
-                            <field name="x_device_type"/>
-                            <field name="x_brand"/>
-                            <field name="x_model"/>
-                            <field name="x_imei"/>
-                            <field name="x_accessories"/>
+            <xpath expr="//sheet//notebook[1]" position="before">
+                <notebook name="wexplay_notebook">
+                    <page string="Datos del dispositivo" name="wex_device">
+                        <group>
+                            <group string="Dispositivo">
+                                <field name="x_device_type"/>
+                                <field name="x_brand"/>
+                                <field name="x_model"/>
+                                <field name="x_imei"/>
+                                <field name="x_accessories"/>
+                            </group>
                         </group>
+                    </page>
 
-                        <group string="Información de la avería">
-                            <field name="x_reported_issue"/>
-                            <field name="x_internal_notes"/>
+                    <page string="Avería" name="wex_issue">
+                        <group>
+                            <group string="Información de la avería">
+                                <field name="x_reported_issue"/>
+                            </group>
+                            <group string="Notas internas">
+                                <field name="x_internal_notes"/>
+                            </group>
                         </group>
-                    </group>
-                </page>
+                    </page>
+                </notebook>
             </xpath>
-
-
 
 
 
