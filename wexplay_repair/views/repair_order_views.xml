@@ -24,6 +24,7 @@
                 <notebook name="wexplay_notebook">
                     <page string="Datos del dispositivo" name="wex_device">
                         <group>
+                             <!-- Columna izquierda -->
                             <group string="Dispositivo">
                                 <field name="x_device_type"/>
                                 <field name="x_model_id"/>
@@ -31,6 +32,15 @@
 
                                 <field name="x_imei"/>
                                 <field name="x_accessories"/>
+                            </group>
+
+
+                            <!-- Columna derecha -->
+                            <group string="Desbloqueo">
+                                <field name="x_unlock_type"/>
+                                <field name="x_unlock_code" attrs="{'invisible': [('x_unlock_type', 'in', ['none','unknown'])]}"/>
+                                <field name="x_unlock_pattern" attrs="{'invisible': [('x_unlock_type', '!=', 'pattern')]}"/>
+                                <field name="x_unlock_notes"/>
                             </group>
                         </group>
                     </page>
