@@ -28,7 +28,7 @@ class RepairOrder(models.Model):
     x_brand_id = fields.Many2one(
         "wex.repair.brand",
         string="Marca",
-        compute="_compute_brand_from_model",
+        related="x_model_id.brand_id",
         store=True,
         readonly=True,
     )
@@ -74,11 +74,32 @@ class RepairOrder(models.Model):
         """Si cambia el tipo, limpiamos modelo/marca para evitar inconsistencias."""
         for rec in self:
             rec.x_model_id = False
-            rec.x_brand_id = False
+#            rec.x_brand_id = False
 
-    @api.onchange("x_model_id")
+   @api.onchange("x_model_id")
     def _onchange_x_model_id_set_brand(self):
-        """Al escoger un modelo, rellenamos automáticamente la marca."""
+       """Al escoger un modelo, rellenamos automáticamente la marca."""
         for rec in self:
             if rec.x_model_id:
                 rec.x_brand_id = rec.x_model_id.brand_id
+
+    @api.depends("x_model_id")
+    def _compute_brand_from_model(self):
+        for record in self:
+            record.x_brand_id = record.x_model_id.brand_id if record.x_model_id else False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
