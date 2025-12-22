@@ -20,7 +20,10 @@ consolas y otros dispositivos electrónicos).
         "mail",
     ],
     "data": [
+        "security/ir.model.access.csv",
         "views/repair_order_views.xml",
+        "views/device_brand_views.xml",
+        "views/device_model_views.xml",
     ],
     "installable": True,
     "application": True,
