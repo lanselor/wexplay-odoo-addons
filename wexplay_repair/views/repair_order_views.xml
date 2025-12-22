@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
 
             <!-- Añadimos un bloque con datos del dispositivo debajo del producto -->
-            <xpath expr="//field[@name='product_id']" position="after">
+            <!--  <xpath expr="//field[@name='product_id']" position="after">
                 <group string="Datos del dispositivo">
                     <field name="x_device_type"/>
                     <field name="x_brand"/>
@@ -17,15 +17,38 @@
                     <field name="x_imei"/>
                     <field name="x_accessories"/>
                 </group>
-            </xpath>
+            </xpath>-->
 
             <!-- Añadimos campos de avería y notas internas en el formulario -->
-            <xpath expr="//field[@name='internal_notes']" position="before">
+             <!--  <xpath expr="//field[@name='internal_notes']" position="before">
                 <group string="Información de la avería">
                     <field name="x_reported_issue"/>
                     <field name="x_internal_notes"/>
                 </group>
+            </xpath> -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Dispositivo">
+                    <group>
+                        <group string="Datos del dispositivo">
+                            <field name="x_device_type"/>
+                            <field name="x_brand"/>
+                            <field name="x_model"/>
+                            <field name="x_imei"/>
+                            <field name="x_accessories"/>
+                        </group>
+
+                        <group string="Información de la avería">
+                            <field name="x_reported_issue"/>
+                            <field name="x_internal_notes"/>
+                        </group>
+                    </group>
+                </page>
             </xpath>
+
+
+
+
+
 
         </field>
     </record>
