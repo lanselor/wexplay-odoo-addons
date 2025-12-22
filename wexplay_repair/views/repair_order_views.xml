@@ -8,24 +8,17 @@
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Añadimos un bloque con datos del dispositivo debajo del producto -->
-            <!--  <xpath expr="//field[@name='product_id']" position="after">
-                <group string="Datos del dispositivo">
-                    <field name="x_device_type"/>
-                    <field name="x_brand"/>
-                    <field name="x_model"/>
-                    <field name="x_imei"/>
-                    <field name="x_accessories"/>
-                </group>
-            </xpath>-->
+            <!-- 1) Quitar el cliente de su posición original (normalmente columna izquierda) -->
+            <xpath expr="//sheet//field[@name='partner_id']" position="replace"/>
 
-            <!-- Añadimos campos de avería y notas internas en el formulario -->
-             <!--  <xpath expr="//field[@name='internal_notes']" position="before">
-                <group string="Información de la avería">
-                    <field name="x_reported_issue"/>
-                    <field name="x_internal_notes"/>
-                </group>
-            </xpath> -->
+            <!-- 2) Añadir cliente + teléfono en la columna derecha (después del responsable) -->
+            <xpath expr="//sheet//field[@name='user_id']" position="after">
+                <field name="partner_id"/>
+                <field name="partner_id.phone" string="Teléfono" readonly="1"/>
+                <field name="partner_id.mobile" string="Móvil" readonly="1"/>
+            </xpath>
+
+            <!-- Panel Wexplay (notebook nuevo) -->
             <xpath expr="//sheet//notebook[1]" position="before">
                 <notebook name="wexplay_notebook">
                     <page string="Datos del dispositivo" name="wex_device">
@@ -52,9 +45,6 @@
                     </page>
                 </notebook>
             </xpath>
-
-
-
 
         </field>
     </record>
