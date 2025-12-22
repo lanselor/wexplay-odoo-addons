@@ -14,8 +14,9 @@
             <!-- 2) Añadir cliente + teléfono en la columna derecha (después del responsable) -->
             <xpath expr="//sheet//field[@name='user_id']" position="after">
                 <field name="partner_id"/>
-                <field name="partner_id.phone" string="Teléfono" readonly="1"/>
-                <field name="partner_id.mobile" string="Móvil" readonly="1"/>
+                <field name="x_partner_phone" readonly="1"/>
+                <field name="x_partner_mobile" readonly="1"/>
+
             </xpath>
 
             <!-- Panel Wexplay (notebook nuevo) -->
