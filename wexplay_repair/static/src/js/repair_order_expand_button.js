@@ -33,12 +33,6 @@ async function expandAllGroups(controller) {
     }
 }
 
-patch(ListController.prototype, {
-    /**
-     * Odoo 18: getActionMenuItems() devuelve un objeto.
-     * Aquí NO usamos this._super. Llamamos al original guardándolo antes.
-     */
-});
 
 const originalGetActionMenuItems = ListController.prototype.getActionMenuItems;
 
@@ -49,8 +43,9 @@ patch(ListController.prototype, {
         // >>> AQUÍ
         window._wex_last_list_controller = this;
         console.log("WEX: controller expuesto en window._wex_last_list_controller", this);
+        super.setup(...arguments);
         // <<<
-        
+
         // Solo en repair.order
         if (this.props?.resModel !== "repair.order") {
             return res;
