@@ -1,102 +1,32 @@
 /** @odoo-module **/
 
 import { patch } from "@web/core/utils/patch";
-import { ListController } from "@web/views/list/list_controller";
-import { onMounted, onWillUpdateProps } from "@odoo/owl";
+import { RelationalModel } from "@web/model/relational_model/relational_model";
 
-const _setup = ListController.prototype.setup;
-
-function collectGroups(node) {
-    const out = [];
-    const seen = new Set();
-
-    const walk = (n) => {
-        if (!n) return;
-
-        // Caso típico: n.groups
-        if (Array.isArray(n.groups)) {
-            for (const g of n.groups) {
-                if (g && !seen.has(g)) {
-                    seen.add(g);
-                    out.push(g);
-                    walk(g); // por si hay subgrupos
-                }
+patch(RelationalModel.DynamicRecordList.prototype, {
+    /**
+     * @override
+     */
+    setup(params) {
+        // Verificamos si el modelo es el de reparaciones
+        if (params.resModel === "repair.order") {
+            // Forzamos que el estado inicial de 'expandido' sea verdadero
+            // Esto anula el comportamiento por defecto de nacer plegado
+            if (params.groupBy && params.groupBy.length > 0) {
+                this.isFolded = false; 
             }
         }
-
-        // Algunas variantes: n.data contiene grupos/records
-        if (Array.isArray(n.data)) {
-            for (const item of n.data) {
-                walk(item);
-            }
-        }
-
-        // Algunas variantes: n.records
-        if (Array.isArray(n.records)) {
-            for (const r of n.records) {
-                walk(r);
-            }
-        }
-    };
-
-    walk(node);
-    return out;
-}
-
-async function expandAll(controller) {
-    if (controller.props?.resModel !== "repair.order") return;
-
-    const root = controller.model?.root;
-    if (!root) return;
-
-    const groups = collectGroups(root);
-    if (!groups.length) return;
-
-    const MAX_GROUPS = 200;
-    if (groups.length > MAX_GROUPS) return;
-
-    for (const g of groups) {
-        const folded = g.isFolded ?? g.folded ?? (g.isOpen === false);
-        if (!folded) continue;
-
-        // Distintas firmas según versión/build: probamos ambas
-        if (controller.model?.toggleGroup) {
-            try {
-                await controller.model.toggleGroup(g);
-                continue;
-            } catch (_) {}
-            try {
-                await controller.model.toggleGroup(g.id);
-                continue;
-            } catch (_) {}
-        }
-
-        if (controller.model?.root?.toggleGroup) {
-            try {
-                await controller.model.root.toggleGroup(g);
-                continue;
-            } catch (_) {}
-            try {
-                await controller.model.root.toggleGroup(g.id);
-                continue;
-            } catch (_) {}
-        }
-    }
-}
-
-patch(ListController.prototype, {
-    setup(...args) {
-        if (_setup) _setup.call(this, ...args);
-
-        // 1) al montar
-        onMounted(() => {
-            // pequeño delay para asegurar que el listado ya está “pintado”
-            setTimeout(() => expandAll(this), 0);
-        });
-
-        // 2) cada vez que cambian props (p.ej. agrupación, búsqueda, recarga)
-        onWillUpdateProps(() => {
-            setTimeout(() => expandAll(this), 0);
-        });
+        return super.setup(...params);
     },
+
+    /**
+     * Este método es el que decide si un grupo recién cargado está plegado.
+     * Al devolver siempre false para repair.order, se mostrarán abiertos.
+     */
+    _isFolded(id) {
+        if (this.resModel === "repair.order") {
+            return false;
+        }
+        return super._isFolded(...arguments);
+    }
 });
