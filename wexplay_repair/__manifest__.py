@@ -20,9 +20,12 @@ consolas y otros dispositivos electrónicos).
         "mail",
     ],
     "data": [
-        "security/ir.model.access.csv",
         "views/repair_order_views.xml",
+        "reports/reports.xml",
+        "reports/repair_receipt.xml",
+        "reports/repair_label.xml",
     ],
+    "post_init_hook": "post_init_hook",
     "installable": True,
     "application": True,
     "auto_install": False,
