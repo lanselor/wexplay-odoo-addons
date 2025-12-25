@@ -2,50 +2,101 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
-import { onMounted } from "@odoo/owl";
+import { onMounted, onWillUpdateProps } from "@odoo/owl";
 
-// Guardamos referencia al setup original
 const _setup = ListController.prototype.setup;
+
+function collectGroups(node) {
+    const out = [];
+    const seen = new Set();
+
+    const walk = (n) => {
+        if (!n) return;
+
+        // Caso típico: n.groups
+        if (Array.isArray(n.groups)) {
+            for (const g of n.groups) {
+                if (g && !seen.has(g)) {
+                    seen.add(g);
+                    out.push(g);
+                    walk(g); // por si hay subgrupos
+                }
+            }
+        }
+
+        // Algunas variantes: n.data contiene grupos/records
+        if (Array.isArray(n.data)) {
+            for (const item of n.data) {
+                walk(item);
+            }
+        }
+
+        // Algunas variantes: n.records
+        if (Array.isArray(n.records)) {
+            for (const r of n.records) {
+                walk(r);
+            }
+        }
+    };
+
+    walk(node);
+    return out;
+}
+
+async function expandAll(controller) {
+    if (controller.props?.resModel !== "repair.order") return;
+
+    const root = controller.model?.root;
+    if (!root) return;
+
+    const groups = collectGroups(root);
+    if (!groups.length) return;
+
+    const MAX_GROUPS = 200;
+    if (groups.length > MAX_GROUPS) return;
+
+    for (const g of groups) {
+        const folded = g.isFolded ?? g.folded ?? (g.isOpen === false);
+        if (!folded) continue;
+
+        // Distintas firmas según versión/build: probamos ambas
+        if (controller.model?.toggleGroup) {
+            try {
+                await controller.model.toggleGroup(g);
+                continue;
+            } catch (_) {}
+            try {
+                await controller.model.toggleGroup(g.id);
+                continue;
+            } catch (_) {}
+        }
+
+        if (controller.model?.root?.toggleGroup) {
+            try {
+                await controller.model.root.toggleGroup(g);
+                continue;
+            } catch (_) {}
+            try {
+                await controller.model.root.toggleGroup(g.id);
+                continue;
+            } catch (_) {}
+        }
+    }
+}
 
 patch(ListController.prototype, {
     setup(...args) {
-        // Llama al setup original (NO usar this._super en tu caso)
-        if (_setup) {
-            _setup.call(this, ...args);
-        }
+        if (_setup) _setup.call(this, ...args);
 
-        onMounted(async () => {
-            // Solo en repair.order
-            if (this.props?.resModel !== "repair.order") return;
+        // 1) al montar
+        onMounted(() => {
+            // pequeño delay para asegurar que el listado ya está “pintado”
+            setTimeout(() => expandAll(this), 0);
+        });
 
-            try {
-                const root = this.model?.root;
-                if (!root) return;
-
-                const groups = root.groups || [];
-                if (!groups.length) return;
-
-                const MAX_GROUPS = 200;
-                if (groups.length > MAX_GROUPS) return;
-
-                for (const g of groups) {
-                    const folded =
-                        g.isFolded ?? g.folded ?? (g.isOpen === false);
-
-                    if (folded) {
-                        if (this.model?.toggleGroup) {
-                            await this.model.toggleGroup(g);
-                        } else if (this.model?.root?.toggleGroup) {
-                            await this.model.root.toggleGroup(g);
-                        } else {
-                            break;
-                        }
-                    }
-                }
-            } catch (e) {
-                // Para depurar si vuelve a fallar:
-                // console.error("Wexplay expand groups failed:", e);
-            }
+        // 2) cada vez que cambian props (p.ej. agrupación, búsqueda, recarga)
+        onWillUpdateProps(() => {
+            setTimeout(() => expandAll(this), 0);
         });
     },
 });
