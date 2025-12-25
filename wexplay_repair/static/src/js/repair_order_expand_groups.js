@@ -8,20 +8,22 @@ patch(RelationalModel.DynamicRecordList.prototype, {
      * @override
      */
     setup(params) {
-        // Verificamos si el modelo es el de reparaciones
-        if (params.resModel === "repair.order") {
-            // Forzamos que el estado inicial de 'expandido' sea verdadero
-            // Esto anula el comportamiento por defecto de nacer plegado
+        // Ejecutamos el original primero usando super.setup(params)
+        // sin el operador spread (...) que estaba dando error
+        const result = super.setup(params);
+
+        // Aplicamos nuestra lógica si es el modelo de reparaciones
+        if (params && params.resModel === "repair.order") {
+            // Si hay una agrupación activa, marcamos el estado como NO plegado
             if (params.groupBy && params.groupBy.length > 0) {
-                this.isFolded = false; 
+                this.isFolded = false;
             }
         }
-        return super.setup(...params);
+        return result;
     },
 
     /**
-     * Este método es el que decide si un grupo recién cargado está plegado.
-     * Al devolver siempre false para repair.order, se mostrarán abiertos.
+     * Forzamos que el sistema detecte que NO debe estar plegado
      */
     _isFolded(id) {
         if (this.resModel === "repair.order") {
