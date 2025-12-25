@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+
+    <!-- Wexplay: dejar "Agrupar por" desplegado por defecto para agilizar el filtrado en SAT -->
+    <record id="wex_repair_order_search_expand_groupby" model="ir.ui.view">
+      <field name="name">wex_repair_order_search_expand_groupby</field>
+      <field name="model">repair.order</field>
+      <field name="inherit_id" ref="repair.view_repair_order_form_filter"/>
+      <field name="arch" type="xml">
+
+        <!-- Primer grupo de la search (normalmente es el Group By). -->
+        <xpath expr="//search/group[1]" position="attributes">
+          <attribute name="expand">1</attribute>
+        </xpath>
+
+      </field>
+    </record>
+
+  </data>
+</odoo>

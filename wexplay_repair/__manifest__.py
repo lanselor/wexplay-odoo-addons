@@ -25,6 +25,7 @@ consolas y otros dispositivos electrónicos).
         "reports/repair_receipt.xml",
         "reports/repair_label.xml",
         "views/repair_order_list.xml",
+        "views/repair_order_search.xml",
     ],
     "post_init_hook": "post_init_hook",  
     "installable": True,
