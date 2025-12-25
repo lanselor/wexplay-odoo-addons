@@ -1,23 +1,38 @@
-/** @odoo-module **/
-
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
-console.log("WEXPLAY: asset cargado (expand button)");
-
-const originalSetup = ListController.prototype.setup;
+// Guarda el original
+const originalGetStaticActionMenuItems = ListController.prototype.getStaticActionMenuItems;
 
 patch(ListController.prototype, {
-  setup() {
-    // llama al setup original de forma segura
-    if (originalSetup) {
-      originalSetup.call(this, ...arguments);
-    }
+    getStaticActionMenuItems() {
+        const items = originalGetStaticActionMenuItems.call(this, ...arguments) || {};
 
-    // solo para repair.order
-    if (this.props?.resModel === "repair.order") {
-      window._wex_last_list_controller = this;
-      console.log("WEXPLAY: ListController capturado en window._wex_last_list_controller", this);
-    }
-  },
+        // Solo en repair.order
+        if (this.props?.resModel !== "repair.order") {
+            return items;
+        }
+
+        // Evita duplicados
+        if (!items.wex_expand_groups) {
+            items.wex_expand_groups = {
+                description: "Expandir grupos",
+                callback: async () => {
+                    await expandAllGroups(this);   // tu función
+                },
+            };
+        }
+
+        // (Opcional) también “Colapsar”
+        if (!items.wex_collapse_groups) {
+            items.wex_collapse_groups = {
+                description: "Colapsar grupos",
+                callback: async () => {
+                    await collapseAllGroups(this); // si la tienes
+                },
+            };
+        }
+
+        return items;
+    },
 });
