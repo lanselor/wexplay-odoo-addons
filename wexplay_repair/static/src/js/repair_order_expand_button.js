@@ -1,24 +1,26 @@
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
+console.log("WEXPLAY: repair_order_expand_button cargado");
+
 // Guarda el original
 const originalGetStaticActionMenuItems = ListController.prototype.getStaticActionMenuItems;
 
-console.log("WEXPLAY: asset cargado (expand button)");
-
 patch(ListController.prototype, {
    
-    setup() {
-    if (this._super) this._super(...arguments);
-    window._wex_last_list_controller = this;
-    console.log("WEX: ListController expuesto", this.props?.resModel, this);
+     setup() {
+        console.log("WEX: ListController expuesto", this.props?.resModel, this);
+        if (this._super) this._super(...arguments);
+        window._wex_last_list_controller = this;
+        
     },
+   
    
     getStaticActionMenuItems() {
         const items = originalGetStaticActionMenuItems.call(this, ...arguments) || {};
         
+       
 
-        console.log("Estoy aqui");
 
 
         // Solo en repair.order
