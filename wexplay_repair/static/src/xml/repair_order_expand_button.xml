@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Botón: Expandir grupos en lista de órdenes de reparación -->
+    <t t-name="wexplay_repair.RepairOrderExpandButton">
+        <button
+            type="button"
+            class="btn btn-secondary o_list_button_expand_groups"
+            title="Desplegar todos los grupos"
+        >
+            <i class="fa fa-folder-open me-1"/>
+            Desplegar grupos
+        </button>
+    </t>
+
+</templates>

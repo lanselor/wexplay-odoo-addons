@@ -15,7 +15,7 @@ consolas y otros dispositivos electrónicos).
     "website": "https://www.wexplay.com",
     "license": "LGPL-3",
     "depends": [
-        "mrp_repair",
+        "repair",
         "stock",
         "mail",
     ],
@@ -28,10 +28,12 @@ consolas y otros dispositivos electrónicos).
         "views/repair_order_search.xml",
     ],
     "assets": {
-    "web.assets_backend": [
-        "wexplay_repair/static/src/js/repair_order_expand_groups.js",
-    ],
-},
+        "web.assets_backend": [
+            "wexplay_repair/static/src/js/repair_order_expand_button.js",
+            "wexplay_repair/static/src/xml/repair_order_expand_button.xml",
+        ],
+    },
+
     "post_init_hook": "post_init_hook",  
     "installable": True,
     "application": True,
