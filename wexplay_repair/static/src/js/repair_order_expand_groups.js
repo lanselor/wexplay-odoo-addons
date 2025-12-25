@@ -1,34 +1,26 @@
 /** @odoo-module **/
 
 import { patch } from "@web/core/utils/patch";
-import { RelationalModel } from "@web/model/relational_model/relational_model";
+import { ListController } from "@web/views/list/list_controller";
 
-patch(RelationalModel.DynamicRecordList.prototype, {
-    /**
-     * @override
-     */
-    setup(params) {
-        // Ejecutamos el original primero usando super.setup(params)
-        // sin el operador spread (...) que estaba dando error
-        const result = super.setup(params);
-
-        // Aplicamos nuestra lógica si es el modelo de reparaciones
-        if (params && params.resModel === "repair.order") {
-            // Si hay una agrupación activa, marcamos el estado como NO plegado
-            if (params.groupBy && params.groupBy.length > 0) {
-                this.isFolded = false;
-            }
+patch(ListController.prototype, {
+    setup() {
+        super.setup(...arguments);
+        
+        // Verificamos si es nuestro modelo
+        if (this.props.resModel === "repair.order") {
+            const root = this.model.root;
+            
+            // Sobrescribimos la función que carga los datos para inyectar la expansión
+            const originalLoad = root.load.bind(root);
+            root.load = async (params) => {
+                if (root.groupBy && root.groupBy.length > 0) {
+                    // 'expand: true' es la clave que Odoo usa internamente 
+                    // para saber si debe mostrar los grupos abiertos
+                    root.isFolded = false; 
+                }
+                return originalLoad(params);
+            };
         }
-        return result;
-    },
-
-    /**
-     * Forzamos que el sistema detecte que NO debe estar plegado
-     */
-    _isFolded(id) {
-        if (this.resModel === "repair.order") {
-            return false;
-        }
-        return super._isFolded(...arguments);
     }
 });
