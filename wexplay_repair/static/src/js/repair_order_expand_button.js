@@ -1,61 +1,82 @@
 /** @odoo-module **/
 console.log("WEXPLAY: repair_order_expand_button cargado");
 
+
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
 const MAX_GROUPS = 200;
 
-function getGroups(root) {
-    return root?.groups || [];
-}
-
-function isFolded(g) {
-    if (typeof g?.isFolded === "boolean") return g.isFolded;
-    if (typeof g?.folded === "boolean") return g.folded;
-    if (typeof g?.isOpen === "boolean") return !g.isOpen;
-    if (typeof g?.open === "boolean") return !g.open;
-    return false;
-}
-
-async function toggleGroup(model, group) {
-    if (model?.toggleGroup) return model.toggleGroup(group);
-    if (model?.root?.toggleGroup) return model.root.toggleGroup(group);
-    return null;
-}
-
 async function expandAllGroups(controller) {
     const root = controller.model?.root;
-    const groups = getGroups(root);
-
+    const groups = root?.groups || [];
     if (!groups.length) return;
-    if (groups.length > MAX_GROUPS) return;
+
+    if (groups.length > MAX_GROUPS) {
+        console.warn(`WEXPLAY: demasiados grupos (${groups.length}), no se expanden.`);
+        return;
+    }
+
+    // En listas agrupadas, toggleGroup suele existir en el modelo
+    if (!controller.model?.toggleGroup) {
+        console.warn("WEXPLAY: model.toggleGroup no existe en esta vista.");
+        return;
+    }
 
     for (const g of groups) {
-        if (isFolded(g)) {
-            await toggleGroup(controller.model, g);
+        const folded = g.isFolded ?? g.folded ?? false;
+        if (folded) {
+            await controller.model.toggleGroup(g);
         }
     }
 }
 
 patch(ListController.prototype, {
+    /**
+     * Odoo 18: getActionMenuItems() devuelve un objeto.
+     * Aquí NO usamos this._super. Llamamos al original guardándolo antes.
+     */
+});
+
+const originalGetActionMenuItems = ListController.prototype.getActionMenuItems;
+
+patch(ListController.prototype, {
     getActionMenuItems() {
-        const res = this._super(...arguments);
+        const res = originalGetActionMenuItems.call(this, ...arguments);
 
         // Solo en repair.order
         if (this.props?.resModel !== "repair.order") {
             return res;
         }
 
-        // Normaliza estructura
-        if (!res?.items) res.items = {};
-        if (!Array.isArray(res.items.other)) res.items.other = [];
+        // Normaliza estructura típica de action menu
+        // (según versión puede ser res.items / res.other / etc.)
+        if (!res) return res;
 
-        res.items.other.push({
-            description: "Desplegar grupos (Wexplay)",
-            callback: () => expandAllGroups(this),
-        });
+        // Intento de normalización defensiva
+        if (res.items && Array.isArray(res.items.other)) {
+            res.items.other.push({
+                description: "Expandir grupos",
+                callback: async () => {
+                    await expandAllGroups(this);
+                },
+            });
+            return res;
+        }
 
+        // Fallback: algunas builds usan res.other directamente
+        if (Array.isArray(res.other)) {
+            res.other.push({
+                description: "Expandir grupos",
+                callback: async () => {
+                    await expandAllGroups(this);
+                },
+            });
+            return res;
+        }
+
+        // Si no encontramos estructura conocida, lo dejamos sin romper nada
+        console.warn("WEXPLAY: estructura de action menu no reconocida", res);
         return res;
     },
 });

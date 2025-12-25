@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <!-- Botón: Expandir grupos en lista de órdenes de reparación -->
-    <t t-name="wexplay_repair.RepairOrderExpandButton">
+    <t t-name="wexplay_repair.RepairOrderExpandButton" owl="1">
         <button
             type="button"
             class="btn btn-secondary o_list_button_expand_groups"
