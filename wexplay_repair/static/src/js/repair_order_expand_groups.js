@@ -2,25 +2,30 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
+import { useEffect } from "@odoo/owl";
 
 patch(ListController.prototype, {
     setup() {
         super.setup(...arguments);
-        
-        // Verificamos si es nuestro modelo
-        if (this.props.resModel === "repair.order") {
-            const root = this.model.root;
-            
-            // Sobrescribimos la función que carga los datos para inyectar la expansión
-            const originalLoad = root.load.bind(root);
-            root.load = async (params) => {
-                if (root.groupBy && root.groupBy.length > 0) {
-                    // 'expand: true' es la clave que Odoo usa internamente 
-                    // para saber si debe mostrar los grupos abiertos
-                    root.isFolded = false; 
+
+        // En Odoo 18, usamos useEffect para monitorizar cuando los datos del modelo están listos
+        useEffect(
+            () => {
+                if (this.props.resModel === "repair.order") {
+                    const root = this.model.root;
+                    // Verificamos que existan grupos y que no estén ya expandidos
+                    if (root && root.groups && root.groups.length > 0) {
+                        root.groups.forEach(group => {
+                            if (group.isFolded) {
+                                // En Odoo 18, toggleGroup es la forma segura de cambiar el estado
+                                // Si no queremos disparar una recarga, cambiamos la propiedad directamente
+                                group.isFolded = false;
+                            }
+                        });
+                    }
                 }
-                return originalLoad(params);
-            };
-        }
-    }
+            },
+            () => [this.model.root.groups] // Se dispara específicamente cuando cambian los grupos
+        );
+    },
 });
