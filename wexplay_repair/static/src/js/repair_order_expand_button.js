@@ -1,48 +1,89 @@
 /** @odoo-module **/
 
+
+
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
-patch(ListController.prototype, {
-    /**
-     * @override
-     */
-    getActionMenuItems() {
-        const res = super.getActionMenuItems(...arguments);
-        
-        // Solo aplicar en el modelo de reparaciones y si hay registros
-        if (this.props.resModel === "repair.order" && res) {
-            
-            // Creamos la nueva acción
-            const expandAction = {
-                description: "Expandir todos los grupos",
-                callback: () => this.wexplayExpandAll(),
-                sequence: 100,
-            };
+console.log("WEXPLAY: repair_order_expand_button cargado");
 
-            // En Odoo 18, res.other es donde viven las acciones adicionales
-            if (!res.other) {
-                res.other = [];
-            }
-            res.other.push(expandAction);
-        }
-        
-        return res;
-    },
+const MAX_GROUPS = 200;
 
-    /**
-     * Lógica de expansión
-     */
-    async wexplayExpandAll() {
-        const root = this.model.root;
-        if (root && root.groups) {
-            // Filtramos los que están cerrados para no llamar al servidor innecesariamente
-            const closedGroups = root.groups.filter(g => g.isFolded);
-            
-            for (const group of closedGroups) {
-                // En Odoo 18, toggleGroup es la vía oficial
-                await this.model.toggleGroup(group);
-            }
+async function expandAllGroups(controller) {
+    const root = controller.model?.root;
+    const groups = root?.groups || [];
+    if (!groups.length) return;
+
+    if (groups.length > MAX_GROUPS) {
+        console.warn(`WEXPLAY: demasiados grupos (${groups.length}), no se expanden.`);
+        return;
+    }
+
+    // En listas agrupadas, toggleGroup suele existir en el modelo
+    if (!controller.model?.toggleGroup) {
+        console.warn("WEXPLAY: model.toggleGroup no existe en esta vista.");
+        return;
+    }
+
+    for (const g of groups) {
+        const folded = g.isFolded ?? g.folded ?? false;
+        if (folded) {
+            await controller.model.toggleGroup(g);
         }
     }
+}
+
+patch(ListController.prototype, {
+    /**
+     * Odoo 18: getActionMenuItems() devuelve un objeto.
+     * Aquí NO usamos this._super. Llamamos al original guardándolo antes.
+     */
+});
+
+const originalGetActionMenuItems = ListController.prototype.getActionMenuItems;
+
+patch(ListController.prototype, {
+    getActionMenuItems() {
+        const res = originalGetActionMenuItems.call(this, ...arguments);
+
+        // >>> AQUÍ
+        window._wex_last_list_controller = this;
+        console.log("WEX: controller expuesto en window._wex_last_list_controller", this);
+        // <<<
+        
+        // Solo en repair.order
+        if (this.props?.resModel !== "repair.order") {
+            return res;
+        }
+
+        // Normaliza estructura típica de action menu
+        // (según versión puede ser res.items / res.other / etc.)
+        if (!res) return res;
+
+        // Intento de normalización defensiva
+        if (res.items && Array.isArray(res.items.other)) {
+            res.items.other.push({
+                description: "Expandir grupos",
+                callback: async () => {
+                    await expandAllGroups(this);
+                },
+            });
+            return res;
+        }
+
+        // Fallback: algunas builds usan res.other directamente
+        if (Array.isArray(res.other)) {
+            res.other.push({
+                description: "Expandir grupos",
+                callback: async () => {
+                    await expandAllGroups(this);
+                },
+            });
+            return res;
+        }
+
+        // Si no encontramos estructura conocida, lo dejamos sin romper nada
+        console.warn("WEXPLAY: estructura de action menu no reconocida", res);
+        return res;
+    },
 });
