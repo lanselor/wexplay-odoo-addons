@@ -27,6 +27,11 @@ consolas y otros dispositivos electrónicos).
         "views/repair_order_list.xml",
         "views/repair_order_search.xml",
     ],
+    "assets": {
+    "web.assets_backend": [
+        "wexplay_repair/static/src/js/repair_order_expand_groups.js",
+    ],
+},
     "post_init_hook": "post_init_hook",  
     "installable": True,
     "application": True,
