@@ -1,49 +1,41 @@
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
-console.log("WEXPLAY: repair_order_expand_button cargado");
-
-// Guarda el original
+// Guarda originales ANTES del patch
+const originalSetup = ListController.prototype.setup;
 const originalGetStaticActionMenuItems = ListController.prototype.getStaticActionMenuItems;
 
 patch(ListController.prototype, {
-   
-     setup() {
-        console.log("WEX: ListController expuesto", this.props?.resModel, this);
-        if (this._super) this._super(...arguments);
+    setup() {
+        // IMPRESCINDIBLE: llamar al setup original
+        originalSetup.call(this, ...arguments);
+
+        // Debug
         window._wex_last_list_controller = this;
-        
+        console.log("WEX: ListController expuesto", this.props?.resModel, this);
     },
-   
-   
+
     getStaticActionMenuItems() {
         const items = originalGetStaticActionMenuItems.call(this, ...arguments) || {};
-        
-       
 
-
-
-        // Solo en repair.order
         if (this.props?.resModel !== "repair.order") {
             return items;
         }
 
-        // Evita duplicados
         if (!items.wex_expand_groups) {
             items.wex_expand_groups = {
                 description: "Expandir grupos",
                 callback: async () => {
-                    await expandAllGroups(this);   // tu función
+                    await expandAllGroups(this);
                 },
             };
         }
 
-        // (Opcional) también “Colapsar”
         if (!items.wex_collapse_groups) {
             items.wex_collapse_groups = {
                 description: "Colapsar grupos",
                 callback: async () => {
-                    await collapseAllGroups(this); // si la tienes
+                    await collapseAllGroups(this);
                 },
             };
         }
