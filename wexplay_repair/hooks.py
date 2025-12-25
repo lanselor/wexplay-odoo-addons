@@ -2,27 +2,19 @@ from odoo import api, SUPERUSER_ID
 
 
 def post_init_hook(cr, registry):
-    """
-    Ajusta el formato del identificador SAT para las órdenes de reparación
-    sin resetear el contador existente.
-    """
     env = api.Environment(cr, SUPERUSER_ID, {})
 
-    # Modelo de órdenes de reparación
-    RepairOrder = env["mrp.repair"]
+    # Buscamos la secuencia RO por nombre (tu caso: sin "code")
+    seq = env["ir.sequence"].sudo().search([
+        ("name", "ilike", "Secuencia RO"),
+    ], limit=1)
 
-    # Obtenemos una orden cualquiera para acceder a su secuencia
-    repair = RepairOrder.search([], limit=1)
+    if not seq:
+        return
 
-    if not repair or not repair.sequence_id:
-        return  # nada que hacer, evitamos romper nada
-
-    seq = repair.sequence_id
-
-    values = {
-        "prefix": "SAT%(y)s",
+    # No tocamos number_next (contador). Solo formato.
+    seq.write({
+        "prefix": "SAT/%(y)s",
         "padding": 6,
         "suffix": False,
-    }
-
-    seq.write(values)
+    })
