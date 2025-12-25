@@ -2,6 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
+import { onMounted } from "@odoo/owl";
 
 /**
  * Wexplay: auto-desplegar todos los grupos en la lista de repair.order
@@ -9,18 +10,14 @@ import { ListController } from "@web/views/list/list_controller";
  *
  * Nota: Abrir muchos grupos puede ser pesado si hay cientos.
  */
-patch(ListController.prototype, "wexplay_repair.expand_all_groups", {
-    async mounted() {
-        // Llama al mounted original
-        if (super.mounted) {
-            await super.mounted();
-        }
+patch(ListController.prototype, {
+    setup() {
+        this._super(...arguments);
 
-        // Solo en repair.order
-        if (this.props?.resModel !== "repair.order") return;
+        onMounted(async () => {
+            // Solo en repair.order
+            if (this.props?.resModel !== "repair.order") return;
 
-        // Espera un tick para que el modelo/render termine de estabilizarse
-        setTimeout(async () => {
             try {
                 const root = this.model?.root;
                 if (!root) return;
@@ -35,27 +32,23 @@ patch(ListController.prototype, "wexplay_repair.expand_all_groups", {
 
                 // Intenta desplegar todos los grupos "plegados"
                 for (const g of groups) {
-                    // En distintas versiones la bandera puede llamarse distinto:
-                    // isFolded / folded / isOpen, etc. Probamos de forma defensiva.
                     const folded =
                         g.isFolded ?? g.folded ?? (g.isOpen === false);
 
                     if (folded) {
-                        // toggleGroup suele existir en el modelo en listas agrupadas
                         if (this.model?.toggleGroup) {
                             await this.model.toggleGroup(g);
                         } else if (this.model?.root?.toggleGroup) {
                             await this.model.root.toggleGroup(g);
                         } else {
-                            // Si no existe, no podemos forzarlo desde aquí
                             break;
                         }
                     }
                 }
             } catch (e) {
-                // Silencioso para no romper la UI si Odoo cambia internals
-                // (pero si quieres, puedes console.log(e))
+                // Si quieres depurar:
+                // console.error("Wexplay expand groups failed:", e);
             }
-        }, 0);
+        });
     },
 });
