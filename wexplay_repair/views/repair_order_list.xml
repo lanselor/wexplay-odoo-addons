@@ -5,7 +5,7 @@
     <record id="wex_repair_order_list_default_order" model="ir.ui.view">
       <field name="name">wex_repair_order_list_default_order</field>
       <field name="model">repair.order</field>
-      <field name="inherit_id" ref="mrp_repair.repair_list"/>
+      <field name="inherit_id" ref="repair.view_repair_order_tree"/>
       <field name="arch" type="xml">
 
         <xpath expr="//list" position="attributes">
