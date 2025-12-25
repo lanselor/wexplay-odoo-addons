@@ -4,28 +4,40 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 import { useEffect } from "@odoo/owl";
 
+const _setup = ListController.prototype.setup;
+
 patch(ListController.prototype, {
     setup() {
-        super.setup(...arguments);
+        if (_setup) _setup.call(this, ...arguments);
+
+        const expand = async () => {
+            if (this.props?.resModel !== "repair.order") return;
+
+            const root = this.model?.root;
+            const groups = root?.groups;
+            if (!groups?.length) return;
+
+            for (const group of groups) {
+                if (group?.isFolded) {
+                    try {
+                        await this.model.toggleGroup(group);
+                    } catch (e) {
+                        // fallback por si esta build espera id/datapoint
+                        try {
+                            await this.model.toggleGroup(group.id);
+                        } catch (_) {}
+                    }
+                }
+            }
+        };
 
         useEffect(
             () => {
-                if (this.props.resModel === "repair.order") {
-                    const root = this.model.root;
-                    // En Odoo 18, los grupos están en root.groups
-                    if (root && root.groups) {
-                        for (const group of root.groups) {
-                            // Verificamos si el grupo está plegado
-                            if (group.isFolded) {
-                                // En Odoo 18 el método está en el modelo, no en el root
-                                // Pasamos el datapoint del grupo
-                                this.model.toggleGroup(group);
-                            }
-                        }
-                    }
-                }
+                // Espera un tick para que OWL/render y el modelo se estabilicen
+                setTimeout(() => { expand(); }, 0);
             },
-            () => [this.model.root?.groups]
+            // Dependencia por "estado" que sí cambia cuando el root se recrea/cambia de grouping
+            () => [this.model?.root]
         );
     },
 });
