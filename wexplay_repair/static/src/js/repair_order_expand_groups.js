@@ -10,22 +10,22 @@ patch(ListController.prototype, {
 
         useEffect(
             () => {
-                const root = this.model.root;
-                if (this.props.resModel === "repair.order" && root && root.groups) {
-                    // Buscamos grupos que estén plegados
-                    const groupsToExpand = root.groups.filter(g => g.isFolded);
-                    
-                    if (groupsToExpand.length > 0) {
-                        // Usamos la función nativa para expandirlos. 
-                        // En Odoo 18 esto es asíncrono y seguro.
-                        for (const group of groupsToExpand) {
-                            // toggleGroup acepta el grupo o el id del grupo
-                            root.toggleGroup(group);
+                if (this.props.resModel === "repair.order") {
+                    const root = this.model.root;
+                    // En Odoo 18, los grupos están en root.groups
+                    if (root && root.groups) {
+                        for (const group of root.groups) {
+                            // Verificamos si el grupo está plegado
+                            if (group.isFolded) {
+                                // En Odoo 18 el método está en el modelo, no en el root
+                                // Pasamos el datapoint del grupo
+                                this.model.toggleGroup(group);
+                            }
                         }
                     }
                 }
             },
-            () => [this.model.root.groups]
+            () => [this.model.root?.groups]
         );
     },
 });
