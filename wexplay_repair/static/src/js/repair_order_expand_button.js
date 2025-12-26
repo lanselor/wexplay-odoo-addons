@@ -6,13 +6,12 @@ const originalSetup = ListController.prototype.setup;
 const originalGetStaticActionMenuItems = ListController.prototype.getStaticActionMenuItems;
 
 patch(ListController.prototype, {
+    
     setup() {
-        // IMPRESCINDIBLE: llamar al setup original
         originalSetup.call(this, ...arguments);
-
-        // Debug
         window._wex_last_list_controller = this;
-        console.log("WEX: ListController expuesto", this.props?.resModel, this);
+        window.wexExpandGroups = () => this.wexExpandGroups();
+        window.wexCollapseGroups = () => this.wexCollapseGroups();
     },
 
     // Handlers para los botones del Control Panel (siempre visibles)

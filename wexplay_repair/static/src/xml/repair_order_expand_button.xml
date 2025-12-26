@@ -5,14 +5,15 @@
   <t t-inherit="web.ControlPanel" t-inherit-mode="extension">
     <xpath expr="//div[contains(@class,'o_control_panel_main_buttons')]" position="inside">
       <t t-if="props?.resModel === 'repair.order'">
-        <button type="button" class="btn btn-secondary me-2"
-                t-on-click="wexExpandGroups">
-          Expandir grupos
-        </button>
-        <button type="button" class="btn btn-secondary me-2"
-                t-on-click="wexCollapseGroups">
-          Colapsar grupos
-        </button>
+            <button type="button" class="btn btn-secondary me-2"
+                    t-on-click="() => window.wexExpandGroups()">
+            Expandir grupos
+            </button>
+
+            <button type="button" class="btn btn-secondary me-2"
+                    t-on-click="() => window.wexCollapseGroups()">
+            Colapsar grupos
+            </button>
       </t>
     </xpath>
   </t>
