@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <!-- Botón: Expandir grupos en lista de órdenes de reparación -->
-    <t t-name="wexplay_repair.RepairOrderExpandButton" owl="1">
-        <button
-            type="button"
-            class="btn btn-secondary o_list_button_expand_groups"
-            title="Desplegar todos los grupos"
-        >
-            <i class="fa fa-folder-open me-1"/>
-            Desplegar grupos
+  <t t-inherit="web.ListController" t-inherit-mode="extension">
+    <xpath expr="//div[contains(@class,'o_cp_buttons')]" position="inside">
+      <t t-if="props.resModel === 'repair.order'">
+        <button type="button" class="btn btn-secondary me-2"
+                t-on-click="wexExpandGroups">
+          Expandir grupos
         </button>
-    </t>
+        <button type="button" class="btn btn-secondary me-2"
+                t-on-click="wexCollapseGroups">
+          Colapsar grupos
+        </button>
+      </t>
+    </xpath>
+  </t>
 
 </templates>

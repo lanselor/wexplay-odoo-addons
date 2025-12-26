@@ -15,6 +15,19 @@ patch(ListController.prototype, {
         console.log("WEX: ListController expuesto", this.props?.resModel, this);
     },
 
+    // Handlers para los botones del Control Panel (siempre visibles)
+    async wexExpandGroups() {
+        if (this.props?.resModel !== "repair.order") return;
+        await expandAllGroups(this);
+    },
+
+    async wexCollapseGroups() {
+        if (this.props?.resModel !== "repair.order") return;
+        await collapseAllGroups(this);
+    },
+
+    // Mantengo esto por compatibilidad/si aún quieres la opción en el menú "Acciones" (bulk)
+    // Puedes eliminar este método si ya no lo necesitas.
     getStaticActionMenuItems() {
         const items = originalGetStaticActionMenuItems.call(this, ...arguments) || {};
 
