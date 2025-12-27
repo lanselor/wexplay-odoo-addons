@@ -1,27 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-  <t t-inherit="web.ControlPanel" t-inherit-mode="extension">
-    <xpath expr="//div[contains(@class,'o_control_panel_main_buttons')]" position="inside">
+  <t t-name="wexplay_repair.WexRepairListView.Buttons"
+     t-inherit="web.ListView.Buttons"
+     t-inherit-mode="extension"
+     owl="1">
 
-      <!-- Solo cuando el ListController expuesto es repair.order -->
-      
-<!-- <t t-if="window._wex_last_list_controller and window._wex_last_list_controller.props and window._wex_last_list_controller.props.resModel == 'repair.list'"> -->
-        <button type="button"
-                class="btn btn-secondary me-2"
-                t-on-click="() => window.wexExpandGroups()">
-          Expandir grupos
-        </button>
+    <!-- Inserta dentro del contenedor de botones de lista -->
+    <xpath expr="//div[contains(@class,'o_list_buttons')]" position="inside">
+      <button type="button" class="btn btn-secondary me-2"
+              t-on-click="wexExpandGroups">
+        Expandir grupos
+      </button>
 
-        <button type="button"
-                class="btn btn-secondary me-2"
-                t-on-click="() => window.wexCollapseGroups()">
-          Colapsar grupos
-        </button>
-    <!-- </t> -->
-      
-
+      <button type="button" class="btn btn-secondary me-2"
+              t-on-click="wexCollapseGroups">
+        Colapsar grupos
+      </button>
     </xpath>
+
   </t>
 
 </templates>
