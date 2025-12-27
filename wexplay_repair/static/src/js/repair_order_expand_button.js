@@ -15,26 +15,26 @@ try {
             this._wexObserver = null;
             this._wexInjectScheduled = false;
 
-            onMounted(() => {
-                this.injectWexButton();
+        onMounted(() => {
+            try { this.injectWexButton(); } catch (e) { console.error("WEXPLAY inject failed", e); }
 
-                // Observa SOLO el control panel (mucho más barato que document.body)
-                const cp = document.querySelector(".o_control_panel");
-                if (!cp) return;
+            const cp = document.querySelector(".o_control_panel");
+            if (!cp) return;
 
-                this._wexObserver = new MutationObserver(() => {
-                    if (this._wexInjectScheduled) return;
-                    this._wexInjectScheduled = true;
-                    queueMicrotask(() => {
-                        this._wexInjectScheduled = false;
-                        this.injectWexButton();
-                    });
+            this._wexObserver = new MutationObserver(() => {
+                if (this._wexInjectScheduled) return;
+                this._wexInjectScheduled = true;
+                queueMicrotask(() => {
+                    this._wexInjectScheduled = false;
+                    try { this.injectWexButton(); } catch (e) { console.error("WEXPLAY inject failed", e); }
                 });
-
-                this._wexObserver.observe(cp, { childList: true, subtree: true });
             });
 
-            onWillUnmount(() => {
+            this._wexObserver.observe(cp, { childList: true, subtree: true });
+        });
+
+
+         onWillUnmount(() => {
                 this._wexObserver?.disconnect();
                 this._wexObserver = null;
             });
@@ -76,6 +76,18 @@ try {
             const root = this.model?.root;
             const groups = root?.groups || [];
             const folded = groups.filter(g => g.isFolded);
+
+            console.warn("WEXPLAY: expand debug", {
+                resModel: this.props?.resModel,
+                rootType: root?.constructor?.name,
+                hasRoot: !!root,
+                hasGroups: !!root?.groups,
+                groupsLen: root?.groups?.length,
+                rootMethods: root ? Object.getOwnPropertyNames(Object.getPrototypeOf(root)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")) : [],
+                modelMethods: this.model ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.model)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")) : [],
+                controllerMethods: Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")),
+            });
+
 
             if (!folded.length) return;
 
