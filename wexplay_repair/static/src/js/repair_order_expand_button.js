@@ -63,7 +63,13 @@ try {
                 document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
                 document.querySelector(".o_control_panel .o_cp_buttons");
 
-            if (!container || container.querySelector("[data-wex='expand']")) return;
+            if (!container) return;
+
+            const existing = container.querySelector("[data-wex='expand']");
+            if (existing) {
+                this._wexUpdateButtonLabel(existing);
+                return;
+            }
 
             // Localizar "Nuevo" dentro del contenedor
             const btnNuevo =
@@ -88,6 +94,7 @@ try {
             } else {
                 container.appendChild(btn);
             }
+
         },
 
         async wexplayExpandAll() {
@@ -112,7 +119,8 @@ try {
                     folded++;
                 }
             });
-
+            
+            setTimeout(() => this.injectWexButton(), 0);    
             console.warn("WEXPLAY:", { expanded, folded });
         }
 
