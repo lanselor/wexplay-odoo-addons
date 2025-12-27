@@ -68,10 +68,11 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//tree" position="attributes">
+            <xpath expr="//*[self::tree or self::list][1]" position="attributes">
                 <attribute name="js_class">wex_repair_list</attribute>
             </xpath>
         </field>
     </record>
+
 
 </odoo>
