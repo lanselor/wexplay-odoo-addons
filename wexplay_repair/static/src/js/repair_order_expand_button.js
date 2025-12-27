@@ -64,12 +64,22 @@ try {
         _wexHasFoldedGroups() {
             const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
 
-            return Array.from(headers)
-                .filter(tr => this._wexIsVisible(tr))
-                .some(tr =>
-                    tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right") ||
-                    tr.querySelector(".o_group_caret")?.classList.contains("fa-chevron-right")
-                );
+            for (const tr of headers) {
+                // Solo los que el usuario ve (viewport)
+                const r = tr.getBoundingClientRect();
+                if (!(r.height > 0 && r.bottom > 0 && r.top < window.innerHeight)) continue;
+
+                const caret = tr.querySelector(".o_group_caret");
+                if (!caret) continue;
+
+                if (
+                    caret.classList.contains("fa-caret-right") ||
+                    caret.classList.contains("fa-chevron-right")
+                ) {
+                    return true;
+                }
+            }
+            return false;
         },
 
         _wexUpdateButtonLabel() {
@@ -140,18 +150,14 @@ try {
         },
 
         async wexHandleClick() {
-            // Acción global:
-            // - Si hay alguno cerrado (VISIBLE) => EXPANDIR (solo cerrados visibles)
-            // - Si no hay cerrados visibles => PLEGAR (solo abiertos visibles)
             const isExpandingAction = this._wexHasFoldedGroups();
 
-            const headers = document.querySelectorAll(
-                "tr.o_group_has_content.o_group_header"
-            );
+            const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
 
             headers.forEach((tr) => {
-                //clave: ignorar headers ocultos por filtros/estado
-                if (!this._wexIsVisible(tr)) return;
+                // Solo los que el usuario ve (viewport)
+                const r = tr.getBoundingClientRect();
+                if (!(r.height > 0 && r.bottom > 0 && r.top < window.innerHeight)) return;
 
                 const caret = tr.querySelector(".o_group_caret");
                 if (!caret) return;
@@ -167,7 +173,6 @@ try {
                 }
             });
 
-            // Refrescar etiqueta tras render (doble tick)
             setTimeout(() => this._wexUpdateButtonLabel(), 0);
             setTimeout(() => this._wexUpdateButtonLabel(), 100);
         },
