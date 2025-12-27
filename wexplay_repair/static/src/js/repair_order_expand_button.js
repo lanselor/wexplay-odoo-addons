@@ -69,32 +69,35 @@ try {
         },
 
         async wexplayExpandAll() {
-            // Accedemos al root que contiene los grupos
             const root = this.model?.root;
-            
-            if (!root || !root.groups) {
-                console.warn("WEXPLAY: No hay grupos detectados. Asegúrate de que la vista esté agrupada.");
+            const groups = root?.groups || [];
+
+            // 1) Preferente: método en root (común en Odoo 17/18)
+            if (typeof root?.toggleGroup === "function") {
+                const promises = groups
+                    .filter(g => g.isFolded)
+                    .map(g => root.toggleGroup(g));
+                await Promise.all(promises);
                 return;
             }
 
-            // Filtramos solo los grupos que están cerrados (isFolded)
-            const groupsToExpand = root.groups.filter(g => g.isFolded);
-
-            for (const group of groupsToExpand) {
-                try {
-                    // En Odoo 18, el método suele estar en el root
-                    if (typeof root.toggleGroup === "function") {
-                        await root.toggleGroup(group);
-                    } 
-                    // Si no está en el root, probamos en el modelo (fallback)
-                    else if (typeof this.model.toggleGroup === "function") {
-                        await this.model.toggleGroup(group);
-                    }
-                } catch (e) {
-                    console.error("WEXPLAY: Error al intentar expandir el grupo", group, e);
-                }
+            // 2) Fallback: algunos builds lo tienen en el controller
+            if (typeof this?.toggleGroup === "function") {
+                const promises = groups
+                    .filter(g => g.isFolded)
+                    .map(g => this.toggleGroup(g));
+                await Promise.all(promises);
+                return;
             }
-        },
+
+            // 3) Diagnóstico (para ajustar a tu caso exacto)
+            console.error("WEXPLAY: no encuentro toggleGroup en root/controller/model", {
+                hasRoot: !!root,
+                rootKeys: root ? Object.keys(root) : [],
+                modelKeys: this.model ? Object.keys(this.model) : [],
+                controllerKeys: Object.keys(this),
+            });
+        }
 
 
 
