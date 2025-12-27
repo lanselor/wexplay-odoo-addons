@@ -30,21 +30,27 @@ try {
             });
         },
 
-        // Comprobación visual para el botón
+        // Comprobación robusta de si hay grupos plegados
         _wexHasFoldedGroups() {
-            // Buscamos si hay algún icono de "caret-right" (plegado) en la tabla
-            const caret = document.querySelector(".o_group_caret.fa-caret-right, .o_group_caret.fa-chevron-right");
-            return !!caret;
+            // Buscamos cualquier caret que apunte a la derecha (cerrado)
+            // Odoo 18 usa fa-caret-right o fa-chevron-right
+            const foldedCaret = document.querySelector(".o_group_header .o_group_caret.fa-caret-right, .o_group_header .o_group_caret.fa-chevron-right");
+            return !!foldedCaret;
         },
 
         _wexUpdateButtonLabel() {
             if (!this._wexBtn) return;
             const hasFolded = this._wexHasFoldedGroups();
+            
             this._wexSelfUpdate = true;
-            this._wexBtn.innerHTML = hasFolded
-                ? '<i class="fa fa-expand me-1"></i> Expandir'
-                : '<i class="fa fa-compress me-1"></i> Plegar';
-            setTimeout(() => { this._wexSelfUpdate = false; }, 0);
+            if (hasFolded) {
+                this._wexBtn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
+            } else {
+                this._wexBtn.innerHTML = '<i class="fa fa-compress me-1"></i> Plegar';
+            }
+            
+            // Liberamos el flag tras el cambio de DOM
+            setTimeout(() => { this._wexSelfUpdate = false; }, 50);
         },
 
         injectWexButton() {
@@ -74,31 +80,34 @@ try {
         },
 
         async wexHandleClick() {
-            // 1. Decidimos qué acción hacer basándonos en si hay algo plegado
-            const shouldExpand = this._wexHasFoldedGroups();
+            // 1. Determinamos la acción global basándonos en si hay ALGO cerrado
+            const isExpandingAction = this._wexHasFoldedGroups();
             
-            // 2. Buscamos todas las cabeceras de grupo
             const headers = document.querySelectorAll("tr.o_group_header");
 
             headers.forEach(tr => {
                 const caret = tr.querySelector(".o_group_caret");
                 if (!caret) return;
 
-                // Comprobamos si el grupo está plegado (caret a la derecha)
                 const isFolded = caret.classList.contains("fa-caret-right") || 
                                  caret.classList.contains("fa-chevron-right");
 
-                // SOLO hacemos click si el estado del grupo es el que queremos cambiar
-                // (Si queremos expandir, solo clicamos los plegados. Si queremos plegar, solo los abiertos)
-                if (shouldExpand === isFolded) {
+                // LOGICA UNIDIRECCIONAL:
+                // Si la acción es EXPANDIR, solo clickamos los que están CERRADOS.
+                // Si la acción es PLEGAR, solo clickamos los que están ABIERTOS.
+                if (isExpandingAction && isFolded) {
+                    tr.click();
+                } else if (!isExpandingAction && !isFolded) {
                     tr.click();
                 }
             });
             
-            // 3. Actualizamos el botón tras un breve delay para que el DOM cambie
-            setTimeout(() => this._wexUpdateButtonLabel(), 150);
+            // Esperamos a que Odoo procese los clics antes de actualizar el nombre del botón
+            setTimeout(() => {
+                this._wexUpdateButtonLabel();
+            }, 300);
         }
     });
 } catch (e) {
-    console.error("WEXPLAY: Error", e);
+    console.error("WEXPLAY Error:", e);
 }
