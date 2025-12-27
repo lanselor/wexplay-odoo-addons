@@ -4,6 +4,8 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 import { onMounted, onWillUnmount } from "@odoo/owl";
 
+console.warn("WEXPLAY: expand button baseline OK (2025-12-27)");
+
 try {
     patch(ListController.prototype, {
         setup() {
@@ -39,6 +41,22 @@ try {
                 this._wexObserver = null;
             });
         },
+
+        _wexHasFoldedGroups() {
+            const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
+            return Array.from(headers).some(tr =>
+                tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right")
+            );
+        },
+
+        _wexUpdateButtonLabel(btn) {
+            const hasFolded = this._wexHasFoldedGroups();
+            btn.innerHTML = hasFolded
+                ? '<i class="fa fa-expand me-1"></i> Expandir'
+                : '<i class="fa fa-compress me-1"></i> Plegar';
+        },
+
+
 
         injectWexButton() {
             const container =
