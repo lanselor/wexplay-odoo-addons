@@ -98,7 +98,7 @@ try {
 
             // Forzamos sincronización de la etiqueta tras el cambio
             //setTimeout(() => this.wexSyncUI(), 200);
-            setTimeout(() => this.wexSyncUI(), 200); // Segundo chequeo por si el servidor tarda
+            setTimeout(() => this.wexSyncUI(), 50); // Segundo chequeo por si el servidor tarda
         }
     });
 } catch (e) {
