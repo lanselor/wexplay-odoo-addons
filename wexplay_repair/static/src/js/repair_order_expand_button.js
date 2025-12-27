@@ -8,14 +8,10 @@ try {
     patch(ListController.prototype, {
         setup() {
             super.setup();
-            
             this._wexBtn = null;
             this._wexSelfUpdate = false;
 
             if (this.props?.resModel !== "repair.order") return;
-
-            this._wexObserver = null;
-            this._wexInjectScheduled = false;
 
             onMounted(() => {
                 this.injectWexButton();
@@ -23,48 +19,37 @@ try {
                 if (!cp) return;
 
                 this._wexObserver = new MutationObserver(() => {
-                    if (this._wexSelfUpdate || this._wexInjectScheduled) return;
-                    this._wexInjectScheduled = true;
-                    queueMicrotask(() => {
-                        this._wexInjectScheduled = false;
-                        this.injectWexButton();
-                    });
+                    if (this._wexSelfUpdate) return;
+                    this.injectWexButton();
                 });
                 this._wexObserver.observe(cp, { childList: true, subtree: true });
             });
 
             onWillUnmount(() => {
                 this._wexObserver?.disconnect();
-                this._wexObserver = null;
             });
         },
 
-        // Comprobación basada en el MODELO (más fiable que el DOM)
+        // Comprobación visual para el botón
         _wexHasFoldedGroups() {
-            const root = this.model?.root;
-            if (!root || !root.groups) return false;
-            // Si hay al menos un grupo plegado, devolvemos true
-            return root.groups.some(g => g.isFolded);
+            // Buscamos si hay algún icono de "caret-right" (plegado) en la tabla
+            const caret = document.querySelector(".o_group_caret.fa-caret-right, .o_group_caret.fa-chevron-right");
+            return !!caret;
         },
 
         _wexUpdateButtonLabel() {
             if (!this._wexBtn) return;
-
             const hasFolded = this._wexHasFoldedGroups();
             this._wexSelfUpdate = true;
-
-            // Actualizamos el texto y el icono según el estado
             this._wexBtn.innerHTML = hasFolded
                 ? '<i class="fa fa-expand me-1"></i> Expandir'
                 : '<i class="fa fa-compress me-1"></i> Plegar';
-
             setTimeout(() => { this._wexSelfUpdate = false; }, 0);
         },
 
         injectWexButton() {
-            const container = document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
-                              document.querySelector(".o_control_panel .o_cp_buttons");
-
+            const container = document.querySelector(".o_control_panel_main_buttons") ||
+                              document.querySelector(".o_cp_buttons");
             if (!container) return;
 
             const existing = container.querySelector("[data-wex='expand']");
@@ -78,7 +63,6 @@ try {
             btn.type = "button";
             btn.className = "btn btn-outline-primary btn-sm ms-2 border";
             btn.setAttribute("data-wex", "expand");
-
             btn.onclick = (ev) => {
                 ev.preventDefault();
                 this.wexHandleClick();
@@ -90,29 +74,31 @@ try {
         },
 
         async wexHandleClick() {
-            const root = this.model?.root;
-            if (!root || !root.groups) return;
-
-            const hasFolded = this._wexHasFoldedGroups();
+            // 1. Decidimos qué acción hacer basándonos en si hay algo plegado
+            const shouldExpand = this._wexHasFoldedGroups();
             
-            // Lógica inteligente: 
-            // Si hay alguno cerrado -> Abrimos TODOS.
-            // Si están todos abiertos -> Cerramos TODOS.
-            const groupsToProcess = root.groups.filter(g => g.isFolded === hasFolded);
+            // 2. Buscamos todas las cabeceras de grupo
+            const headers = document.querySelectorAll("tr.o_group_header");
 
-            for (const group of groupsToProcess) {
-                try {
-                    // Usamos el método nativo del root para evitar errores de Proxy
-                    await root.toggleGroup(group);
-                } catch (e) {
-                    console.error("WEXPLAY: Error toggling group", e);
+            headers.forEach(tr => {
+                const caret = tr.querySelector(".o_group_caret");
+                if (!caret) return;
+
+                // Comprobamos si el grupo está plegado (caret a la derecha)
+                const isFolded = caret.classList.contains("fa-caret-right") || 
+                                 caret.classList.contains("fa-chevron-right");
+
+                // SOLO hacemos click si el estado del grupo es el que queremos cambiar
+                // (Si queremos expandir, solo clicamos los plegados. Si queremos plegar, solo los abiertos)
+                if (shouldExpand === isFolded) {
+                    tr.click();
                 }
-            }
+            });
             
-            // Esperamos un pequeño tick para que el estado del modelo se estabilice antes de cambiar la etiqueta
-            setTimeout(() => this._wexUpdateButtonLabel(), 100);
+            // 3. Actualizamos el botón tras un breve delay para que el DOM cambie
+            setTimeout(() => this._wexUpdateButtonLabel(), 150);
         }
     });
 } catch (e) {
-    console.error("WEXPLAY: patch expand button failed", e);
+    console.error("WEXPLAY: Error", e);
 }
