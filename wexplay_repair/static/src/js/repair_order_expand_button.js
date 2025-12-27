@@ -9,7 +9,7 @@ patch(ListController.prototype, {
     setup() {
             originalListSetup.call(this, ...arguments);
 
-            if (this.props?.resModel === "repair.list") {
+            if (this.props?.resModel === "repair.order") {
                 window._wex_last_list_controller = this;
                 window.wexExpandGroups = () => this.wexExpandGroups();
                 window.wexCollapseGroups = () => this.wexCollapseGroups();
@@ -25,19 +25,19 @@ patch(ListController.prototype, {
         },
 
     async wexExpandGroups() {
-        if (this.props?.resModel !== "repair.list") return;
+        if (this.props?.resModel !== "repair.order") return;
         await expandAllGroups(this);
     },
 
     async wexCollapseGroups() {
-        if (this.props?.resModel !== "repair.list") return;
+        if (this.props?.resModel !== "repair.order") return;
         await collapseAllGroups(this);
     },
 
     getStaticActionMenuItems() {
         const items = originalGetStaticActionMenuItems.call(this, ...arguments) || {};
 
-        if (this.props?.resModel !== "repair.list") return items;
+        if (this.props?.resModel !== "repair.order") return items;
 
         items.wex_expand_groups ||= {
             description: "Expandir grupos",

@@ -5,7 +5,7 @@
     <xpath expr="//div[contains(@class,'o_control_panel_main_buttons')]" position="inside">
 
       <!-- Solo cuando el ListController expuesto es repair.order -->
-      <t t-if="window._wex_last_list_controller and window._wex_last_list_controller.props and window._wex_last_list_controller.props.resModel == 'repair.order'">
+      <t t-if="window._wex_last_list_controller and window._wex_last_list_controller.props and window._wex_last_list_controller.props.resModel == 'repair.list'">
 
         <button type="button"
                 class="btn btn-secondary me-2"
