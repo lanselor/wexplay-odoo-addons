@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-<record id="view_repair_order_tree_button_header" model="ir.ui.view">
-    <field name="name">repair.order.tree.header.button</field>
-    <field name="model">repair.order</field>
-    <field name="inherit_id" ref="repair.view_repair_order_tree"/>
-    <field name="arch" type="xml">
+  <t t-name="wexplay_repair.WexRepairListView.Buttons"
+     t-inherit="web.ListView.Buttons"
+     t-inherit-mode="extension"
+     owl="1">
 
-        <xpath expr="//tree" position="inside">
-            <header>
-                <button
-                    name="action_custom_button"
-                    type="object"
-                    string="Mi botón"
-                    class="btn-primary"/>
-            </header>
-        </xpath>
+    <xpath expr="//div[contains(@class,'o_list_buttons')]" position="inside">
+      <button type="button" class="btn btn-secondary me-2" t-on-click="wexExpandGroups">
+        Expandir grupos
+      </button>
+      <button type="button" class="btn btn-secondary me-2" t-on-click="wexCollapseGroups">
+        Colapsar grupos
+      </button>
+    </xpath>
 
-    </field>
-</record>
-
+  </t>
 </templates>
