@@ -4,6 +4,8 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 import { onMounted, onWillUnmount } from "@odoo/owl";
 
+console.warn("WEXPLAY: expand button - Fixed visibility logic (2025-12-27)");
+
 try {
     patch(ListController.prototype, {
         setup() {
@@ -14,7 +16,7 @@ try {
             this._wexObserver = null;
             this._wexInjectScheduled = false;
 
-            // Limitar al modelo
+            // Limitar al modelo de reparaciones
             if (this.props?.resModel !== "repair.order") return;
 
             onMounted(() => {
@@ -28,13 +30,9 @@ try {
                 if (!cp) return;
 
                 this._wexObserver = new MutationObserver(() => {
-                    // Evitar bucles por cambios que hacemos nosotros (innerHTML)
-                    if (this._wexSelfUpdate) return;
-
-                    // Throttle para no ejecutar cientos de veces por render
-                    if (this._wexInjectScheduled) return;
+                    if (this._wexSelfUpdate || this._wexInjectScheduled) return;
+                    
                     this._wexInjectScheduled = true;
-
                     queueMicrotask(() => {
                         this._wexInjectScheduled = false;
                         try {
@@ -55,64 +53,47 @@ try {
             });
         },
 
-        // ¿Hay al menos un grupo plegado? (caret a la derecha)
-        _wexIsVisible(el) {
-            // Visible real en pantalla (no hidden, no display:none, no fuera de layout)
-            return !!(el && el.offsetParent !== null);
+        // VALIDACIÓN: ¿Es el elemento realmente visible para el usuario?
+        // Esto ignora los grupos que los filtros de Odoo ocultan pero dejan en el DOM.
+        _wexIsActuallyVisible(el) {
+            if (!el) return false;
+            // offsetHeight > 0 es la clave: si Odoo filtra la fila, su altura colapsa.
+            const style = window.getComputedStyle(el);
+            return style.display !== 'none' && el.offsetHeight > 0;
         },
-        
+
         _wexHasFoldedGroups() {
             const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
-
-            for (const tr of headers) {
-                // Solo los que el usuario ve (viewport)
-                const r = tr.getBoundingClientRect();
-                if (!(r.height > 0 && r.bottom > 0 && r.top < window.innerHeight)) continue;
+            return Array.from(headers).some(tr => {
+                // Solo nos importan los grupos que el usuario está viendo actualmente
+                if (!this._wexIsActuallyVisible(tr)) return false;
 
                 const caret = tr.querySelector(".o_group_caret");
-                if (!caret) continue;
-
-                if (
+                return caret && (
                     caret.classList.contains("fa-caret-right") ||
                     caret.classList.contains("fa-chevron-right")
-                ) {
-                    return true;
-                }
-            }
-            return false;
+                );
+            });
         },
 
         _wexUpdateButtonLabel() {
-           
-
-            console.warn("WEXPLAY label check:", {
-            hasFolded: this._wexHasFoldedGroups(),
-            sampleCaret: document.querySelector(".o_group_caret")?.className,
-            });
-
-             if (!this._wexBtn) return;
+            if (!this._wexBtn) return;
 
             const hasFolded = this._wexHasFoldedGroups();
-
-            // Marcar actualización propia para que el observer la ignore
             this._wexSelfUpdate = true;
 
             this._wexBtn.innerHTML = hasFolded
                 ? '<i class="fa fa-expand me-1"></i> Expandir'
                 : '<i class="fa fa-compress me-1"></i> Plegar';
 
-            // Liberar flag en el siguiente tick
-            setTimeout(() => {
-                this._wexSelfUpdate = false;
-            }, 0);
+            // Pequeño delay para liberar el flag tras la mutación del DOM
+            setTimeout(() => { this._wexSelfUpdate = false; }, 50);
         },
 
         injectWexButton() {
             const container =
                 document.querySelector(".o_control_panel_main_buttons") ||
-                document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
-                document.querySelector(".o_cp_buttons") ||
-                document.querySelector(".o_control_panel .o_cp_buttons");
+                document.querySelector(".o_cp_buttons");
 
             if (!container) return;
 
@@ -133,11 +114,9 @@ try {
                 this.wexHandleClick();
             });
 
-            // Insertar después de "Nuevo" si existe; si no, al final
-            const btnNuevo =
-                container.querySelector("button.o_list_button_add") ||
-                container.querySelector("button.o_list_button_create") ||
-                null;
+            // Posicionamiento al lado de "Nuevo"
+            const btnNuevo = container.querySelector("button.o_list_button_add") || 
+                             container.querySelector("button.o_list_button_create");
 
             if (btnNuevo) {
                 btnNuevo.insertAdjacentElement("afterend", btn);
@@ -150,35 +129,35 @@ try {
         },
 
         async wexHandleClick() {
-            const isExpandingAction = this._wexHasFoldedGroups();
-
+            // Decidimos la acción basándonos solo en lo que es visible AHORA
+            const shouldExpand = this._wexHasFoldedGroups();
             const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
 
             headers.forEach((tr) => {
-                // Solo los que el usuario ve (viewport)
-                const r = tr.getBoundingClientRect();
-                if (!(r.height > 0 && r.bottom > 0 && r.top < window.innerHeight)) return;
+                if (!this._wexIsActuallyVisible(tr)) return;
 
                 const caret = tr.querySelector(".o_group_caret");
                 if (!caret) return;
 
-                const isFolded =
-                    caret.classList.contains("fa-caret-right") ||
-                    caret.classList.contains("fa-chevron-right");
+                const isFolded = caret.classList.contains("fa-caret-right") || 
+                                 caret.classList.contains("fa-chevron-right");
 
-                if (isExpandingAction && isFolded) {
+                // LOGICA UNIDIRECCIONAL:
+                // Si la orden es Expandir, solo clickamos los cerrados.
+                // Si la orden es Plegar, solo clickamos los abiertos.
+                if (shouldExpand && isFolded) {
                     tr.click();
-                } else if (!isExpandingAction && !isFolded) {
+                } else if (!shouldExpand && !isFolded) {
                     tr.click();
                 }
             });
 
-            setTimeout(() => this._wexUpdateButtonLabel(), 0);
+            // Odoo 18 necesita tiempo para procesar los clics y cambiar las clases CSS
+            // Hacemos dos chequeos para asegurar que la etiqueta cambie sí o sí
             setTimeout(() => this._wexUpdateButtonLabel(), 100);
+            setTimeout(() => this._wexUpdateButtonLabel(), 400);
         },
-
-
     });
 } catch (e) {
-    console.error("WEXPLAY Error:", e);
+    console.error("WEXPLAY: Fatal patch error", e);
 }
