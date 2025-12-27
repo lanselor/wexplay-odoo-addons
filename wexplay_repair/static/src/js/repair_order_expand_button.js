@@ -66,6 +66,13 @@ try {
         _wexUpdateButtonLabel() {
             if (!this._wexBtn) return;
 
+            console.warn("WEXPLAY label check:", {
+            hasFolded: this._wexHasFoldedGroups(),
+            sampleCaret: document.querySelector(".o_group_caret")?.className,
+            });
+
+
+
             const hasFolded = this._wexHasFoldedGroups();
 
             // Marcar actualización propia para que el observer la ignore
