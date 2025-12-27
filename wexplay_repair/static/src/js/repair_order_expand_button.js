@@ -79,8 +79,10 @@ try {
 
             // Si ya existe, solo referencia y sal (NO tocar innerHTML aquí)
             const existing = container.querySelector("[data-wex='expand']");
+
             if (existing) {
                 this._wexBtn = existing;
+                this._wexUpdateButtonLabel();
                 return;
             }
 
