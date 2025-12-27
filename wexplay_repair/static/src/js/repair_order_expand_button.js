@@ -47,6 +47,12 @@ try {
 
             if (!container || container.querySelector("[data-wex='expand']")) return;
 
+            // Localizar "Nuevo" dentro del contenedor
+            const btnNuevo =
+                container.querySelector("button.o_list_button_add") ||
+                container.querySelector("button.o_list_button_create") ||
+                null;
+
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "btn btn-outline-primary btn-sm ms-2 border";
@@ -58,43 +64,32 @@ try {
                 this.wexplayExpandAll();
             });
 
-            // Después de "Nuevo" (si existe)
-            if (btnNuevo && btnNuevo.nextSibling) {
-                container.insertBefore(btn, btnNuevo.nextSibling);
-            } else if (btnNuevo) {
-                btnNuevo.insertAdjacentElement("afterend", btn); // alternativa aún más limpia
+            // Insertar justo después de "Nuevo" si existe
+            if (btnNuevo) {
+                btnNuevo.insertAdjacentElement("afterend", btn);
             } else {
                 container.appendChild(btn);
             }
         },
 
         async wexplayExpandAll() {
-            // En Odoo 18, el root es el que contiene la lista de grupos
             const root = this.model?.root;
-            
-            if (!root || !root.groups) {
-                console.warn("WEXPLAY: No hay grupos para expandir.");
+            const groups = root?.groups || [];
+            const folded = groups.filter(g => g.isFolded);
+
+            if (!folded.length) return;
+
+            if (typeof root?.toggleGroup === "function") {
+                await Promise.all(folded.map(g => root.toggleGroup(g)));
+                return;
+            }
+            if (typeof this.model?.toggleGroup === "function") {
+                await Promise.all(folded.map(g => this.model.toggleGroup(g)));
                 return;
             }
 
-            // Filtramos los grupos que están plegados
-            const groupsToExpand = root.groups.filter(g => g.isFolded);
-
-            for (const group of groupsToExpand) {
-                try {
-                    // Primero intentamos root.toggleGroup (estándar en v18)
-                    if (root.toggleGroup) {
-                        await root.toggleGroup(group);
-                    } 
-                    // Si no existe, probamos en el modelo (fallback)
-                    else if (this.model.toggleGroup) {
-                        await this.model.toggleGroup(group);
-                    }
-                } catch (e) {
-                    console.error("WEXPLAY: Error expandiendo grupo", group, e);
-                }
-            }
-        },
+            console.warn("WEXPLAY: no toggleGroup found");
+        }
 
 
 
