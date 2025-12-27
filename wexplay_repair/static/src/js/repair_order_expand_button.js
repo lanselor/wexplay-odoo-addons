@@ -10,7 +10,9 @@ try {
     patch(ListController.prototype, {
         setup() {
             super.setup();
-
+            
+            this._wexBtn = null;
+            this._wexSelfUpdate = false;
             // Limitar al modelo
             if (this.props?.resModel !== "repair.order") return;
 
@@ -24,6 +26,7 @@ try {
             if (!cp) return;
 
             this._wexObserver = new MutationObserver(() => {
+                if (this._wexSelfUpdate) return;
                 if (this._wexInjectScheduled) return;
                 this._wexInjectScheduled = true;
                 queueMicrotask(() => {
@@ -49,11 +52,20 @@ try {
             );
         },
 
-        _wexUpdateButtonLabel(btn) {
+        _wexUpdateButtonLabel() {
+            if (!this._wexBtn) return;
+
             const hasFolded = this._wexHasFoldedGroups();
-            btn.innerHTML = hasFolded
+
+            // Flag para que el observer ignore esta mutación
+            this._wexSelfUpdate = true;
+
+            this._wexBtn.innerHTML = hasFolded
                 ? '<i class="fa fa-expand me-1"></i> Expandir'
                 : '<i class="fa fa-compress me-1"></i> Plegar';
+
+            // Liberar flag en el siguiente tick
+            setTimeout(() => { this._wexSelfUpdate = false; }, 0);
         },
 
 
@@ -65,37 +77,30 @@ try {
 
             if (!container) return;
 
+            // Si ya existe, solo referencia y sal (NO tocar innerHTML aquí)
             const existing = container.querySelector("[data-wex='expand']");
             if (existing) {
-                this._wexUpdateButtonLabel(existing);
+                this._wexBtn = existing;
                 return;
             }
-
-            // Localizar "Nuevo" dentro del contenedor
-            const btnNuevo =
-                container.querySelector("button.o_list_button_add") ||
-                container.querySelector("button.o_list_button_create") ||
-                null;
 
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "btn btn-outline-primary btn-sm ms-2 border";
             btn.setAttribute("data-wex", "expand");
-            btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
 
             btn.addEventListener("click", (ev) => {
                 ev.preventDefault();
                 this.wexplayExpandAll();
             });
 
-            // Insertar justo después de "Nuevo" si existe
-            if (btnNuevo) {
-                btnNuevo.insertAdjacentElement("afterend", btn);
-            } else {
-                container.appendChild(btn);
-            }
+            container.appendChild(btn);
+            this._wexBtn = btn;
 
+            // Etiqueta inicial (la ponemos UNA vez al crear)
+            this._wexUpdateButtonLabel();
         },
+
 
         async wexplayExpandAll() {
             const headers = document.querySelectorAll(
@@ -120,7 +125,7 @@ try {
                 }
             });
             
-            setTimeout(() => this.injectWexButton(), 0);    
+            setTimeout(() => this._wexUpdateButtonLabel(), 0);  
             console.warn("WEXPLAY:", { expanded, folded });
         }
 
