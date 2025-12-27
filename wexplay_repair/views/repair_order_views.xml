@@ -63,12 +63,12 @@
     </record>
 
     <!-- Heredamos la vista LISTA (tree) estándar de repair.order para inyectar js_class -->
-    <record id="view_repair_order_tree_wexplay_jsclass" model="ir.ui.view">
-        <field name="name">repair.order.tree.wexplay.jsclass</field>
+    <record id="view_repair_order_list_wexplay_jsclass" model="ir.ui.view">
+        <field name="name">repair.order.list.wexplay.jsclass</field>
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//*[self::tree or self::list][1]" position="attributes">
+            <xpath expr="//list" position="attributes">
                 <attribute name="js_class">wex_repair_list</attribute>
             </xpath>
         </field>

@@ -6,6 +6,8 @@ import { ListController } from "@web/views/list/list_controller";
 
 const MAX_GROUPS = 200;
 
+console.log("WEX: cargado repair_order_expand_button.js (registrando wex_repair_list)");
+
 async function toggleGroup(controller, group) {
     // Odoo puede exponer toggleGroup en distintos sitios según versión/estado
     const root = controller.model?.root;
@@ -68,3 +70,4 @@ export const WexRepairListView = {
 
 // Este string DEBE coincidir con js_class="wex_repair_list" en el <tree>
 registry.category("views").add("wex_repair_list", WexRepairListView);
+console.log("WEX: registrado view key = wex_repair_list");
