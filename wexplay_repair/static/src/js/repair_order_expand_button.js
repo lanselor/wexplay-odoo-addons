@@ -57,9 +57,9 @@ try {
 
         // ¿Hay al menos un grupo plegado? (caret a la derecha)
         _wexHasFoldedGroups() {
-            return !!document.querySelector(
-                "tr.o_group_header .o_group_caret.fa-caret-right, " +
-                "tr.o_group_header .o_group_caret.fa-chevron-right"
+            const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
+            return Array.from(headers).some(tr =>
+                tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right")
             );
         },
 
