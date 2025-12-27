@@ -44,18 +44,9 @@ try {
             const container =
                 document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
                 document.querySelector(".o_control_panel .o_cp_buttons");
-        
-            const hasFolded = this._wexHasFoldedGroups();        
 
             if (!container || container.querySelector("[data-wex='expand']")) return;
 
-           
-            if (hasFolded) {
-                btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
-            } else {
-                btn.innerHTML = '<i class="fa fa-compress me-1"></i> Plegar';
-            }
-           
             // Localizar "Nuevo" dentro del contenedor
             const btnNuevo =
                 container.querySelector("button.o_list_button_add") ||
@@ -103,22 +94,9 @@ try {
                     folded++;
                 }
             });
-            // Refrescar texto del botón tras el toggle
-            setTimeout(() => this.injectWexButton(), 0);
+
             console.warn("WEXPLAY:", { expanded, folded });
-        },
-
-    _wexHasFoldedGroups() {
-        const headers = document.querySelectorAll(
-            "tr.o_group_has_content.o_group_header"
-        );
-
-        return Array.from(headers).some(tr =>
-            tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right")
-        );
-    }
-
-
+        }
 
 
 
