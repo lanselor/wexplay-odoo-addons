@@ -69,15 +69,14 @@
         <field name="inherit_id" ref="repair.view_repair_order_tree"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//tree" position="inside">
-                <header>
-                    <button
-                        name="action_custom_button"
+        <xpath expr="//list" position="inside">
+            <header>
+                <button name="action_custom_button"
                         type="object"
                         string="Mi botón"
                         class="btn-primary"/>
-                </header>
-            </xpath>
+            </header>
+        </xpath>
 
         </field>
     </record>
