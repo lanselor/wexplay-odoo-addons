@@ -24,13 +24,6 @@ class RepairOrder(models.Model):
         store=False,
     )
 
-    class RepairOrder(models.Model):
-        _inherit = "repair.order"
-
-        def action_custom_button(self):
-            # Aquí lo que quieras hacer
-            return True
-
     # ✅ NUEVO: Marca/Modelo normalizados (catálogo)
     x_brand_id = fields.Many2one(
         "wex.repair.brand",

@@ -62,24 +62,7 @@
         </field>
     </record>
 
-    <!-- Heredamos la vista LISTA (tree) estándar de repair.order para inyectar js_class -->
-    <record id="view_repair_order_tree_button_header" model="ir.ui.view">
-        <field name="name">repair.order.tree.header.button</field>
-        <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.view_repair_order_tree"/>
-        <field name="arch" type="xml">
 
-        <xpath expr="//list" position="inside">
-            <header>
-                <button name="action_custom_button"
-                        type="object"
-                        string="Mi botón"
-                        class="btn-primary"/>
-            </header>
-        </xpath>
-
-        </field>
-    </record>
 
 
 
