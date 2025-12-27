@@ -69,35 +69,32 @@ try {
         },
 
         async wexplayExpandAll() {
+            // En Odoo 18, el root es el que contiene la lista de grupos
             const root = this.model?.root;
-            const groups = root?.groups || [];
-
-            // 1) Preferente: método en root (común en Odoo 17/18)
-            if (typeof root?.toggleGroup === "function") {
-                const promises = groups
-                    .filter(g => g.isFolded)
-                    .map(g => root.toggleGroup(g));
-                await Promise.all(promises);
+            
+            if (!root || !root.groups) {
+                console.warn("WEXPLAY: No hay grupos para expandir.");
                 return;
             }
 
-            // 2) Fallback: algunos builds lo tienen en el controller
-            if (typeof this?.toggleGroup === "function") {
-                const promises = groups
-                    .filter(g => g.isFolded)
-                    .map(g => this.toggleGroup(g));
-                await Promise.all(promises);
-                return;
-            }
+            // Filtramos los grupos que están plegados
+            const groupsToExpand = root.groups.filter(g => g.isFolded);
 
-            // 3) Diagnóstico (para ajustar a tu caso exacto)
-            console.error("WEXPLAY: no encuentro toggleGroup en root/controller/model", {
-                hasRoot: !!root,
-                rootKeys: root ? Object.keys(root) : [],
-                modelKeys: this.model ? Object.keys(this.model) : [],
-                controllerKeys: Object.keys(this),
-            });
-        }
+            for (const group of groupsToExpand) {
+                try {
+                    // Primero intentamos root.toggleGroup (estándar en v18)
+                    if (root.toggleGroup) {
+                        await root.toggleGroup(group);
+                    } 
+                    // Si no existe, probamos en el modelo (fallback)
+                    else if (this.model.toggleGroup) {
+                        await this.model.toggleGroup(group);
+                    }
+                } catch (e) {
+                    console.error("WEXPLAY: Error expandiendo grupo", group, e);
+                }
+            }
+        },
 
 
 
