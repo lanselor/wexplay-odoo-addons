@@ -7,14 +7,22 @@ const originalGetStaticActionMenuItems = ListController.prototype.getStaticActio
 
 patch(ListController.prototype, {
     setup() {
-        originalListSetup.call(this, ...arguments);
+            originalListSetup.call(this, ...arguments);
 
-        window._wex_last_list_controller = this;
-        window.wexExpandGroups = () => this.wexExpandGroups();
-        window.wexCollapseGroups = () => this.wexCollapseGroups();
+            if (this.props?.resModel === "repair.order") {
+                window._wex_last_list_controller = this;
+                window.wexExpandGroups = () => this.wexExpandGroups();
+                window.wexCollapseGroups = () => this.wexCollapseGroups();
+            } else {
+                if (window._wex_last_list_controller === this) {
+                    delete window._wex_last_list_controller;
+                    delete window.wexExpandGroups;
+                    delete window.wexCollapseGroups;
+                }
+            }
 
-        console.log("WEX ListController resModel:", this.props?.resModel);
-    },
+            console.log("WEX ListController resModel:", this.props?.resModel);
+        },
 
     async wexExpandGroups() {
         if (this.props?.resModel !== "repair.order") return;

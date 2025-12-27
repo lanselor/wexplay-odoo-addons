@@ -4,8 +4,9 @@
   <t t-inherit="web.ControlPanel" t-inherit-mode="extension">
     <xpath expr="//div[contains(@class,'o_control_panel_main_buttons')]" position="inside">
 
-      <!-- SOLO en repair.order -->
-      <t t-if="props.action and props.action.res_model == 'repair.order'">
+      <!-- Solo cuando el ListController expuesto es repair.order -->
+      <t t-if="window._wex_last_list_controller and window._wex_last_list_controller.props and window._wex_last_list_controller.props.resModel == 'repair.order'">
+
         <button type="button"
                 class="btn btn-secondary me-2"
                 t-on-click="() => window.wexExpandGroups()">
@@ -17,6 +18,7 @@
                 t-on-click="() => window.wexCollapseGroups()">
           Colapsar grupos
         </button>
+
       </t>
 
     </xpath>
