@@ -69,15 +69,39 @@ try {
         },
 
         async wexplayExpandAll() {
+            // En Odoo 18, el root gestiona los grupos directamente
             const root = this.model?.root;
-            const groups = root?.groups || [];
+            if (!root || !root.groups) {
+                console.warn("WEXPLAY: No hay grupos o el modelo no está agrupado.");
+                return;
+            }
 
-            const promises = groups
-                .filter(g => g.isFolded)
-                .map(g => this.model.toggleGroup(g));
+            // Filtramos los grupos que están cerrados
+            const groupsToExpand = root.groups.filter(g => g.isFolded);
+            
+            if (groupsToExpand.length === 0) {
+                return;
+            }
 
-            await Promise.all(promises);
+            try {
+                // En Odoo 18, el método reside en el objeto root
+                // y se debe llamar pasando el grupo (datapoint)
+                for (const group of groupsToExpand) {
+                    if (typeof root.toggleGroup === 'function') {
+                        await root.toggleGroup(group);
+                    } else {
+                        // Si por alguna razón la versión es distinta, 
+                        // el modelo suele tener el método
+                        await this.model.toggleGroup(group);
+                    }
+                }
+            } catch (e) {
+                console.error("WEXPLAY: Error expandiendo grupos", e);
+            }
         },
+
+
+
     });
 } catch (e) {
     console.error("WEXPLAY: patch expand button failed", e);
