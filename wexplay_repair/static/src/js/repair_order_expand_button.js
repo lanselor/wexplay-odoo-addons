@@ -4,62 +4,75 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 import { onMounted, onWillUnmount } from "@odoo/owl";
 
-patch(ListController.prototype, {
-    setup() {
-        super.setup();
-        if (this.props.resModel !== "repair.order") return;
+try {
+    patch(ListController.prototype, {
+        setup() {
+            super.setup();
 
-        onMounted(() => {
-            // El observador vigila cambios en el DOM para re-inyectar el botón si Odoo lo borra
-            this.wexObserver = new MutationObserver(() => this.injectWexButton());
-            this.wexObserver.observe(document.body, { childList: true, subtree: true });
-            
-            // Primer intento inmediato
-            this.injectWexButton();
-        });
+            // Limitar al modelo
+            if (this.props?.resModel !== "repair.order") return;
 
-        onWillUnmount(() => {
-            if (this.wexObserver) this.wexObserver.disconnect();
-        });
-    },
+            this._wexObserver = null;
+            this._wexInjectScheduled = false;
 
-    injectWexButton() {
-        // Buscamos el contenedor del botón "Nuevo" (o_cp_buttons)
-        // Este contenedor suele estar presente siempre en la vista de lista
-        const container = document.querySelector(".o_control_panel_main_buttons") || 
-                          document.querySelector(".o_cp_buttons");
+            onMounted(() => {
+                this.injectWexButton();
 
-        if (!container || container.querySelector(".btn_wex_expand")) return;
+                // Observa SOLO el control panel (mucho más barato que document.body)
+                const cp = document.querySelector(".o_control_panel");
+                if (!cp) return;
 
-        const btn = document.createElement("button");
-        btn.type = "button";
-        // btn-light o btn-secondary para que no compita visualmente con el botón verde de Nuevo
-        btn.className = "btn btn-light btn_wex_expand ms-2 border"; 
-        btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
-        
-        btn.onclick = (ev) => {
-            ev.preventDefault();
-            this.wexplayExpandAll();
-        };
+                this._wexObserver = new MutationObserver(() => {
+                    if (this._wexInjectScheduled) return;
+                    this._wexInjectScheduled = true;
+                    queueMicrotask(() => {
+                        this._wexInjectScheduled = false;
+                        this.injectWexButton();
+                    });
+                });
 
-        // Lo insertamos justo después del primer hijo (normalmente el botón Nuevo)
-        if (container.firstChild) {
-            container.insertBefore(btn, container.firstChild.nextSibling);
-        } else {
-            container.appendChild(btn);
-        }
-    },
+                this._wexObserver.observe(cp, { childList: true, subtree: true });
+            });
 
-    async wexplayExpandAll() {
-        const root = this.model.root;
-        if (root && root.groups) {
-            // Quitamos el await de dentro del loop para que dispare todas las aperturas
-            // esto lo hace mucho más rápido en Odoo 18
-            const promises = root.groups
+            onWillUnmount(() => {
+                this._wexObserver?.disconnect();
+                this._wexObserver = null;
+            });
+        },
+
+        injectWexButton() {
+            const container =
+                document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
+                document.querySelector(".o_control_panel .o_cp_buttons");
+
+            if (!container || container.querySelector("[data-wex='expand']")) return;
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn btn-light ms-2 border";
+            btn.setAttribute("data-wex", "expand");
+            btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
+
+            btn.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                this.wexplayExpandAll();
+            });
+
+            // Después de "Nuevo" (si existe)
+            container.insertBefore(btn, container.firstChild?.nextSibling || null);
+        },
+
+        async wexplayExpandAll() {
+            const root = this.model?.root;
+            const groups = root?.groups || [];
+
+            const promises = groups
                 .filter(g => g.isFolded)
-                .map(group => this.model.toggleGroup(group));
-            
+                .map(g => this.model.toggleGroup(g));
+
             await Promise.all(promises);
-        }
-    }
-});
+        },
+    });
+} catch (e) {
+    console.error("WEXPLAY: patch expand button failed", e);
+}
