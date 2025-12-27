@@ -2,49 +2,58 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
-import { onMounted, onRendered } from "@odoo/owl";
+import { onRendered } from "@odoo/owl";
 
 patch(ListController.prototype, {
     setup() {
         super.setup();
+        if (this.props.resModel !== "repair.order") return;
 
-        // Solo actuar si es nuestro modelo de reparaciones
-        if (this.props.resModel !== "repair.order") {
-            return;
-        }
-
-        console.log("WEXPLAY: ListController preparado para Repair Order");
-
-        // Usamos onRendered para asegurar que si Odoo redibuja la barra, 
-        // nosotros volvemos a verificar si el botón debe estar ahí.
         onRendered(() => {
-            this.injectWexplayButton();
+            this.tryInjectButton();
         });
     },
 
-    injectWexplayButton() {
-        // Buscamos el contenedor de botones oficial de Odoo 18
-        // El selector .o_cp_buttons suele estar dentro del .o_control_panel
-        const container = document.querySelector(".o_control_panel .o_cp_buttons") || 
-                          document.querySelector(".o_list_buttons");
+    tryInjectButton() {
+        // En Odoo 18, los botones pueden estar en varios sitios dependiendo del layout
+        const selectors = [
+            ".o_control_panel_main_buttons", // Botones principales (Nuevo, etc)
+            ".o_cp_buttons",
+            ".o_list_buttons",
+            ".o_control_panel_actions"
+        ];
 
-        if (!container) return;
+        let container = null;
+        for (const selector of selectors) {
+            container = document.querySelector(selector);
+            if (container) break;
+        }
 
-        // Evitar duplicados
+        if (!container) {
+            // Si sigue siendo null, lo intentamos un poco más tarde (Odoo 18 async)
+            if (!this.retryCount) this.retryCount = 0;
+            if (this.retryCount < 10) {
+                this.retryCount++;
+                setTimeout(() => this.tryInjectButton(), 200);
+            }
+            return;
+        }
+
         if (container.querySelector(".btn_wex_expand")) return;
 
-        // Crear botón con clases nativas de Odoo 18
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "btn btn-secondary btn_wex_expand ms-2"; // ms-2 para dar margen
-        btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir Grupos';
+        btn.className = "btn btn-secondary btn_wex_expand ms-2 border";
+        btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
         
-        btn.onclick = async () => {
-            console.log("WEXPLAY: Ejecutando expansión...");
+        btn.onclick = async (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
             await this.wexplayExpandAll();
         };
 
         container.appendChild(btn);
+        this.retryCount = 0; // Reset si tuvo éxito
     },
 
     async wexplayExpandAll() {
