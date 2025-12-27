@@ -73,25 +73,33 @@ try {
         },
 
         async wexplayExpandAll() {
-            // Cada header de grupo plegado
             const headers = document.querySelectorAll(
                 "tr.o_group_has_content.o_group_header"
             );
 
+            let folded = 0;
             let expanded = 0;
 
             headers.forEach(tr => {
                 const caret = tr.querySelector(".o_group_caret");
+                if (!caret) return;
 
-                // Si el caret está apuntando a la derecha → está plegado
-                if (caret && caret.classList.contains("fa-caret-right")) {
-                    tr.click();   // MISMO click que el usuario
+                const isFolded = caret.classList.contains("fa-caret-right");
+
+                if (isFolded) {
+                    tr.click();
                     expanded++;
+                } else {
+                    tr.click();
+                    folded++;
                 }
             });
 
-            console.warn("WEXPLAY: grupos expandidos:", expanded);
+            console.warn("WEXPLAY:", { expanded, folded });
         }
+
+
+        
 
 
 
