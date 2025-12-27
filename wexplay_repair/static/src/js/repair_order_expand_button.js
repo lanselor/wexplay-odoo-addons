@@ -73,34 +73,24 @@ try {
         },
 
         async wexplayExpandAll() {
-            const root = this.model?.root;
-            const groups = root?.groups || [];
-            const folded = groups.filter(g => g.isFolded);
+            // Cada header de grupo plegado
+            const headers = document.querySelectorAll(
+                "tr.o_group_has_content.o_group_header"
+            );
 
-            console.warn("WEXPLAY: expand debug", {
-                resModel: this.props?.resModel,
-                rootType: root?.constructor?.name,
-                hasRoot: !!root,
-                hasGroups: !!root?.groups,
-                groupsLen: root?.groups?.length,
-                rootMethods: root ? Object.getOwnPropertyNames(Object.getPrototypeOf(root)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")) : [],
-                modelMethods: this.model ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.model)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")) : [],
-                controllerMethods: Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(n => n.includes("Group") || n.includes("group") || n.includes("fold") || n.includes("toggle")),
+            let expanded = 0;
+
+            headers.forEach(tr => {
+                const caret = tr.querySelector(".o_group_caret");
+
+                // Si el caret está apuntando a la derecha → está plegado
+                if (caret && caret.classList.contains("fa-caret-right")) {
+                    tr.click();   // MISMO click que el usuario
+                    expanded++;
+                }
             });
 
-
-            if (!folded.length) return;
-
-            if (typeof root?.toggleGroup === "function") {
-                await Promise.all(folded.map(g => root.toggleGroup(g)));
-                return;
-            }
-            if (typeof this.model?.toggleGroup === "function") {
-                await Promise.all(folded.map(g => this.model.toggleGroup(g)));
-                return;
-            }
-
-            console.warn("WEXPLAY: no toggleGroup found");
+            console.warn("WEXPLAY: grupos expandidos:", expanded);
         }
 
 
