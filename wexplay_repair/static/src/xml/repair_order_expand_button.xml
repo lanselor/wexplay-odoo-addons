@@ -6,19 +6,14 @@
      t-inherit-mode="extension"
      owl="1">
 
-    <!-- Inserta dentro del contenedor de botones de lista -->
     <xpath expr="//div[contains(@class,'o_list_buttons')]" position="inside">
-      <button type="button" class="btn btn-secondary me-2"
-              t-on-click="wexExpandGroups">
+      <button type="button" class="btn btn-secondary me-2" t-on-click="wexExpandGroups">
         Expandir grupos
       </button>
-
-      <button type="button" class="btn btn-secondary me-2"
-              t-on-click="wexCollapseGroups">
+      <button type="button" class="btn btn-secondary me-2" t-on-click="wexCollapseGroups">
         Colapsar grupos
       </button>
     </xpath>
 
   </t>
-
 </templates>

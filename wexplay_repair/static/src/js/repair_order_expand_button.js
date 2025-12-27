@@ -1,23 +1,17 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { ListView } from "@web/views/list/list_view";
+import { listView } from "@web/views/list/list_view";
 import { ListController } from "@web/views/list/list_controller";
-
-const MAX_GROUPS = 200;
 
 console.log("WEX: cargado repair_order_expand_button.js (registrando wex_repair_list)");
 
+const MAX_GROUPS = 200;
+
 async function toggleGroup(controller, group) {
-    // Odoo puede exponer toggleGroup en distintos sitios según versión/estado
     const root = controller.model?.root;
-    if (root?.toggleGroup) {
-        return root.toggleGroup(group);
-    }
-    if (controller.model?.toggleGroup) {
-        return controller.model.toggleGroup(group);
-    }
-    // Fallback: algunas implementaciones usan model.load/notify; aquí preferimos no romper nada
+    if (root?.toggleGroup) return root.toggleGroup(group);
+    if (controller.model?.toggleGroup) return controller.model.toggleGroup(group);
     console.warn("WEX: toggleGroup no disponible en este modelo/vista.");
 }
 
@@ -32,8 +26,7 @@ async function expandAllGroups(controller) {
     }
 
     for (const g of groups) {
-        if (!g?.isFolded) continue;
-        await toggleGroup(controller, g);
+        if (g?.isFolded) await toggleGroup(controller, g);
     }
 }
 
@@ -48,26 +41,29 @@ async function collapseAllGroups(controller) {
     }
 
     for (const g of groups) {
-        if (g?.isFolded) continue;
-        await toggleGroup(controller, g);
+        if (!g?.isFolded) await toggleGroup(controller, g);
     }
 }
 
-export class WexRepairListController extends ListController {
+class WexRepairListController extends ListController {
+    setup() {
+        super.setup(); // CRÍTICO: evita props/estado incompletos
+    }
+
     async wexExpandGroups() {
         await expandAllGroups(this);
     }
+
     async wexCollapseGroups() {
         await collapseAllGroups(this);
     }
 }
 
-export const WexRepairListView = {
-    ...ListView,
+const WexRepairListView = {
+    ...listView,
     Controller: WexRepairListController,
     buttonTemplate: "wexplay_repair.WexRepairListView.Buttons",
 };
 
-// Este string DEBE coincidir con js_class="wex_repair_list" en el <tree>
 registry.category("views").add("wex_repair_list", WexRepairListView);
 console.log("WEX: registrado view key = wex_repair_list");
