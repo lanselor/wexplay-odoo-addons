@@ -1,69 +1,38 @@
 /** @odoo-module **/
 
-import { registry } from "@web/core/registry";
-import { listView } from "@web/views/list/list_view";
+import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
-console.log("WEX: cargado repair_order_expand_button.js (registrando wex_repair_list)");
+const originalGetStatic = ListController.prototype.getStaticActionMenuItems;
 
-const MAX_GROUPS = 200;
+patch(ListController.prototype, {
+    getStaticActionMenuItems() {
+        const items = (originalGetStatic && originalGetStatic.call(this, ...arguments)) || {};
 
-async function toggleGroup(controller, group) {
-    const root = controller.model?.root;
-    if (root?.toggleGroup) return root.toggleGroup(group);
-    if (controller.model?.toggleGroup) return controller.model.toggleGroup(group);
-    console.warn("WEX: toggleGroup no disponible en este modelo/vista.");
-}
+        // Filtro por modelo
+        if (this.props?.resModel !== "repair.order") return items;
 
-async function expandAllGroups(controller) {
-    const root = controller.model?.root;
-    const groups = root?.groups || [];
-    if (!groups.length) return;
+        // Evitar duplicados
+        if (!items.wex_expand_all) {
+            items.wex_expand_all = {
+                description: "Expandir todos los grupos",
+                callback: async () => {
+                    await this.wexplayExpandAll();
+                },
+            };
+        }
 
-    if (groups.length > MAX_GROUPS) {
-        console.warn(`WEX: demasiados grupos (${groups.length}). Abortando expand.`);
-        return;
-    }
+        return items;
+    },
 
-    for (const g of groups) {
-        if (g?.isFolded) await toggleGroup(controller, g);
-    }
-}
-
-async function collapseAllGroups(controller) {
-    const root = controller.model?.root;
-    const groups = root?.groups || [];
-    if (!groups.length) return;
-
-    if (groups.length > MAX_GROUPS) {
-        console.warn(`WEX: demasiados grupos (${groups.length}). Abortando collapse.`);
-        return;
-    }
-
-    for (const g of groups) {
-        if (!g?.isFolded) await toggleGroup(controller, g);
-    }
-}
-
-class WexRepairListController extends ListController {
-    setup() {
-        super.setup(); // CRÍTICO: evita props/estado incompletos
-    }
-
-    async wexExpandGroups() {
-        await expandAllGroups(this);
-    }
-
-    async wexCollapseGroups() {
-        await collapseAllGroups(this);
-    }
-}
-
-const WexRepairListView = {
-    ...listView,
-    Controller: WexRepairListController,
-    buttonTemplate: "wexplay_repair.WexRepairListView.Buttons",
-};
-
-registry.category("views").add("wex_repair_list", WexRepairListView);
-console.log("WEX: registrado view key = wex_repair_list");
+    async wexplayExpandAll() {
+        const root = this.model?.root;
+        const groups = root?.groups || [];
+        for (const g of groups) {
+            if (g?.isFolded) {
+                if (root?.toggleGroup) await root.toggleGroup(g);
+                else if (this.model?.toggleGroup) await this.model.toggleGroup(g);
+            }
+        }
+    },
+});
