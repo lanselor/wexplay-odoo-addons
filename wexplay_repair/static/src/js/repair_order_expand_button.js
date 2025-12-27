@@ -64,6 +64,9 @@ try {
 
         _wexHasFoldedGroups() {
             const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
+
+            console.warn("Estoy llegando aquí");
+
             return Array.from(headers).some(tr => {
                 // Solo nos importan los grupos que el usuario está viendo actualmente
                 if (!this._wexIsActuallyVisible(tr)) return false;
