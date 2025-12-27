@@ -73,7 +73,7 @@
             <header>
                 <button name="action_custom_button"
                         type="object"
-                        string="Mi botón"
+                        string="Expandir SAT"
                         class="btn-primary"/>
             </header>
         </xpath>
