@@ -59,7 +59,13 @@ try {
             });
 
             // Después de "Nuevo" (si existe)
-            container.prepend(btn);
+            if (btnNuevo && btnNuevo.nextSibling) {
+                container.insertBefore(btn, btnNuevo.nextSibling);
+            } else if (btnNuevo) {
+                btnNuevo.insertAdjacentElement("afterend", btn); // alternativa aún más limpia
+            } else {
+                container.appendChild(btn);
+            }
         },
 
         async wexplayExpandAll() {
