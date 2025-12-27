@@ -4,8 +4,6 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 import { onMounted, onWillUnmount } from "@odoo/owl";
 
-console.warn("WEXPLAY: expand button baseline OK (2025-12-27)");
-
 try {
     patch(ListController.prototype, {
         setup() {
@@ -13,73 +11,63 @@ try {
             
             this._wexBtn = null;
             this._wexSelfUpdate = false;
-            // Limitar al modelo
+
             if (this.props?.resModel !== "repair.order") return;
 
             this._wexObserver = null;
             this._wexInjectScheduled = false;
 
-        onMounted(() => {
-            try { this.injectWexButton(); } catch (e) { console.error("WEXPLAY inject failed", e); }
+            onMounted(() => {
+                this.injectWexButton();
+                const cp = document.querySelector(".o_control_panel");
+                if (!cp) return;
 
-            const cp = document.querySelector(".o_control_panel");
-            if (!cp) return;
-
-            this._wexObserver = new MutationObserver(() => {
-                if (this._wexSelfUpdate) return;
-                if (this._wexInjectScheduled) return;
-                this._wexInjectScheduled = true;
-                queueMicrotask(() => {
-                    this._wexInjectScheduled = false;
-                    try { this.injectWexButton(); } catch (e) { console.error("WEXPLAY inject failed", e); }
+                this._wexObserver = new MutationObserver(() => {
+                    if (this._wexSelfUpdate || this._wexInjectScheduled) return;
+                    this._wexInjectScheduled = true;
+                    queueMicrotask(() => {
+                        this._wexInjectScheduled = false;
+                        this.injectWexButton();
+                    });
                 });
+                this._wexObserver.observe(cp, { childList: true, subtree: true });
             });
 
-            this._wexObserver.observe(cp, { childList: true, subtree: true });
-        });
-
-
-         onWillUnmount(() => {
+            onWillUnmount(() => {
                 this._wexObserver?.disconnect();
                 this._wexObserver = null;
             });
         },
 
+        // Comprobación basada en el MODELO (más fiable que el DOM)
         _wexHasFoldedGroups() {
-            const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
-            return Array.from(headers).some(tr =>
-                tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right")
-            );
+            const root = this.model?.root;
+            if (!root || !root.groups) return false;
+            // Si hay al menos un grupo plegado, devolvemos true
+            return root.groups.some(g => g.isFolded);
         },
 
         _wexUpdateButtonLabel() {
             if (!this._wexBtn) return;
 
             const hasFolded = this._wexHasFoldedGroups();
-
-            // Flag para que el observer ignore esta mutación
             this._wexSelfUpdate = true;
 
+            // Actualizamos el texto y el icono según el estado
             this._wexBtn.innerHTML = hasFolded
                 ? '<i class="fa fa-expand me-1"></i> Expandir'
                 : '<i class="fa fa-compress me-1"></i> Plegar';
 
-            // Liberar flag en el siguiente tick
             setTimeout(() => { this._wexSelfUpdate = false; }, 0);
         },
 
-
-
         injectWexButton() {
-            const container =
-                document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
-                document.querySelector(".o_control_panel .o_cp_buttons");
+            const container = document.querySelector(".o_control_panel .o_control_panel_main_buttons") ||
+                              document.querySelector(".o_control_panel .o_cp_buttons");
 
             if (!container) return;
 
-            // Si ya existe, solo referencia y sal (NO tocar innerHTML aquí)
             const existing = container.querySelector("[data-wex='expand']");
-
             if (existing) {
                 this._wexBtn = existing;
                 this._wexUpdateButtonLabel();
@@ -91,51 +79,39 @@ try {
             btn.className = "btn btn-outline-primary btn-sm ms-2 border";
             btn.setAttribute("data-wex", "expand");
 
-            btn.addEventListener("click", (ev) => {
+            btn.onclick = (ev) => {
                 ev.preventDefault();
-                this.wexplayExpandAll();
-            });
+                this.wexHandleClick();
+            };
 
             container.appendChild(btn);
             this._wexBtn = btn;
-
-            // Etiqueta inicial (la ponemos UNA vez al crear)
             this._wexUpdateButtonLabel();
         },
 
+        async wexHandleClick() {
+            const root = this.model?.root;
+            if (!root || !root.groups) return;
 
-        async wexplayExpandAll() {
-            const headers = document.querySelectorAll(
-                "tr.o_group_has_content.o_group_header"
-            );
-
-            let folded = 0;
-            let expanded = 0;
-
-            headers.forEach(tr => {
-                const caret = tr.querySelector(".o_group_caret");
-                if (!caret) return;
-
-                const isFolded = caret.classList.contains("fa-caret-right");
-
-                if (isFolded) {
-                    tr.click();
-                    expanded++;
-                } else {
-                    tr.click();
-                    folded++;
-                }
-            });
+            const hasFolded = this._wexHasFoldedGroups();
             
-            setTimeout(() => this._wexUpdateButtonLabel(), 50); 
-            console.warn("WEXPLAY:", { expanded, folded });
+            // Lógica inteligente: 
+            // Si hay alguno cerrado -> Abrimos TODOS.
+            // Si están todos abiertos -> Cerramos TODOS.
+            const groupsToProcess = root.groups.filter(g => g.isFolded === hasFolded);
+
+            for (const group of groupsToProcess) {
+                try {
+                    // Usamos el método nativo del root para evitar errores de Proxy
+                    await root.toggleGroup(group);
+                } catch (e) {
+                    console.error("WEXPLAY: Error toggling group", e);
+                }
+            }
+            
+            // Esperamos un pequeño tick para que el estado del modelo se estabilice antes de cambiar la etiqueta
+            setTimeout(() => this._wexUpdateButtonLabel(), 100);
         }
-
-
-        
-
-
-
     });
 } catch (e) {
     console.error("WEXPLAY: patch expand button failed", e);
