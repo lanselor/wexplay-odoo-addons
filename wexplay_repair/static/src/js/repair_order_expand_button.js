@@ -69,34 +69,30 @@ try {
         },
 
         async wexplayExpandAll() {
-            // En Odoo 18, el root gestiona los grupos directamente
+            // Accedemos al root que contiene los grupos
             const root = this.model?.root;
-            if (!root || !root.groups) {
-                console.warn("WEXPLAY: No hay grupos o el modelo no está agrupado.");
-                return;
-            }
-
-            // Filtramos los grupos que están cerrados
-            const groupsToExpand = root.groups.filter(g => g.isFolded);
             
-            if (groupsToExpand.length === 0) {
+            if (!root || !root.groups) {
+                console.warn("WEXPLAY: No hay grupos detectados. Asegúrate de que la vista esté agrupada.");
                 return;
             }
 
-            try {
-                // En Odoo 18, el método reside en el objeto root
-                // y se debe llamar pasando el grupo (datapoint)
-                for (const group of groupsToExpand) {
-                    if (typeof root.toggleGroup === 'function') {
+            // Filtramos solo los grupos que están cerrados (isFolded)
+            const groupsToExpand = root.groups.filter(g => g.isFolded);
+
+            for (const group of groupsToExpand) {
+                try {
+                    // En Odoo 18, el método suele estar en el root
+                    if (typeof root.toggleGroup === "function") {
                         await root.toggleGroup(group);
-                    } else {
-                        // Si por alguna razón la versión es distinta, 
-                        // el modelo suele tener el método
+                    } 
+                    // Si no está en el root, probamos en el modelo (fallback)
+                    else if (typeof this.model.toggleGroup === "function") {
                         await this.model.toggleGroup(group);
                     }
+                } catch (e) {
+                    console.error("WEXPLAY: Error al intentar expandir el grupo", group, e);
                 }
-            } catch (e) {
-                console.error("WEXPLAY: Error expandiendo grupos", e);
             }
         },
 
