@@ -127,7 +127,7 @@ try {
                 }
             });
             
-            setTimeout(() => this._wexUpdateButtonLabel(), 0);  
+            setTimeout(() => this._wexUpdateButtonLabel(), 50); 
             console.warn("WEXPLAY:", { expanded, folded });
         }
 
