@@ -49,7 +49,7 @@ try {
 
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "btn btn-light ms-2 border";
+            btn.className = "btn btn-outline-primary btn-sm ms-2 border";
             btn.setAttribute("data-wex", "expand");
             btn.innerHTML = '<i class="fa fa-expand me-1"></i> Expandir';
 
@@ -59,7 +59,7 @@ try {
             });
 
             // Después de "Nuevo" (si existe)
-            container.insertBefore(btn, container.firstChild?.nextSibling || null);
+            container.appendChild(btn);
         },
 
         async wexplayExpandAll() {
