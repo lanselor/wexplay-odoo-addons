@@ -2,16 +2,22 @@ import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
 // Guarda originales ANTES del patch
-const originalSetup = ListController.prototype.setup;
+const originalSetup = ControlPanel.prototype.setup;
 const originalGetStaticActionMenuItems = ListController.prototype.getStaticActionMenuItems;
 
+
 patch(ListController.prototype, {
-    
+
     setup() {
         originalSetup.call(this, ...arguments);
         window._wex_last_list_controller = this;
         window.wexExpandGroups = () => this.wexExpandGroups();
         window.wexCollapseGroups = () => this.wexCollapseGroups();
+        window._wex_cp = this;
+
+        // Log compacto para no inundar
+        console.log("WEX CP keys:", Object.keys(this.props || {}));
+        console.log("WEX CP props:", this.props);
     },
 
     // Handlers para los botones del Control Panel (siempre visibles)
