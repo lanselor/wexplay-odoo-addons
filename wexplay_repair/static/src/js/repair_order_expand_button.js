@@ -59,7 +59,7 @@ try {
             });
 
             // Después de "Nuevo" (si existe)
-            container.appendChild(btn);
+            container.prepend(btn);
         },
 
         async wexplayExpandAll() {
