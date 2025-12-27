@@ -56,14 +56,20 @@ try {
         },
 
         // ¿Hay al menos un grupo plegado? (caret a la derecha)
+        _wexIsVisible(el) {
+            // Visible real en pantalla (no hidden, no display:none, no fuera de layout)
+            return !!(el && el.offsetParent !== null);
+        },
+        
         _wexHasFoldedGroups() {
-
-            console.warn("llego hasta aquí");
-
             const headers = document.querySelectorAll("tr.o_group_has_content.o_group_header");
-            return Array.from(headers).some(tr =>
-                tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right")
-            );
+
+            return Array.from(headers)
+                .filter(tr => this._wexIsVisible(tr))
+                .some(tr =>
+                    tr.querySelector(".o_group_caret")?.classList.contains("fa-caret-right") ||
+                    tr.querySelector(".o_group_caret")?.classList.contains("fa-chevron-right")
+                );
         },
 
         _wexUpdateButtonLabel() {
@@ -135,8 +141,8 @@ try {
 
         async wexHandleClick() {
             // Acción global:
-            // - Si hay alguno cerrado => EXPANDIR (solo cerrados)
-            // - Si no hay cerrados => PLEGAR (solo abiertos)
+            // - Si hay alguno cerrado (VISIBLE) => EXPANDIR (solo cerrados visibles)
+            // - Si no hay cerrados visibles => PLEGAR (solo abiertos visibles)
             const isExpandingAction = this._wexHasFoldedGroups();
 
             const headers = document.querySelectorAll(
@@ -144,6 +150,9 @@ try {
             );
 
             headers.forEach((tr) => {
+                //clave: ignorar headers ocultos por filtros/estado
+                if (!this._wexIsVisible(tr)) return;
+
                 const caret = tr.querySelector(".o_group_caret");
                 if (!caret) return;
 
@@ -158,10 +167,12 @@ try {
                 }
             });
 
-            // Refrescar etiqueta tras render (doble tick, más fiable)
+            // Refrescar etiqueta tras render (doble tick)
             setTimeout(() => this._wexUpdateButtonLabel(), 0);
             setTimeout(() => this._wexUpdateButtonLabel(), 100);
         },
+
+
     });
 } catch (e) {
     console.error("WEXPLAY Error:", e);
