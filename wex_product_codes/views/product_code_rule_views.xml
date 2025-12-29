@@ -1,16 +1,16 @@
 <odoo>
-    <record id="view_wex_product_code_rule_tree" model="ir.ui.view">
-        <field name="name">wex.product.code.rule.tree</field>
+    <record id="view_wex_product_code_rule_list" model="ir.ui.view">
+        <field name="name">wex.product.code.rule.list</field>
         <field name="model">wex.product.code.rule</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="active"/>
                 <field name="categ_id"/>
                 <field name="prefix"/>
                 <field name="sequence_id"/>
                 <field name="padding"/>
                 <field name="company_id"/>
-            </tree>
+            </list>
         </field>
     </record>
     
@@ -40,6 +40,6 @@
     <record id="action_wex_product_code_rules" model="ir.actions.act_window">
         <field name="name">Product Code Rules</field>
         <field name="res_model">wex.product.code.rule</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>
