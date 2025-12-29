@@ -1,0 +1,12 @@
+<odoo>
+    <!-- Menú bajo Inventario (ajústalo si preferís otro sitio) -->
+    <menuitem id="menu_wex_root" name="Wexplay" parent="stock.menu_stock_root" sequence="90"
+              groups="wex_product_codes.group_wex_product_code_admin"/>
+    
+    <menuitem id="menu_wex_product_codes" name="Product Codes" parent="menu_wex_root" sequence="10"
+              groups="wex_product_codes.group_wex_product_code_admin"/>
+    
+    <menuitem id="menu_wex_product_code_rules" name="Rules" parent="menu_wex_product_codes"
+              action="wex_product_codes.action_wex_product_code_rules" sequence="10"
+              groups="wex_product_codes.group_wex_product_code_admin"/>
+</odoo>

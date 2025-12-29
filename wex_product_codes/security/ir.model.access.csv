@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_product_code_rule_admin,wex.product.code.rule admin,model_wex_product_code_rule,wex_product_codes.group_wex_product_code_admin,1,1,1,1
