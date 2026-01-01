@@ -52,7 +52,7 @@ class PrintCenterModal extends Component {
             const action = await this.orm.call(
                 "ir.actions.report",
                 "report_action",
-                [reportId, [productId]], // args: primer elemento es reportId, segundo es lista de IDs de producto
+                [[reportId], [productId]],
                 {
                     context: {
                         active_model: "product.template",
