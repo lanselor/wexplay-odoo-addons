@@ -1,0 +1,17 @@
+<odoo>
+    <record id="product_template_form_inherit_print_center" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.print.center</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            
+            <!-- Botón en la botonera superior -->
+            <xpath expr="//header" position="inside">
+                <button type="button"
+                        class="btn btn-secondary o_wexplay_open_print_center"
+                        string="Impresión"/>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
