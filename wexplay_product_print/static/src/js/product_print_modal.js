@@ -26,23 +26,22 @@ class PrintCenterModal extends Component {
     async printProductLabel() {
         const productId = this.props.record?.resId;
         if (!productId) {
-            this.notification.add(
-                "No se pudo determinar el producto actual.",
-                { type: "danger" }
-            );
+            this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
             return;
         }
 
         try {
-            // 1️⃣ Crear wizard product.label.layout
-            const wizardId = await this.orm.create("product.label.layout", [{
-                product_tmpl_ids: [productId],   // ✔ existe
-                print_format: "2x7",             // ✔ campo requerido
-                custom_quantity: 1,              // ✔ requerido
-                move_quantity: "custom",         // ✔ requerido (selection)
+            // 1) Crear wizard product.label.layout
+            const created = await this.orm.create("product.label.layout", [{
+                product_tmpl_ids: [[6, 0, [productId]]],   // ✅ many2many
+                print_format: "2x7xprice",                 // ✅ válido según tu selección
+                custom_quantity: 1,
+                move_quantity: "custom",
             }]);
 
-            // 2️⃣ Ejecutar process (esto genera la acción del reporte)
+            const wizardId = Array.isArray(created) ? created[0] : created;
+
+            // 2) Ejecutar process
             const action = await this.orm.call(
                 "product.label.layout",
                 "process",
@@ -56,20 +55,14 @@ class PrintCenterModal extends Component {
                 }
             );
 
-            // 3️⃣ Ejecutar la acción (PDF / descarga / preview)
+            // 3) Ejecutar acción
             if (action) {
                 await this.actionService.doAction(action);
-                this.notification.add(
-                    "Etiqueta generada correctamente.",
-                    { type: "success" }
-                );
+                this.notification.add("Etiqueta generada correctamente.", { type: "success" });
             }
         } catch (error) {
             console.error("WEXPLAY_PRINT: error impresión", error);
-            this.notification.add(
-                "Error generando la etiqueta.",
-                { type: "danger" }
-            );
+            this.notification.add("Error generando la etiqueta.", { type: "danger" });
         }
     }
 
