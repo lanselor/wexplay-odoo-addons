@@ -1,0 +1,13 @@
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="module" src="/wexplay_product_print/static/src/js/product_print_modal.js"/>
+        </xpath>
+    </template>
+    
+    <template id="assets_qweb" inherit_id="web.assets_qweb">
+        <xpath expr="." position="inside">
+            <t t-call="wexplay_product_print.PrintCenterModal"/>
+        </xpath>
+    </template>
+</odoo>
