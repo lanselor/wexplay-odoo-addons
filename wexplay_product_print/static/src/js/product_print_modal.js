@@ -20,17 +20,9 @@ class PrintCenterModal extends Component {
 }
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
-class PrintCenterClientAction extends Component {
-    setup() {
-        this.dialog = useService("dialog");
-    }
-    mounted() {
-        this.dialog.add(PrintCenterModal, {});
-    }
-}
-PrintCenterClientAction.template = "owl.Empty";
-
-// ✅ TAG EXACTO (según tu captura)
-registry.category("actions").add("wexplay_product_print.print_center", {
-    component: PrintCenterClientAction,
+// ✅ Registro como FUNCIÓN (lo que tu Odoo está esperando)
+registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
+    env.services.dialog.add(PrintCenterModal, {});
+    // devolver true evita que Odoo intente hacer algo más
+    return true;
 });
