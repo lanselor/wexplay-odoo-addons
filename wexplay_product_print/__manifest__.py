@@ -4,13 +4,12 @@
     "category": "Wexplay",
     "depends": ["web", "product"],
     "data": [
-        "views/assets.xml"
         "views/product_print_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "wexplay_product_print/static/src/js/product_print_modal.js",
-            "wexplay_product_print/static/src/xml/product_print_modal.xml", # EL XML VA AQUÍ
+            "wexplay_product_print/static/src/xml/product_print_modal.xml",
         ],
     },
     "installable": True,
