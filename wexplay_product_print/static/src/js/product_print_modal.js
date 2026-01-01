@@ -11,8 +11,8 @@ class PrintCenterModal extends Component {
         this.notification = useService("notification");
         this.dialog = useService("dialog");
     }
-    onClose() {
-        this.dialog.close();
+    close() {
+        this.props.close();
     }
     printProductLabel() {
         this.notification.add("OK: botón etiqueta (sin imprimir aún).", { type: "info" });
