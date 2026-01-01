@@ -18,11 +18,11 @@ class PrintCenterModal extends Component {
         this.notification.add("OK: botón etiqueta (sin imprimir aún).", { type: "info" });
     }
 }
-PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
-// ✅ Registro como FUNCIÓN (lo que tu Odoo está esperando)
-registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
+// CAMBIO: template nuevo
+PrintCenterModal.template = "wexplay_product_print.PrintCenterModalV2";
+
+registry.category("actions").add("wexplay_product_print.print_center", async (env) => {
     env.services.dialog.add(PrintCenterModal, {});
-    // NO devuelvas true
-    return; 
+    // no devolver nada
 });

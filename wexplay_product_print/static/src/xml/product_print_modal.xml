@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-  <t t-name="wexplay_product_print.PrintCenterModal">
+  <!-- CAMBIO: nombre nuevo -->
+  <t t-name="wexplay_product_print.PrintCenterModalV2">
     <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
 
           <div class="modal-header">
             <h5 class="modal-title">Centro de impresión</h5>
-            <button type="button" class="btn-close" aria-label="Close" t-on-click="close"/>
+            <!-- CAMBIO: onClose -->
+            <button type="button" class="btn-close" aria-label="Close" t-on-click="onClose"/>
           </div>
 
           <div class="modal-body">
@@ -21,13 +23,10 @@
                 Etiqueta SAT (más adelante)
               </button>
             </div>
-
-            <div class="text-muted" style="font-size: 12px;">
-              Nota: hoy solo dejamos el UI listo. La impresión por QZ se conecta en la siguiente etapa.
-            </div>
           </div>
 
           <div class="modal-footer">
+            <!-- CAMBIO: onClose -->
             <button type="button" class="btn btn-secondary" t-on-click="onClose">Cerrar</button>
           </div>
 
