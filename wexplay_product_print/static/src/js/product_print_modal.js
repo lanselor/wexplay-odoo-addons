@@ -24,48 +24,55 @@ class PrintCenterModal extends Component {
         this.props.close();
     }
     async printProductLabel() {
-    const productId = this.props.record?.resId;
-    if (!productId) {
-        this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
-        return;
-    }
-
-    const reportName = "product.report_producttemplatelabel2x7";
-
-    try {
-        const reports = await this.orm.searchRead(
-        "ir.actions.report",
-        [["report_name", "=", reportName]],
-        ["id"]
-        );
-
-        if (!reports.length) {
-        this.notification.add(`No se encontró el reporte: ${reportName}`, { type: "danger" });
-        return;
+        const productId = this.props.record?.resId;
+        if (!productId) {
+            this.notification.add(
+                "No se pudo determinar el producto actual.",
+                { type: "danger" }
+            );
+            return;
         }
 
-        const reportId = reports[0].id;
+        try {
+            // 1️⃣ Crear wizard product.label.layout
+            const wizardId = await this.orm.create("product.label.layout", [{
+                product_tmpl_ids: [productId],   // ✔ existe
+                print_format: "2x7",             // ✔ campo requerido
+                custom_quantity: 1,              // ✔ requerido
+                move_quantity: "custom",         // ✔ requerido (selection)
+            }]);
 
-        const action = await this.orm.call(
-        "ir.actions.report",
-        "report_action",
-        [[reportId], [productId]],
-        {
-            context: {
-            active_model: "product.template",
-            active_ids: [productId],
-            active_id: productId,
-            },
+            // 2️⃣ Ejecutar process (esto genera la acción del reporte)
+            const action = await this.orm.call(
+                "product.label.layout",
+                "process",
+                [[wizardId]],
+                {
+                    context: {
+                        active_model: "product.template",
+                        active_id: productId,
+                        active_ids: [productId],
+                    },
+                }
+            );
+
+            // 3️⃣ Ejecutar la acción (PDF / descarga / preview)
+            if (action) {
+                await this.actionService.doAction(action);
+                this.notification.add(
+                    "Etiqueta generada correctamente.",
+                    { type: "success" }
+                );
+            }
+        } catch (error) {
+            console.error("WEXPLAY_PRINT: error impresión", error);
+            this.notification.add(
+                "Error generando la etiqueta.",
+                { type: "danger" }
+            );
         }
-        );
+    }
 
-        await this.actionService.doAction(action);
-        this.notification.add("Etiqueta generada (Odoo).", { type: "success" });
-    } catch (e) {
-        console.error("WEXPLAY_PRINT: report_action error", e);
-        this.notification.add("Error en el servidor Odoo (report_action).", { type: "danger" });
-    }
-    }
 }
 
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
