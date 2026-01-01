@@ -23,6 +23,6 @@ PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 // ✅ Registro como FUNCIÓN (lo que tu Odoo está esperando)
 registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
     env.services.dialog.add(PrintCenterModal, {});
-    // devolver true evita que Odoo intente hacer algo más
-    return true;
+    // NO devuelvas true
+    return; 
 });
