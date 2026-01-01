@@ -21,6 +21,7 @@ class PrintCenterModal extends Component {
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
 registry.category("actions").add("wexplay_product_print.print_center", async (env) => {
+    console.log("WEXPLAY_PRINT: handler ejecutado");
+    env.services.notification.add("Print Center: acción ejecutada", { type: "info" });
     env.services.dialog.add(PrintCenterModal, {});
-    // No devolver nada
 });
