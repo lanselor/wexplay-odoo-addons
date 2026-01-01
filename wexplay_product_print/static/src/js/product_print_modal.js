@@ -13,11 +13,18 @@ class PrintCenterModal extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.dialog = useService("dialog");
+        
+        console.log("WEXPLAY_PRINT: setup ejecutado", {
+        orm: this.orm,
+        hasOrmCall: !!this.orm?.call,
+        });
+
     }
     close() {
-        this.props.close();
+        this.dialog.close();
     }
     async printProductLabel() {
+        console.log("WEXPLAY_PRINT: printProductLabel orm=", this.orm);
         const productId = this.props.record?.resId;
         if (!productId) {
             this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
