@@ -20,9 +20,7 @@ class PrintCenterModal extends Component {
 }
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
-// ✅ Registro como FUNCIÓN (lo que tu Odoo está esperando)
-registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
+registry.category("actions").add("wexplay_product_print.print_center", async (env) => {
     env.services.dialog.add(PrintCenterModal, {});
-    // devolver true evita que Odoo intente hacer algo más
-    return true;
+    // No devolver nada
 });

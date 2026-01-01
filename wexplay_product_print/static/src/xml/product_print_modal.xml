@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="wexplay_product_print.PrintCenterModal">
-        <div class="p-3">
-            <h5 class="mb-3">Centro de impresión</h5>
+  <t t-name="wexplay_product_print.PrintCenterModal">
+    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Centro de impresión</h5>
+            <button type="button" class="btn-close" aria-label="Close" t-on-click="onClose"/>
+          </div>
+
+          <div class="modal-body">
             <div class="mb-3">
-                <div class="fw-bold mb-2">Etiquetas (Brother QL-700)</div>
-                <button type="button" class="btn btn-primary me-2" t-on-click="printProductLabel">
-                    Etiqueta de producto
-                </button>
-                <button type="button" class="btn btn-outline-primary" disabled="1">
-                    Etiqueta SAT (más adelante)
-                </button>
+              <div class="fw-bold mb-2">Etiquetas (Brother QL-700)</div>
+              <button type="button" class="btn btn-primary me-2" t-on-click="printProductLabel">
+                Etiqueta de producto
+              </button>
+              <button type="button" class="btn btn-outline-primary" disabled="1">
+                Etiqueta SAT (más adelante)
+              </button>
             </div>
-            <div class="mt-4 text-end">
-                <button type="button" class="btn btn-secondary" t-on-click="onClose">Cerrar</button>
-            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" t-on-click="onClose">Cerrar</button>
+          </div>
+
         </div>
-    </t>
+      </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+  </t>
 </templates>
