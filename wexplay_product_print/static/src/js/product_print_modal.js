@@ -8,8 +8,10 @@ import { useService } from "@web/core/utils/hooks";
 
 class PrintCenterModal extends Component {
     setup() {
-        this.rpc = useService("rpc");
+        
         this.notification = useService("notification");
+        this.rpc = useService("orm");
+        this.actionService = useService("action");
         this.dialog = useService("dialog");
     }
     close() {
@@ -22,38 +24,25 @@ class PrintCenterModal extends Component {
             return;
         }
 
-        // Reporte técnico que encontraste
-        const reportXmlName = "product.report_producttemplatelabel2x7";
+        const reportName = "product.report_producttemplatelabel2x7";
 
-        // Pedimos a Odoo la acción del reporte (como hace el sistema)
-        const action = await this.rpc("/web/dataset/call_kw/ir.actions.report/get_action", {
-            model: "ir.actions.report",
-            method: "get_action",
-            args: [
-                [productId],          // ids
-                reportXmlName,        // report_name técnico
-            ],
-            kwargs: {
+        const action = await this.orm.call(
+            "ir.actions.report",
+            "get_action",
+            [[productId], reportName],
+            {
                 context: {
                     active_model: "product.template",
                     active_ids: [productId],
                     active_id: productId,
                 },
-            },
-        });
+            }
+        );
 
-        // action suele traer report_type, report_name y sobre todo una URL
-        const url = action?.url || action?.report_url;
-        if (!url) {
-            console.log("WEXPLAY_PRINT: acción devuelta sin url", action);
-            this.notification.add("No se pudo generar la URL del reporte.", { type: "danger" });
-            return;
-        }
+        await this.actionService.doAction(action);
 
-        console.log("WEXPLAY_PRINT: abriendo PDF", url);
-        window.open(url, "_blank");
-        this.notification.add("OK: botón etiqueta (sin imprimir aún).", { type: "info" });
-    }     
+        this.notification.add("Etiqueta generada (Odoo).", { type: "success" });
+    } 
 
 }
 
