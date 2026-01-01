@@ -4,7 +4,8 @@
     "category": "Wexplay",
     "depends": ["web", "product"],
     "data": [
-        "views/product_print_views.xml",
+    "views/assets.xml",
+    "views/product_print_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
