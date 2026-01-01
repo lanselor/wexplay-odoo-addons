@@ -21,7 +21,7 @@ class PrintCenterModal extends Component {
 
     }
     close() {
-        this.dialog.close();
+        this.props.close();
     }
     async printProductLabel() {
         const productId = this.props.record?.resId;
@@ -32,38 +32,45 @@ class PrintCenterModal extends Component {
 
         const reportName = "product.report_producttemplatelabel2x7";
 
-        // 1) Buscar el ir.actions.report por report_name
-        const reports = await this.orm.searchRead(
-            "ir.actions.report",
-            [["report_name", "=", reportName]],
-            ["id", "name", "report_name", "report_type"]
-        );
+        try {
+            // 1) Buscar el ir.actions.report por report_name
+            const reports = await this.orm.searchRead(
+                "ir.actions.report",
+                [["report_name", "=", reportName]],
+                ["id", "name", "report_name", "report_type"]
+            );
 
-        if (!reports.length) {
-            this.notification.add(`No se encontró el reporte: ${reportName}`, { type: "danger" });
-            return;
-        }
-
-        const reportId = reports[0].id;
-
-        // 2) Generar la acción de reporte vía report_action (método estándar)
-        const action = await this.orm.call(
-            "ir.actions.report",
-            "report_action",
-            [[reportId], [productId]],
-            {
-                context: {
-                    active_model: "product.template",
-                    active_ids: [productId],
-                    active_id: productId,
-                },
+            if (!reports.length) {
+                this.notification.add(`No se encontró el reporte: ${reportName}`, { type: "danger" });
+                return;
             }
-        );
 
-        // 3) Ejecutar acción (abre/descarga el PDF con el flujo estándar)
-        await this.actionService.doAction(action);
+            const reportId = reports[0].id;
 
-        this.notification.add("Etiqueta generada (Odoo).", { type: "success" });
+            // 2) Generar la acción de reporte (Sintaxis corregida para Odoo 18)
+            // report_action(ids, data=None, context=None)
+            const action = await this.orm.call(
+                "ir.actions.report",
+                "report_action",
+                [reportId, [productId]], // args: primer elemento es reportId, segundo es lista de IDs de producto
+                {
+                    context: {
+                        active_model: "product.template",
+                        active_ids: [productId],
+                        active_id: productId,
+                    },
+                }
+            );
+
+            // 3) Ejecutar acción
+            if (action) {
+                await this.actionService.doAction(action);
+                this.notification.add("Etiqueta enviada al generador.", { type: "success" });
+            }
+        } catch (error) {
+            console.error("Error en impresión:", error);
+            this.notification.add("Error al llamar al servicio de impresión.", { type: "danger" });
+        }
     }
 
 }
