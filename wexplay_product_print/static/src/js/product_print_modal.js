@@ -24,7 +24,6 @@ class PrintCenterModal extends Component {
         this.dialog.close();
     }
     async printProductLabel() {
-        console.log("WEXPLAY_PRINT: printProductLabel orm=", this.orm);
         const productId = this.props.record?.resId;
         if (!productId) {
             this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
@@ -33,10 +32,25 @@ class PrintCenterModal extends Component {
 
         const reportName = "product.report_producttemplatelabel2x7";
 
+        // 1) Buscar el ir.actions.report por report_name
+        const reports = await this.orm.searchRead(
+            "ir.actions.report",
+            [["report_name", "=", reportName]],
+            ["id", "name", "report_name", "report_type"]
+        );
+
+        if (!reports.length) {
+            this.notification.add(`No se encontró el reporte: ${reportName}`, { type: "danger" });
+            return;
+        }
+
+        const reportId = reports[0].id;
+
+        // 2) Generar la acción de reporte vía report_action (método estándar)
         const action = await this.orm.call(
             "ir.actions.report",
-            "get_action",
-            [[productId], reportName],
+            "report_action",
+            [[reportId], [productId]],
             {
                 context: {
                     active_model: "product.template",
@@ -46,10 +60,11 @@ class PrintCenterModal extends Component {
             }
         );
 
+        // 3) Ejecutar acción (abre/descarga el PDF con el flujo estándar)
         await this.actionService.doAction(action);
 
         this.notification.add("Etiqueta generada (Odoo).", { type: "success" });
-    } 
+    }
 
 }
 
