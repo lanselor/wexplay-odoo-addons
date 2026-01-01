@@ -28,7 +28,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" t-on-click="close">Cerrar</button>
+            <button type="button" class="btn btn-secondary" t-on-click="onClose">Cerrar</button>
           </div>
 
         </div>
