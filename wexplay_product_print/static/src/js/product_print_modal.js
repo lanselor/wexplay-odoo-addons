@@ -10,7 +10,7 @@ class PrintCenterModal extends Component {
     setup() {
         
         this.notification = useService("notification");
-        this.rpc = useService("orm");
+        this.orm = useService("orm");
         this.actionService = useService("action");
         this.dialog = useService("dialog");
     }
