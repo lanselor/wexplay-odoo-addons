@@ -3,13 +3,13 @@
         <field name="name">wex.product.code.rule.list</field>
         <field name="model">wex.product.code.rule</field>
         <field name="arch" type="xml">
-            <list>
-                <field name="active"/>
-                <field name="categ_id"/>
-                <field name="prefix"/>
-                <field name="sequence_id"/>
-                <field name="padding"/>
-                <field name="company_id"/>
+            <list string="Reglas de referencias">
+                <field name="active" string="Activo"/>
+                <field name="company_id" string="Empresa"/>
+                <field name="categ_id" string="Categoría de producto"/>
+                <field name="prefix" string="Prefijo"/>
+                <field name="padding" string="Relleno (nº dígitos)"/>
+                <field name="sequence_id" string="Secuencia"/>
             </list>
         </field>
     </record>
@@ -18,19 +18,25 @@
         <field name="name">wex.product.code.rule.form</field>
         <field name="model">wex.product.code.rule</field>
         <field name="arch" type="xml">
-            <form>
+            <form string="Regla de referencias">
                 <header>
-                    <button name="action_create_sequence" type="object" string="Create/Attach Sequence" class="btn-primary"/>
-                    <button name="action_generate_missing_codes" type="object" string="Generate Missing Codes" class="btn-secondary"/>
+                    <button name="action_create_sequence"
+                            type="object"
+                            string="Crear / Asociar secuencia"
+                            class="btn-primary"/>
+                    <button name="action_generate_missing_codes"
+                            type="object"
+                            string="Generar referencias pendientes"
+                            class="btn-secondary"/>
                 </header>
                 <sheet>
                     <group>
-                        <field name="active"/>
-                        <field name="company_id"/>
-                        <field name="categ_id"/>
-                        <field name="prefix"/>
-                        <field name="padding"/>
-                        <field name="sequence_id"/>
+                        <field name="active" string="Activo"/>
+                        <field name="company_id" string="Empresa"/>
+                        <field name="categ_id" string="Categoría de producto"/>
+                        <field name="prefix" string="Prefijo"/>
+                        <field name="padding" string="Relleno (nº dígitos)"/>
+                        <field name="sequence_id" string="Secuencia" readonly="1"/>
                     </group>
                 </sheet>
             </form>
@@ -38,7 +44,7 @@
     </record>
     
     <record id="action_wex_product_code_rules" model="ir.actions.act_window">
-        <field name="name">Product Code Rules</field>
+        <field name="name">Reglas de referencias</field>
         <field name="res_model">wex.product.code.rule</field>
         <field name="view_mode">list,form</field>
     </record>
