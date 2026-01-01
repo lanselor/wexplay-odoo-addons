@@ -15,17 +15,45 @@ class PrintCenterModal extends Component {
         this.props.close();
     }
     printProductLabel() {
+        const productId = this.props.record?.resId;
+
+        if (!productId) {
+            this.notification.add(
+                "No se pudo determinar el producto actual.",
+                { type: "danger" }
+            );
+            return;
+        }
+
+        const reportName = "product.report_producttemplatelabel2x7";
+        const url = `/report/pdf/${reportName}/${productId}`;
+
+        console.log("WEXPLAY_PRINT: abriendo PDF", url);
+
+        // Fase 1: abrir el PDF (validación)
+        window.open(url, "_blank");
+
         this.notification.add("OK: botón etiqueta (sin imprimir aún).", { type: "info" });
+
+
+
+
+
+        
     }
 }
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
-registry.category("actions").add("wexplay_product_print.print_center", async (env) => {
+registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
     console.log("WEXPLAY_PRINT: handler ejecutado");
+
     env.services.notification.add("Wexplay Print: acción ejecutada", { type: "info" });
 
-    const close = env.services.dialog.add(PrintCenterModal, {
-        close: null, // placeholder, lo reescribimos abajo
+    // active_id viene del botón type="action" en la vista del producto
+    const activeId = action?.context?.active_id;
+
+    env.services.dialog.add(PrintCenterModal, {
+        record: activeId ? { resId: activeId } : null,
     });
 
     // En algunas versiones add() devuelve una función close, en otras un id.
