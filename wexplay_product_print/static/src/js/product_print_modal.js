@@ -23,7 +23,7 @@ class PrintCenterModal extends Component {
     close() {
         this.props.close();
     }
-    async printProductLabel() {
+   async printProductLabel() {
         const productId = this.props.record?.resId;
         if (!productId) {
             this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
@@ -33,11 +33,11 @@ class PrintCenterModal extends Component {
         const reportName = "product.report_producttemplatelabel2x7";
 
         try {
-            // 1) Buscar el ir.actions.report por report_name
+            // 1) Buscamos el reporte
             const reports = await this.orm.searchRead(
                 "ir.actions.report",
                 [["report_name", "=", reportName]],
-                ["id", "name", "report_name", "report_type"]
+                ["id", "report_name"]
             );
 
             if (!reports.length) {
@@ -45,15 +45,17 @@ class PrintCenterModal extends Component {
                 return;
             }
 
-            const reportId = reports[0].id;
-
-            // 2) Generar la acción de reporte (Sintaxis corregida para Odoo 18)
-            // report_action(ids, data=None, context=None)
+            // 2) Llamada simplificada
+            // Pasamos productId directamente como una lista en el segundo argumento
             const action = await this.orm.call(
                 "ir.actions.report",
                 "report_action",
-                [[reportId], [productId]],
+                [[productId]], // docids debe ser el primer argumento (una lista de IDs)
                 {
+                    data: {
+                        report_name: reportName,
+                        report_type: 'qweb-pdf'
+                    },
                     context: {
                         active_model: "product.template",
                         active_ids: [productId],
@@ -65,14 +67,13 @@ class PrintCenterModal extends Component {
             // 3) Ejecutar acción
             if (action) {
                 await this.actionService.doAction(action);
-                this.notification.add("Etiqueta enviada al generador.", { type: "success" });
             }
         } catch (error) {
-            console.error("Error en impresión:", error);
-            this.notification.add("Error al llamar al servicio de impresión.", { type: "danger" });
+            // Esto imprimirá en la consola de Chrome el error real de Python
+            console.error("Detalle del error de Odoo:", error);
+            this.notification.add("Error en el servidor Odoo. Revisa el log.", { type: "danger" });
         }
     }
-
 }
 
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
