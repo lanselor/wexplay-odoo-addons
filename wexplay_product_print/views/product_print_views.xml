@@ -1,17 +1,22 @@
 <odoo>
+    <!-- 1) Client Action -->
+    <record id="action_wexplay_product_print_center" model="ir.actions.client">
+        <field name="name">Centro de impresión</field>
+        <field name="tag">wexplay_product_print.print_center</field>
+    </record>
+    
+    <!-- 2) Herencia de la vista: botón con name + type="action" -->
     <record id="product_template_form_inherit_print_center" model="ir.ui.view">
         <field name="name">product.template.form.inherit.print.center</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
-            
-            <!-- Botón en la botonera superior -->
             <xpath expr="//header" position="inside">
-                <button type="button"
-                        class="btn btn-secondary o_wexplay_open_print_center"
-                        string="Impresión"/>
+                <button name="%(action_wexplay_product_print_center)d"
+                        type="action"
+                        string="Impresión"
+                        class="btn btn-secondary"/>
             </xpath>
-            
         </field>
     </record>
 </odoo>
