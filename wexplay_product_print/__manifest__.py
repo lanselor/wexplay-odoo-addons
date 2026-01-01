@@ -9,9 +9,7 @@
     "assets": {
         "web.assets_backend": [
             "wexplay_product_print/static/src/js/product_print_modal.js",
-        ],
-        "web.assets_qweb": [
-            "wexplay_product_print/static/src/xml/product_print_modal.xml",
+            "wexplay_product_print/static/src/xml/product_print_modal.xml", # EL XML VA AQUÍ
         ],
     },
     "installable": True,
