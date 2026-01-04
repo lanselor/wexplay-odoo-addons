@@ -189,9 +189,10 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
 export async function printTestQz() {
     try {
         const printers = await qz.printers.find();
+         const printerName = printers.find(p => p.includes("QL-710"));
         console.log("PRINTERS QZ:", printers);
 
-        const printerName = printers.find(p => p.includes("QL-710"));
+       
         if (!printerName) {
             throw new Error("No se encontró impresora QL-710");
         }
