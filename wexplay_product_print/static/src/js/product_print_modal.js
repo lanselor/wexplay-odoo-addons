@@ -5,7 +5,7 @@ console.log("WEXPLAY_PRINT: JS cargado");
 import { registry } from "@web/core/registry";
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { printImageBase64 } from "./qz_print";
+import { printImageBase64, printOdooPdfUrl } from "./qz_print";
 
 class PrintCenterModal extends Component {
     setup() {
@@ -57,10 +57,28 @@ class PrintCenterModal extends Component {
             );
 
             // 3) Ejecutar acción
-            if (action) {
+        if (action) {
+            const printerName = "Brother QL-710W";
+
+            // Caso típico: process() devuelve un ir.actions.report (PDF)
+            if (action.type === "ir.actions.report" && action.report_name) {
+                const ids = action?.context?.active_ids || (action?.context?.active_id ? [action.context.active_id] : []);
+                if (!ids.length) {
+                    throw new Error("No se encontraron active_ids para imprimir el reporte.");
+                }
+
+                // URL estándar de Odoo para PDF
+                const reportUrl = `/report/pdf/${action.report_name}/${ids.join(",")}`;
+
+                await printOdooPdfUrl(reportUrl, printerName);
+                this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
+            } else {
+                // Fallback: si no es un reporte estándar, seguimos abriendo el visor
                 await this.actionService.doAction(action);
                 this.notification.add("Etiqueta generada correctamente.", { type: "success" });
             }
+        }
+
         } catch (error) {
             console.error("WEXPLAY_PRINT: error impresión", error);
             this.notification.add("Error generando la etiqueta.", { type: "danger" });

@@ -32,10 +32,7 @@ function loadScriptOnce(src) {
 
 /**
  * Configura seguridad para modo "unsigned" (sin firma).
- * Corrección: antes se devolvía "" (string vacío), que genera estados inconsistentes.
- * Ahora devolvemos null explícito (sin certificado/firmas).
- *
- * Nota: sin firma NO podrás usar "Remember this decision" en QZ Tray (eso queda para más adelante).
+ * Nota: sin firma NO podrás usar "Remember this decision" en QZ Tray (queda para más adelante).
  */
 function configureUnsignedSecurity(qz) {
     if (_securityConfigured) return;
@@ -126,17 +123,6 @@ export async function disconnectQz() {
     }
 }
 
-// --- DEBUG helper (solo para consola) ---
-if (browser.location.search.includes("debug")) {
-    window.WEXPLAY_QZ = {
-        ensureQz,
-        isQzConnected,
-        connectQz,
-        disconnectQz,
-    };
-    console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
-}
-
 /**
  * Busca una impresora por nombre exacto.
  * Nota: qz.printers.find(<nombre>) devuelve el nombre si existe; si no, lanza.
@@ -155,7 +141,6 @@ export async function getPrinter(printerName) {
 
 /**
  * Configuración estándar para etiquetas 62x29 (Brother QL-7xx).
- * Corrección: antes el comentario decía 62x29 pero se usaba 42x29.
  */
 export function buildQlLabelConfig(printer) {
     return window.qz.configs.create(printer, {
@@ -167,6 +152,19 @@ export function buildQlLabelConfig(printer) {
         density: 8,
         interpolation: "nearest",
     });
+}
+
+/**
+ * Utilidad: ArrayBuffer -> base64
+ */
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(binary);
 }
 
 /**
@@ -193,4 +191,53 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
         console.error("[QZ] Error en impresión:", error);
         throw error;
     }
+}
+
+/**
+ * NUEVO: imprime un PDF obtenido desde una URL de Odoo (con sesión) vía QZ.
+ * reportUrl debe ser una URL accesible desde el navegador (misma sesión Odoo).
+ */
+export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
+    try {
+        await connectQz();
+
+        const printer = await getPrinter(printerName);
+        const config = buildQlLabelConfig(printer);
+
+        const resp = await fetch(reportUrl, { credentials: "include", cache: "no-store" });
+        if (!resp.ok) {
+            throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${reportUrl}`);
+        }
+
+        const buffer = await resp.arrayBuffer();
+        const pdfBase64 = arrayBufferToBase64(buffer);
+
+        const data = [
+            {
+                type: "pdf",
+                format: "base64",
+                data: pdfBase64,
+            },
+        ];
+
+        await window.qz.print(config, data);
+        return true;
+    } catch (error) {
+        console.error("[QZ] Error imprimiendo PDF Odoo:", error);
+        throw error;
+    }
+}
+
+// --- DEBUG helper (solo para consola) ---
+if (browser.location.search.includes("debug")) {
+    window.WEXPLAY_QZ = {
+        ensureQz,
+        isQzConnected,
+        connectQz,
+        disconnectQz,
+        getPrinter,
+        printImageBase64,
+        printOdooPdfUrl, // <- nuevo
+    };
+    console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
 }
