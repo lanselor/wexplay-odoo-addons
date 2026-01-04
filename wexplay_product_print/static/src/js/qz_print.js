@@ -201,28 +201,39 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
  */
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
     try {
+        console.log("[QZ] PDF URL:", reportUrl);
+
         await connectQz();
+        console.log("[QZ] Connected:", await isQzConnected());
 
         const printer = await getPrinter(printerName);
+        console.log("[QZ] Printer OK:", printer);
+
         const config = buildQlLabelConfig(printer);
 
         const resp = await fetch(reportUrl, { credentials: "include", cache: "no-store" });
+        console.log("[QZ] PDF fetch status:", resp.status);
+
         if (!resp.ok) {
             throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${reportUrl}`);
         }
 
         const buffer = await resp.arrayBuffer();
+        console.log("[QZ] PDF bytes:", buffer.byteLength);
+
         const pdfBase64 = arrayBufferToBase64(buffer);
+        console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
-        const data = [
-            {
-                type: "pdf",
-                format: "base64",
-                data: pdfBase64,
-            },
-        ];
+        const data = [{
+            type: "pdf",
+            format: "base64",
+            data: pdfBase64,
+        }];
 
+        console.log("[QZ] Sending print job...");
         await window.qz.print(config, data);
+        console.log("[QZ] qz.print() enviado");
+
         return true;
     } catch (error) {
         console.error("[QZ] Error imprimiendo PDF Odoo:", error);
