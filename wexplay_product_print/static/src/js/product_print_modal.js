@@ -5,6 +5,8 @@ console.log("WEXPLAY_PRINT: JS cargado");
 import { registry } from "@web/core/registry";
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { printImageBase64 } from "./qz_print";
+
 
 class PrintCenterModal extends Component {
     setup() {
@@ -63,6 +65,23 @@ class PrintCenterModal extends Component {
         } catch (error) {
             console.error("WEXPLAY_PRINT: error impresión", error);
             this.notification.add("Error generando la etiqueta.", { type: "danger" });
+        }
+    }
+
+        async printTestQz() {
+        try {
+            // PNG 1x1 transparente (solo para comprobar canal de impresión)
+            const tinyPng =
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
+
+            await printImageBase64(tinyPng, "Brother QL-700");
+            this.notification.add("QZ: trabajo enviado a la Brother QL-700.", { type: "success" });
+        } catch (error) {
+            console.error("WEXPLAY_PRINT: error QZ test", error);
+            this.notification.add(
+                "QZ: error enviando a impresora. Revisa QZ Tray abierto y nombre de impresora.",
+                { type: "danger" }
+            );
         }
     }
 

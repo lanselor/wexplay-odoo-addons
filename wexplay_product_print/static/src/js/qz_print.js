@@ -126,3 +126,59 @@ if (browser.location.search.includes("debug")) {
     };
     console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
 }
+/**
+ * Busca una impresora por nombre exacto.
+ */
+export async function getPrinter(printerName) {
+    try {
+        const qz = await ensureQz();
+        const printer = await qz.printers.find(printerName);
+        if (!printer) {
+            throw new Error(`Impresora no encontrada: ${printerName}`);
+        }
+        return printer;
+    } catch (error) {
+        console.error("[QZ] Error buscando impresora:", error);
+        throw error;
+    }
+}
+
+/**
+ * Configuración estándar para Brother QL-700 (62x29).
+ */
+export function buildQl700Config(printer) {
+    return window.qz.configs.create(printer, {
+        units: "mm",
+        size: { width: 62, height: 29 },
+        margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        colorType: "blackwhite",
+        copies: 1,
+        density: 8,
+        interpolation: "nearest",
+    });
+}
+
+/**
+ * Imprime una imagen base64 (PNG).
+ */
+export async function printImageBase64(base64png, printerName = "Brother QL-700") {
+    try {
+        await connectQz();
+
+        const printer = await getPrinter(printerName);
+        const config = buildQl700Config(printer);
+
+        const data = [{
+            type: "image",
+            format: "png",
+            data: base64png,
+        }];
+
+        await window.qz.print(config, data);
+        return true;
+
+    } catch (error) {
+        console.error("[QZ] Error en impresión:", error);
+        throw error;
+    }
+}
