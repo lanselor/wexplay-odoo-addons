@@ -38,10 +38,9 @@ function configureUnsignedSecurity(qz) {
     if (_securityConfigured) return;
     if (!qz?.security) return;
 
-    // Desactiva firma/certificado (modo unsigned)
-    // En esta versión, pasar callbacks que devuelven null provoca "Failed to sign"
-    qz.security.setCertificatePromise(null);
-    qz.security.setSignaturePromise(null);
+    // Esta build de qz-tray.js necesita siempre Promises (no null)
+    qz.security.setCertificatePromise(() => Promise.resolve(""));
+    qz.security.setSignaturePromise(() => Promise.resolve(""));
 
     _securityConfigured = true;
 }
