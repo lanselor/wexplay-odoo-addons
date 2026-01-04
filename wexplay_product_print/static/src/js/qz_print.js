@@ -78,9 +78,10 @@ export async function connectQz() {
     try {
         const qz = await ensureQz();
 
-        qz.websocket.setConnectionConfig({
+        // Forzar conexión sin TLS (ws) para evitar problemas de certificado
+        qz.websocket.setConnectionOptions({
             host: "localhost",
-            usingSecure: false,
+            usingSecure: false,  // ws://
             port: 8182,
         });
 
