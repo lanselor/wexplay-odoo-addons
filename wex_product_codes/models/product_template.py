@@ -2,10 +2,10 @@ from odoo import api, fields, models
 
 
 class ProductTemplate(models.Model):
-    _inherit = "product.template"
-
+    _inherit = "product.template"  # Hereda del modelo product.template
     def _wex_assign_default_code_if_needed(self):
         """Assign default_code if empty and category has a rule."""
+        # Asigna default_code si está vacío y la categoría tiene una regla
         for rec in self:
             if rec.default_code:
                 continue
@@ -22,12 +22,14 @@ class ProductTemplate(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        # Sobreescribe el método create para asignar el código después de crear el producto
         records = super().create(vals_list)
         # Asignar tras crear: ya existe ID, no interfiere con el create original
         records._wex_assign_default_code_if_needed()
         return records
 
     def write(self, vals):
+        # Sobreescribe el método write para reasignar el código si se cambia la categoría o si el código está vacío
         res = super().write(vals)
         # Solo intentamos asignar si sigue vacío (inmutable si ya lo tenía)
         # y si se ha tocado categ_id o si default_code sigue vacío
@@ -42,6 +44,8 @@ class ProductTemplate(models.Model):
 
     def copy(self, default=None):
         """When duplicating, force a new code by clearing default_code."""
+        # Al duplicar, fuerza un nuevo código borrando el default_code
         default = dict(default or {})
         default.setdefault("default_code", False)
         return super().copy(default=default)
+

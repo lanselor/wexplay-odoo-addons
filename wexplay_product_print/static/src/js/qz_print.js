@@ -79,11 +79,15 @@ export async function connectQz() {
         const qz = await ensureQz();
 
         // Forzar conexión sin TLS (ws) para evitar problemas de certificado
-        qz.websocket.setConnectionOptions({
-            host: "localhost",
-            usingSecure: false,  // ws://
-            port: 8182,
-        });
+        if (qz.websocket && typeof qz.websocket.setConnectionOptions === "function") {
+            qz.websocket.setConnectionOptions({
+                host: "127.0.0.1",
+                usingSecure: false,  // ws://
+                port: 8182,
+            });
+        } else {
+            console.warn("[QZ] setConnectionOptions no disponible; usando configuración por defecto.");
+        }
 
         if (qz.websocket.isActive()) {
             return true;
@@ -97,6 +101,7 @@ export async function connectQz() {
         throw error;
     }
 }
+
 
 
 /**

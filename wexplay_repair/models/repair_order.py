@@ -3,8 +3,7 @@ from .device_constants import DEVICE_TYPE_SELECTION
 
 
 class RepairOrder(models.Model):
-    _inherit = "repair.order"
-
+    _inherit = "repair.order"  # Hereda del modelo repair.order estándar de Odoo
     x_device_type = fields.Selection(
         DEVICE_TYPE_SELECTION,
         string="Tipo de dispositivo",
@@ -13,15 +12,15 @@ class RepairOrder(models.Model):
     # Datos del cliente (related)
     x_partner_mobile = fields.Char(
         string="Móvil",
-        related="partner_id.mobile",
+        related="partner_id.mobile",  # Relacionado con el campo mobile del partner
         readonly=True,
-        store=False,
+        store=False,  # No se almacena en la base de datos, se calcula on-the-fly
     )
     x_partner_phone = fields.Char(
         string="Teléfono",
-        related="partner_id.phone",
+        related="partner_id.phone",  # Relacionado con el campo phone del partner
         readonly=True,
-        store=False,
+        store=False,  # No se almacena en la base de datos, se calcula on-the-fly
     )
 
     class RepairOrder(models.Model):
@@ -33,18 +32,18 @@ class RepairOrder(models.Model):
 
     # ✅ NUEVO: Marca/Modelo normalizados (catálogo)
     x_brand_id = fields.Many2one(
-        "wex.repair.brand",
+        "wex.repair.brand",  # Relación con el modelo wex.repair.brand
         string="Marca",
-        related="x_model_id.brand_id",
-        store=True,
+        related="x_model_id.brand_id",  # La marca se obtiene del modelo seleccionado
+        store=True,  # Se almacena para permitir búsquedas y agrupaciones eficientes
         readonly=True,
     )
 
     x_model_id = fields.Many2one(
-        "wex.repair.device_model",
+        "wex.repair.device_model",  # Relación con el modelo wex.repair.device_model
         string="Modelo",
-        ondelete="restrict",
-        domain="[('device_type', '=', x_device_type)]",
+        ondelete="restrict",  # No permite borrar el modelo si está en uso en una reparación
+        domain="[('device_type', '=', x_device_type)]",  # Filtra los modelos por el tipo de dispositivo
     )
 
     # Desbloqueo
@@ -79,6 +78,7 @@ class RepairOrder(models.Model):
     @api.onchange("x_device_type")
     def _onchange_x_device_type_reset_model_brand(self):
         """Si cambia el tipo, limpiamos modelo/marca para evitar inconsistencias."""
+        # Al cambiar el tipo de dispositivo, resetea los campos de modelo y marca
         for rec in self:
             rec.x_model_id = False
 #            rec.x_brand_id = False
@@ -94,19 +94,4 @@ class RepairOrder(models.Model):
 #    def _compute_brand_from_model(self):
 #        for record in self:
 #            record.x_brand_id = record.x_model_id.brand_id if record.x_model_id else False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
