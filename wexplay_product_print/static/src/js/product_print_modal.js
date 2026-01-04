@@ -61,20 +61,20 @@ class PrintCenterModal extends Component {
             const printerName = "Brother QL-710W";
 
             // Caso típico: process() devuelve un ir.actions.report (PDF)
-            if (action.type === "ir.actions.report" && action.report_name) {
-                const ids = action?.context?.active_ids || (action?.context?.active_id ? [action.context.active_id] : []);
+            if (action.type === "ir.actions.report") {
+                const ids = action?.context?.active_ids || (productId ? [productId] : []);
                 if (!ids.length) {
-                    throw new Error("No se encontraron active_ids para imprimir el reporte.");
+                    throw new Error("No se encontraron IDs para imprimir el reporte.");
                 }
 
-                // URL estándar de Odoo para PDF
-                const reportUrl = `/report/pdf/${action.report_name}/${ids.join(",")}`;
+                const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
+                const reportUrl = `/report/pdf/${reportName}/${ids.join(",")}`;
+
                 console.log("WEXPLAY_PRINT reportUrl:", reportUrl);
                 console.log("WEXPLAY_PRINT: llamando printOdooPdfUrl", { reportUrl, printerName });
                 await printOdooPdfUrl(reportUrl, printerName);
                 this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
             } else {
-                // Fallback: si no es un reporte estándar, seguimos abriendo el visor
                 await this.actionService.doAction(action);
                 this.notification.add("Etiqueta generada correctamente.", { type: "success" });
             }
