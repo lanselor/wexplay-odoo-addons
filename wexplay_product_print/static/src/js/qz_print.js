@@ -4,6 +4,8 @@ import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
 
+// Evita reconfigurar security en cada llamada
+let _securityConfigured = false;
 
 /**
  * Carga un script externo UNA sola vez.
@@ -11,20 +13,15 @@ const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
 function loadScriptOnce(src) {
     return new Promise((resolve, reject) => {
         try {
-            const existing = [...document.getElementsByTagName("script")]
-                .find(s => s.src === src);
-
-            if (existing) {
-                return resolve();
-            }
+            const existing = [...document.getElementsByTagName("script")].find((s) => s.src === src);
+            if (existing) return resolve();
 
             const s = document.createElement("script");
             s.src = src;
             s.async = true;
 
             s.onload = () => resolve();
-            s.onerror = () =>
-                reject(new Error(`No se pudo cargar el script externo: ${src}`));
+            s.onerror = () => reject(new Error(`No se pudo cargar el script externo: ${src}`));
 
             document.head.appendChild(s);
         } catch (err) {
@@ -34,24 +31,40 @@ function loadScriptOnce(src) {
 }
 
 /**
+ * Configura seguridad para modo "unsigned" (sin firma).
+ * Corrección: antes se devolvía "" (string vacío), que genera estados inconsistentes.
+ * Ahora devolvemos null explícito (sin certificado/firmas).
+ *
+ * Nota: sin firma NO podrás usar "Remember this decision" en QZ Tray (eso queda para más adelante).
+ */
+function configureUnsignedSecurity(qz) {
+    if (_securityConfigured) return;
+    if (!qz?.security) return;
+
+    qz.security.setCertificatePromise(() => Promise.resolve(null));
+    qz.security.setSignaturePromise(() => Promise.resolve(null));
+
+    _securityConfigured = true;
+}
+
+/**
  * Asegura que QZ está disponible.
  */
 export async function ensureQz() {
     try {
         if (window.qz) {
+            configureUnsignedSecurity(window.qz);
             return window.qz;
         }
 
         await loadScriptOnce(QZ_JS_URL);
 
         if (!window.qz) {
-            throw new Error(
-                "QZ Tray no está disponible tras cargar qz-tray.js"
-            );
+            throw new Error("QZ Tray no está disponible tras cargar qz-tray.js");
         }
 
+        configureUnsignedSecurity(window.qz);
         return window.qz;
-
     } catch (error) {
         console.error("[QZ] Error asegurando QZ:", error);
         throw error;
@@ -78,31 +91,26 @@ export async function connectQz() {
     try {
         const qz = await ensureQz();
 
-        // Forzar conexión sin TLS (ws) para evitar problemas de certificado
+        // Intento de forzar WS (puede no existir en algunas builds); si no, usa default.
         if (qz.websocket && typeof qz.websocket.setConnectionOptions === "function") {
             qz.websocket.setConnectionOptions({
                 host: "127.0.0.1",
-                usingSecure: false,  // ws://
+                usingSecure: false, // ws:// (si QZ/entorno lo permite)
                 port: 8182,
             });
         } else {
             console.warn("[QZ] setConnectionOptions no disponible; usando configuración por defecto.");
         }
 
-        if (qz.websocket.isActive()) {
-            return true;
-        }
+        if (qz.websocket.isActive()) return true;
 
         await qz.websocket.connect();
         return true;
-
     } catch (error) {
         console.error("[QZ] Error conectando con QZ Tray:", error);
         throw error;
     }
 }
-
-
 
 /**
  * Desconecta de QZ Tray (opcional).
@@ -110,7 +118,6 @@ export async function connectQz() {
 export async function disconnectQz() {
     try {
         const qz = await ensureQz();
-
         if (qz.websocket.isActive()) {
             await qz.websocket.disconnect();
         }
@@ -129,16 +136,16 @@ if (browser.location.search.includes("debug")) {
     };
     console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
 }
+
 /**
  * Busca una impresora por nombre exacto.
+ * Nota: qz.printers.find(<nombre>) devuelve el nombre si existe; si no, lanza.
  */
 export async function getPrinter(printerName) {
     try {
         const qz = await ensureQz();
         const printer = await qz.printers.find(printerName);
-        if (!printer) {
-            throw new Error(`Impresora no encontrada: ${printerName}`);
-        }
+        if (!printer) throw new Error(`Impresora no encontrada: ${printerName}`);
         return printer;
     } catch (error) {
         console.error("[QZ] Error buscando impresora:", error);
@@ -147,12 +154,13 @@ export async function getPrinter(printerName) {
 }
 
 /**
- * Configuración estándar para Brother QL-710W (62x29).
+ * Configuración estándar para etiquetas 62x29 (Brother QL-7xx).
+ * Corrección: antes el comentario decía 62x29 pero se usaba 42x29.
  */
-export function buildQl700Config(printer) {
+export function buildQlLabelConfig(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
-        size: { width: 42, height: 29 },
+        size: { width: 62, height: 29 },
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
         colorType: "blackwhite",
         copies: 1,
@@ -169,41 +177,20 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
         await connectQz();
 
         const printer = await getPrinter(printerName);
-        const config = buildQl700Config(printer);
+        const config = buildQlLabelConfig(printer);
 
-        const data = [{
-            type: "image",
-            format: "png",
-            data: base64png,
-        }];
+        const data = [
+            {
+                type: "image",
+                format: "png",
+                data: `data:image/png;base64,${base64png}`,
+            },
+        ];
 
         await window.qz.print(config, data);
         return true;
-
     } catch (error) {
         console.error("[QZ] Error en impresión:", error);
         throw error;
-    }
-}
-
-export async function printTestQz() {
-    try {
-        const printers = await qz.printers.find();
-         const printerName = printers.find(p => p.includes("QL-710"));
-        console.log("PRINTERS QZ:", printers);
-
-       
-        if (!printerName) {
-            throw new Error("No se encontró impresora QL-710");
-        }
-
-        const tinyPng =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
-
-        await printImageBase64(tinyPng, printerName);
-        this.notification.add(`QZ: trabajo enviado a ${printerName}`, { type: "success" });
-    } catch (error) {
-        console.error("WEXPLAY_PRINT: error QZ test", error);
-        this.notification.add(error.message || "Error QZ", { type: "danger" });
     }
 }
