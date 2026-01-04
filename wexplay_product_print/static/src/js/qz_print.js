@@ -1,5 +1,5 @@
 /** @odoo-module **/
-
+console.log("🔥🔥🔥 QZ_PRINT VERSION 2026-01-04 🔥🔥🔥");
 import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
