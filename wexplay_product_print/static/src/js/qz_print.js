@@ -164,7 +164,7 @@ export function buildQl700Config(printer) {
 /**
  * Imprime una imagen base64 (PNG).
  */
-export async function printImageBase64(base64png, printerName = "Brother QL-700") {
+export async function printImageBase64(base64png, printerName = "Brother QL-710W") {
     try {
         await connectQz();
 
