@@ -4,6 +4,7 @@ import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
 
+
 /**
  * Carga un script externo UNA sola vez.
  */
@@ -77,22 +78,17 @@ export async function connectQz() {
     try {
         const qz = await ensureQz();
 
+        qz.websocket.setConnectionConfig({
+            host: "localhost",
+            usingSecure: false,
+            port: 8182,
+        });
+
         if (qz.websocket.isActive()) {
             return true;
         }
 
-        const timeoutMs = 4000;
-
-        const connectPromise = qz.websocket.connect();
-
-        const timeoutPromise = new Promise((_, reject) =>
-            browser.setTimeout(
-                () => reject(new Error("Timeout conectando con QZ Tray")),
-                timeoutMs
-            )
-        );
-
-        await Promise.race([connectPromise, timeoutPromise]);
+        await qz.websocket.connect();
         return true;
 
     } catch (error) {
@@ -100,6 +96,7 @@ export async function connectQz() {
         throw error;
     }
 }
+
 
 /**
  * Desconecta de QZ Tray (opcional).
