@@ -74,7 +74,7 @@ class PrintCenterModal extends Component {
             const tinyPng =
                 "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
 
-            await printImageBase64(tinyPng, "Brother QL-700");
+            await printImageBase64(tinyPng, "Brother QL-710W");
             this.notification.add("QZ: trabajo enviado a la Brother QL-700.", { type: "success" });
         } catch (error) {
             console.error("WEXPLAY_PRINT: error QZ test", error);
@@ -82,8 +82,8 @@ class PrintCenterModal extends Component {
                 "QZ: error enviando a impresora. Revisa QZ Tray abierto y nombre de impresora.",
                 { type: "danger" }
             );
+            }
         }
-    }
 
 }
 
