@@ -115,3 +115,14 @@ export async function disconnectQz() {
         console.warn("[QZ] Error al desconectar:", error);
     }
 }
+
+// --- DEBUG helper (solo para consola) ---
+if (browser.location.search.includes("debug")) {
+    window.WEXPLAY_QZ = {
+        ensureQz,
+        isQzConnected,
+        connectQz,
+        disconnectQz,
+    };
+    console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
+}
