@@ -199,6 +199,8 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
  * reportUrl debe ser una URL accesible desde el navegador (misma sesión Odoo).
  */
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
+    
+    console.log("[QZ] ENTER printOdooPdfUrl()", { reportUrl, printerName });
     try {
         console.log("[QZ] PDF URL:", reportUrl);
 
@@ -230,6 +232,7 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         }];
 
         console.log("[QZ] Sending print job...");
+        console.log("[QZ] calling qz.print...");
         await window.qz.print(config, data);
         console.log("[QZ] qz.print() enviado");
 

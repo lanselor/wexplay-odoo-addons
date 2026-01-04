@@ -70,6 +70,7 @@ class PrintCenterModal extends Component {
                 // URL estándar de Odoo para PDF
                 const reportUrl = `/report/pdf/${action.report_name}/${ids.join(",")}`;
                 console.log("WEXPLAY_PRINT reportUrl:", reportUrl);
+                console.log("WEXPLAY_PRINT: llamando printOdooPdfUrl", { reportUrl, printerName });
                 await printOdooPdfUrl(reportUrl, printerName);
                 this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
             } else {
