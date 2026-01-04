@@ -147,12 +147,12 @@ export async function getPrinter(printerName) {
 }
 
 /**
- * Configuración estándar para Brother QL-700 (62x29).
+ * Configuración estándar para Brother QL-710W (62x29).
  */
 export function buildQl700Config(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
-        size: { width: 62, height: 29 },
+        size: { width: 42, height: 29 },
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
         colorType: "blackwhite",
         copies: 1,
@@ -183,5 +183,26 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
     } catch (error) {
         console.error("[QZ] Error en impresión:", error);
         throw error;
+    }
+}
+
+export async function printTestQz() {
+    try {
+        const printers = await qz.printers.find();
+        console.log("PRINTERS QZ:", printers);
+
+        const printerName = printers.find(p => p.includes("QL-710"));
+        if (!printerName) {
+            throw new Error("No se encontró impresora QL-710");
+        }
+
+        const tinyPng =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
+
+        await printImageBase64(tinyPng, printerName);
+        this.notification.add(`QZ: trabajo enviado a ${printerName}`, { type: "success" });
+    } catch (error) {
+        console.error("WEXPLAY_PRINT: error QZ test", error);
+        this.notification.add(error.message || "Error QZ", { type: "danger" });
     }
 }
