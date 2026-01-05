@@ -38,10 +38,12 @@ function configureUnsignedSecurity(qz) {
     if (_securityConfigured) return;
     if (!qz?.security) return;
 
-    // Esta build de qz-tray.js necesita siempre Promises (no null)
-    qz.security.setCertificatePromise(() => Promise.resolve("UNSIGNED"));
-    qz.security.setSignaturePromise(() => Promise.resolve("UNSIGNED"));
-    console.log("[QZ] Unsigned security configured (PROMISE_EMPTY_STRING)");
+    // Certificado vacío (permitido)
+    qz.security.setCertificatePromise(() => Promise.resolve(""));
+
+    // NO definir firma → QZ entra en modo unsigned real
+    // qz.security.setSignaturePromise(...)  ← ELIMINADO
+
     _securityConfigured = true;
 }
 
