@@ -6,7 +6,7 @@
     "data": [
         "views/product_print_views.xml",
         "reports/report_product_label_ql700.xml",
-        "reports/report_actions.xml",    
+        #"reports/report_actions.xml",    
 
     ],
     "assets": {
