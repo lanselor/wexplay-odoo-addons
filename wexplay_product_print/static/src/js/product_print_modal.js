@@ -57,27 +57,34 @@ class PrintCenterModal extends Component {
             );
 
             // 3) Ejecutar acción
-        if (action) {
+        if (action.type === "ir.actions.report") {
             const printerName = "Brother QL-710W";
 
-            // Caso típico: process() devuelve un ir.actions.report (PDF)
-            if (action.type === "ir.actions.report") {
-                const ids = action?.context?.active_ids || (productId ? [productId] : []);
-                if (!ids.length) {
-                    throw new Error("No se encontraron IDs para imprimir el reporte.");
-                }
-
-                const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
-                const reportUrl = `/report/pdf/${reportName}/${ids.join(",")}`;
-
-                console.log("WEXPLAY_PRINT reportUrl:", reportUrl);
-                console.log("WEXPLAY_PRINT: llamando printOdooPdfUrl", { reportUrl, printerName });
-                await printOdooPdfUrl(reportUrl, printerName);
-                this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
-            } else {
-                await this.actionService.doAction(action);
-                this.notification.add("Etiqueta generada correctamente.", { type: "success" });
+            // report_name suele venir en action.report_name
+            const reportName = action.report_name || action.reportName;
+            if (!reportName) {
+                throw new Error("El action del wizard no trae report_name.");
             }
+
+            // IDs a imprimir
+            const ids =
+                action.context?.active_ids ||
+                action.context?.active_id && [action.context.active_id] ||
+                (productId ? [productId] : []);
+
+            if (!ids.length) {
+                throw new Error("No se encontraron IDs para imprimir el reporte.");
+            }
+
+            const reportUrl = `/report/pdf/${reportName}/${ids.join(",")}`;
+
+            console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, ids });
+            await printOdooPdfUrl(reportUrl, printerName);
+
+            this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
+        } else {
+            await this.actionService.doAction(action);
+            this.notification.add("Etiqueta generada correctamente.", { type: "success" });
         }
 
         } catch (error) {
