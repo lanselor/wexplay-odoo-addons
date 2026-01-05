@@ -202,49 +202,99 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
     }
 }
 
+
+
+export async function fetchPdfAsBase64(url) {
+  const res = await fetch(url, {
+    credentials: "include", // usa la sesión Odoo del navegador
+  });
+  if (!res.ok) {
+    throw new Error(`No se pudo descargar el PDF (${res.status})`);
+  }
+
+  const blob = await res.blob();
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+
+
+
+
 /**
  * Imprime un PDF obtenido desde una URL de Odoo (con sesión) vía QZ.
  * reportUrl debe ser una URL accesible desde el navegador (misma sesión Odoo).
  */
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
     console.log("[QZ] ENTER printOdooPdfUrl()", { reportUrl, printerName });
-    try {
-        console.log("[QZ] PDF URL:", reportUrl);
 
+    try {
+        // 1) Asegurar conexión QZ
         await connectQz();
         console.log("[QZ] Connected:", await isQzConnected());
 
-        const qz = await ensureQz(); // ✅ usar instancia consistente (evitar window.qz.print)
+        // 2) Instancia consistente de QZ (evita mezclar window.qz y otras refs)
+        const qz = await ensureQz();
 
-        const printer = await getPrinter(printerName);
+        // 3) Resolver impresora (exact match o fallback)
+        let printer;
+        try {
+            printer = await getPrinter(printerName);
+        } catch (e) {
+            console.warn("[QZ] getPrinter() no encontró impresora:", printerName, e);
+            // fallback seguro si tu getPrinter no lo hace internamente
+            printer = await qz.printers.getDefault();
+            console.warn("[QZ] Usando impresora por defecto:", printer);
+        }
         console.log("[QZ] Printer OK:", printer);
 
+        // 4) Config de etiqueta (tu builder)
         const config = buildQlLabelConfig(printer);
 
-        const absUrl = new URL(reportUrl, browser.location.origin).toString(); // ✅ coherencia Odoo
+        // 5) URL absoluta coherente con Odoo (importantísimo para fetch con sesión)
+        const absUrl = new URL(reportUrl, browser.location.origin).toString();
+        console.log("[QZ] PDF URL (abs):", absUrl);
+
+        // 6) Descargar PDF con la sesión del navegador (credenciales incluidas)
         const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
-        console.log("[QZ] PDF fetch status:", resp.status, absUrl); // ✅ sin duplicado
+        console.log("[QZ] PDF fetch status:", resp.status);
+
+        // Odoo a veces devuelve HTML (login) con 200; validamos content-type
+        const contentType = (resp.headers.get("content-type") || "").toLowerCase();
+        console.log("[QZ] PDF content-type:", contentType);
 
         if (!resp.ok) {
-            throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${reportUrl}`);
+            throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${absUrl}`);
         }
 
+        // Si no es PDF, casi seguro es página de login o error HTML
+        if (!contentType.includes("application/pdf")) {
+            const textPreview = await resp.text();
+            console.error("[QZ] Respuesta no es PDF. Primeros 200 chars:", textPreview.slice(0, 200));
+            throw new Error("La respuesta del servidor no es un PDF. Posible sesión/cookie inválida o redirección a login.");
+        }
+
+        // 7) Convertir a base64
         const buffer = await resp.arrayBuffer();
         console.log("[QZ] PDF bytes:", buffer.byteLength);
 
         const pdfBase64 = arrayBufferToBase64(buffer);
         console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
-        const data = [
-            {
-                type: "pdf",
-                format: "base64",
-                data: pdfBase64,
-            },
-        ];
+        // 8) Enviar job a QZ
+        const data = [{
+            type: "pdf",
+            format: "base64",
+            data: pdfBase64,
+        }];
 
         console.log("[QZ] Sending print job...");
-        console.log("[QZ] calling qz.print...");
         await qz.print(config, data);
         console.log("[QZ] qz.print() enviado");
 
