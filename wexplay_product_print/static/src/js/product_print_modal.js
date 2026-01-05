@@ -25,62 +25,60 @@ class PrintCenterModal extends Component {
     }
 
     async printProductLabel() {
-        const productId = this.props.record?.resId;
-        if (!productId) {
-            this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
-            return;
-        }
+    const productId = this.props.record?.resId;
+    if (!productId) {
+        this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
+        return;
+    }
 
-        try {
-            // 1) Crear wizard product.label.layout
-            const created = await this.orm.create("product.label.layout", [{
-                product_tmpl_ids: [[6, 0, [productId]]], // many2many
-                print_format: "2x7xprice",
-                custom_quantity: 1,
-                move_quantity: "custom",
-            }]);
+    try {
+        // 1) Crear wizard product.label.layout
+        const created = await this.orm.create("product.label.layout", [{
+            product_tmpl_ids: [[6, 0, [productId]]], // many2many
+            print_format: "2x7xprice",
+            custom_quantity: 1,
+            move_quantity: "custom",
+        }]);
 
-            const wizardId = Array.isArray(created) ? created[0] : created;
+        const wizardId = Array.isArray(created) ? created[0] : created;
 
-            // 2) Ejecutar process
-            const action = await this.orm.call(
-                "product.label.layout",
-                "process",
-                [[wizardId]],
-                {
-                    context: {
-                        active_model: "product.template",
-                        active_id: productId,
-                        active_ids: [productId],
-                    },
-                }
-            );
+        // 2) Ejecutar process
+        const action = await this.orm.call(
+            "product.label.layout",
+            "process",
+            [[wizardId]],
+            {
+                context: {
+                    active_model: "product.template",
+                    active_id: productId,
+                    active_ids: [productId],
+                },
+            }
+        );
 
-            // 3) Ejecutar acción
-        if (action.type === "ir.actions.report") {
+        // 3) Ejecutar acción
+        if (action?.type === "ir.actions.report") {
             const printerName = "Brother QL-710W";
 
-            // report_name suele venir en action.report_name
+            // Tu reporte custom (NO dependemos del report_name del wizard)
             const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
-            
-            await printOdooPdfUrl(reportUrl, printerName);
-            if (!reportName) {
-                throw new Error("El action del wizard no trae report_name.");
-            }
 
-            // IDs a imprimir
+            // IDs a imprimir (usa los del context si vienen; fallback a productId)
             const ids =
                 action.context?.active_ids ||
-                action.context?.active_id && [action.context.active_id] ||
+                (action.context?.active_id ? [action.context.active_id] : []) ||
                 (productId ? [productId] : []);
 
             if (!ids.length) {
                 throw new Error("No se encontraron IDs para imprimir el reporte.");
             }
 
-            const reportUrl = `/report/pdf/${reportName}/${productId}`;
+            // URL del PDF (puedes usar ids[0] o productId; aquí uso ids[0])
+            const reportUrl = `/report/pdf/${reportName}/${ids[0]}`;
 
-            console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, ids });
+            console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, ids, printerName });
+
+            // Enviar a QZ
             await printOdooPdfUrl(reportUrl, printerName);
 
             this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
@@ -88,12 +86,12 @@ class PrintCenterModal extends Component {
             await this.actionService.doAction(action);
             this.notification.add("Etiqueta generada correctamente.", { type: "success" });
         }
-
-        } catch (error) {
-            console.error("WEXPLAY_PRINT: error impresión", error);
-            this.notification.add("Error generando la etiqueta.", { type: "danger" });
-        }
+    } catch (error) {
+        console.error("WEXPLAY_PRINT: error impresión", error);
+        this.notification.add(`Error generando la etiqueta: ${error?.message || error}`, { type: "danger" });
     }
+}
+
 
     async printTestQz() {
         try {
