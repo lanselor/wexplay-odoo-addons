@@ -20,6 +20,7 @@ consolas y otros dispositivos electrónicos).
         "mail",
     ],
     "data": [
+        'security/ir.model.access.csv',
         "views/repair_order_views.xml",
         "reports/reports.xml",
         "reports/repair_receipt.xml",

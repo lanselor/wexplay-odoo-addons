@@ -61,7 +61,9 @@ class PrintCenterModal extends Component {
             const printerName = "Brother QL-710W";
 
             // report_name suele venir en action.report_name
-            const reportName = action.report_name || action.reportName;
+            const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
+            const qlReportUrl = `/report/pdf/${reportName}/${productId}`;
+            await printOdooPdfUrl(reportUrl, printerName);
             if (!reportName) {
                 throw new Error("El action del wizard no trae report_name.");
             }
@@ -76,7 +78,7 @@ class PrintCenterModal extends Component {
                 throw new Error("No se encontraron IDs para imprimir el reporte.");
             }
 
-            const reportUrl = `/report/pdf/${reportName}/${ids.join(",")}`;
+            const reportUrl = `/report/pdf/${reportName}/${productId}`;
 
             console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, ids });
             await printOdooPdfUrl(reportUrl, printerName);
