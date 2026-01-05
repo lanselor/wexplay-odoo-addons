@@ -47,6 +47,7 @@ function configureUnsignedSecurity(qz) {
     _securityConfigured = true;
 }
 
+
 /**
  * Asegura que QZ está disponible.
  */
@@ -214,7 +215,9 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
 
         const config = buildQlLabelConfig(printer);
 
-        const resp = await fetch(reportUrl, { credentials: "include", cache: "no-store" });
+        const absUrl = new URL(reportUrl, window.location.origin).toString();
+        const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
+        console.log("[QZ] PDF fetch status:", resp.status, absUrl);
         console.log("[QZ] PDF fetch status:", resp.status);
 
         if (!resp.ok) {

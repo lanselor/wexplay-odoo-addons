@@ -62,7 +62,7 @@ class PrintCenterModal extends Component {
 
             // report_name suele venir en action.report_name
             const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
-            const qlReportUrl = `/report/pdf/${reportName}/${productId}`;
+            
             await printOdooPdfUrl(reportUrl, printerName);
             if (!reportName) {
                 throw new Error("El action del wizard no trae report_name.");
