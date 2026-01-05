@@ -87,23 +87,24 @@
                 </div>
 
                 <div class="product-price">
-                  <!-- Base de precio (en product.template suele ser lst_price; en algunos contextos puede venir list_price) -->
-                  <t t-set="base_price" t-value="(o.lst_price or o.list_price or 0.0)"/>
+                  <!-- Precio base seguro en product.template -->
+                  <t t-set="base_price" t-value="o.list_price or 0.0"/>
 
-                  <!-- Moneda segura: product.template NO suele tener currency_id; usar la de la compañía -->
+                  <!-- Moneda segura: usa la de la compañía -->
                   <t t-set="company" t-value="o.company_id or env.company"/>
                   <t t-set="currency" t-value="company.currency_id"/>
 
-                  <!-- Impuestos del producto (pueden estar vacíos) -->
+                  <!-- Impuestos (pueden estar vacíos) -->
                   <t t-set="taxes" t-value="o.taxes_id"/>
 
-                  <!-- compute_all solo si hay taxes, si no usa base_price -->
+                  <!-- Total con IVA si hay impuestos, si no base_price -->
                   <t t-set="price_inc"
                      t-value="(taxes and taxes.compute_all(base_price, currency=currency, quantity=1.0, product=o, partner=False).get('total_included')) or base_price"/>
 
-                  <!-- Formateo oficial Odoo -->
+                  <!-- Formateo oficial -->
                   <t t-esc="format_amount(env, price_inc, currency)"/>
                 </div>
+
 
               </div>
             </div>
