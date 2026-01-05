@@ -1,5 +1,6 @@
 /** @odoo-module **/
 console.log("🔥🔥🔥 QZ_PRINT VERSION 2026-01-04 🔥🔥🔥");
+
 import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
@@ -33,6 +34,8 @@ function loadScriptOnce(src) {
 /**
  * Configura seguridad para modo "unsigned" (sin firma).
  * Nota: sin firma NO podrás usar "Remember this decision" en QZ Tray (queda para más adelante).
+ *
+ * IMPORTANTE: no tocar la estrategia aquí (punto 2).
  */
 function configureUnsignedSecurity(qz) {
     if (_securityConfigured) return;
@@ -41,12 +44,11 @@ function configureUnsignedSecurity(qz) {
     // Certificado vacío (permitido)
     qz.security.setCertificatePromise(() => Promise.resolve(""));
 
-    // NO definir firma → QZ entra en modo unsigned real
-    // qz.security.setSignaturePromise(...)  ← ELIMINADO
+    // Mantener estrategia actual (no tocar): si más adelante ajustas firma, se hará con criterio.
+    // qz.security.setSignaturePromise(...)  ← NO SE MODIFICA AQUÍ
 
     _securityConfigured = true;
 }
-
 
 /**
  * Asegura que QZ está disponible.
@@ -129,7 +131,8 @@ export async function disconnectQz() {
 
 /**
  * Busca una impresora por nombre exacto.
- * Nota: qz.printers.find(<nombre>) devuelve el nombre si existe; si no, lanza.
+ * Nota: qz.printers.find(<nombre>) puede lanzar si no encuentra.
+ * Mantenemos el if (!printer) por robustez (punto 2).
  */
 export async function getPrinter(printerName) {
     try {
@@ -145,6 +148,7 @@ export async function getPrinter(printerName) {
 
 /**
  * Configuración estándar para etiquetas 62x29 (Brother QL-7xx).
+ * (No refactorizamos buildQlLabelConfig para mantener cambios mínimos.)
  */
 export function buildQlLabelConfig(printer) {
     return window.qz.configs.create(printer, {
@@ -178,6 +182,7 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
     try {
         await connectQz();
 
+        const qz = await ensureQz(); // ✅ usar instancia consistente (evitar window.qz.print)
         const printer = await getPrinter(printerName);
         const config = buildQlLabelConfig(printer);
 
@@ -189,7 +194,7 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
             },
         ];
 
-        await window.qz.print(config, data);
+        await qz.print(config, data);
         return true;
     } catch (error) {
         console.error("[QZ] Error en impresión:", error);
@@ -198,11 +203,10 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
 }
 
 /**
- * NUEVO: imprime un PDF obtenido desde una URL de Odoo (con sesión) vía QZ.
+ * Imprime un PDF obtenido desde una URL de Odoo (con sesión) vía QZ.
  * reportUrl debe ser una URL accesible desde el navegador (misma sesión Odoo).
  */
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
-    
     console.log("[QZ] ENTER printOdooPdfUrl()", { reportUrl, printerName });
     try {
         console.log("[QZ] PDF URL:", reportUrl);
@@ -210,15 +214,16 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         await connectQz();
         console.log("[QZ] Connected:", await isQzConnected());
 
+        const qz = await ensureQz(); // ✅ usar instancia consistente (evitar window.qz.print)
+
         const printer = await getPrinter(printerName);
         console.log("[QZ] Printer OK:", printer);
 
         const config = buildQlLabelConfig(printer);
 
-        const absUrl = new URL(reportUrl, window.location.origin).toString();
+        const absUrl = new URL(reportUrl, browser.location.origin).toString(); // ✅ coherencia Odoo
         const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
-        console.log("[QZ] PDF fetch status:", resp.status, absUrl);
-        console.log("[QZ] PDF fetch status:", resp.status);
+        console.log("[QZ] PDF fetch status:", resp.status, absUrl); // ✅ sin duplicado
 
         if (!resp.ok) {
             throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${reportUrl}`);
@@ -230,15 +235,17 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         const pdfBase64 = arrayBufferToBase64(buffer);
         console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
-        const data = [{
-            type: "pdf",
-            format: "base64",
-            data: pdfBase64,
-        }];
+        const data = [
+            {
+                type: "pdf",
+                format: "base64",
+                data: pdfBase64,
+            },
+        ];
 
         console.log("[QZ] Sending print job...");
         console.log("[QZ] calling qz.print...");
-        await window.qz.print(config, data);
+        await qz.print(config, data);
         console.log("[QZ] qz.print() enviado");
 
         return true;
@@ -257,7 +264,7 @@ if (browser.location.search.includes("debug")) {
         disconnectQz,
         getPrinter,
         printImageBase64,
-        printOdooPdfUrl, // <- nuevo
+        printOdooPdfUrl,
     };
     console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
 }
