@@ -187,13 +187,13 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
         const config = buildQlLabelConfig(printer);
 
         const data = [
-            {
-                type: "image",
-                format: "png",
-                data: `data:image/png;base64,${base64png}`,
-            },
+        {
+            type: "pdf",
+            format: "data",
+            data: "data:application/pdf;base64," + pdfBase64,
+        },
         ];
-
+   
         await qz.print(config, data);
         return true;
     } catch (error) {
@@ -288,11 +288,13 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
         // 8) Enviar job a QZ
-        const data = [{
+        const data = [
+        {
             type: "pdf",
-            format: "base64",
-            data: pdfBase64,
-        }];
+            format: "data",
+            data: "data:application/pdf;base64," + pdfBase64,
+        },
+        ];
 
         console.log("[QZ] Sending print job...");
         await qz.print(config, data);
