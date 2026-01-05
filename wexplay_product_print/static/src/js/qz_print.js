@@ -223,7 +223,27 @@ export async function fetchPdfAsBase64(url) {
   return btoa(binary);
 }
 
+export async function printQzPdfFileUrl(pdfUrl, printerName = "Brother QL-710W") {
+    console.log("[QZ] ENTER printQzPdfFileUrl()", { pdfUrl, printerName });
 
+    await connectQz();
+    const qz = await ensureQz();
+
+    const printer = await getPrinter(printerName);
+    const config = buildQlLabelConfig(printer);
+
+    const data = [
+        {
+            type: "pdf",
+            format: "file",   // <- clave: QZ descarga desde URL
+            data: pdfUrl,     // <- URL pública firmada (sin sesión)
+        },
+    ];
+
+    console.log("[QZ] printing PDF URL via QZ:", pdfUrl);
+    await qz.print(config, data);
+    return true;
+}
 
 
 

@@ -2,10 +2,11 @@
 
 console.log("WEXPLAY_PRINT: JS cargado");
 
-import { registry } from "@web/core/registry";
+import { registry } from "@web/core/registry";  
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { printImageBase64, printOdooPdfUrl } from "./qz_print";
+import { printImageBase64, printQzPdfFileUrl } from "./qz_print";
+import { rpc } from "@web/core/network/rpc";
 
 class PrintCenterModal extends Component {
     setup() {
@@ -74,14 +75,16 @@ class PrintCenterModal extends Component {
             }
 
             // URL del PDF (puedes usar ids[0] o productId; aquí uso ids[0])
-            const reportUrl = `/report/pdf/${reportName}/${ids[0]}`;
+            // Pedir URL firmada al backend (requiere estar logueado; auth=user)
+            const { pdf_url } = await rpc("/wexplay/label/signed_url", { product_id: ids[0] });
 
-            console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, ids, printerName });
+            console.log("WEXPLAY_PRINT signed pdf_url:", pdf_url, { reportName, ids, printerName });
 
-            // Enviar a QZ
-            await printOdooPdfUrl(reportUrl, printerName);
+            // Enviar a QZ usando URL pública tokenizada (auth=public)
+            await printQzPdfFileUrl(pdf_url, printerName);
 
             this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
+
         } else {
             await this.actionService.doAction(action);
             this.notification.add("Etiqueta generada correctamente.", { type: "success" });
