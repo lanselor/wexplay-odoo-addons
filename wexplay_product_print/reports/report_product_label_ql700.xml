@@ -87,22 +87,24 @@
                 </div>
 
                 <div class="product-price">
-                  <!-- Precio base seguro en product.template -->
+                  <!-- Precio base: product.template -->
                   <t t-set="base_price" t-value="o.list_price or 0.0"/>
 
-                  <!-- Moneda segura: usa la de la compañía -->
+                  <!-- Moneda: la de la compañía (currency_id en product.template no es fiable) -->
                   <t t-set="company" t-value="o.company_id or env.company"/>
                   <t t-set="currency" t-value="company.currency_id"/>
 
-                  <!-- Impuestos (pueden estar vacíos) -->
+                  <!-- Impuestos -->
                   <t t-set="taxes" t-value="o.taxes_id"/>
+                  <t t-set="res"
+                     t-value="taxes and taxes.compute_all(base_price, currency=currency, quantity=1.0, product=o, partner=None)"/>
 
-                  <!-- Total con IVA si hay impuestos, si no base_price -->
-                  <t t-set="price_inc"
-                     t-value="(taxes and taxes.compute_all(base_price, currency=currency, quantity=1.0, product=o, partner=False).get('total_included')) or base_price"/>
+                  <!-- Total con IVA -->
+                  <t t-set="price_inc" t-value="(res and res.get('total_included')) or base_price"/>
 
-                  <!-- Formateo oficial -->
-                  <t t-esc="format_amount(env, price_inc, currency)"/>
+                  <!-- Formato simple (como en tu XML original funcional) -->
+                  <t t-set="sym" t-value="(currency and currency.symbol) or '€'"/>
+                  <t t-esc="('%0.2f %s' % (price_inc, sym))"/>
                 </div>
 
 
