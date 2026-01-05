@@ -8,6 +8,8 @@
     ],
     "assets": {
         "web.assets_backend": [
+            "reports/report_product_label_ql700.xml",
+            "reports/report_actions.xml",            
             "wexplay_product_print/static/lib/qz-tray.js",
             "wexplay_product_print/static/src/js/qz_print.js",
             "wexplay_product_print/static/src/js/product_print_modal.js",

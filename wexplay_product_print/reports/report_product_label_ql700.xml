@@ -1,0 +1,103 @@
+<!-- wexplay_product_print/reports/report_product_label_ql700.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Plantilla QWeb del reporte -->
+    <template id="report_product_label_ql700_62x29">
+        <t t-name="wexplay_product_print.report_product_label_ql700_62x29">
+            <!-- No dependemos de basic_layout para evitar márgenes/headers -->
+            <t t-foreach="docs" t-as="o">
+                <t t-set="company" t-value="(o.company_id if hasattr(o, 'company_id') and o.company_id else env.company)"/>
+                <t t-set="currency" t-value="(o.currency_id if hasattr(o, 'currency_id') and o.currency_id else (company.currency_id if company else env.company.currency_id))"/>
+
+                <!-- Precio con IVA (fallback seguro) -->
+                <t t-set="base_price" t-value="(o.lst_price if hasattr(o, 'lst_price') and o.lst_price else 0.0)"/>
+                <t t-set="price_incl"
+                   t-value="
+                        (o.taxes_id.compute_all(base_price, currency, 1.0, product=o, partner=False).get('total_included', base_price))
+                        if (hasattr(o, 'taxes_id') and o.taxes_id)
+                        else base_price
+                   "/>
+
+                <style>
+                    :root{
+                        --w: 62mm;
+                        --h: 29mm;
+                        --pad: 2mm;
+                        --font: Arial, sans-serif;
+                    }
+
+                    /* Página REAL para Brother QL (PDF) */
+                    @page{
+                        size: var(--w) var(--h);
+                        margin: 0;
+                    }
+
+                    html, body{
+                        width: var(--w);
+                        height: var(--h);
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: hidden;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    .label{
+                        box-sizing: border-box;
+                        width: var(--w);
+                        height: var(--h);
+                        padding: var(--pad);
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        font-family: var(--font);
+                    }
+
+                    .name{
+                        font-size: 12pt;
+                        font-weight: 700;
+                        line-height: 1.05;
+                        margin: 0;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .price{
+                        font-size: 14pt;
+                        font-weight: 800;
+                        line-height: 1.0;
+                        margin: 0;
+                        white-space: nowrap;
+                    }
+
+                    .bottom-ref{
+                        border-top: 0.2mm solid #000;
+                        font-size: 10pt;
+                        font-family: monospace;
+                        padding-top: 1mm;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        margin-top: 1mm;
+                    }
+                </style>
+
+                <div class="label">
+                    <p class="name">
+                        <t t-esc="(o.display_name or o.name or '')"/>
+                    </p>
+
+                    <p class="price">
+                        <t t-esc="format_amount(env, price_incl or 0.0, currency)"/>
+                    </p>
+
+                    <div class="bottom-ref">
+                        <t t-esc="(o.default_code or '')"/>
+                    </div>
+                </div>
+
+            </t>
+        </t>
+    </template>
+</odoo>
