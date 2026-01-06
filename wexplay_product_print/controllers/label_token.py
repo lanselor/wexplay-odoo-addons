@@ -14,6 +14,11 @@ class WexplayProductLabelToken(http.Controller):
     2) /wexplay/label/pdf/<id> (HTTP, auth=public):
        Devuelve el PDF si el token+expires es válido.
     """
+    @http.route("/wexplay/label/ping", type="http", auth="public", methods=["GET"])
+    def ping(self, **kw):
+        return request.make_response("OK", [("Content-Type", "text/plain")])
+
+
 
     def _sign(self, product_id: int, expires: int) -> str:
         # Secret estable por BD (válido para firmar)
