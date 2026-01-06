@@ -181,19 +181,19 @@ function arrayBufferToBase64(buffer) {
 export async function printImageBase64(base64png, printerName = "Brother QL-710W") {
     try {
         await connectQz();
-
-        const qz = await ensureQz(); // ✅ usar instancia consistente (evitar window.qz.print)
+        const qz = await ensureQz();
         const printer = await getPrinter(printerName);
         const config = buildQlLabelConfig(printer);
 
-        const data = [
-            {
-                type: 'pixel',    // Siempre 'pixel' para PDF
-                format: 'pdf',   // El formato real del archivo
-                flavor: 'base64', // Indica que 'data' es un string base64
-                data: cleanBase64 // Solo el string binario
-            },
-        ];
+        // Limpieza de cabecera para evitar errores de parseo
+        const cleanBase64 = base64png.replace(/^data:application\/pdf;base64,/, "");
+
+        const data = [{
+            type: 'pixel',    // Correcto
+            format: 'pdf',   // Correcto
+            flavor: 'base64', // Correcto
+            data: cleanBase64
+        }];
    
         await qz.print(config, data);
         return true;
@@ -310,13 +310,12 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
         // 8) Enviar job a QZ
-        const data = [
-        {
-            type: "pdf",
-            format: "data",
-            data: "data:application/pdf;base64," + pdfBase64,
-        },
-        ];
+        const data = [{
+            type: 'pixel',   // Evita el error "No enum constant"
+            format: 'pdf',   // Especifica que el contenido es PDF
+            flavor: 'base64',// Indica que pasamos el string binario
+            data: pdfBase64  // El string generado por arrayBufferToBase64 (ya viene limpio)
+        }];
 
         console.log("[QZ] Sending print job...");
         await qz.print(config, data);
