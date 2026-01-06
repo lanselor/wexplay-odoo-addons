@@ -1,5 +1,5 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 2026-01-04 🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 23 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 

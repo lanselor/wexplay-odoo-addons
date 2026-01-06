@@ -37,6 +37,8 @@ class WexplayProductLabelToken(http.Controller):
 
         # Construimos la URL ABSOLUTA que QZ podrá descargar sin sesión
         base_url = request.env["ir.config_parameter"].sudo().get_param("web.base.url")
+        if base_url.startswith("http://"):
+            base_url = "https://" + base_url[len("http://"):]
         pdf_url = f"{base_url}/wexplay/label/pdf/{int(product_id)}?expires={expires}&token={token}&report_name={report_name}"
 
         return {
