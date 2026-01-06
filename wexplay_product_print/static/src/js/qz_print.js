@@ -232,13 +232,14 @@ export async function printQzPdfFileUrl(pdfUrl, printerName = "Brother QL-710W")
     const printer = await getPrinter(printerName);
     const config = buildQlLabelConfig(printer);
 
-    const data = [
-        {
-            type: "pdf",
-            format: "file",   // <- clave: QZ descarga desde URL
-            data: pdfUrl,     // <- URL pública firmada (sin sesión)
-        },
-    ];
+const data = [
+    {
+        type: 'pixel',   // Indica que es un formato gráfico (PDF/Imagen)
+        format: 'pdf',   // Indica la extensión del archivo
+        flavor: 'file',  // Indica que los datos vienen de una URL o ruta de archivo
+        data: pdfUrl     // Tu URL firmada: http://sat.wexplay.com/...
+    },
+];
 
     console.log("[QZ] printing PDF URL via QZ:", pdfUrl);
     await qz.print(config, data);
