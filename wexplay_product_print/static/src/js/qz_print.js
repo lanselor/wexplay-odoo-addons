@@ -153,12 +153,14 @@ export async function getPrinter(printerName) {
 export function buildQlLabelConfig(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
-        size: { width: 62, height: 29 },
+        size: { width: 29, height: 42 }, // DK-22210: 29mm ancho, 42mm largo de corte
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        orientation: "landscape", // si QZ lo respeta en tu build
         colorType: "blackwhite",
         copies: 1,
         density: 8,
         interpolation: "nearest",
+        rasterize: true,
     });
 }
 
