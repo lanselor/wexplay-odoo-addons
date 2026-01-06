@@ -1,5 +1,5 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 22 🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 2026-01-04 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 
@@ -187,11 +187,12 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
         const config = buildQlLabelConfig(printer);
 
         const data = [
-        {
-            type: "pdf",
-            format: "data",
-            data: "data:application/pdf;base64," + pdfBase64,
-        },
+            {
+                type: 'pixel',    // Siempre 'pixel' para PDF
+                format: 'pdf',   // El formato real del archivo
+                flavor: 'base64', // Indica que 'data' es un string base64
+                data: cleanBase64 // Solo el string binario
+            },
         ];
    
         await qz.print(config, data);
