@@ -48,7 +48,6 @@
             font-weight: 800;
             line-height: 1.05;
             white-space: nowrap;
-            overflow: hidden;
             text-overflow: ellipsis;
           }
 

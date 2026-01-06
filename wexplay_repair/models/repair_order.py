@@ -8,7 +8,12 @@ class RepairOrder(models.Model):
         DEVICE_TYPE_SELECTION,
         string="Tipo de dispositivo",
     )
-
+    # RE-DECLARAMOS el campo original de Odoo para hacerlo obligatorio
+    partner_id = fields.Many2one(
+        'res.partner', 
+        string='Customer', 
+        required=True  # Esto es lo que lo hace obligatorio
+    )
     # Datos del cliente (related)
     x_partner_mobile = fields.Char(
         string="Móvil",

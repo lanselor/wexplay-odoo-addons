@@ -156,6 +156,7 @@ export function buildQlLabelConfig(printer) {
         // IMPORTANTE: Para Brother QL, 'width' es siempre el ancho físico del rollo (29)
         size: { width: 29, height: 42 }, 
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        scaleContent: false,  // <--- ESTA ES LA CLAVE: Evita que QZ re-escale el PDF
         orientation: "landscape", 
         colorType: "blackwhite",
         copies: 1,

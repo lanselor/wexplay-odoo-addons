@@ -16,14 +16,7 @@
               <button type="button" class="btn btn-primary me-2" t-on-click="printProductLabel">
                 Etiqueta de producto
               </button>
-              <button type="button" class="btn btn-secondary" t-on-click="printTestQz">
-                  Test QZ (Brother)
-              </button>
 
-
-              <button type="button" class="btn btn-outline-primary" disabled="1">
-                Etiqueta SAT (más adelante)
-              </button>
             </div>
           </div>
 
