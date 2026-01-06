@@ -8,8 +8,8 @@
       <t t-call="web.basic_layout">
         <style>
           :root {
-            --paper_w: 42mm; /* ancho real */
-            --paper_h: 29mm; /* alto */
+            --paper_w: 29mm; /* ancho real */
+            --paper_h: 42mm; /* alto */
             --pad: 2mm;
           }
 
