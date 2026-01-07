@@ -22,7 +22,6 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
     "depends": [
         "web",
         "repair",
-        "report",
         "base",
         "wexplay_product_print",
     ],
