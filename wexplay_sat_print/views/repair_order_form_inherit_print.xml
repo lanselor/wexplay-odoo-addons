@@ -5,12 +5,10 @@
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
-                <button
-                    name="%(wexplay_repair.action_repair_print_center)d"
-                    type="action"
-                    string="Impresiones"
-                    class="btn btn-secondary"
-                    />
+                <button name="%(wexplay_sat_print.action_repair_print_center)d"
+                        type="action"
+                        string="Impresiones"
+                        class="btn btn-secondary"/>
             </xpath>
         </field>
     </record>
