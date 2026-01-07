@@ -8,7 +8,7 @@ import { printOdooPdfUrl } from "wexplay_product_print/static/src/js/qz_print.js
 
 
 // Reutilizamos EXACTAMENTE el helper existente (no se modifica)
-import { printOdooPdfUrl } from "wexplay_product_print/static/src/js/qz_print";
+
 
 const DEFAULT_LABEL_PRINTER = "Brother QL-710W";
 const DEFAULT_TICKET_PRINTER = "Thermal 80mm"; // ajusta al nombre real en tu sistema QZ
