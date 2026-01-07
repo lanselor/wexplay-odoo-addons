@@ -22,9 +22,6 @@ consolas y otros dispositivos electrónicos).
     "data": [
         'security/ir.model.access.csv',
         "views/repair_order_views.xml",
-        "reports/reports.xml",
-        "reports/repair_receipt.xml",
-        "reports/repair_label.xml",
         "views/repair_order_list.xml",
         "views/repair_order_search.xml",
     ],
