@@ -4,6 +4,8 @@
 import { registry } from "@web/core/registry";
 import { SatPrintCenterModal } from "./repair_print_center_modal";
 
+console.log("WEXPLAY_SAT_PRINT: repair_print_center_action.js cargado");
+
 registry.category("actions").add("wexplay_sat_print.print_center", async (env, action) => {
     // active_id viene del botón type="action" en el form de repair.order
     const activeId = action?.context?.active_id;
