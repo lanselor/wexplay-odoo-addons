@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <!-- ========================================================= -->
+    <!-- ETIQUETA SAT COMPLETA · Brother QL · 29 x 90 mm            -->
+    <!-- ========================================================= -->
+    <record id="paperformat_sat_label_29x90" model="report.paperformat">
+        <field name="name">SAT Label 29x90 (Brother QL)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        
+        <!-- Tamaño en milímetros -->
+        <field name="page_width">29</field>
+        <field name="page_height">90</field>
+        
+        <field name="orientation">Portrait</field>
+        
+        <!-- Márgenes a cero para etiquetas -->
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        
+        <!-- Sin cabecera ni footer -->
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        
+        <!-- DPI correcto para QL -->
+        <field name="dpi">90</field>
+    </record>
+    
+    <!-- ========================================================= -->
+    <!-- ETIQUETA SAT ACCESORIOS · Brother QL · 29 x 42 mm          -->
+    <!-- ========================================================= -->
+    <record id="paperformat_sat_label_29x42" model="report.paperformat">
+        <field name="name">SAT Accessories Label 29x42 (Brother QL)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        
+        <!-- Tamaño en milímetros -->
+        <field name="page_width">29</field>
+        <field name="page_height">42</field>
+        
+        <field name="orientation">Portrait</field>
+        
+        <!-- Márgenes a cero -->
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        
+        <field name="dpi">90</field>
+    </record>
+    
+    <!-- ========================================================= -->
+    <!-- TICKET RESGUARDO SAT · Térmica · 80 x 170 mm               -->
+    <!-- ========================================================= -->
+    <record id="paperformat_sat_ticket_80x170" model="report.paperformat">
+        <field name="name">SAT Ticket 80x170 (Thermal)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        
+        <!-- Tamaño en milímetros -->
+        <field name="page_width">80</field>
+        <field name="page_height">170</field>
+        
+        <field name="orientation">Portrait</field>
+        
+        <!-- Márgenes mínimos (evita cortes en térmicas) -->
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">2</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        
+        <!-- DPI estándar térmica -->
+        <field name="dpi">90</field>
+    </record>
+    
+</odoo>

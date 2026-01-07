@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_config_settings_wexplay_sat_print,res.config.settings wexplay sat print,base.model_res_config_settings,wexplay_sat_print.group_wexplay_sat_print_admin,1,1,1,1

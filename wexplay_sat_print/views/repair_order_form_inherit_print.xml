@@ -1,0 +1,17 @@
+<odoo>
+    <record id="repair_order_form_inherit_print_center_button" model="ir.ui.view">
+        <field name="name">repair.order.form.inherit.print.center.button</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="%(wexplay_repair.action_repair_print_center)d"
+                    type="action"
+                    string="Impresiones"
+                    class="btn btn-secondary"
+                    />
+            </xpath>
+        </field>
+    </record>
+</odoo>
