@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="wexplay_repair.RepairPrintCenterModal">
+    <t t-name="wexplay_sat_print.SatPrintCenterModal">
         <div class="modal-body">
             <h4>Centro de impresión SAT</h4>
             <p>Selecciona el tipo de impresión:</p>
 
             <div class="d-grid gap-2">
-                <button type="button" class="btn btn-primary" t-on-click="onPrintFullLabel">
+                <button type="button" class="btn btn-primary" t-on-click="onPrintLabel29x90">
                     Imprimir etiqueta completa (29x90)
                 </button>
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintAccessoriesLabel">
+                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
                     Imprimir etiqueta accesorios (29x42)
                 </button>
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket">
+                <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
                     Imprimir resguardo (80x170)
                 </button>
             </div>
