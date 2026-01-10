@@ -4,7 +4,7 @@
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
-import { printOdooPdfUrl } from "@wexplay_product_print/static/src/js/qz_print.js";
+import { printOdooPdfUrl } from "@wexplay_product_print/static/src/js/qz_print";
 
 
 // Reutilizamos EXACTAMENTE el helper existente (no se modifica)
