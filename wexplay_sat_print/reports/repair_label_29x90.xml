@@ -1,2 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo/>
+<odoo>
+    <template id="repair_label_29x90">
+        <t t-name="wexplay_sat_print.repair_label_29x90">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div style="width:29mm;height:90mm;padding:1mm;font-family:monospace;">
+                        <div style="font-size:11pt;font-weight:bold;white-space:nowrap;overflow:hidden;">
+                            <t t-esc="o.name or ''"/>
+                        </div>
+                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;">
+                            <t t-esc="o.partner_id.name or ''"/>
+                        </div>
+                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;">
+                            <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                        </div>
+                        
+                        <hr style="border:0;border-top:0.2mm solid #000;margin:1mm 0;"/>
+                        
+                        <div style="font-size:9pt;line-height:1.1;max-height:60mm;overflow:hidden;">
+                            <div><b>Avería:</b></div>
+                            <div>
+                                <t t-esc="o.description or ''"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,2 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo/>
+<odoo>
+    <data>
+        
+        <!-- 29x90 -->
+        <record id="report_repair_label_29x90" model="ir.actions.report">
+            <field name="name">SAT Label 29x90</field>
+            <field name="model">repair.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">wexplay_sat_print.repair_label_29x90</field>
+            <field name="report_file">wexplay_sat_print.repair_label_29x90</field>
+            <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_label_29x90"/>
+            <field name="print_report_name">'SAT_Label_29x90_%s' % (object.name or '')</field>
+        </record>
+        
+        <!-- 29x42 -->
+        <record id="report_repair_label_29x42" model="ir.actions.report">
+            <field name="name">SAT Label 29x42</field>
+            <field name="model">repair.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">wexplay_sat_print.repair_label_29x42</field>
+            <field name="report_file">wexplay_sat_print.repair_label_29x42</field>
+            <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_label_29x42"/>
+            <field name="print_report_name">'SAT_Label_29x42_%s' % (object.name or '')</field>
+        </record>
+        
+        <!-- Ticket 80x170 -->
+        <record id="report_repair_ticket_80x170" model="ir.actions.report">
+            <field name="name">SAT Ticket 80x170</field>
+            <field name="model">repair.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">wexplay_sat_print.repair_ticket_80x170</field>
+            <field name="report_file">wexplay_sat_print.repair_ticket_80x170</field>
+            <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_ticket_80x170"/>
+            <field name="print_report_name">'SAT_Ticket_%s' % (object.name or '')</field>
+        </record>
+        
+    </data>
+</odoo>
