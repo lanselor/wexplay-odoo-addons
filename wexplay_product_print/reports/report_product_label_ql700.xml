@@ -44,7 +44,7 @@
           }
 
           .product-name {
-            font-size: 18pt;
+            font-size: 11pt;
             font-weight: 800;
             line-height: 1.05;
             white-space: nowrap;
@@ -52,7 +52,7 @@
           }
 
           .product-price {
-            font-size: 22pt;
+            font-size: 12pt;
             font-weight: 900;
             line-height: 1;
             white-space: nowrap;
@@ -62,7 +62,7 @@
 
           .bottom-ref {
             border-top: 0.2mm solid #000;
-            font-size: 14pt;
+            font-size: 10pt;
             font-family: monospace;
             padding-top: 1mm;
             white-space: nowrap;
