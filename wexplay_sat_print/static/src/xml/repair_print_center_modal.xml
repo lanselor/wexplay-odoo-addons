@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- wexplay_sat_print/static/src/xml/repair_print_center_modal.xml -->
 <templates xml:space="preserve">
     <t t-name="wexplay_sat_print.SatPrintCenterModal">
         <div class="modal-body">

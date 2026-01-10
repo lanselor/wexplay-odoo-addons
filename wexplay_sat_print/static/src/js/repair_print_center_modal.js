@@ -1,27 +1,30 @@
 // wexplay_sat_print/static/src/js/repair_print_center_modal.js
 /** @odoo-module **/
 
+console.log("WEXPLAY_SAT_PRINT: modal JS cargado");
+
+import { registry } from "@web/core/registry";
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
 import { printOdooPdfUrl } from "@wexplay_product_print/js/qz_print";
 
-
-// Reutilizamos EXACTAMENTE el helper existente (no se modifica)
-
-
 const DEFAULT_LABEL_PRINTER = "Brother QL-710W";
-const DEFAULT_TICKET_PRINTER = "Thermal 80mm"; // ajusta al nombre real en tu sistema QZ
+const DEFAULT_TICKET_PRINTER = "Thermal 80mm"; // ajusta al nombre real en QZ
 
-export class SatPrintCenterModal extends Component {
-    static template = "wexplay_sat_print.SatPrintCenterModal";
-    static props = {
-        activeId: { type: Number },
-    };
-
+class SatPrintCenterModal extends Component {
     setup() {
         this.notification = useService("notification");
         this.dialog = useService("dialog");
+
+        console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
+            activeId: this.props.record?.resId,
+        });
+    }
+
+    // Igual que en product_print: método close() que llama a this.props.close()
+    close() {
+        this.props.close();
     }
 
     // Helpers
@@ -30,8 +33,8 @@ export class SatPrintCenterModal extends Component {
     }
 
     _reportUrl(reportName) {
-        // Odoo estándar: /report/pdf/<report_name>/<id>
-        return this._abs(`/report/pdf/${reportName}/${this.props.activeId}`);
+        const id = this.props.record?.resId;
+        return this._abs(`/report/pdf/${reportName}/${id}`);
     }
 
     async onPrintLabel29x90() {
@@ -51,15 +54,37 @@ export class SatPrintCenterModal extends Component {
 
     async _print(reportUrl, printerName) {
         try {
+            // Reutiliza helper existente
             await printOdooPdfUrl(reportUrl, printerName);
             this.notification.add("Impresión enviada a QZ Tray.", { type: "success" });
         } catch (e) {
+            console.error("WEXPLAY_SAT_PRINT: error impresión", e);
             this.notification.add(`Error imprimiendo: ${e?.message || e}`, { type: "danger" });
         }
     }
-
-    close() {
-        // Cierra el modal
-        this.props.close?.();
-    }
 }
+
+// Template OWL
+SatPrintCenterModal.template = "wexplay_sat_print.SatPrintCenterModal";
+
+// Action registry (MISMO patrón que product_print)
+registry.category("actions").add("wexplay_sat_print.print_center", async (env, action) => {
+    console.log("WEXPLAY_SAT_PRINT: handler ejecutado", { action });
+
+    env.services.notification.add("SAT Print: acción ejecutada", { type: "info" });
+
+    // En una orden de reparación: active_id = repair.order id
+    const activeId = action?.context?.active_id;
+
+    if (!activeId) {
+        env.services.notification.add("SAT Print: no se pudo determinar la orden (active_id).", { type: "danger" });
+        return;
+    }
+
+    // Igual que product_print: pasamos record con resId
+    env.services.dialog.add(SatPrintCenterModal, {
+        record: { resId: activeId },
+    });
+});
+
+export { SatPrintCenterModal };
