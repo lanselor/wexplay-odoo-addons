@@ -2,7 +2,7 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { SatPrintCenterModal } from "@wexplay_sat_print/static/src/js/repair_print_center_modal.js";
+import { SatPrintCenterModal } from "@wexplay_sat_print/static/src/js/repair_print_center_modal";
 
 
 console.log("WEXPLAY_SAT_PRINT: repair_print_center_action.js cargado");

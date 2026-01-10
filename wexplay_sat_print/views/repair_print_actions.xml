@@ -2,7 +2,7 @@
     <record id="action_repair_print_center" model="ir.actions.client">
         <field name="name">Centro de impresión SAT</field>
         <field name="tag">wexplay_sat_print.print_center</field>
-        <field name="target">current</field>
+        <field name="target">new</field>
         <field name="context">{}</field>
     </record>
 </odoo>
