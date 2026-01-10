@@ -58,7 +58,7 @@ export class SatPrintCenterModal extends Component {
         }
     }
 
-    onClose() {
+    close() {
         // Cierra el modal
         this.props.close?.();
     }

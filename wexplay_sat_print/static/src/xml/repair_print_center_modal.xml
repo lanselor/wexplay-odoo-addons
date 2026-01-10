@@ -19,7 +19,7 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" t-on-click="onClose">
+            <button type="button" class="btn btn-outline-secondary" t-on-click="close">
                 Cerrar
             </button>
         </div>
