@@ -1,28 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- wexplay_sat_print/static/src/xml/repair_print_center_modal.xml -->
 <templates xml:space="preserve">
-    <t t-name="wexplay_sat_print.SatPrintCenterModal">
-        <div class="modal-body">
-            <h4>Centro de impresión SAT</h4>
-            <p>Selecciona el tipo de impresión:</p>
+  <t t-name="wexplay_sat_print.SatPrintCenterModal">
+    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
 
-            <div class="d-grid gap-2">
-                <button type="button" class="btn btn-primary" t-on-click="onPrintLabel29x90">
-                    Imprimir etiqueta completa (29x90)
-                </button>
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
-                    Imprimir etiqueta accesorios (29x42)
-                </button>
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
-                    Imprimir resguardo (80x170)
-                </button>
+          <div class="modal-header">
+            <h5 class="modal-title">Centro de impresión SAT</h5>
+            <button type="button" class="btn-close" aria-label="Close" t-on-click="close"/>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+              <div class="fw-bold mb-2">Etiquetas (Brother QL)</div>
+
+              <button type="button" class="btn btn-primary me-2" t-on-click="onPrintLabel29x90">
+                Etiqueta completa (29x90)
+              </button>
+
+              <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
+                Etiqueta accesorios (29x42)
+              </button>
             </div>
-        </div>
 
-        <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" t-on-click="close">
-                Cerrar
-            </button>
+            <div class="mb-2">
+              <div class="fw-bold mb-2">Resguardo (Térmica)</div>
+
+              <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
+                Resguardo (80x170)
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" t-on-click="close">Cerrar</button>
+          </div>
+
         </div>
-    </t>
+      </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+  </t>
 </templates>
