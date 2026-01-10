@@ -14,10 +14,17 @@ const DEFAULT_TICKET_PRINTER = "Thermal 80mm";
 export class SatPrintCenterModal extends Component {
     setup() {
         this.notification = useService("notification");
+        this.orm = useService("orm");
+        this.actionService = useService("action");
+        this.dialog = useService("dialog");
 
         console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
             hasClose: !!this.props?.close,
             record: this.props?.record,
+        });
+        console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
+            orm: this.orm,
+            hasOrmCall: !!this.orm?.call,
         });
     }
 
