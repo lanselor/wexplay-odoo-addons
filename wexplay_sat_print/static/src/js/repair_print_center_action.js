@@ -2,7 +2,7 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { printOdooPdfUrl } from "wexplay_product_print/static/src/js/qz_print.js";
+import { printOdooPdfUrl } from "@wexplay_product_print/js/qz_print";
 
 
 console.log("WEXPLAY_SAT_PRINT: repair_print_center_action.js cargado");
