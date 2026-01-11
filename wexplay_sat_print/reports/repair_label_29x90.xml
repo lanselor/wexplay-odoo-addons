@@ -20,7 +20,9 @@
                         <div style="font-size:9pt;line-height:1.1;max-height:60mm;overflow:hidden;">
                             <div><b>Avería:</b></div>
                             <div>
-                                <t t-esc="o.description or ''"/>
+                                <t t-if="o.x_reported_issue">
+                                    <t t-esc="o.x_reported_issue"/>
+                                </t>
                             </div>
                         </div>
                     </div>
