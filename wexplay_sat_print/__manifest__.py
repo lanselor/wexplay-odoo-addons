@@ -31,7 +31,7 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
 
         "views/repair_print_actions.xml",
         "views/repair_order_form_inherit_print.xml",
-        "views/res_config_settings_view.xml",
+        #"views/res_config_settings_view.xml",
 
         "reports/paperformat_sat.xml",
         "reports/reports_sat.xml",
