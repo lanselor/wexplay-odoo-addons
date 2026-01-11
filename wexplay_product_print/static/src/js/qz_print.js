@@ -1,5 +1,5 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 26 🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 27🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 
@@ -333,6 +333,81 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         throw error;
     }
 }
+//######################################################
+//BLOQUES NUEVOS AÑADIDOS PARA LA CONFIGURACIÓN de SETTINGS
+//NECESARIOS PARA RECUPERAR DATOS MINIMOS DE CONFIGURACIÓN
+//######################################################
+
+//######################################################
+//Devuelve la lista de impresoras detectadas por QZ.
+ //* @returns {Promise<string[]>}
+//######################################################
+
+
+export async function getAllPrinters() {
+    try {
+        await connectQz();
+        const qz = await ensureQz();
+        const printers = await qz.printers.getAll();
+        return Array.isArray(printers) ? printers : [];
+    } catch (error) {
+        console.error("[QZ] Error obteniendo lista de impresoras:", error);
+        throw error;
+    }
+}
+
+
+export async function getAllPrinters() {
+    try {
+        await connectQz();
+        const qz = await ensureQz();
+        const printers = await qz.printers.getAll();
+        return Array.isArray(printers) ? printers : [];
+    } catch (error) {
+        console.error("[QZ] Error obteniendo lista de impresoras:", error);
+        throw error;
+    }
+}
+
+/**
+ * Devuelve la impresora por defecto del sistema según QZ.
+// * @returns {Promise<string>}
+ */
+export async function getDefaultPrinter() {
+    try {
+        await connectQz();
+        const qz = await ensureQz();
+        const printer = await qz.printers.getDefault();
+        return printer || "";
+    } catch (error) {
+        console.error("[QZ] Error obteniendo impresora por defecto:", error);
+        throw error;
+    }
+}
+
+
+/**
+ * Test simple: intenta conectar y devuelve un estado y mensaje.
+// * @returns {Promise<{ok: boolean, message: string}>}
+ */
+export async function testQzConnection() {
+    try {
+        await connectQz();
+        const ok = await isQzConnected();
+        return ok
+            ? { ok: true, message: "Conectado a QZ Tray." }
+            : { ok: false, message: "No se pudo activar el websocket de QZ." };
+    } catch (error) {
+        return { ok: false, message: error?.message || String(error) };
+    }
+}
+
+
+
+
+
+
+
 
 // --- DEBUG helper (solo para consola) ---
 if (browser.location.search.includes("debug")) {

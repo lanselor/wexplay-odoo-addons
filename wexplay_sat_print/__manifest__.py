@@ -44,6 +44,8 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
             "wexplay_sat_print/static/src/js/repair_print_center_action.js",
             "wexplay_sat_print/static/src/js/repair_print_center_modal.js",
             "wexplay_sat_print/static/src/xml/repair_print_center_modal.xml",
+            "wexplay_sat_print/static/src/js/qz_settings_widget.js",
+            "wexplay_sat_print/static/src/xml/qz_settings_widget.xml",
         ],
     },
     "installable": True,

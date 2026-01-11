@@ -3,21 +3,16 @@ from odoo import fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    wex_sat_print_enabled = fields.Boolean(
-        string="Activar impresión SAT (Wexplay)",
-        config_parameter="wexplay_sat_print.enabled",
-        default=True,
-    )
+    wex_qz_label_printer = fields.Char(related="company_id.wex_qz_label_printer", readonly=False)
+    wex_qz_thermal_printer = fields.Char(related="company_id.wex_qz_thermal_printer", readonly=False)
+    wex_qz_a4_printer = fields.Char(related="company_id.wex_qz_a4_printer", readonly=False)
 
-    wex_sat_default_printer = fields.Char(
-        string="Impresora por defecto (QZ/Nombre)",
-        config_parameter="wexplay_sat_print.default_printer",
-        help="Nombre exacto de la impresora tal como la expone QZ Tray.",
-    )
+    wex_qz_debug = fields.Boolean(related="company_id.wex_qz_debug", readonly=False)
+    wex_qz_allow_fallback = fields.Boolean(related="company_id.wex_qz_allow_fallback", readonly=False)
 
-    wex_sat_print_debug = fields.Boolean(
-        string="Modo debug de impresión",
-        config_parameter="wexplay_sat_print.debug",
-        default=False,
-        help="Activa trazas adicionales en consola y logs del módulo.",
-    )
+    wex_qz_last_test_ok = fields.Boolean(related="company_id.wex_qz_last_test_ok", readonly=True)
+    wex_qz_last_test_at = fields.Datetime(related="company_id.wex_qz_last_test_at", readonly=True)
+    wex_qz_last_test_user_id = fields.Many2one(related="company_id.wex_qz_last_test_user_id", readonly=True)
+
+    # Campo “dummy” para enganchar el widget (no se guarda)
+    wex_qz_ui = fields.Char(string="QZ UI", readonly=True)

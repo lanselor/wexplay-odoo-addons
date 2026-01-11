@@ -5,26 +5,49 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            
-            <!-- Inserta un bloque en Ajustes -->
             <xpath expr="//form" position="inside">
-                <app string="Wexplay SAT Print" name="wexplay_sat_print">
-                    <block title="Impresión SAT">
-                        <setting string="Activación">
-                            <field name="wex_sat_print_enabled"/>
+                
+                <app string="Wexplay Print / QZ" name="wexplay_sat_print_qz">
+                    <block title="Estado y diagnóstico">
+                        <setting string="Conexión QZ Tray">
+                            <!-- Widget UI -->
+                            <field name="wex_qz_ui" widget="wex_qz_settings_widget"/>
+                            
+                            <!-- Snapshot guardado en compañía -->
+                            <div class="mt16">
+                                <div><strong>Último test:</strong> <field name="wex_qz_last_test_ok"/></div>
+                                <div><strong>Fecha:</strong> <field name="wex_qz_last_test_at"/></div>
+                                <div><strong>Usuario:</strong> <field name="wex_qz_last_test_user_id"/></div>
+                            </div>
+                        </setting>
+                    </block>
+                    
+                    <block title="Predeterminados por tipo">
+                        <setting string="Etiquetas">
+                            <field name="wex_qz_label_printer" placeholder="Selecciona o escribe nombre exacto"/>
                         </setting>
                         
-                        <setting string="Impresora por defecto" help="Nombre exacto de impresora (QZ Tray).">
-                            <field name="wex_sat_default_printer" placeholder="Brother QL-700"/>
+                        <setting string="Térmica">
+                            <field name="wex_qz_thermal_printer" placeholder="Selecciona o escribe nombre exacto"/>
                         </setting>
                         
-                        <setting string="Depuración">
-                            <field name="wex_sat_print_debug"/>
+                        <setting string="A4">
+                            <field name="wex_qz_a4_printer" placeholder="Selecciona o escribe nombre exacto"/>
+                        </setting>
+                    </block>
+                    
+                    <block title="Avanzado">
+                        <setting string="Debug">
+                            <field name="wex_qz_debug"/>
+                        </setting>
+                        
+                        <setting string="Fallback">
+                            <field name="wex_qz_allow_fallback"/>
                         </setting>
                     </block>
                 </app>
+                
             </xpath>
-            
         </field>
     </record>
 </odoo>
