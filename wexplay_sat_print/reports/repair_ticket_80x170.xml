@@ -24,7 +24,9 @@
                         <div style="margin-top:2mm;">
                             <div><b>Descripción / Avería:</b></div>
                             <div style="white-space:pre-wrap;">
-                                <t t-esc="o.description or ''"/>
+                                <t t-if="o.x_reported_issue">
+                                    <t t-esc="o.x_reported_issue"/>
+                                </t>
                             </div>
                         </div>
                         
