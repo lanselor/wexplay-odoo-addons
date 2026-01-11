@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 from odoo import fields, models
+
 
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    # TEMPORAL: usar config_parameter para no depender de res.company durante el arranque/upgrade
     wex_qz_label_printer = fields.Char(
         string="Impresora etiquetas (QZ)",
         config_parameter="wexplay_sat_print.wex_qz_label_printer",
@@ -28,5 +29,5 @@ class ResConfigSettings(models.TransientModel):
         default=True,
     )
 
-    # Campo dummy para el widget
+    # dummy (solo UI/widget)
     wex_qz_ui = fields.Char(string="QZ UI", readonly=True)
