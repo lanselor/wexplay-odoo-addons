@@ -1,2 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo/>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="wexplay_sat_print_res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">wexplay_sat_print.res.config.settings.view.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Inserta un bloque en Ajustes -->
+            <xpath expr="//form" position="inside">
+                <app string="Wexplay SAT Print" name="wexplay_sat_print">
+                    <block title="Impresión SAT">
+                        <setting string="Activación">
+                            <field name="wex_sat_print_enabled"/>
+                        </setting>
+                        
+                        <setting string="Impresora por defecto" help="Nombre exacto de impresora (QZ Tray).">
+                            <field name="wex_sat_default_printer" placeholder="Brother QL-700"/>
+                        </setting>
+                        
+                        <setting string="Depuración">
+                            <field name="wex_sat_print_debug"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
