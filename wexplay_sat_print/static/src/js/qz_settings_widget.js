@@ -20,6 +20,11 @@ class WexQzSettingsWidget extends Component {
             message: "",
             printers: [],
         });
+
+        this.onChangeLabel = (ev) => this.setPrinter("wex_qz_label_printer", ev);
+        this.onChangeThermal = (ev) => this.setPrinter("wex_qz_thermal_printer", ev);
+        this.onChangeA4 = (ev) => this.setPrinter("wex_qz_a4_printer", ev);
+
     }
 
     async onTestConnection() {

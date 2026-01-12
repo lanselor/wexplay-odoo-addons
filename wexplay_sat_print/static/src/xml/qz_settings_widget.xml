@@ -42,25 +42,26 @@
           <div class="col-12">
             <label class="form-label">Etiquetas</label>
             <select class="form-select"
-                    t-on-change="(ev) => setPrinter('wex_qz_label_printer', ev)">
+                    t-on-change="onChangeLabel"
+                    t-att-value="props.record.data.wex_qz_label_printer || ''">
               <option value="">(sin asignar)</option>
               <t t-foreach="state.printers" t-as="p" t-key="p">
-                <option t-att-value="p"
-                        t-att-selected="props.record.data.wex_qz_label_printer === p">
+                <option t-att-value="p">
                   <t t-esc="p"/>
                 </option>
               </t>
             </select>
           </div>
 
+
           <div class="col-12">
             <label class="form-label">Térmica</label>
             <select class="form-select"
-                     t-on-change="(ev) => this.setPrinter('wex_qz_label_printer', ev)">
+                    t-on-change="onChangeThermal"
+                    t-att-value="props.record.data.wex_qz_thermal_printer || ''">
               <option value="">(sin asignar)</option>
               <t t-foreach="state.printers" t-as="p" t-key="p + '_t'">
-                <option t-att-value="p"
-                        t-att-selected="props.record.data.wex_qz_thermal_printer === p">
+                <option t-att-value="p">
                   <t t-esc="p"/>
                 </option>
               </t>
@@ -70,16 +71,17 @@
           <div class="col-12">
             <label class="form-label">A4</label>
             <select class="form-select"
-                     t-on-change="(ev) => this.setPrinter('wex_qz_a4_printer', ev)">
+                    t-on-change="onChangeA4"
+                    t-att-value="props.record.data.wex_qz_a4_printer || ''">
               <option value="">(sin asignar)</option>
               <t t-foreach="state.printers" t-as="p" t-key="p + '_a4'">
-                <option t-att-value="p"
-                        t-att-selected="props.record.data.wex_qz_a4_printer === p">
+                <option t-att-value="p">
                   <t t-esc="p"/>
                 </option>
               </t>
             </select>
           </div>
+
 
         </div>
 
