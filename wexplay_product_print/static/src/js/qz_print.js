@@ -348,7 +348,7 @@ export async function getAllPrinters() {
     try {
         await connectQz();
         const qz = await ensureQz();
-        const printers = await qz.printers.findAll();
+        const printers = await qz.printers.find();
         return Array.isArray(printers) ? printers : [];
     } catch (error) {
         console.error("[QZ] Error obteniendo lista de impresoras:", error);
