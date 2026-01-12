@@ -56,7 +56,7 @@
           <div class="col-12">
             <label class="form-label">Térmica</label>
             <select class="form-select"
-                    t-on-change="(ev) => setPrinter('wex_qz_thermal_printer', ev)">
+                     t-on-change="(ev) => this.setPrinter('wex_qz_label_printer', ev)">
               <option value="">(sin asignar)</option>
               <t t-foreach="state.printers" t-as="p" t-key="p + '_t'">
                 <option t-att-value="p"
@@ -70,7 +70,7 @@
           <div class="col-12">
             <label class="form-label">A4</label>
             <select class="form-select"
-                    t-on-change="(ev) => setPrinter('wex_qz_a4_printer', ev)">
+                     t-on-change="(ev) => this.setPrinter('wex_qz_a4_printer', ev)">
               <option value="">(sin asignar)</option>
               <t t-foreach="state.printers" t-as="p" t-key="p + '_a4'">
                 <option t-att-value="p"
