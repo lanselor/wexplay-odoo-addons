@@ -390,6 +390,145 @@ export async function testQzConnection() {
 }
 
 
+//######################################################
+// NUEVA API ESTABLE: resolución por tipo (kind)
+// Objetivo: los módulos consumidores NO eligen impresora.
+// Solo dicen kind: "label" | "thermal" | "a4"
+//######################################################
+
+const WEX_QZ_PARAM_KEYS = {
+    label: "wexplay_sat_print.wex_qz_label_printer",
+    thermal: "wexplay_sat_print.wex_qz_thermal_printer",
+    a4: "wexplay_sat_print.wex_qz_a4_printer",
+    debug: "wexplay_sat_print.wex_qz_debug",
+    allowFallback: "wexplay_sat_print.wex_qz_allow_fallback",
+};
+
+const WEX_QZ_COMPANY_FIELDS = {
+    label: "wex_qz_label_printer",
+    thermal: "wex_qz_thermal_printer",
+    a4: "wex_qz_a4_printer",
+    debug: "wex_qz_debug",
+    allowFallback: "wex_qz_allow_fallback",
+};
+
+function _getOrmFromEnv(env) {
+    return env?.services?.orm || null;
+}
+
+function _toBool(value, defaultValue = false) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") {
+        const v = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y", "on"].includes(v)) return true;
+        if (["false", "0", "no", "n", "off", ""].includes(v)) return false;
+    }
+    return defaultValue;
+}
+
+async function _getConfigParam(env, key, defaultValue = "") {
+    const orm = _getOrmFromEnv(env);
+    if (!orm) return defaultValue;
+
+    try {
+        // Nota: en Odoo web, orm.call(model, method, args)
+        const val = await orm.call("ir.config_parameter", "get_param", [key, defaultValue]);
+        return val ?? defaultValue;
+    } catch (e) {
+        // No rompemos impresión por permisos o contexto (conservador)
+        console.warn("[QZ] No se pudo leer ir.config_parameter.get_param:", key, e);
+        return defaultValue;
+    }
+}
+
+async function _readCompanyField(env, fieldName) {
+    const orm = _getOrmFromEnv(env);
+    const companySrv = env?.services?.company;
+    const companyId = companySrv?.currentCompany?.id;
+
+    if (!orm || !companyId) return null;
+
+    try {
+        const recs = await orm.read("res.company", [companyId], [fieldName]);
+        return recs?.[0]?.[fieldName] ?? null;
+    } catch (e) {
+        console.warn("[QZ] No se pudo leer res.company:", fieldName, e);
+        return null;
+    }
+}
+
+/**
+ * Resuelve el nombre de impresora configurada para un tipo.
+ * @param {"label"|"thermal"|"a4"} kind
+ * @param {Object} env OWL env (this.env)
+ * @returns {Promise<{printerName: string, allowFallback: boolean, debug: boolean, source: string}>}
+ */
+export async function resolvePrinterName(kind, env) {
+    if (!["label", "thermal", "a4"].includes(kind)) {
+        throw new Error(`resolvePrinterName: kind inválido: ${kind}`);
+    }
+
+    // Defaults alineados con tu res.config.settings (allow_fallback default=True)
+    const debugRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.debug, "false");
+    const allowFallbackRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.allowFallback, "true");
+
+    const debug = _toBool(debugRaw, false);
+    const allowFallback = _toBool(allowFallbackRaw, true);
+
+    // 1) Fuente primaria: config_parameter (lo que guarda Ajustes hoy)
+    const key = WEX_QZ_PARAM_KEYS[kind];
+    const fromParam = String(await _getConfigParam(env, key, "") || "").trim();
+    if (fromParam) {
+        return { printerName: fromParam, allowFallback, debug, source: "config_parameter" };
+    }
+
+    // 2) Fuente secundaria: res.company (por resiliencia)
+    const field = WEX_QZ_COMPANY_FIELDS[kind];
+    const fromCompany = String(await _readCompanyField(env, field) || "").trim();
+    if (fromCompany) {
+        return { printerName: fromCompany, allowFallback, debug, source: "company" };
+    }
+
+    // 3) No configurado
+    return { printerName: "", allowFallback, debug, source: "none" };
+}
+
+/**
+ * Imprime un PDF de Odoo por tipo de impresora.
+ * Mantiene el flujo existente: resuelve -> llama a printOdooPdfUrl().
+ * @param {"label"|"thermal"|"a4"} kind
+ * @param {string} reportUrl
+ * @param {Object} env OWL env (this.env)
+ */
+export async function printOdooPdfUrlByKind(kind, reportUrl, env) {
+    const info = await resolvePrinterName(kind, env);
+
+    if (info.debug) {
+        console.log("[QZ] printOdooPdfUrlByKind()", { kind, reportUrl, ...info });
+    }
+
+    // Caso normal: hay impresora configurada
+    if (info.printerName) {
+        return printOdooPdfUrl(reportUrl, info.printerName);
+    }
+
+    // Sin impresora configurada
+    if (!info.allowFallback) {
+        throw new Error(`No hay impresora configurada para '${kind}' y el fallback está desactivado.`);
+    }
+
+    // Fallback: impresora por defecto del sistema (QZ)
+    await connectQz();
+    const qz = await ensureQz();
+    const defaultPrinter = await qz.printers.getDefault();
+
+    if (!defaultPrinter) {
+        throw new Error("Fallback activado, pero QZ no devolvió impresora por defecto del sistema.");
+    }
+
+    return printOdooPdfUrl(reportUrl, defaultPrinter);
+}
 
 
 
@@ -406,6 +545,8 @@ if (browser.location.search.includes("debug")) {
         getPrinter,
         printImageBase64,
         printOdooPdfUrl,
+        resolvePrinterName,
+        printOdooPdfUrlByKind,
     };
     console.log("WEXPLAY_QZ listo: usa WEXPLAY_QZ.connectQz()");
 }
