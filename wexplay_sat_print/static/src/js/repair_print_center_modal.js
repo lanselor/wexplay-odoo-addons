@@ -1,9 +1,9 @@
 // wexplay_sat_print/static/src/js/repair_print_center_modal.js
 /** @odoo-module **/
 
-console.log("WEXPLAY_SAT_PRINT: modal JS cargado Versión 12");
+console.log("WEXPLAY_SAT_PRINT: modal JS cargado Versión 13 (qty accesorios)");
 
-import { Component } from "@odoo/owl";
+import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
 import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
@@ -19,6 +19,11 @@ export class SatPrintCenterModal extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.dialog = useService("dialog");
+
+        // Estado mínimo para cantidad de etiquetas de accesorios
+        this.state = useState({
+            accessoryQty: 1,
+        });
 
         console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
             hasClose: !!this.props?.close,
@@ -47,13 +52,38 @@ export class SatPrintCenterModal extends Component {
         return this._abs(`/report/pdf/${reportName}/${id}`);
     }
 
+    // ------------------------------
+    // Qty helpers (mínimo 1)
+    // ------------------------------
+    _sanitizeQty(value) {
+        const n = Number.parseInt(value, 10);
+        if (Number.isNaN(n) || n < 1) return 1;
+        return n;
+    }
+
+    onAccessoryQtyInput(ev) {
+        this.state.accessoryQty = this._sanitizeQty(ev.target.value);
+    }
+
+    incrementAccessoryQty() {
+        this.state.accessoryQty = this._sanitizeQty(this.state.accessoryQty + 1);
+    }
+
+    decrementAccessoryQty() {
+        this.state.accessoryQty = this._sanitizeQty(this.state.accessoryQty - 1);
+    }
+
+    // ------------------------------
+    // Acciones
+    // ------------------------------
     async onPrintLabel29x90() {
         const id = this._getActiveId();
         if (!id) {
             this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
             return;
         }
-        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x90"));
+        // Etiqueta SAT completa: 1 copia (por ahora)
+        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x90"), { copies: 1 });
     }
 
     async onPrintLabel29x42() {
@@ -62,8 +92,11 @@ export class SatPrintCenterModal extends Component {
             this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
             return;
         }
-        // Migrado a ByKind
-        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x42"));
+
+        const qty = this._sanitizeQty(this.state.accessoryQty);
+
+        // Etiqueta accesorios: aplica cantidad vía QZ copies
+        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x42"), { copies: qty });
     }
 
     async onPrintTicket80x170() {
@@ -72,15 +105,22 @@ export class SatPrintCenterModal extends Component {
             this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
             return;
         }
-        // Migrado a ByKind
+        // Ticket: thermal (copies=1 por defecto; no exponemos qty aquí)
         return this._printByKind("thermal", this._reportUrl("wexplay_sat_print.report_repair_ticket_80x170"));
     }
 
     // API única de impresión en el modal: todo pasa por kind
-    async _printByKind(kind, reportUrl) {
+    async _printByKind(kind, reportUrl, opts = {}) {
         try {
-            await printOdooPdfUrlByKind(kind, reportUrl, this.env);
-            this.notification.add("Impresión enviada a QZ Tray.", { type: "success" });
+            await printOdooPdfUrlByKind(kind, reportUrl, this.env, opts);
+
+            // Mensaje con cantidad si aplica
+            const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+            if (kind === "label" && copies > 1) {
+                this.notification.add(`Impresión enviada a QZ Tray (${copies} copias).`, { type: "success" });
+            } else {
+                this.notification.add("Impresión enviada a QZ Tray.", { type: "success" });
+            }
         } catch (e) {
             this.notification.add(`Error imprimiendo: ${e?.message || e}`, { type: "danger" });
         }

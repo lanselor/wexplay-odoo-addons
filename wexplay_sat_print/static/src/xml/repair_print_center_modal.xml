@@ -12,25 +12,45 @@
           </div>
 
           <div class="modal-body">
+
             <div class="mb-3">
               <div class="fw-bold mb-2">Etiquetas (Brother QL)</div>
 
-              <button type="button" class="btn btn-primary me-2" t-on-click="onPrintLabel29x90">
-                Etiqueta completa (29x90)
-              </button>
+              <!-- Etiqueta SAT completa (una debajo de la otra) -->
+              <div class="mb-2">
+                <button type="button" class="btn btn-primary" t-on-click="onPrintLabel29x90">
+                  Etiqueta SAT completa
+                </button>
+              </div>
 
-              <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
-                Etiqueta accesorios (29x42)
-              </button>
+              <!-- Etiqueta accesorios + selector cantidad -->
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
+                  Etiqueta accesorios
+                </button>
+
+                <div class="input-group input-group-sm" style="width: 160px;">
+                  <button type="button" class="btn btn-outline-secondary" t-on-click="decrementAccessoryQty">-</button>
+                  <input type="number"
+                         class="form-control text-center"
+                         min="1"
+                         t-att-value="state.accessoryQty"
+                         t-on-input="onAccessoryQtyInput"/>
+                  <button type="button" class="btn btn-outline-secondary" t-on-click="incrementAccessoryQty">+</button>
+                </div>
+              </div>
             </div>
+
+            <hr/>
 
             <div class="mb-2">
-              <div class="fw-bold mb-2">Resguardo (Térmica)</div>
+              <div class="fw-bold mb-2">Resguardo Cliente</div>
 
               <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
-                Resguardo (80x170)
+                Resguardo(Tamaño Ticket)
               </button>
             </div>
+
           </div>
 
           <div class="modal-footer">
