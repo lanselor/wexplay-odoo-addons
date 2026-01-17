@@ -1,10 +1,14 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 27🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 28 (FIX DEBUG) 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
-const WEX_QZ_DEBUG_FORCE_LOG = true;  // opcional
+
+// Debug: si true, siempre loguea la traza de ByKind aunque el setting debug esté apagado
+const WEX_QZ_DEBUG_FORCE_LOG = true;
+const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]";
+
 // Evita reconfigurar security en cada llamada
 let _securityConfigured = false;
 
@@ -35,7 +39,7 @@ function loadScriptOnce(src) {
  * Configura seguridad para modo "unsigned" (sin firma).
  * Nota: sin firma NO podrás usar "Remember this decision" en QZ Tray (queda para más adelante).
  *
- * IMPORTANTE: no tocar la estrategia aquí (punto 2).
+ * IMPORTANTE: no tocar la estrategia aquí.
  */
 function configureUnsignedSecurity(qz) {
     if (_securityConfigured) return;
@@ -132,7 +136,6 @@ export async function disconnectQz() {
 /**
  * Busca una impresora por nombre exacto.
  * Nota: qz.printers.find(<nombre>) puede lanzar si no encuentra.
- * Mantenemos el if (!printer) por robustez (punto 2).
  */
 export async function getPrinter(printerName) {
     try {
@@ -147,24 +150,22 @@ export async function getPrinter(printerName) {
 }
 
 /**
- * Configuración estándar para etiquetas 62x29 (Brother QL-7xx).
- * (No refactorizamos buildQlLabelConfig para mantener cambios mínimos.)
+ * Configuración estándar para etiquetas (Brother QL-7xx).
  */
 export function buildQlLabelConfig(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
         // IMPORTANTE: Para Brother QL, 'width' es siempre el ancho físico del rollo (29)
-        size: { width: 29, height: 42 }, 
+        size: { width: 29, height: 42 },
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
-        scaleContent: false,  // <--- ESTA ES LA CLAVE: Evita que QZ re-escale el PDF
-        orientation: "landscape", 
+        scaleContent: false,
+        orientation: "landscape",
         colorType: "blackwhite",
         copies: 1,
-        density: 8,           // Correcto para Brother
+        density: 8,
         interpolation: "nearest",
-        rasterize: true,      // Obligatorio para evitar errores de fuentes en Brother
-        // Añadimos este parámetro para forzar la compatibilidad con el driver
-        forceDetailed: true 
+        rasterize: true,
+        forceDetailed: true,
     });
 }
 
@@ -182,7 +183,8 @@ function arrayBufferToBase64(buffer) {
 }
 
 /**
- * Imprime una imagen base64 (PNG).
+ * Imprime una imagen base64 (PDF base64).
+ * (Nombre mantenido para compatibilidad; internamente imprime PDF base64.)
  */
 export async function printImageBase64(base64png, printerName = "Brother QL-710W") {
     try {
@@ -191,16 +193,18 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
         const printer = await getPrinter(printerName);
         const config = buildQlLabelConfig(printer);
 
-        // Limpieza de cabecera para evitar errores de parseo
+        // Limpieza de cabecera por si viene con data URL
         const cleanBase64 = base64png.replace(/^data:application\/pdf;base64,/, "");
 
-        const data = [{
-            type: 'pixel',    // Correcto
-            format: 'pdf',   // Correcto
-            flavor: 'base64', // Correcto
-            data: cleanBase64
-        }];
-   
+        const data = [
+            {
+                type: "pixel",
+                format: "pdf",
+                flavor: "base64",
+                data: cleanBase64,
+            },
+        ];
+
         await qz.print(config, data);
         return true;
     } catch (error) {
@@ -209,25 +213,21 @@ export async function printImageBase64(base64png, printerName = "Brother QL-710W
     }
 }
 
-
-
 export async function fetchPdfAsBase64(url) {
-  const res = await fetch(url, {
-    credentials: "include", // usa la sesión Odoo del navegador
-  });
-  if (!res.ok) {
-    throw new Error(`No se pudo descargar el PDF (${res.status})`);
-  }
+    const res = await fetch(url, { credentials: "include" });
+    if (!res.ok) {
+        throw new Error(`No se pudo descargar el PDF (${res.status})`);
+    }
 
-  const blob = await res.blob();
-  const buffer = await blob.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
+    const blob = await res.blob();
+    const buffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
 
-  let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
 }
 
 export async function printQzPdfFileUrl(pdfUrl, printerName = "Brother QL-710W") {
@@ -239,61 +239,50 @@ export async function printQzPdfFileUrl(pdfUrl, printerName = "Brother QL-710W")
     const printer = await getPrinter(printerName);
     const config = buildQlLabelConfig(printer);
 
-const data = [
-    {
-        type: 'pixel',   // Indica que es un formato gráfico (PDF/Imagen)
-        format: 'pdf',   // Indica la extensión del archivo
-        flavor: 'file',  // Indica que los datos vienen de una URL o ruta de archivo
-        data: pdfUrl     // Tu URL firmada: http://sat.wexplay.com/...
-    },
-];
+    const data = [
+        {
+            type: "pixel",
+            format: "pdf",
+            flavor: "file",
+            data: pdfUrl,
+        },
+    ];
 
     console.log("[QZ] printing PDF URL via QZ:", pdfUrl);
     await qz.print(config, data);
     return true;
 }
 
-
-
 /**
  * Imprime un PDF obtenido desde una URL de Odoo (con sesión) vía QZ.
- * reportUrl debe ser una URL accesible desde el navegador (misma sesión Odoo).
  */
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
     console.log("[QZ] ENTER printOdooPdfUrl()", { reportUrl, printerName });
 
     try {
-        // 1) Asegurar conexión QZ
         await connectQz();
         console.log("[QZ] Connected:", await isQzConnected());
 
-        // 2) Instancia consistente de QZ (evita mezclar window.qz y otras refs)
         const qz = await ensureQz();
 
-        // 3) Resolver impresora (exact match o fallback)
         let printer;
         try {
             printer = await getPrinter(printerName);
         } catch (e) {
             console.warn("[QZ] getPrinter() no encontró impresora:", printerName, e);
-            // fallback seguro si tu getPrinter no lo hace internamente
             printer = await qz.printers.getDefault();
             console.warn("[QZ] Usando impresora por defecto:", printer);
         }
         console.log("[QZ] Printer OK:", printer);
 
-        // 4) Config de etiqueta (tu builder)
         const config = buildQlLabelConfig(printer);
 
-        // 5) URL absoluta coherente con Odoo (importantísimo para fetch con sesión)
         const absUrl = new URL(reportUrl, browser.location.origin).toString();
         console.log("[QZ] PDF URL (abs):", absUrl);
 
-        // 6) Descargar PDF con la sesión del navegador (credenciales incluidas)
         const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
         console.log("[QZ] PDF fetch status:", resp.status);
 
-        // Odoo a veces devuelve HTML (login) con 200; validamos content-type
         const contentType = (resp.headers.get("content-type") || "").toLowerCase();
         console.log("[QZ] PDF content-type:", contentType);
 
@@ -301,27 +290,26 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
             throw new Error(`No se pudo descargar el PDF (${resp.status}) desde ${absUrl}`);
         }
 
-        // Si no es PDF, casi seguro es página de login o error HTML
         if (!contentType.includes("application/pdf")) {
             const textPreview = await resp.text();
             console.error("[QZ] Respuesta no es PDF. Primeros 200 chars:", textPreview.slice(0, 200));
             throw new Error("La respuesta del servidor no es un PDF. Posible sesión/cookie inválida o redirección a login.");
         }
 
-        // 7) Convertir a base64
         const buffer = await resp.arrayBuffer();
         console.log("[QZ] PDF bytes:", buffer.byteLength);
 
         const pdfBase64 = arrayBufferToBase64(buffer);
         console.log("[QZ] PDF base64 length:", pdfBase64.length);
 
-        // 8) Enviar job a QZ
-        const data = [{
-            type: 'pixel',   // Evita el error "No enum constant"
-            format: 'pdf',   // Especifica que el contenido es PDF
-            flavor: 'base64',// Indica que pasamos el string binario
-            data: pdfBase64  // El string generado por arrayBufferToBase64 (ya viene limpio)
-        }];
+        const data = [
+            {
+                type: "pixel",
+                format: "pdf",
+                flavor: "base64",
+                data: pdfBase64,
+            },
+        ];
 
         console.log("[QZ] Sending print job...");
         await qz.print(config, data);
@@ -333,16 +321,10 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
         throw error;
     }
 }
-//######################################################
-//BLOQUES NUEVOS AÑADIDOS PARA LA CONFIGURACIÓN de SETTINGS
-//NECESARIOS PARA RECUPERAR DATOS MINIMOS DE CONFIGURACIÓN
-//######################################################
 
 //######################################################
-//Devuelve la lista de impresoras detectadas por QZ.
- //* @returns {Promise<string[]>}
+// Funciones necesarias para SETTINGS / UI
 //######################################################
-
 
 export async function getAllPrinters() {
     try {
@@ -356,10 +338,6 @@ export async function getAllPrinters() {
     }
 }
 
-/**
- * Devuelve la impresora por defecto del sistema según QZ.
-// * @returns {Promise<string>}
- */
 export async function getDefaultPrinter() {
     try {
         await connectQz();
@@ -372,11 +350,6 @@ export async function getDefaultPrinter() {
     }
 }
 
-
-/**
- * Test simple: intenta conectar y devuelve un estado y mensaje.
-// * @returns {Promise<{ok: boolean, message: string}>}
- */
 export async function testQzConnection() {
     try {
         await connectQz();
@@ -389,11 +362,8 @@ export async function testQzConnection() {
     }
 }
 
-
 //######################################################
 // NUEVA API ESTABLE: resolución por tipo (kind)
-// Objetivo: los módulos consumidores NO eligen impresora.
-// Solo dicen kind: "label" | "thermal" | "a4"
 //######################################################
 
 const WEX_QZ_PARAM_KEYS = {
@@ -404,6 +374,7 @@ const WEX_QZ_PARAM_KEYS = {
     allowFallback: "wexplay_sat_print.wex_qz_allow_fallback",
 };
 
+// (Se mantiene por compatibilidad futura; hoy la fuente real es config_parameter)
 const WEX_QZ_COMPANY_FIELDS = {
     label: "wex_qz_label_printer",
     thermal: "wex_qz_thermal_printer",
@@ -432,11 +403,9 @@ async function _getConfigParam(env, key, defaultValue = "") {
     if (!orm) return defaultValue;
 
     try {
-        // Nota: en Odoo web, orm.call(model, method, args)
         const val = await orm.call("ir.config_parameter", "get_param", [key, defaultValue]);
         return val ?? defaultValue;
     } catch (e) {
-        // No rompemos impresión por permisos o contexto (conservador)
         console.warn("[QZ] No se pudo leer ir.config_parameter.get_param:", key, e);
         return defaultValue;
     }
@@ -458,91 +427,117 @@ async function _readCompanyField(env, fieldName) {
     }
 }
 
-/**
- * Resuelve el nombre de impresora configurada para un tipo.
- * @param {"label"|"thermal"|"a4"} kind
- * @param {Object} env OWL env (this.env)
- * @returns {Promise<{printerName: string, allowFallback: boolean, debug: boolean, source: string}>}
- */
 export async function resolvePrinterName(kind, env) {
     if (!["label", "thermal", "a4"].includes(kind)) {
         throw new Error(`resolvePrinterName: kind inválido: ${kind}`);
     }
-    const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]"; 
-    // Defaults alineados con tu res.config.settings (allow_fallback default=True)
+
     const debugRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.debug, "false");
     const allowFallbackRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.allowFallback, "true");
 
     const debug = _toBool(debugRaw, false);
     const allowFallback = _toBool(allowFallbackRaw, true);
 
-    // 1) Fuente primaria: config_parameter (lo que guarda Ajustes hoy)
+    if (debug || WEX_QZ_DEBUG_FORCE_LOG) {
+        console.log(WEX_QZ_DEBUG_TAG, "resolvePrinterName ENTER", {
+            kind,
+            hasEnv: !!env,
+            hasOrm: !!env?.services?.orm,
+            allowFallback,
+            debug,
+        });
+    }
+
     const key = WEX_QZ_PARAM_KEYS[kind];
-    const fromParam = String(await _getConfigParam(env, key, "") || "").trim();
+    const fromParam = String((await _getConfigParam(env, key, "")) || "").trim();
     if (fromParam) {
+        if (debug || WEX_QZ_DEBUG_FORCE_LOG) {
+            console.log(WEX_QZ_DEBUG_TAG, "resolvePrinterName RESOLVED", {
+                kind,
+                source: "config_parameter",
+                printerName: fromParam,
+            });
+        }
         return { printerName: fromParam, allowFallback, debug, source: "config_parameter" };
     }
 
-    // 2) Fuente secundaria: res.company (por resiliencia)
+    // Fallback opcional a company (solo si existiera valor)
     const field = WEX_QZ_COMPANY_FIELDS[kind];
-    const fromCompany = String(await _readCompanyField(env, field) || "").trim();
+    const fromCompany = String((await _readCompanyField(env, field)) || "").trim();
     if (fromCompany) {
+        if (debug || WEX_QZ_DEBUG_FORCE_LOG) {
+            console.log(WEX_QZ_DEBUG_TAG, "resolvePrinterName RESOLVED", {
+                kind,
+                source: "company",
+                printerName: fromCompany,
+            });
+        }
         return { printerName: fromCompany, allowFallback, debug, source: "company" };
     }
 
-    // 3) No configurado
+    if (debug || WEX_QZ_DEBUG_FORCE_LOG) {
+        console.log(WEX_QZ_DEBUG_TAG, "resolvePrinterName RESOLVED", {
+            kind,
+            source: "none",
+            printerName: "",
+        });
+    }
     return { printerName: "", allowFallback, debug, source: "none" };
 }
 
-/**
- * Imprime un PDF de Odoo por tipo de impresora.
- * Mantiene el flujo existente: resuelve -> llama a printOdooPdfUrl().
- * @param {"label"|"thermal"|"a4"} kind
- * @param {string} reportUrl
- * @param {Object} env OWL env (this.env)
- */
 export async function printOdooPdfUrlByKind(kind, reportUrl, env) {
-    const info = await resolvePrinterName(kind, env);
     console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind ENTER", {
-         kind,
-         reportUrl,
-         hasEnv: !!env,
-         hasOrm: !!env?.services?.orm,
+        kind,
+        reportUrl,
+        hasEnv: !!env,
+        hasOrm: !!env?.services?.orm,
     });
-    if (info.debug) {
-        console.log("[QZ] printOdooPdfUrlByKind()", { kind, reportUrl, ...info });
+
+    const info = await resolvePrinterName(kind, env);
+
+    if (info.debug || WEX_QZ_DEBUG_FORCE_LOG) {
+        console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind RESOLUTION", info);
     }
 
-    // Caso normal: hay impresora configurada
     if (info.printerName) {
-        const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]";
+        if (info.debug || WEX_QZ_DEBUG_FORCE_LOG) {
+            console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind DELEGATE -> printOdooPdfUrl", {
+                kind,
+                reportUrl,
+                printerName: info.printerName,
+            });
+        }
         return printOdooPdfUrl(reportUrl, info.printerName);
     }
 
-    // Sin impresora configurada
     if (!info.allowFallback) {
-        const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND-SIN IMPRESORA CONFIGURADA]";
+        if (info.debug || WEX_QZ_DEBUG_FORCE_LOG) {
+            console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind ABORT (no printer, no fallback)", {
+                kind,
+                reportUrl,
+            });
+        }
         throw new Error(`No hay impresora configurada para '${kind}' y el fallback está desactivado.`);
     }
 
-    // Fallback: impresora por defecto del sistema (QZ)
     await connectQz();
     const qz = await ensureQz();
     const defaultPrinter = await qz.printers.getDefault();
-
-    const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND - Impresora por defecto del sisema]";
 
     if (!defaultPrinter) {
         throw new Error("Fallback activado, pero QZ no devolvió impresora por defecto del sistema.");
     }
 
+    if (info.debug || WEX_QZ_DEBUG_FORCE_LOG) {
+        console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind FALLBACK -> defaultPrinter", {
+            kind,
+            reportUrl,
+            printerName: defaultPrinter,
+        });
+    }
+
     return printOdooPdfUrl(reportUrl, defaultPrinter);
 }
-
-
-
-
-
 
 // --- DEBUG helper (solo para consola) ---
 if (browser.location.search.includes("debug")) {
