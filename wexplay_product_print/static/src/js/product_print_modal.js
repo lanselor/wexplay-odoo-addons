@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-console.log("WEXPLAY_PRINT: JS cargado (ByKind + qty) - custom report");
+console.log("WEXPLAY_PRINT: JS cargado V 20");
 
 import { registry } from "@web/core/registry";
 import { Component, useState } from "@odoo/owl";
@@ -68,15 +68,12 @@ class PrintCenterModal extends Component {
         const qty = this._sanitizeQty(this.state.qty);
 
         try {
-            // Reporte custom (control total del layout)
             const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
             const reportUrl = this._reportUrl(reportName);
 
-            // Imprimir por tipo (label): el core resuelve impresora desde Ajustes
-            await printOdooPdfUrlByKind("label", reportUrl, this.env);
+            await printOdooPdfUrlByKind("label", reportUrl, this.env, { copies: qty });
 
-            // Nota: de momento qty solo afecta a UI; el siguiente paso será aplicarlo (QZ copies o QWeb).
-            this.notification.add(`Etiqueta enviada. (Cantidad seleccionada: ${qty})`, { type: "success" });
+            this.notification.add(`Etiqueta enviada (${qty} copias).`, { type: "success" });
         } catch (error) {
             console.error("WEXPLAY_PRINT: error impresión", error);
             this.notification.add(`Error imprimiendo la etiqueta: ${error?.message || error}`, { type: "danger" });

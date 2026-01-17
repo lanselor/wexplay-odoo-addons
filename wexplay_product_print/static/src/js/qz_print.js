@@ -1,5 +1,5 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 30 (CONFIG BY KIND) 🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 31 (CONFIG BY KIND) 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 
@@ -16,7 +16,7 @@ let _securityConfigured = false;
 
 function loadScriptOnce(src) {
     return new Promise((resolve, reject) => {
-        const existing = [...document.getElementsByTagName("script")].find(s => s.src === src);
+        const existing = [...document.getElementsByTagName("script")].find((s) => s.src === src);
         if (existing) return resolve();
 
         const s = document.createElement("script");
@@ -76,10 +76,18 @@ export async function getPrinter(printerName) {
  * CONFIG BUILDERS (POR TIPO)
  * ========================================================= */
 
-export function buildQlLabelConfig(printer) {
+/**
+ * Etiquetas Brother QL:
+ * - ancho fijo por rollo (29mm)
+ * - altura variable (no se fija)
+ * - copies configurable via opts
+ */
+export function buildQlLabelConfig(printer, opts = {}) {
+    const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+
     return window.qz.configs.create(printer, {
         units: "mm",
-        size: { width: 29, height: 42 },
+        size: { width: 29 },
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
         orientation: "landscape",
         scaleContent: false,
@@ -88,7 +96,7 @@ export function buildQlLabelConfig(printer) {
         interpolation: "nearest",
         rasterize: true,
         forceDetailed: true,
-        copies: 1,
+        copies,
     });
 }
 
@@ -119,10 +127,14 @@ export function buildA4Config(printer) {
 
 function getConfigBuilderByKind(kind) {
     switch (kind) {
-        case "label": return buildQlLabelConfig;
-        case "thermal": return buildThermalConfig;
-        case "a4": return buildA4Config;
-        default: return buildQlLabelConfig;
+        case "label":
+            return buildQlLabelConfig;
+        case "thermal":
+            return buildThermalConfig;
+        case "a4":
+            return buildA4Config;
+        default:
+            return buildQlLabelConfig;
     }
 }
 
@@ -165,12 +177,14 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
     const buffer = await resp.arrayBuffer();
     const pdfBase64 = arrayBufferToBase64(buffer);
 
-    await qz.print(config, [{
-        type: "pixel",
-        format: "pdf",
-        flavor: "base64",
-        data: pdfBase64,
-    }]);
+    await qz.print(config, [
+        {
+            type: "pixel",
+            format: "pdf",
+            flavor: "base64",
+            data: pdfBase64,
+        },
+    ]);
 
     return true;
 }
@@ -180,7 +194,8 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
  * ========================================================= */
 
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
-    return _printOdooPdfUrlWithConfig(reportUrl, printerName, buildQlLabelConfig);
+    // Legacy: etiqueta con 1 copia
+    return _printOdooPdfUrlWithConfig(reportUrl, printerName, (printer) => buildQlLabelConfig(printer, { copies: 1 }));
 }
 
 /* =========================================================
@@ -189,7 +204,7 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
 
 export async function resolvePrinterName(kind, env) {
     const orm = env?.services?.orm;
-    const get = (k, d="") => orm?.call("ir.config_parameter", "get_param", [k, d]);
+    const get = (k, d = "") => orm?.call("ir.config_parameter", "get_param", [k, d]);
 
     const printerName = await get(`wexplay_sat_print.wex_qz_${kind}_printer`, "");
     const allowFallback = (await get("wexplay_sat_print.wex_qz_allow_fallback", "true")) !== "false";
@@ -198,25 +213,35 @@ export async function resolvePrinterName(kind, env) {
     return { printerName, allowFallback, debug };
 }
 
-export async function printOdooPdfUrlByKind(kind, reportUrl, env) {
+export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
     const info = await resolvePrinterName(kind, env);
-    const buildConfig = getConfigBuilderByKind(kind);
+
+    const copies = kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+
+    const baseBuilder = getConfigBuilderByKind(kind);
+
+    // wrapper para pasar copies solo a label
+    const buildConfigFn =
+        kind === "label" ? (printer) => baseBuilder(printer, { copies }) : (printer) => baseBuilder(printer);
 
     if (info.debug || WEX_QZ_DEBUG_FORCE_LOG) {
-        console.log(WEX_QZ_DEBUG_TAG, { kind, reportUrl, ...info });
+        console.log(WEX_QZ_DEBUG_TAG, { kind, reportUrl, copies, ...info });
     }
 
     if (info.printerName) {
-        return _printOdooPdfUrlWithConfig(reportUrl, info.printerName, buildConfig);
+        return _printOdooPdfUrlWithConfig(reportUrl, info.printerName, buildConfigFn);
     }
 
     if (!info.allowFallback) {
         throw new Error(`No hay impresora configurada para ${kind}`);
     }
 
+    // Asegurar conexión antes de consultar defaultPrinter
+    await connectQz();
     const qz = await ensureQz();
     const defaultPrinter = await qz.printers.getDefault();
-    return _printOdooPdfUrlWithConfig(reportUrl, defaultPrinter, buildConfig);
+
+    return _printOdooPdfUrlWithConfig(reportUrl, defaultPrinter, buildConfigFn);
 }
 
 /* =========================================================
