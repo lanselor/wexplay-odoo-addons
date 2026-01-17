@@ -1,12 +1,15 @@
 /** @odoo-module **/
 
-console.log("WEXPLAY_PRINT: JS cargado");
+console.log("WEXPLAY_PRINT: JS cargado (ByKind)");
 
-import { registry } from "@web/core/registry";  
+import { registry } from "@web/core/registry";
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { printImageBase64, printQzPdfFileUrl } from "./qz_print";
+import { browser } from "@web/core/browser/browser";
 import { rpc } from "@web/core/network/rpc";
+
+// Usamos el core único (fuente de verdad) desde el alias público del módulo
+import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
 
 class PrintCenterModal extends Component {
     setup() {
@@ -25,91 +28,88 @@ class PrintCenterModal extends Component {
         this.props.close();
     }
 
-    async printProductLabel() {
-    const productId = this.props.record?.resId;
-    if (!productId) {
-        this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
-        return;
+    _abs(url) {
+        return new URL(url, browser.location.origin).toString();
     }
 
-    try {
-        // 1) Crear wizard product.label.layout
-        const created = await this.orm.create("product.label.layout", [{
-            product_tmpl_ids: [[6, 0, [productId]]], // many2many
-            print_format: "2x7xprice",
-            custom_quantity: 1,
-            move_quantity: "custom",
-        }]);
+    _getActiveId() {
+        return this.props.record?.resId;
+    }
 
-        const wizardId = Array.isArray(created) ? created[0] : created;
+    _reportUrl(reportName) {
+        const id = this._getActiveId();
+        return this._abs(`/report/pdf/${reportName}/${id}`);
+    }
 
-        // 2) Ejecutar process
-        const action = await this.orm.call(
-            "product.label.layout",
-            "process",
-            [[wizardId]],
-            {
+    async printProductLabel() {
+        const productId = this._getActiveId();
+        if (!productId) {
+            this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
+            return;
+        }
+
+        try {
+            // 1) Crear wizard product.label.layout (mantenemos tu flujo intacto)
+            const created = await this.orm.create("product.label.layout", [
+                {
+                    product_tmpl_ids: [[6, 0, [productId]]],
+                    print_format: "2x7xprice",
+                    custom_quantity: 1,
+                    move_quantity: "custom",
+                },
+            ]);
+
+            const wizardId = Array.isArray(created) ? created[0] : created;
+
+            // 2) Ejecutar process (mantenemos tu flujo)
+            const action = await this.orm.call("product.label.layout", "process", [[wizardId]], {
                 context: {
                     active_model: "product.template",
                     active_id: productId,
                     active_ids: [productId],
                 },
-            }
-        );
+            });
 
-        // 3) Ejecutar acción
-        if (action?.type === "ir.actions.report") {
-            const printerName = "Brother QL-710W";
+            // 3) Si devuelve reporte, imprimimos por ByKind (label)
+            if (action?.type === "ir.actions.report") {
+                const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
+                const reportUrl = this._reportUrl(reportName);
 
-            // Tu reporte custom (NO dependemos del report_name del wizard)
-            const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
+                console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, productId });
 
-            // IDs a imprimir (usa los del context si vienen; fallback a productId)
-            const ids =
-                action.context?.active_ids ||
-                (action.context?.active_id ? [action.context.active_id] : []) ||
-                (productId ? [productId] : []);
+                await printOdooPdfUrlByKind("label", reportUrl, this.env);
 
-            if (!ids.length) {
-                throw new Error("No se encontraron IDs para imprimir el reporte.");
+                this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
+                return;
             }
 
-            // URL del PDF (puedes usar ids[0] o productId; aquí uso ids[0])
-            // Pedir URL firmada al backend (requiere estar logueado; auth=user)
-            const { pdf_url } = await rpc("/wexplay/label/signed_url", { product_id: ids[0] });
-
-            console.log("WEXPLAY_PRINT signed pdf_url:", pdf_url, { reportName, ids, printerName });
-
-            // Enviar a QZ usando URL pública tokenizada (auth=public)
-            await printQzPdfFileUrl(pdf_url, printerName);
-
-            this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
-
-        } else {
+            // 4) Si no es reporte, ejecutamos acción estándar (sin cambios)
             await this.actionService.doAction(action);
             this.notification.add("Etiqueta generada correctamente.", { type: "success" });
+        } catch (error) {
+            console.error("WEXPLAY_PRINT: error impresión", error);
+            this.notification.add(`Error generando la etiqueta: ${error?.message || error}`, { type: "danger" });
         }
-    } catch (error) {
-        console.error("WEXPLAY_PRINT: error impresión", error);
-        this.notification.add(`Error generando la etiqueta: ${error?.message || error}`, { type: "danger" });
     }
-}
-
 
     async printTestQz() {
+        // Mantenemos el test, pero lo hacemos pasar por ByKind para validar config real
+        const productId = this._getActiveId();
+        if (!productId) {
+            this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
+            return;
+        }
         try {
-            // PNG 1x1 transparente (solo para comprobar canal de impresión)
-            const tinyPng =
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=";
+            const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
+            const reportUrl = this._reportUrl(reportName);
 
-            const printerName = "Brother QL-710W";
-            await printImageBase64(tinyPng, printerName);
+            await printOdooPdfUrlByKind("label", reportUrl, this.env);
 
-            this.notification.add(`QZ: trabajo enviado a ${printerName}.`, { type: "success" });
+            this.notification.add("QZ: trabajo de prueba enviado por ByKind (label).", { type: "success" });
         } catch (error) {
             console.error("WEXPLAY_PRINT: error QZ test", error);
             this.notification.add(
-                "QZ: error enviando a impresora. Revisa QZ Tray abierto y nombre de impresora.",
+                `QZ: error enviando por ByKind. ${error?.message || error}`,
                 { type: "danger" }
             );
         }
@@ -123,7 +123,6 @@ registry.category("actions").add("wexplay_product_print.print_center", async (en
 
     env.services.notification.add("Wexplay Print: acción ejecutada", { type: "info" });
 
-    // active_id viene del botón type="action" en la vista del producto
     const activeId = action?.context?.active_id;
 
     env.services.dialog.add(PrintCenterModal, {
