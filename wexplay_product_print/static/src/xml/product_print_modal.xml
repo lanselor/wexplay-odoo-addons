@@ -6,16 +6,45 @@
         <div class="modal-content">
 
           <div class="modal-header">
-            <h5 class="modal-title">Centro de impresión</h5>
+            <h5 class="modal-title">Centro de Impresión - Productos</h5>
             <button type="button" class="btn-close" aria-label="Close" t-on-click="close"/>
           </div>
 
           <div class="modal-body">
             <div class="mb-3">
-              <div class="fw-bold mb-2">Etiquetas (Brother QL-700)</div>
-              <button type="button" class="btn btn-primary me-2" t-on-click="printProductLabel">
-                Etiqueta de producto
-              </button>
+              <div class="fw-bold mb-2">Etiquetas de producto</div>
+
+              <!-- Controles en horizontal -->
+              <div class="d-flex align-items-center gap-2">
+                <!-- Botón - -->
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        t-on-click="decrementQty"
+                        title="Restar">
+                  -
+                </button>
+
+                <!-- Input cantidad -->
+                <input type="number"
+                       class="form-control form-control-sm"
+                       style="width: 90px;"
+                       min="1"
+                       step="1"
+                       t-att-value="state.qty"
+                       t-on-input="onQtyInput"/>
+
+                <!-- Botón + -->
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        t-on-click="incrementQty"
+                        title="Sumar">
+                  +
+                </button>
+
+                <!-- Botón imprimir -->
+                <button type="button" class="btn btn-primary"
+                        t-on-click="printProductLabel">
+                  Etiqueta de producto
+                </button>
+              </div>
 
             </div>
           </div>

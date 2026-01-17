@@ -1,14 +1,11 @@
 /** @odoo-module **/
 
-console.log("WEXPLAY_PRINT: JS cargado (ByKind)");
+console.log("WEXPLAY_PRINT: JS cargado (ByKind + qty)");
 
 import { registry } from "@web/core/registry";
-import { Component } from "@odoo/owl";
+import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
-import { rpc } from "@web/core/network/rpc";
-
-// Usamos el core único (fuente de verdad) desde el alias público del módulo
 import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
 
 class PrintCenterModal extends Component {
@@ -17,6 +14,9 @@ class PrintCenterModal extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.dialog = useService("dialog");
+
+        // Estado mínimo para la cantidad
+        this.state = useState({ qty: 1 });
 
         console.log("WEXPLAY_PRINT: setup ejecutado", {
             orm: this.orm,
@@ -41,6 +41,25 @@ class PrintCenterModal extends Component {
         return this._abs(`/report/pdf/${reportName}/${id}`);
     }
 
+    // --- UI qty controls (mínimo 1) ---
+    _sanitizeQty(value) {
+        const n = Number.parseInt(value, 10);
+        if (Number.isNaN(n) || n < 1) return 1;
+        return n;
+    }
+
+    onQtyInput(ev) {
+        this.state.qty = this._sanitizeQty(ev.target.value);
+    }
+
+    incrementQty() {
+        this.state.qty = this._sanitizeQty(this.state.qty + 1);
+    }
+
+    decrementQty() {
+        this.state.qty = this._sanitizeQty(this.state.qty - 1);
+    }
+
     async printProductLabel() {
         const productId = this._getActiveId();
         if (!productId) {
@@ -48,20 +67,22 @@ class PrintCenterModal extends Component {
             return;
         }
 
+        const qty = this._sanitizeQty(this.state.qty);
+
         try {
-            // 1) Crear wizard product.label.layout (mantenemos tu flujo intacto)
+            // 1) Crear wizard product.label.layout (solo cambia custom_quantity)
             const created = await this.orm.create("product.label.layout", [
                 {
                     product_tmpl_ids: [[6, 0, [productId]]],
                     print_format: "2x7xprice",
-                    custom_quantity: 1,
+                    custom_quantity: qty,      // <-- AQUÍ la cantidad
                     move_quantity: "custom",
                 },
             ]);
 
             const wizardId = Array.isArray(created) ? created[0] : created;
 
-            // 2) Ejecutar process (mantenemos tu flujo)
+            // 2) Ejecutar process
             const action = await this.orm.call("product.label.layout", "process", [[wizardId]], {
                 context: {
                     active_model: "product.template",
@@ -70,48 +91,22 @@ class PrintCenterModal extends Component {
                 },
             });
 
-            // 3) Si devuelve reporte, imprimimos por ByKind (label)
+            // 3) Imprimir por ByKind (label)
             if (action?.type === "ir.actions.report") {
                 const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
                 const reportUrl = this._reportUrl(reportName);
 
-                console.log("WEXPLAY_PRINT reportUrl:", reportUrl, { reportName, productId });
-
                 await printOdooPdfUrlByKind("label", reportUrl, this.env);
 
-                this.notification.add("Etiqueta enviada a QZ correctamente.", { type: "success" });
+                this.notification.add(`Etiqueta enviada (${qty} uds).`, { type: "success" });
                 return;
             }
 
-            // 4) Si no es reporte, ejecutamos acción estándar (sin cambios)
             await this.actionService.doAction(action);
             this.notification.add("Etiqueta generada correctamente.", { type: "success" });
         } catch (error) {
             console.error("WEXPLAY_PRINT: error impresión", error);
             this.notification.add(`Error generando la etiqueta: ${error?.message || error}`, { type: "danger" });
-        }
-    }
-
-    async printTestQz() {
-        // Mantenemos el test, pero lo hacemos pasar por ByKind para validar config real
-        const productId = this._getActiveId();
-        if (!productId) {
-            this.notification.add("No se pudo determinar el producto actual.", { type: "danger" });
-            return;
-        }
-        try {
-            const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
-            const reportUrl = this._reportUrl(reportName);
-
-            await printOdooPdfUrlByKind("label", reportUrl, this.env);
-
-            this.notification.add("QZ: trabajo de prueba enviado por ByKind (label).", { type: "success" });
-        } catch (error) {
-            console.error("WEXPLAY_PRINT: error QZ test", error);
-            this.notification.add(
-                `QZ: error enviando por ByKind. ${error?.message || error}`,
-                { type: "danger" }
-            );
         }
     }
 }
