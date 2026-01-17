@@ -4,7 +4,7 @@ console.log("🔥🔥🔥 QZ_PRINT VERSION 27🔥🔥🔥");
 import { browser } from "@web/core/browser/browser";
 
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
-
+const WEX_QZ_DEBUG_FORCE_LOG = true;  // opcional
 // Evita reconfigurar security en cada llamada
 let _securityConfigured = false;
 
@@ -468,7 +468,7 @@ export async function resolvePrinterName(kind, env) {
     if (!["label", "thermal", "a4"].includes(kind)) {
         throw new Error(`resolvePrinterName: kind inválido: ${kind}`);
     }
-
+    const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]"; 
     // Defaults alineados con tu res.config.settings (allow_fallback default=True)
     const debugRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.debug, "false");
     const allowFallbackRaw = await _getConfigParam(env, WEX_QZ_PARAM_KEYS.allowFallback, "true");
@@ -503,18 +503,25 @@ export async function resolvePrinterName(kind, env) {
  */
 export async function printOdooPdfUrlByKind(kind, reportUrl, env) {
     const info = await resolvePrinterName(kind, env);
-
+    console.log(WEX_QZ_DEBUG_TAG, "printOdooPdfUrlByKind ENTER", {
+         kind,
+         reportUrl,
+         hasEnv: !!env,
+         hasOrm: !!env?.services?.orm,
+    });
     if (info.debug) {
         console.log("[QZ] printOdooPdfUrlByKind()", { kind, reportUrl, ...info });
     }
 
     // Caso normal: hay impresora configurada
     if (info.printerName) {
+        const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]";
         return printOdooPdfUrl(reportUrl, info.printerName);
     }
 
     // Sin impresora configurada
     if (!info.allowFallback) {
+        const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND-SIN IMPRESORA CONFIGURADA]";
         throw new Error(`No hay impresora configurada para '${kind}' y el fallback está desactivado.`);
     }
 
@@ -522,6 +529,8 @@ export async function printOdooPdfUrlByKind(kind, reportUrl, env) {
     await connectQz();
     const qz = await ensureQz();
     const defaultPrinter = await qz.printers.getDefault();
+
+    const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND - Impresora por defecto del sisema]";
 
     if (!defaultPrinter) {
         throw new Error("Fallback activado, pero QZ no devolvió impresora por defecto del sistema.");
