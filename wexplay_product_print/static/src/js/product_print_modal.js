@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-console.log("WEXPLAY_PRINT: JS cargado (ByKind + qty)");
+console.log("WEXPLAY_PRINT: JS cargado (ByKind + qty + wizard action report)");
 
 import { registry } from "@web/core/registry";
 import { Component, useState } from "@odoo/owl";
@@ -36,11 +36,6 @@ class PrintCenterModal extends Component {
         return this.props.record?.resId;
     }
 
-    _reportUrl(reportName) {
-        const id = this._getActiveId();
-        return this._abs(`/report/pdf/${reportName}/${id}`);
-    }
-
     // --- UI qty controls (mínimo 1) ---
     _sanitizeQty(value) {
         const n = Number.parseInt(value, 10);
@@ -60,6 +55,35 @@ class PrintCenterModal extends Component {
         this.state.qty = this._sanitizeQty(this.state.qty - 1);
     }
 
+    /**
+     * Construye una URL /report/pdf/ a partir de un ir.actions.report
+     * (mantiene el comportamiento estándar del cliente web para options/context).
+     */
+    _reportUrlFromAction(action) {
+        const reportName = action?.report_name;
+        const ctx = action?.context || {};
+
+        // Docids: priorizamos active_ids/active_id; fallback a vacío (se validará)
+        const ids =
+            ctx.active_ids ||
+            (ctx.active_id ? [ctx.active_id] : []);
+
+        if (!reportName || !ids.length) {
+            throw new Error("Acción de reporte incompleta: falta report_name o ids (active_id/active_ids).");
+        }
+
+        let url = `/report/pdf/${reportName}/${ids.join(",")}`;
+
+        // Cuando el wizard necesita options, Odoo lo pasa por ?options=...&context=...
+        if (action.data) {
+            const options = encodeURIComponent(JSON.stringify(action.data));
+            const context = encodeURIComponent(JSON.stringify({ ...ctx }));
+            url += `?options=${options}&context=${context}`;
+        }
+
+        return this._abs(url);
+    }
+
     async printProductLabel() {
         const productId = this._getActiveId();
         if (!productId) {
@@ -70,19 +94,19 @@ class PrintCenterModal extends Component {
         const qty = this._sanitizeQty(this.state.qty);
 
         try {
-            // 1) Crear wizard product.label.layout (solo cambia custom_quantity)
+            // 1) Crear wizard product.label.layout (custom_quantity = qty)
             const created = await this.orm.create("product.label.layout", [
                 {
                     product_tmpl_ids: [[6, 0, [productId]]],
                     print_format: "2x7xprice",
-                    custom_quantity: qty,      // <-- AQUÍ la cantidad
+                    custom_quantity: qty,
                     move_quantity: "custom",
                 },
             ]);
 
             const wizardId = Array.isArray(created) ? created[0] : created;
 
-            // 2) Ejecutar process
+            // 2) Ejecutar process (wizard devuelve ir.actions.report con los datos correctos)
             const action = await this.orm.call("product.label.layout", "process", [[wizardId]], {
                 context: {
                     active_model: "product.template",
@@ -91,10 +115,15 @@ class PrintCenterModal extends Component {
                 },
             });
 
-            // 3) Imprimir por ByKind (label)
+            // 3) Si es reporte, imprimimos EL REPORTE DEL WIZARD (no uno fijo)
             if (action?.type === "ir.actions.report") {
-                const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
-                const reportUrl = this._reportUrl(reportName);
+                const reportUrl = this._reportUrlFromAction(action);
+
+                console.log("WEXPLAY_PRINT: wizard reportUrl:", reportUrl, {
+                    qty,
+                    report_name: action.report_name,
+                    hasData: !!action.data,
+                });
 
                 await printOdooPdfUrlByKind("label", reportUrl, this.env);
 
@@ -102,6 +131,7 @@ class PrintCenterModal extends Component {
                 return;
             }
 
+            // Si no es un reporte, comportamiento estándar
             await this.actionService.doAction(action);
             this.notification.add("Etiqueta generada correctamente.", { type: "success" });
         } catch (error) {
