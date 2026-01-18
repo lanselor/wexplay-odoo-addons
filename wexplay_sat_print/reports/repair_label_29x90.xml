@@ -22,15 +22,19 @@
                     <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:#000;color:#fff;">
                         
                         <div style="
-                                position:absolute;
-                                left:1mm;
-                                bottom:2mm;
-                                font-size:11pt;
-                                font-weight:900;
-                                letter-spacing:0.2mm;
-                                white-space:nowrap;
+                                position: absolute;
+                                width: 29mm;
+                                height: 8mm;
+                                top: 10.5mm; 
+                                left: -10.5mm;
                                 -webkit-transform: rotate(-90deg);
-                                -webkit-transform-origin: bottom left;
+                                
+                                text-align: center;
+                                line-height: 8mm;
+                                font-size: 11pt;
+                                font-weight: 900;
+                                white-space: nowrap;
+                                color: #ffffff;
                                 ">
                             <t t-esc="o.name or ''"/>
                         </div>
