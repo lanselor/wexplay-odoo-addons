@@ -1,62 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-  <t t-name="wexplay_product_print.PrintCenterModal">
-    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
-      <div class="modal-dialog " role="document">
-        <div class="modal-content">
+    <t t-name="wexplay_product_print.PrintCenterModal">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fa fa-barcode me-2"></i>Centro de Impresión - Productos
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" t-on-click="close" aria-label="Close"/>
+                    </div>
 
-          <div class="modal-header">
-            <h5 class="modal-title">Centro de Impresión - Productos</h5>
-            <button type="button" class="btn-close" aria-label="Close" t-on-click="close"/>
-          </div>
+                    <div class="modal-body p-4">
+                        <div class="section-container p-3 border rounded bg-light">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                <i class="fa fa-cog me-2"></i>Configuración de Etiquetas
+                            </h6>
 
-          <div class="modal-body">
-            <div class="mb-3">
-              <div class="fw-bold mb-2">Etiquetas de producto</div>
+                            <div class="d-flex flex-column gap-3">
+                                <label class="fw-bold text-dark mb-0">Cantidad a imprimir</label>
+                                
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="input-group" style="max-width: 150px;">
+                                        <button type="button" class="btn btn-secondary px-3" 
+                                                t-on-click="decrementQty" title="Restar">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                        
+                                        <input type="number"
+                                               class="form-control text-center fw-bold"
+                                               min="1" step="1"
+                                               t-att-value="state.qty"
+                                               t-on-input="onQtyInput"/>
+                                        
+                                        <button type="button" class="btn btn-secondary px-3" 
+                                                t-on-click="incrementQty" title="Sumar">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
 
-              <!-- Controles en horizontal -->
-              <div class="d-flex align-items-center gap-2">
-                <!-- Botón - -->
-                <button type="button" class="btn btn-outline-secondary btn-sm"
-                        t-on-click="decrementQty"
-                        title="Restar">
-                  -
-                </button>
+                                    <button type="button" class="btn btn-primary flex-grow-1 py-2 shadow-sm"
+                                            t-on-click="printProductLabel">
+                                        <i class="fa fa-print me-2"></i> Imprimir Etiqueta
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Input cantidad -->
-                <input type="number"
-                       class="form-control form-control-sm"
-                       style="width: 90px;"
-                       min="1"
-                       step="1"
-                       t-att-value="state.qty"
-                       t-on-input="onQtyInput"/>
+                    <div class="modal-footer border-top-0 justify-content-center">
+                        <button type="button" class="btn btn-link text-muted" t-on-click="close">
+                            Cancelar y Salir
+                        </button>
+                    </div>
 
-                <!-- Botón + -->
-                <button type="button" class="btn btn-outline-secondary btn-sm"
-                        t-on-click="incrementQty"
-                        title="Sumar">
-                  +
-                </button>
-
-                <!-- Botón imprimir -->
-                <button type="button" class="btn btn-primary"
-                        t-on-click="printProductLabel">
-                  Etiqueta de producto
-                </button>
-              </div>
-
+                </div>
             </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" t-on-click="close">Cerrar</button>
-          </div>
-
         </div>
-      </div>
-    </div>
-
-    <div class="modal-backdrop fade show"></div>
-  </t>
+        <div class="modal-backdrop fade show"></div>
+    </t>
 </templates>
