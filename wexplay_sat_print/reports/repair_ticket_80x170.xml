@@ -4,36 +4,64 @@
         <t t-name="wexplay_sat_print.repair_ticket_80x170">
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="o">
-                    <div style="width:80mm;height:170mm;font-family:monospace;font-size:10pt;">
-                        <div style="text-align:center;font-weight:bold;font-size:12pt;">
-                            WEXPLAY - RESGUARDO SAT
+                    <div style="width:80mm; min-height:170mm; padding:2mm; font-family:'Arial', sans-serif; color:#000; background:#fff; box-sizing:border-box;">
+                        
+                        <div style="background:#000; color:#fff; padding:3mm; text-align:center; border-radius:1mm; margin-bottom:4mm;">
+                            <div style="font-size:10pt; text-transform:uppercase; letter-spacing:1mm; font-weight:bold; opacity:0.8;">Resguardo de Reparación</div>
+                            <div style="font-size:24pt; font-weight:900; margin-top:1mm;"><t t-esc="o.name or ''"/></div>
                         </div>
-                        <div style="text-align:center;font-size:9pt;">
-                            <t t-esc="o.company_id.name or ''"/>
-                        </div>
                         
-                        <hr style="border:0;border-top:0.2mm solid #000;margin:2mm 0;"/>
-                        
-                        <div><b>Orden:</b> <t t-esc="o.name or ''"/></div>
-                        <div><b>Cliente:</b> <t t-esc="o.partner_id.name or ''"/></div>
-                        <div><b>Tel:</b> <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/></div>
-                        <div><b>Fecha:</b> <t t-esc="o.create_date or ''"/></div>
-                        
-                        <hr style="border:0;border-top:0.2mm solid #000;margin:2mm 0;"/>
-                        
-                        <div style="margin-top:2mm;">
-                            <div><b>Descripción / Avería:</b></div>
-                            <div style="white-space:pre-wrap;">
-                                <t t-if="o.x_reported_issue">
-                                    <t t-esc="o.x_reported_issue"/>
-                                </t>
+                        <div style="border-bottom:0.5mm solid #000; padding-bottom:2mm; margin-bottom:4mm;">
+                            <div style="font-size:8pt; font-weight:bold; color:#666; text-transform:uppercase;">Información del Cliente</div>
+                            <div style="font-size:12pt; font-weight:900; margin-top:1mm;"><t t-esc="o.partner_id.name or ''"/></div>
+                            <div style="font-size:10pt; font-weight:bold; font-family:monospace; margin-top:1mm;">
+                                <i class="fa fa-phone"/> <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                            </div>
+                            <div style="font-size:9pt; margin-top:1mm; font-style:italic;">
+                                Entrada: <t t-esc="o.create_date" t-options='{"widget": "date", "format": "dd/MM/yyyy HH:mm"}'/>
                             </div>
                         </div>
                         
-                        <hr style="border:0;border-top:0.2mm solid #000;margin:2mm 0;"/>
+                        <div style="background:#f2f2f2; padding:2mm; border-radius:1mm; margin-bottom:4mm;">
+                            <div style="font-size:8pt; font-weight:bold; color:#666; text-transform:uppercase; margin-bottom:1mm;">Datos del Dispositivo</div>
+                            <table style="width:100%; font-size:9pt; border-collapse:collapse;">
+                                <tr>
+                                    <td style="font-weight:bold; width:30%;">Modelo:</td>
+                                    <td><t t-esc="o.x_model_id.display_name if 'x_model_id' in o._fields else 'N/A'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">IMEI/S/N:</td>
+                                    <td style="font-family:monospace;"><t t-esc="o.x_imei if 'x_imei' in o._fields else 'N/A'"/></td>
+                                </tr>
+                            </table>
+                        </div>
                         
-                        <div style="font-size:8pt;">
-                            Condiciones: conservar este resguardo para la recogida.
+                        <div style="margin-bottom:4mm;">
+                            <div style="font-size:8pt; font-weight:bold; color:#666; text-transform:uppercase; border-bottom:0.2mm solid #ccc; padding-bottom:1mm; margin-bottom:2mm;">Descripción de la Avería</div>
+                            <div style="font-size:10pt; line-height:1.4; white-space:pre-wrap; font-style:italic;">
+                                <t t-if="o.x_reported_issue">
+                                    <t t-esc="o.x_reported_issue"/>
+                                </t>
+                                <t t-else="">— No se ha especificado avería —</t>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align:center; margin-top:6mm; margin-bottom:6mm;">
+                            <div style="font-size:7pt; color:#666; margin-bottom:1mm;">Identificador de Orden</div>
+                            <img t-if="o.name" t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=600&amp;height=100' % o.name" style="width:60mm; height:10mm;"/>
+                        </div>
+                        
+                        <div style="border-top:0.5mm solid #000; padding-top:4mm; text-align:center;">
+                            <div style="font-size:14pt; font-weight:900; color:#714B67;">
+                                we<span style="color:#4eb052;">x</span>play
+                            </div>
+                            <div style="font-size:7pt; color:#666; margin-top:2mm; text-align:justify;">
+                                <b>IMPORTANTE:</b> Es obligatorio presentar este resguardo para retirar el dispositivo. 
+                                <t t-esc="o.company_id.name"/>. Tel: <t t-esc="o.company_id.phone"/>.
+                            </div>
+                            <div style="font-size:6pt; color:#aaa; margin-top:4mm; text-transform:uppercase;">
+                                DOCUMENTO INTERNO SAT - GRACIAS POR SU CONFIANZA
+                            </div>
                         </div>
                     </div>
                 </t>
