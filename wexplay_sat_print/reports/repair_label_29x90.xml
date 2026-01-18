@@ -5,91 +5,79 @@
             <t t-foreach="docs" t-as="o">
                 <style>
                     @page { size: 90mm 29mm; margin: 0; }
-                    html, body { margin: 0 !important; padding: 0 !important; cursor: default; }
-                    .main-container {
-                    width: 90mm; height: 29mm; 
-                    margin: 0; padding: 0; 
-                    position: relative; 
-                    overflow: hidden; 
+                    html, body { margin: 0 !important; padding: 0 !important; }
+                    .label-wrapper {
+                    width: 90mm;
+                    height: 29mm;
+                    position: relative;
+                    overflow: hidden;
                     font-family: 'Arial', sans-serif;
                     background: #fff;
+                    color: #000;
                     }
                 </style>
                 
-                <div class="main-container">
+                <div class="label-wrapper">
                     
-                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 7.5mm; background: #000; color: #fff;">
+                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 8mm; background: #000; color: #fff;">
                         <div style="
                                 position: absolute;
-                                bottom: 2mm;
-                                left: 0.5mm;
-                                width: 25mm;
-                                height: 6mm;
+                                width: 29mm;
+                                height: 8mm;
+                                top: 10.5mm; 
+                                left: -10.5mm;
                                 transform: rotate(-90deg);
-                                transform-origin: bottom left;
+                                text-align: center;
                                 font-size: 11pt;
                                 font-weight: 900;
+                                letter-spacing: 0.5mm;
                                 white-space: nowrap;
-                                text-align: left;
-                                line-height: 6mm;
                                 ">
-                            <t t-esc="o.name or ''"/>
+                            <t t-esc="o.name"/>
                         </div>
                     </div>
                     
-                    <div style="position: absolute; left: 9mm; top: 0; width: 62mm; height: 29mm; padding-top: 1.5mm;">
+                    <div style="position: absolute; left: 8mm; top: 0; width: 82mm; height: 29mm; padding: 1.5mm 2mm;">
                         
-                        <div style="border-bottom: 0.4mm solid #000; padding-bottom: 0.8mm;">
-                            <div style="font-size: 6.5pt; text-transform: uppercase; font-weight: 800; color: #666; line-height: 1;">Cliente</div>
-                            <div style="font-size: 10pt; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;">
-                                <t t-esc="o.partner_id.name if o.partner_id else ''"/>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 6.5pt; text-transform: uppercase; font-weight: 800; color: #666;">Cliente</div>
+                                <div style="font-size: 10.5pt; font-weight: 900; margin-top: 0.5mm;">
+                                    <t t-esc="o.partner_id.name if o.partner_id else ''"/>
+                                </div>
+                                <div style="font-size: 9pt; font-weight: 800; font-family: monospace; margin-top: 0.8mm; color: #333;">
+                                    <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                                </div>
                             </div>
-                            <div style="font-size: 9pt; font-weight: 800; font-family: monospace; color: #333; line-height: 1;">
-                                <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                            <div style="text-align: right; min-width: 25mm;">
+                                <div style="font-size: 6.5pt; text-transform: uppercase; font-weight: 800; color: #666;">Entrada</div>
+                                <div style="font-size: 9pt; font-weight: 900; margin-top: 0.5mm;">
+                                    <t t-esc="o.create_date.strftime('%d/%m/%Y') if o.create_date else ''"/>
+                                </div>
                             </div>
                         </div>
                         
-                        <div style="padding-top: 1.2mm;">
+                        <div style="width: 100%; border-bottom: 0.5mm solid #000; margin-top: 1.5mm; margin-bottom: 1.2mm;"></div>
+                        
+                        <div style="width: 100%;">
                             <div style="font-size: 6.5pt; font-weight: 800; color: #666; text-transform: uppercase;">Avería / Notas</div>
-                            <div style="font-size: 8pt; line-height: 1.1; font-style: italic; color: #000; max-height: 11mm; overflow: hidden;">
+                            <div style="font-size: 8pt; line-height: 1.2; font-style: italic; margin-top: 0.5mm; max-height: 10mm; overflow: hidden;">
                                 <t t-if="o.x_reported_issue">
-                                    <t t-esc="o.x_reported_issue[:130]"/>
-                                    <t t-if="len(o.x_reported_issue) > 130">...</t>
+                                    <t t-esc="o.x_reported_issue[:110]"/>
+                                    <t t-if="len(o.x_reported_issue) > 110">...</t>
                                 </t>
                                 <t t-else="">— Sin notas —</t>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div style="position: absolute; right: 0; top: 0; width: 18mm; height: 29mm; border-left: 0.2mm dashed #ccc; padding: 1.5mm 1mm 0 1mm; box-sizing: border-box;">
                         
-                        <div style="text-align: center;">
-                            <div style="font-size: 6pt; font-weight: 800; color: #666; text-transform: uppercase;">Entrada</div>
-                            <div style="font-size: 8pt; font-weight: 900;">
-                                <t t-esc="o.create_date.strftime('%d/%m/%Y') if o.create_date else ''"/>
+                        <div style="position: absolute; bottom: 1.5mm; left: 2mm; right: 2mm; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="font-size: 5pt; color: #aaa; text-transform: uppercase;">
+                                Documento Interno SAT
+                            </div>
+                            <div style="font-size: 10.5pt; font-weight: 900; color: #714B67; line-height: 1;">
+                                we<span style="color:#4eb052;">x</span>play
                             </div>
                         </div>
-                        
-                        <div style="
-                                position: absolute;
-                                bottom: 2mm;
-                                right: 4mm;
-                                width: 20mm;
-                                height: 6mm;
-                                transform: rotate(-90deg);
-                                transform-origin: bottom right;
-                                font-size: 10pt;
-                                font-weight: 900;
-                                color: #714B67;
-                                white-space: nowrap;
-                                text-align: right;
-                                ">
-                            we<span style="color:#4eb052;">x</span>play
-                        </div>
-                    </div>
-                    
-                    <div style="position: absolute; bottom: 0.5mm; left: 9mm; font-size: 4pt; color: #bbb;">
-                        DOCUMENTO INTERNO SAT
                     </div>
                     
                 </div>
