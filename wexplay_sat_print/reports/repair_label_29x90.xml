@@ -10,7 +10,7 @@
                     width:90mm;height:29mm;
                     margin:0;padding:0;
                     position:relative;
-                    overflow:visible;
+                    overflow:hidden;
                     font-family:'Arial',sans-serif;
                     background:#fff;
                     }
@@ -19,33 +19,23 @@
                 <div class="main-container">
                     
                     <!-- Banda negra izquierda -->
-                    <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:#000;overflow:visible;">
-                        <!-- Caja grande para que al rotar no se recorte -->
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:#000;color:#fff;">
+                        
                         <div style="
                                 position:absolute;
-                                left:0;
-                                bottom:0;
-                                width:29mm;          /* ancho “virtual” antes de rotar */
-                                height:8mm;          /* alto “virtual” antes de rotar */
-                                overflow:visible;
+                                left:1mm;
+                                bottom:2mm;
+                                font-size:11pt;
+                                font-weight:900;
+                                letter-spacing:0.2mm;
+                                white-space:nowrap;
                                 -webkit-transform: rotate(-90deg);
-                                -webkit-transform-origin: 0% 100%;
+                                -webkit-transform-origin: bottom left;
                                 ">
-                            <div style="
-                                    position:absolute;
-                                    left:1mm;
-                                    bottom:1mm;
-                                    font-size:11pt;
-                                    font-weight:900;
-                                    color:#fff;
-                                    white-space:nowrap;
-                                    line-height:1;
-                                    ">
-                                <t t-esc="o.name or ''"/>
-                            </div>
+                            <t t-esc="o.name or ''"/>
                         </div>
+                        
                     </div>
-
                     
                     <!-- Columna central -->
                     <div style="position:absolute;left:9mm;top:0;width:62mm;height:29mm;padding-top:1.5mm;box-sizing:border-box;">
