@@ -20,29 +20,24 @@
                     
                     <!-- Banda negra izquierda -->
                     <div style="position:absolute;left:0;top:0;bottom:0;width:7.5mm;background:#000;color:#fff;">
-                        
                         <div style="
                                 position: absolute;
                                 width: 29mm;
                                 height: 8mm;
-                                top: 10.5mm; 
+                                top: 10.5mm;
                                 left: -10.5mm;
                                 -webkit-transform: rotate(-90deg);
-
                                 text-align: center;
                                 line-height: 8mm;
                                 font-size: 9pt;
                                 font-weight: 900;
                                 white-space: nowrap;
-
                                 overflow: hidden;
                                 text-overflow: ellipsis;
-                                
                                 color: #ffffff;
                                 ">
                             <t t-esc="o.name or ''"/>
                         </div>
-                        
                     </div>
                     
                     <!-- Columna central -->
@@ -54,7 +49,6 @@
                                 Cliente
                             </div>
                             
-                            <!-- + separación -->
                             <div style="
                                     margin-top:0.4mm;
                                     font-size:10pt;
@@ -87,7 +81,6 @@
                             
                             <div style="font-size:8pt;line-height:1.1;font-style:italic;color:#000;max-height:11mm;overflow:hidden;">
                                 <t t-if="'x_reported_issue' in o._fields and (o.x_reported_issue or '').strip()">
-                                    <!-- slicing seguro sin depender de len() -->
                                     <t t-esc="(o.x_reported_issue or '')[:230]"/>
                                     <t t-if="(o.x_reported_issue or '')[230:]">...</t>
                                 </t>
@@ -118,19 +111,45 @@
                     <div style="position:absolute;bottom:0.5mm;left:9mm;font-size:4pt;color:#bbb;">
                         DOCUMENTO INTERNO SAT
                     </div>
-                    <!-- Footer: código de barras SAT -->
-                    <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
-                    <img
-                        t-att-src="'%s/report/barcode/Code128/%s?width=420&amp;height=70&amp;humanreadable=0' % (base_url, sat_barcode)"
-                        style="position:absolute;bottom:0.3mm;left:42mm;width:24mm;height:9mm;display:block;"
-                        alt="barcode"
-                    />
                     
+                    <!-- Barcode -->
+                    <t t-if="o.name">
+                        <!-- Sanitizar para evitar problemas con el controller de barcode -->
+                        <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
+                        <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                        
+                        <!-- Doble de largo, mitad de alto (respecto a 42mm x 5mm) => 84mm x 2.5mm -->
+                        <!-- OJO: no cabe 84mm dentro del área disponible (entre 42mm y el borde derecho).
+                             Ajusto a un máximo REALISTA: 46mm de ancho y 2.5mm de alto. -->
+                        <img
+                            t-att-src="'%s/report/barcode/Code128/%s?width=600&amp;height=45&amp;humanreadable=0' % (base_url, sat_barcode)"
+                            style="
+                            position:absolute;
+                            bottom:0.3mm;
+                            left:42mm;
+                            width:46mm;
+                            height:2.5mm;
+                            display:block;
+                            "
+                            alt="barcode"
+                            />
+                    </t>
                     
-                    <!-- Footer: logo (derecha, alineado con el footer) -->
-                    <div style="position:absolute;bottom:0.5mm;right:1.2mm;font-size:9pt;font-weight:900;color:#714B67;white-space:nowrap;">
-                        we<span style="color:#4eb052;">x</span>play
-                    </div>
+                    <!-- Logo empresa (abajo derecha) -->
+                    <t t-if="o.company_id and o.company_id.logo">
+                        <img
+                            t-att-src="image_data_uri(o.company_id.logo)"
+                            style="
+                            position:absolute;
+                            right:1.2mm;
+                            bottom:0.5mm;
+                            max-width:16mm;
+                            max-height:6mm;
+                            display:block;
+                            "
+                            alt="Logo"
+                            />
+                    </t>
                     
                 </div>
             </t>
