@@ -6,47 +6,63 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                
-                <app string="Wexplay Print / QZ" name="wexplay_sat_print_qz">
-                    <block title="Estado y diagnóstico">
-                        <setting string="Conexión QZ Tray">
-                            <!-- Widget UI -->
+                <app string="Wexplay Print / QZ" name="wexplay_sat_print_qz" logo="/wexplay_sat_print/static/description/icon.png">
+                    
+                    <block title="Estado y Diagnóstico" name="wexplay_status_block">
+                        <setting string="Conexión QZ Tray" help="Estado actual del servicio QZ Tray en este navegador.">
                             <field name="wex_qz_ui" widget="wex_qz_settings_widget"/>
                             
-                            <!-- Snapshot guardado en compañía -->
-                            <div class="mt16">
-                                <div><strong>Último test:</strong> <field name="wex_qz_last_test_ok"/></div>
-                                <div><strong>Fecha:</strong> <field name="wex_qz_last_test_at"/></div>
-                                <div><strong>Usuario:</strong> <field name="wex_qz_last_test_user_id"/></div>
+                            <div class="content-group mt-3 border-start ps-3">
+                                <div class="row">
+                                    <div class="col-12 text-muted mb-2">
+                                        <i class="fa fa-info-circle me-1"/> Información del último diagnóstico
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="fw-bold">Resultado:</span> <field name="wex_qz_last_test_ok" class="ms-1"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="fw-bold">Fecha:</span> <field name="wex_qz_last_test_at" class="ms-1"/>
+                                    </div>
+                                    <div class="col-md-12 mt-1">
+                                        <span class="fw-bold">Ejecutado por:</span> <field name="wex_qz_last_test_user_id" class="ms-1"/>
+                                    </div>
+                                </div>
                             </div>
                         </setting>
                     </block>
                     
-                    <block title="Predeterminados por tipo">
-                        <setting string="Etiquetas">
-                            <field name="wex_qz_label_printer" placeholder="Selecciona o escribe nombre exacto"/>
-                        </setting>
-                        
-                        <setting string="Térmica">
-                            <field name="wex_qz_thermal_printer" placeholder="Selecciona o escribe nombre exacto"/>
-                        </setting>
-                        
-                        <setting string="A4">
-                            <field name="wex_qz_a4_printer" placeholder="Selecciona o escribe nombre exacto"/>
-                        </setting>
+                    <block title="Configuración de Impresoras" name="wexplay_printers_block">
+                        <div class="text-muted mb-3">
+                            <i class="fa fa-print me-1"/> Define las impresoras predeterminadas para cada formato de documento.
+                        </div>
+                        <div class="row mt-2">
+                            <setting string="Etiquetas (ZPL/EPL)" help="Usada para etiquetas Brother o Zebra.">
+                                <field name="wex_qz_label_printer" placeholder="Ej: Brother_QL_800"/>
+                            </setting>
+                            
+                            <setting string="Térmica (Ticket)" help="Para tickets de resguardo de 80mm.">
+                                <field name="wex_qz_thermal_printer" placeholder="Ej: EPSON_TM_T20"/>
+                            </setting>
+                            
+                            <setting string="A4 Estándar" help="Impresora de oficina convencional.">
+                                <field name="wex_qz_a4_printer" placeholder="Ej: HP_LaserJet_Pro"/>
+                            </setting>
+                        </div>
                     </block>
                     
-                    <block title="Avanzado">
-                        <setting string="Debug">
-                            <field name="wex_qz_debug"/>
-                        </setting>
-                        
-                        <setting string="Fallback">
-                            <field name="wex_qz_allow_fallback"/>
-                        </setting>
+                    <block title="Opciones Avanzadas" name="wexplay_advanced_block">
+                        <div class="row">
+                            <setting string="Modo Depuración" help="Muestra logs detallados en la consola del navegador.">
+                                <field name="wex_qz_debug"/>
+                            </setting>
+                            
+                            <setting string="Permitir Fallback" help="Si falla QZ, usar el diálogo de impresión nativo.">
+                                <field name="wex_qz_allow_fallback"/>
+                            </setting>
+                        </div>
                     </block>
+                    
                 </app>
-                
             </xpath>
         </field>
     </record>
