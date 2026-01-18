@@ -25,9 +25,7 @@
 
               <!-- Etiqueta accesorios + selector cantidad -->
               <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
-                  Etiqueta accesorios
-                </button>
+
 
                 <div class="input-group input-group-sm" style="width: 160px;">
                   <button type="button" class="btn btn-outline-secondary" t-on-click="decrementAccessoryQty">-</button>
@@ -38,6 +36,9 @@
                          t-on-input="onAccessoryQtyInput"/>
                   <button type="button" class="btn btn-outline-secondary" t-on-click="incrementAccessoryQty">+</button>
                 </div>
+                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
+                  Etiqueta accesorios
+                </button>
               </div>
             </div>
 
@@ -48,6 +49,12 @@
 
               <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
                 Resguardo(Tamaño Ticket)
+              </button>
+            </div>
+            <hr/>
+            <div class="mb-3">
+              <button type="button" class="btn btn-outline-success btn-lg" t-on-click="onPrintAll">
+                Imprimir Todo
               </button>
             </div>
 

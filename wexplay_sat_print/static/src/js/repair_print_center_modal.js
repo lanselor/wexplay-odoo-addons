@@ -76,6 +76,28 @@ export class SatPrintCenterModal extends Component {
     // ------------------------------
     // Acciones
     // ------------------------------
+    async onPrintAll() {
+    // Validación única (evita 3 mensajes de “no se pudo determinar…”)
+        const id = this._getActiveId();
+        if (!id) {
+            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
+            return;
+        }
+
+        try {
+            // Secuencial (más estable con QZ/colas/drivers)
+            await this.onPrintLabel29x90();
+            await this.onPrintLabel29x42();
+            await this.onPrintTicket80x170();
+
+            this.notification.add("Impresión completa enviada a QZ Tray.", { type: "success" });
+        } catch (e) {
+            // Si falla una, aborta (el resto no se lanza)
+            this.notification.add(`Error en "Imprimir todo": ${e?.message || e}`, { type: "danger" });
+        }
+    }
+    
+
     async onPrintLabel29x90() {
         const id = this._getActiveId();
         if (!id) {
