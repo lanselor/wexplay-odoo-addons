@@ -149,7 +149,7 @@
                                     <!-- Fecha (si tienes create_date / write_date / fecha entrada) -->
                                     <div class="wex_date">
                                         <t t-if="o.create_date">
-                                            <t t-esc="format_datetime(o.create_date, tz='Europe/Madrid', dt_format='dd/MM/yyyy')"/>
+                                            <t t-esc="o.create_date"/>
                                         </t>
                                     </div>
                                     
