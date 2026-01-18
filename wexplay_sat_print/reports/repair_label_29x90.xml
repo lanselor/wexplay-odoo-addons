@@ -112,23 +112,19 @@
                         DOCUMENTO INTERNO SAT
                     </div>
                     
-                    <!-- Barcode -->
                     <t t-if="o.name">
                         <!-- Sanitizar para evitar problemas con el controller de barcode -->
                         <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
                         <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
                         
-                        <!-- Doble de largo, mitad de alto (respecto a 42mm x 5mm) => 84mm x 2.5mm -->
-                        <!-- OJO: no cabe 84mm dentro del área disponible (entre 42mm y el borde derecho).
-                             Ajusto a un máximo REALISTA: 46mm de ancho y 2.5mm de alto. -->
                         <img
-                            t-att-src="'%s/report/barcode/Code128/%s?width=600&amp;height=45&amp;humanreadable=0' % (base_url, sat_barcode)"
+                            t-att-src="'%s/report/barcode/Code128/%s?width=600&amp;height=90&amp;humanreadable=0' % (base_url, sat_barcode)"
                             style="
                             position:absolute;
                             bottom:0.3mm;
-                            left:42mm;
+                            left:34mm;
                             width:46mm;
-                            height:2.5mm;
+                            height:5mm;
                             display:block;
                             "
                             alt="barcode"
