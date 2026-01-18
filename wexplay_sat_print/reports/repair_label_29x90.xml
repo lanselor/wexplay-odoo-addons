@@ -19,7 +19,7 @@
                 <div class="main-container">
                     
                     <!-- Banda negra izquierda -->
-                    <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:#000;color:#fff;">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:7,5mm;background:#000;color:#fff;">
                         
                         <div style="
                                 position: absolute;
@@ -31,7 +31,7 @@
                                 
                                 text-align: center;
                                 line-height: 8mm;
-                                font-size: 11pt;
+                                font-size: 9pt;
                                 font-weight: 900;
                                 white-space: nowrap;
                                 color: #ffffff;
@@ -78,14 +78,14 @@
                         <!-- Avería -->
                         <div style="padding-top:1.2mm;">
                             <div style="font-size:6.5pt;font-weight:800;color:#666;text-transform:uppercase;">
-                                Avería / Notas
+                                Averia / Notas
                             </div>
                             
                             <div style="font-size:8pt;line-height:1.1;font-style:italic;color:#000;max-height:11mm;overflow:hidden;">
                                 <t t-if="'x_reported_issue' in o._fields and (o.x_reported_issue or '').strip()">
                                     <!-- slicing seguro sin depender de len() -->
-                                    <t t-esc="(o.x_reported_issue or '')[:130]"/>
-                                    <t t-if="(o.x_reported_issue or '')[130:]">...</t>
+                                    <t t-esc="(o.x_reported_issue or '')[:230]"/>
+                                    <t t-if="(o.x_reported_issue or '')[230:]">...</t>
                                 </t>
                                 <t t-else="">— Sin notas —</t>
                             </div>
