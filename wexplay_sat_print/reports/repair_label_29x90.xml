@@ -38,10 +38,7 @@
                                 <div style="font-weight:700;">ENTRADA</div>
                                 <!-- Corrección: mostrar fecha SOLO si existe; si no, vacío -->
                                 <div>
-                                    <t t-if="o.create_date">
-                                        <span t-field="o.create_date" t-options='{"widget": "datetime"}'/>
-                                    </t>
-                                    <t t-else="">—</t>
+                                    <t t-esc="o.create_date and o.create_date.strftime('%d/%m/%Y') or ''"/>
                                 </div>
                             </div>
                         </div>
@@ -98,7 +95,7 @@
                                 
                                 <div style="font-size:8.2pt;line-height:1.15;max-height:13.5mm;overflow:hidden;">
                                     <t t-if="getattr(o, 'x_reported_issue', False)">
-                                        <t t-esc="o.x_reported_issue"/>
+                                        <t t-esc="o.x_reported_issue or ''"/>
                                     </t>
                                     <t t-else="">
                                         —
