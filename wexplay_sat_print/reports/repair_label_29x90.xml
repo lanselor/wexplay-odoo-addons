@@ -19,7 +19,7 @@
                 <div class="main-container">
                     
                     <!-- Banda negra izquierda -->
-                    <div style="position:absolute;left:0;top:0;bottom:0;width:7,5mm;background:#000;color:#fff;">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:7.5mm;background:#000;color:#fff;">
                         
                         <div style="
                                 position: absolute;
@@ -28,12 +28,16 @@
                                 top: 10.5mm; 
                                 left: -10.5mm;
                                 -webkit-transform: rotate(-90deg);
-                                
+                                -webkit-transform-origin: left top;
                                 text-align: center;
                                 line-height: 8mm;
                                 font-size: 9pt;
                                 font-weight: 900;
                                 white-space: nowrap;
+
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                
                                 color: #ffffff;
                                 ">
                             <t t-esc="o.name or ''"/>
