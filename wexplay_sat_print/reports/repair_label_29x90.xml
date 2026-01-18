@@ -28,7 +28,7 @@
                                 top: 10.5mm; 
                                 left: -10.5mm;
                                 -webkit-transform: rotate(-90deg);
-                                -webkit-transform-origin: left top;
+
                                 text-align: center;
                                 line-height: 8mm;
                                 font-size: 9pt;
