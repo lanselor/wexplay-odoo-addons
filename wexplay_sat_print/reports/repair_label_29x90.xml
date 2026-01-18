@@ -4,20 +4,25 @@
         <t t-name="wexplay_sat_print.repair_label_29x90">
             <t t-call="web.basic_layout">
                 <t t-foreach="docs" t-as="o">
-                    <div style="width:29mm;height:90mm;padding:1mm;font-family:monospace;">
-                        <div style="font-size:11pt;font-weight:bold;white-space:nowrap;overflow:hidden;">
+                    <!-- Horizontal real: ancho = 90, alto = 29 -->
+                    <div style="width:90mm;height:29mm;padding:1mm;font-family:monospace;box-sizing:border-box;overflow:hidden;">
+                        
+                        <!-- Cabecera (una línea) -->
+                        <div style="font-size:11pt;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
                             <t t-esc="o.name or ''"/>
                         </div>
-                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;">
+                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
                             <t t-esc="o.partner_id.name or ''"/>
                         </div>
-                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;">
+                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
                             <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
                         </div>
                         
+                        <!-- Separador -->
                         <hr style="border:0;border-top:0.2mm solid #000;margin:1mm 0;"/>
                         
-                        <div style="font-size:9pt;line-height:1.1;max-height:60mm;overflow:hidden;">
+                        <!-- Avería: en horizontal, conviene recortar a una altura razonable -->
+                        <div style="font-size:9pt;line-height:1.1;max-height:12mm;overflow:hidden;">
                             <div><b>Avería:</b></div>
                             <div>
                                 <t t-if="o.x_reported_issue">
@@ -25,6 +30,7 @@
                                 </t>
                             </div>
                         </div>
+                        
                     </div>
                 </t>
             </t>

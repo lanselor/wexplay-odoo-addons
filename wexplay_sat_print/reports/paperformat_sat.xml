@@ -9,23 +9,22 @@
         <field name="default" eval="False"/>
         <field name="format">custom</field>
         
-        <!-- Tamaño en milímetros -->
+        <!-- Tamaño físico real -->
         <field name="page_width">29</field>
         <field name="page_height">90</field>
         
-        <field name="orientation">Portrait</field>
+        <!-- Forzamos PDF horizontal -->
+        <field name="orientation">Landscape</field>
         
-        <!-- Márgenes a cero para etiquetas -->
+        <!-- Márgenes a cero -->
         <field name="margin_top">0</field>
         <field name="margin_bottom">0</field>
         <field name="margin_left">0</field>
         <field name="margin_right">0</field>
         
-        <!-- Sin cabecera ni footer -->
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
         
-        <!-- DPI correcto para QL -->
         <field name="dpi">90</field>
     </record>
     
@@ -37,11 +36,12 @@
         <field name="default" eval="False"/>
         <field name="format">custom</field>
         
-        <!-- Tamaño en milímetros -->
+        <!-- Tamaño físico real -->
         <field name="page_width">29</field>
         <field name="page_height">42</field>
         
-        <field name="orientation">Portrait</field>
+        <!-- Forzamos PDF horizontal -->
+        <field name="orientation">Landscape</field>
         
         <!-- Márgenes a cero -->
         <field name="margin_top">0</field>
@@ -57,19 +57,18 @@
     
     <!-- ========================================================= -->
     <!-- TICKET RESGUARDO SAT · Térmica · 80 x 170 mm               -->
+    <!-- (NO SE TOCA)                                              -->
     <!-- ========================================================= -->
     <record id="paperformat_sat_ticket_80x170" model="report.paperformat">
         <field name="name">SAT Ticket 80x170 (Thermal)</field>
         <field name="default" eval="False"/>
         <field name="format">custom</field>
         
-        <!-- Tamaño en milímetros -->
         <field name="page_width">80</field>
         <field name="page_height">170</field>
         
         <field name="orientation">Portrait</field>
         
-        <!-- Márgenes mínimos (evita cortes en térmicas) -->
         <field name="margin_top">2</field>
         <field name="margin_bottom">2</field>
         <field name="margin_left">2</field>
@@ -78,7 +77,6 @@
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
         
-        <!-- DPI estándar térmica -->
         <field name="dpi">90</field>
     </record>
     
