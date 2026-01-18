@@ -38,8 +38,8 @@
                                 <div style="font-weight:700;">ENTRADA</div>
                                 <!-- Corrección: mostrar fecha SOLO si existe; si no, vacío -->
                                 <div>
-                                    <t t-if="getattr(o, 'create_date', False)">
-                                        <t t-esc="format_datetime(o.create_date)"/>
+                                    <t t-if="o.create_date">
+                                        <span t-field="o.create_date" t-options='{"widget": "datetime"}'/>
                                     </t>
                                     <t t-else="">—</t>
                                 </div>
