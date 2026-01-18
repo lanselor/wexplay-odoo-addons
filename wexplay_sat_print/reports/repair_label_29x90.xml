@@ -119,23 +119,14 @@
                         DOCUMENTO INTERNO SAT
                     </div>
                     <!-- Footer: código de barras SAT -->
-                    <t t-if="o.name">
-                        <!-- IMPORTANTE: eliminar '/' porque rompe la ruta del controller de barcode -->
-                        <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
-                        
-                        <img
-                            t-att-src="'/report/barcode/Code128/%s?width=420&amp;height=70&amp;humanreadable=0' % sat_barcode"
-                            style="
-                            position:absolute;
-                            bottom:0.6mm;
-                            left:42mm;
-                            width:30mm;
-                            height:6.5mm;
-                            display:block;
-                            "
-                            alt="barcode"
-                            />
-                    </t>
+                    <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                    <img
+                        t-att-src="'%s/report/barcode/Code128/%s?width=420&amp;height=70&amp;humanreadable=0' % (base_url, sat_barcode)"
+                        style="position:absolute; bottom:0.6mm; left:42mm; width:30mm; height:6.5mm; display:block;"
+                        alt="barcode"
+                    />
+                    
+                    
                     <!-- Footer: logo (derecha, alineado con el footer) -->
                     <div style="position:absolute;bottom:0.5mm;right:1.2mm;font-size:9pt;font-weight:900;color:#714B67;white-space:nowrap;">
                         we<span style="color:#4eb052;">x</span>play
