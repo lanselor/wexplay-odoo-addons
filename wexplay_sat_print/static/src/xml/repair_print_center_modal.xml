@@ -1,73 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- wexplay_sat_print/static/src/xml/repair_print_center_modal.xml -->
 <templates xml:space="preserve">
-  <t t-name="wexplay_sat_print.SatPrintCenterModal">
-    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <t t-name="wexplay_sat_print.SatPrintCenterModal">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fa fa-print me-2"></i>Centro de Impresión SAT
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" t-on-click="close" aria-label="Close"/>
+                    </div>
 
-          <div class="modal-header">
-            <h5 class="modal-title">Centro de impresión SAT</h5>
-            <button type="button" class="btn-close" aria-label="Close" t-on-click="close"/>
-          </div>
+                    <div class="modal-body p-4">
+                        <div class="section-container mb-4 p-3 border rounded bg-light">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                <i class="fa fa-tag me-2"></i>Etiquetas Brother QL
+                            </h6>
+                            
+                            <div class="d-grid gap-3">
+                                <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center" t-on-click="onPrintLabel29x90">
+                                    <i class="fa fa-file-text-o me-2"></i> Etiqueta SAT Completa
+                                </button>
 
-          <div class="modal-body">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="input-group">
+                                        <button class="btn btn-secondary px-3" t-on-click="decrementAccessoryQty">-</button>
+                                        <input type="number" class="form-control text-center fw-bold" 
+                                               t-att-value="state.accessoryQty" t-on-input="onAccessoryQtyInput"/>
+                                        <button class="btn btn-secondary px-3" t-on-click="incrementAccessoryQty">+</button>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary w-100 py-2" t-on-click="onPrintLabel29x42">
+                                        <i class="fa fa-tags me-2"></i> Accesorios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="mb-3">
-              <div class="fw-bold mb-2">Etiquetas (Brother QL)</div>
+                        <div class="section-container mb-4 p-3 border rounded bg-light">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                                <i class="fa fa-user me-2"></i>Documentación Cliente
+                            </h6>
+                            <button type="button" class="btn btn-outline-dark w-100" t-on-click="onPrintTicket80x170">
+                                <i class="fa fa-ticket me-2"></i> Resguardo (Tamaño Ticket)
+                            </button>
+                        </div>
 
-              <!-- Etiqueta SAT completa (una debajo de la otra) -->
-              <div class="mb-2">
-                <button type="button" class="btn btn-primary" t-on-click="onPrintLabel29x90">
-                  Etiqueta SAT completa
-                </button>
-              </div>
+                        <button type="button" class="btn btn-success btn-lg w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintAll">
+                            <i class="fa fa-check-circle me-2"></i> IMPRIMIR TODO
+                        </button>
+                    </div>
 
-              <!-- Etiqueta accesorios + selector cantidad -->
-              <div class="d-flex align-items-center gap-2">
+                    <div class="modal-footer border-top-0 justify-content-center">
+                        <button type="button" class="btn btn-link text-muted" t-on-click="close">Cancelar y Salir</button>
+                    </div>
 
-
-                <div class="input-group input-group-sm" style="width: 160px;">
-                  <button type="button" class="btn btn-outline-secondary" t-on-click="decrementAccessoryQty">-</button>
-                  <input type="number"
-                         class="form-control text-center"
-                         min="1"
-                         t-att-value="state.accessoryQty"
-                         t-on-input="onAccessoryQtyInput"/>
-                  <button type="button" class="btn btn-outline-secondary" t-on-click="incrementAccessoryQty">+</button>
                 </div>
-                <button type="button" class="btn btn-secondary" t-on-click="onPrintLabel29x42">
-                  Etiqueta accesorios
-                </button>
-              </div>
             </div>
-
-            <hr/>
-
-            <div class="mb-2">
-              <div class="fw-bold mb-2">Resguardo Cliente</div>
-
-              <button type="button" class="btn btn-secondary" t-on-click="onPrintTicket80x170">
-                Resguardo(Tamaño Ticket)
-              </button>
-            </div>
-            <hr/>
-            <div class="mb-3">
-              <button type="button" class="btn btn-outline-success btn-lg" t-on-click="onPrintAll">
-                Imprimir Todo
-              </button>
-            </div>
-
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" t-on-click="close">Cerrar</button>
-          </div>
-
         </div>
-      </div>
-    </div>
-
-    <div class="modal-backdrop fade show"></div>
-  </t>
+        <div class="modal-backdrop fade show"></div>
+    </t>
 </templates>
