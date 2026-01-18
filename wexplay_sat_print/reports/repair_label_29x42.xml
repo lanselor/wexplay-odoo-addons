@@ -110,7 +110,7 @@
                             ">
 
                                 <!-- Logo empresa -->
-                                <div style="height:3.7mm; overflow:hidden;">
+                                <div style="height:5.2mm; overflow:hidden;">
                                     <t t-if="o.company_id and o.company_id.logo">
                                         <img
                                             t-att-src="image_data_uri(o.company_id.logo)"
@@ -118,7 +118,7 @@
                                                 display:block;
                                                 max-width:100%;
                                                 max-height:5.2mm;
-                                                height:5.2mm;
+                                                height:3.7mm;
                                                 width:auto;
                                             "
                                             alt="Logo"
