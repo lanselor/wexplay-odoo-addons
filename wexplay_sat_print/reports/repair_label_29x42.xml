@@ -1,22 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <template id="repair_label_29x42">
-        <t t-name="wexplay_sat_print.repair_label_29x42">
-            <t t-call="web.basic_layout">
-                <t t-foreach="docs" t-as="o">
-                    <!-- Horizontal real: ancho = 42, alto = 29 -->
-                    <div style="width:42mm;height:29mm;padding:1mm;font-family:monospace;box-sizing:border-box;">
-                        <div style="font-size:10pt;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
-                            <t t-esc="o.name or ''"/>
-                        </div>
-                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
-                            <t t-esc="o.partner_id.name or ''"/>
-                        </div>
-                        <div style="font-size:9pt;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;">
-                            <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+    <template id="repair_label_accessories_29x42">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <style>
+                    @page { size: 42mm 29mm; margin: 0; }
+                    html, body { margin: 0 !important; padding: 0 !important; }
+                    .small-container {
+                    width: 42mm; height: 29mm;
+                    margin: 0; padding: 0;
+                    position: relative;
+                    overflow: hidden;
+                    font-family: 'Arial', sans-serif;
+                    background: #fff;
+                    }
+                </style>
+                
+                <div class="small-container">
+                    
+                    <div style="position:absolute; left:0; top:0; bottom:0; width:6mm; background:#000; color:#fff;">
+                        <div style="
+                                position: absolute;
+                                width: 29mm;
+                                height: 6mm;
+                                top: 11.5mm; 
+                                left: -11.5mm;
+                                -webkit-transform: rotate(-90deg);
+                                text-align: center;
+                                line-height: 6mm;
+                                font-size: 8pt;
+                                font-weight: 900;
+                                white-space: nowrap;
+                                ">
+                            <t t-esc="o.name"/>
                         </div>
                     </div>
-                </t>
+                    
+                    <div style="position:absolute; left:6mm; top:0; right:0; bottom:0; padding:1.2mm 1.5mm; box-sizing:border-box; display:flex; flex-direction:column;">
+                        
+                        <div style="border-bottom: 0.3mm solid #000; padding-bottom: 0.5mm;">
+                            <div style="font-size: 8.5pt; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1;">
+                                <t t-esc="o.partner_id.name[:20] if o.partner_id else ''"/>
+                            </div>
+                            <div style="font-size: 7.5pt; font-weight: 800; font-family: monospace; margin-top: 0.3mm;">
+                                <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                            </div>
+                        </div>
+                        
+                        <div style="flex: 1; padding-top: 0.8mm; overflow: hidden;">
+                            <div style="font-size: 5.5pt; font-weight: 800; color: #666; text-transform: uppercase;">Accesorios</div>
+                            <div style="font-size: 7.5pt; line-height: 1; font-weight: 700; color: #000; max-height: 9mm; overflow: hidden;">
+                                <t t-if="o.x_accessories">
+                                    <t t-esc="o.x_accessories[:80]"/>
+                                    <t t-if="len(o.x_accessories) > 80">...</t>
+                                </t>
+                                <t t-else="">— Sin accesorios —</t>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: auto; padding-top: 0.5mm;">
+                            <div style="font-size: 8pt; font-weight: 900; color: #714B67; line-height: 1; margin-bottom: 0.1mm;">
+                                we<span style="color:#4eb052;">x</span>play
+                            </div>
+                            <div style="font-size: 3.5pt; color: #bbb; text-transform: uppercase; white-space: nowrap;">
+                                Documento Interno SAT
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
             </t>
         </t>
     </template>
