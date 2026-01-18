@@ -2,49 +2,145 @@
 <odoo>
     <template id="repair_label_29x90">
         <t t-name="wexplay_sat_print.repair_label_29x90">
-            <t t-call="web.basic_layout">
+            <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                    <div style="width:90mm; height:29mm; padding:1mm; box-sizing:border-box; overflow:hidden; font-family: 'Helvetica', 'Arial', sans-serif; color: #000; background: #fff; position: relative;">
+                    <style>
+                        @page {
+                        size: 90mm 29mm;
+                        margin: 0;
+                        }
+                        html, body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        }
+                    </style>
+                    
+                    <!-- Canvas etiqueta -->
+                    <div style="
+                            width:90mm;
+                            height:29mm;
+                            margin:0;
+                            padding:0;
+                            box-sizing:border-box;
+                            overflow:hidden;
+                            font-family:'Helvetica','Arial',sans-serif;
+                            color:#000;
+                            background:#fff;
+                            position:relative;
+                            ">
                         
-                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 8mm; background: #000; color: #fff; display: flex; align-items: center; justify-content: center;">
-                            <div style="transform: rotate(-90deg); white-space: nowrap; font-size: 11pt; font-weight: bold; letter-spacing: 0.5mm;">
-                                <t t-esc="o.name or ''"/>
+                        <!-- Banda izquierda -->
+                        <div style="
+                                position:absolute;
+                                left:0;
+                                top:0;
+                                bottom:0;
+                                width:8mm;
+                                background:#000;
+                                color:#fff;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                ">
+                            <div style="
+                                    transform:rotate(-90deg);
+                                    white-space:nowrap;
+                                    font-size:10pt;
+                                    font-weight:700;
+                                    letter-spacing:0.3mm;
+                                    ">
+                                <t t-esc="(o.name or '')[:18]"/>
                             </div>
                         </div>
                         
-                        <div style="margin-left: 8.5mm; display: flex; flex-direction: column; height: 100%;">
+                        <!-- Contenido -->
+                        <div style="
+                                position:absolute;
+                                left:8mm;
+                                top:0;
+                                right:0;
+                                bottom:0;
+                                padding:1mm 1mm 1mm 1.5mm;
+                                box-sizing:border-box;
+                                display:flex;
+                                flex-direction:column;
+                                ">
                             
-                            <div style="display: flex; justify-content: space-between; border-bottom: 0.4mm solid #000; padding-bottom: 0.8mm; align-items: flex-end;">
-                                <div style="flex: 1;">
-                                    <div style="font-size: 6.5pt; text-transform: uppercase; font-weight: bold; color: #555;">Cliente</div>
-                                    <div style="font-size: 9.5pt; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1;">
+                            <!-- Header -->
+                            <div style="
+                                    display:flex;
+                                    justify-content:space-between;
+                                    align-items:flex-end;
+                                    padding-bottom:0.8mm;
+                                    border-bottom:0.4mm solid #000;
+                                    ">
+                                <div style="min-width:0;">
+                                    <div style="font-size:6.5pt;text-transform:uppercase;font-weight:700;color:#555;">
+                                        Cliente
+                                    </div>
+                                    <div style="
+                                            font-size:9.5pt;
+                                            font-weight:700;
+                                            white-space:nowrap;
+                                            overflow:hidden;
+                                            text-overflow:ellipsis;
+                                            line-height:1;
+                                            ">
                                         <t t-esc="(o.partner_id and o.partner_id.name) or ''"/>
                                     </div>
                                 </div>
-                                <div style="text-align: right; min-width: 20mm;">
-                                    <div style="font-size: 6.5pt; font-weight: bold; color: #555;">FECHA ENTRADA</div>
-                                    <div style="font-size: 8pt; font-weight: bold;">
+                                
+                                <div style="text-align:right;min-width:22mm;">
+                                    <div style="font-size:6.5pt;font-weight:700;color:#555;">
+                                        FECHA ENTRADA
+                                    </div>
+                                    <div style="font-size:8pt;font-weight:700;">
                                         <t t-esc="o.create_date and o.create_date.strftime('%d/%m/%Y') or ''"/>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div style="display: flex; flex: 1; padding-top: 1mm; gap: 2mm;">
+                            <!-- Body -->
+                            <div style="
+                                    display:flex;
+                                    flex:1 1 auto;
+                                    padding-top:1mm;
+                                    gap:2mm;
+                                    min-height:0;
+                                    ">
                                 
-                                <div style="flex: 0 0 25mm; border-right: 0.2mm dashed #ccc;">
-                                    <div style="font-size: 6.5pt; font-weight: bold; color: #555; text-transform: uppercase;">Teléfono</div>
-                                    <div style="font-size: 8.5pt; font-family: monospace; font-weight: bold; margin-top: 0.5mm;">
+                                <!-- Teléfono -->
+                                <div style="
+                                        flex:0 0 25mm;
+                                        border-right:0.2mm dashed #ccc;
+                                        padding-right:1.5mm;
+                                        box-sizing:border-box;
+                                        ">
+                                    <div style="font-size:6.5pt;font-weight:700;color:#555;text-transform:uppercase;">
+                                        Teléfono
+                                    </div>
+                                    <div style="font-size:8.5pt;font-family:monospace;font-weight:700;margin-top:0.5mm;">
                                         <t t-esc="(o.partner_id and (o.partner_id.phone or o.partner_id.mobile)) or ''"/>
                                     </div>
                                     
-                                    <div style="margin-top: 2.5mm; font-size: 8pt; font-weight: 900; color: #714B67;">
-                                        we<span style="color: #4eb052;">x</span>play
+                                    <div style="margin-top:2.2mm;font-size:8pt;font-weight:900;color:#714B67;">
+                                        we<span style="color:#4eb052;">x</span>play
                                     </div>
                                 </div>
                                 
-                                <div style="flex: 1; overflow: hidden;">
-                                    <div style="font-size: 6.5pt; font-weight: bold; color: #555; text-transform: uppercase;">Avería / Notas</div>
-                                    <div style="font-size: 7.5pt; line-height: 1.1; margin-top: 0.5mm; font-style: italic; color: #222;">
+                                <!-- Avería -->
+                                <div style="flex:1 1 auto;overflow:hidden;min-width:0;">
+                                    <div style="font-size:6.5pt;font-weight:700;color:#555;text-transform:uppercase;">
+                                        Avería / Notas
+                                    </div>
+                                    <div style="
+                                            font-size:7.5pt;
+                                            line-height:1.1;
+                                            margin-top:0.5mm;
+                                            font-style:italic;
+                                            color:#222;
+                                            overflow:hidden;
+                                            ">
                                         <t t-if="'x_reported_issue' in o._fields and (o.x_reported_issue or '').strip()">
                                             <t t-esc="(o.x_reported_issue or '')[:120]"/>
                                             <t t-if="(o.x_reported_issue or '')[120:]">...</t>
@@ -52,13 +148,14 @@
                                         <t t-else="">— Sin notas —</t>
                                     </div>
                                 </div>
+                                
                             </div>
                             
-                            <div style="font-size: 5pt; text-align: right; color: #aaa; margin-top: -1mm;">
+                            <div style="font-size:5pt;text-align:right;color:#aaa;margin-top:0.2mm;">
                                 DOCUMENTO INTERNO SAT
                             </div>
+                            
                         </div>
-                        
                     </div>
                 </t>
             </t>
