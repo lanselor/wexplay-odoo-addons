@@ -4,7 +4,7 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <style>
-                    @page { size: 120mm 29mm; margin: 0; }
+                    @page { size: 90mm 29mm; margin: 0; }
                     html, body { margin: 0 !important; padding: 0 !important; }
                     .main-container{
                     width:90mm;height:29mm;
@@ -19,7 +19,7 @@
                 <div class="main-container">
                     
                     <!-- Banda negra izquierda -->
-                    <div style="position:absolute;left:0;top:0;bottom:0;width:7.5mm;background:#000;color:#fff;">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:#000;color:#fff;">
                         
                         <!-- SAT vertical: más estable que transform rotate en wkhtmltopdf -->
                         <div style="
@@ -32,7 +32,7 @@
                                 white-space:nowrap;
                                 writing-mode:vertical-rl;
                                 text-orientation:mixed;
-                                transform:rotate(180deg);
+                                -webkit-transform: rotate(90deg);
                                 ">
                             <t t-esc="o.name or ''"/>
                         </div>
