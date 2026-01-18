@@ -13,10 +13,29 @@
 
             <!-- 2) Añadir cliente + teléfono en la columna derecha (después del responsable) -->
             <xpath expr="//sheet//field[@name='user_id']" position="after">
-                <field name="partner_id" required="1"/>
-                <field name="x_partner_phone" readonly="1"/>
-                <field name="x_partner_mobile" readonly="1"/>
-
+                <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
+                    <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.85rem; color: #714B67;">
+                        <i class="fa fa-user-circle me-2"/> Información del Cliente
+                    </div>
+                    
+                    <group col="1" class="m-0">
+                        <field name="partner_id" 
+                               required="1" 
+                               options="{'no_open': True, 'no_create': True}"
+                               placeholder="Seleccione el cliente..."/>
+                        
+                        <div class="d-flex flex-column mt-2 gap-1" t-if="record.partner_id.raw_value">
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="fa fa-phone me-2" style="width: 15px;"/>
+                                <field name="x_partner_phone" readonly="1" nolabel="1" class="mb-0"/>
+                            </div>
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="fa fa-mobile me-2" style="width: 15px;"/>
+                                <field name="x_partner_mobile" readonly="1" nolabel="1" class="mb-0"/>
+                            </div>
+                        </div>
+                    </group>
+                </div>
             </xpath>
 
             <!-- Panel Wexplay (notebook nuevo) -->
