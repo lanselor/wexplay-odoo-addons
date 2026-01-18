@@ -23,11 +23,11 @@
                                     SAT · <t t-esc="o.name or ''"/>
                                 </div>
                                 <div style="font-size:7.6pt;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                    <t t-esc="(o.partner_id.name or '')"/>
+                                    <t t-esc="(o.partner_id and o.partner_id.name) or ''"/>
                                 </div>
                             </div>
                             
-                            <!-- DER: FECHA (sin romper si el campo está vacío) -->
+                            <!-- DER: FECHA -->
                             <div style="
                                     margin-left:2mm;
                                     flex:0 0 auto;
@@ -36,7 +36,6 @@
                                     line-height:1.05;
                                     ">
                                 <div style="font-weight:700;">ENTRADA</div>
-                                <!-- Corrección: mostrar fecha SOLO si existe; si no, vacío -->
                                 <div>
                                     <t t-esc="o.create_date and o.create_date.strftime('%d/%m/%Y') or ''"/>
                                 </div>
@@ -59,11 +58,11 @@
                                 </div>
                                 
                                 <div style="font-size:8.4pt;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                    <t t-esc="o.partner_id.name or ''"/>
+                                    <t t-esc="(o.partner_id and o.partner_id.name) or ''"/>
                                 </div>
                                 
                                 <div style="font-size:8.2pt;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0.4mm;">
-                                    <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                                    <t t-esc="(o.partner_id and (o.partner_id.phone or o.partner_id.mobile)) or ''"/>
                                 </div>
                             </div>
                             
@@ -80,7 +79,6 @@
                                     <div style="font-size:7.4pt;font-weight:700;letter-spacing:0.2mm;">
                                         AVERÍA
                                     </div>
-                                    <!-- mini “tag” -->
                                     <div style="
                                             font-size:7pt;
                                             font-weight:700;
@@ -94,7 +92,8 @@
                                 </div>
                                 
                                 <div style="font-size:8.2pt;line-height:1.15;max-height:13.5mm;overflow:hidden;">
-                                    <t t-if="getattr(o, 'x_reported_issue', False)">
+                                    <!-- Robusto: no usar getattr; comprobar el campo por _fields -->
+                                    <t t-if="'x_reported_issue' in o._fields and (o.x_reported_issue or '').strip()">
                                         <t t-esc="o.x_reported_issue or ''"/>
                                     </t>
                                     <t t-else="">
