@@ -19,6 +19,7 @@
                     
                     <div class="small-label-container">
                         
+                        <!-- Banda negra izquierda -->
                         <div style="position:absolute; left:0; top:0; bottom:0; width:6.5mm; background:#000; color:#fff;">
                             <div style="
                                     position: absolute;
@@ -29,42 +30,99 @@
                                     line-height: 6.5mm;
                                     font-size: 8.5pt; font-weight: 900;
                                     white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
                                     color: #ffffff;">
                                 <t t-esc="o.name or ''"/>
                             </div>
                         </div>
                         
-                        <div style="position:absolute; left:7.5mm; top:0; right:0; bottom:0; padding:1.5mm 1.5mm 1mm 1mm; box-sizing:border-box; display:flex; flex-direction:column;">
+                        <!-- Columna derecha (contenido) -->
+                        <div style="
+                                position:absolute;
+                                left:7.5mm; top:0; right:0; bottom:0;
+                                padding:1.5mm 1.5mm 1mm 1mm;
+                                box-sizing:border-box;
+                                display:flex;
+                                flex-direction:column;
+                                ">
                             
-                            <div style="border-bottom: 0.4mm solid #000; padding-bottom: 0.6mm;">
-                                <div style="font-size: 5.5pt; text-transform: uppercase; font-weight: 800; color: #666; line-height: 1;">Cliente</div>
-                                <div style="font-size: 8.5pt; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;">
+                            <!-- HEADER: Cliente -->
+                            <div style="border-bottom: 0.4mm solid #000; padding-bottom: 0.8mm;">
+                                <div style="font-size: 5.5pt; text-transform: uppercase; font-weight: 800; color: #666; line-height: 1;">
+                                    Cliente
+                                </div>
+                                
+                                <div style="
+                                        margin-top:0.6mm;
+                                        font-size: 8.5pt;
+                                        font-weight: 900;
+                                        white-space: nowrap;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        line-height: 1.15;
+                                        ">
                                     <t t-esc="o.partner_id.name or ''"/>
                                 </div>
-                                <div style="font-size: 7.5pt; font-weight: 800; font-family: monospace; color: #333; line-height: 1; margin-top: 0.2mm;">
+                                
+                                <div style="
+                                        margin-top:0.6mm;
+                                        font-size: 7.5pt;
+                                        font-weight: 800;
+                                        font-family: monospace;
+                                        color: #333;
+                                        line-height: 1.05;
+                                        ">
                                     <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
                                 </div>
                             </div>
                             
-                            <div style="padding-top: 1mm; flex-grow: 1; overflow: hidden;">
-                                <div style="font-size: 5.5pt; font-weight: 800; color: #666; text-transform: uppercase; line-height: 1;">Accesorios</div>
-                                <div style="font-size: 7pt; line-height: 1.1; font-weight: 700; color: #000; margin-top: 0.2mm;">
-                                    <t t-if="o.x_accessories">
-                                        <t t-esc="o.x_accessories[:100]"/>
-                                        <t t-if="len(o.x_accessories) > 100">...</t>
+                            <!-- BODY: Accesorios (reserva espacio para footer) -->
+                            <div style="
+                                    padding-top:1.2mm;
+                                    padding-bottom:6.5mm;  /* Reserva para el footer */
+                                    overflow:hidden;
+                                    ">
+                                <div style="font-size: 5.5pt; font-weight: 800; color: #666; text-transform: uppercase; line-height: 1;">
+                                    Accesorios
+                                </div>
+                                
+                                <div style="
+                                        margin-top:0.8mm;
+                                        font-size: 7pt;
+                                        line-height: 1.15;
+                                        font-weight: 700;
+                                        color: #000;
+                                        ">
+                                    <t t-if="'x_accessories' in o._fields and (o.x_accessories or '').strip()">
+                                        <t t-esc="(o.x_accessories or '')[:120]"/>
+                                        <t t-if="(o.x_accessories or '')[120:]">...</t>
                                     </t>
                                     <t t-else="">— Sin accesorios —</t>
                                 </div>
                             </div>
                             
-                            <div style="margin-top: auto;">
-                                <div style="font-size: 8.5pt; font-weight: 900; color: #714B67; line-height: 1;">
+                            <!-- FOOTER fijo abajo (bloque separado) -->
+                            <div style="
+                                    position:absolute;
+                                    left:7.5mm; right:1.5mm; bottom:1mm;
+                                    line-height:1;
+                                    ">
+                                <div style="font-size: 8.5pt; font-weight: 900; color: #714B67;">
                                     we<span style="color:#4eb052;">x</span>play
                                 </div>
-                                <div style="font-size: 3.2pt; color: #bbb; text-transform: uppercase; white-space: nowrap; margin-top: -0.5mm;">
+                                
+                                <div style="
+                                        margin-top:0.6mm;
+                                        font-size: 3.2pt;
+                                        color: #bbb;
+                                        text-transform: uppercase;
+                                        white-space: nowrap;
+                                        ">
                                     DOCUMENTO INTERNO SAT
                                 </div>
                             </div>
+                            
                         </div>
                         
                     </div>

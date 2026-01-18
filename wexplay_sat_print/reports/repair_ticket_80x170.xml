@@ -6,86 +6,248 @@
                 <t t-foreach="docs" t-as="o">
                     <style>
                         @page { size: 80mm 170mm; margin: 0; }
+                        
                         html, body { margin: 0 !important; padding: 0 !important; }
-                        .ticket-container {
+                        
+                        .ticket-container{
                         width: 80mm;
                         padding: 4mm;
-                        font-family: 'Arial', sans-serif;
+                        font-family: Arial, sans-serif;
                         font-size: 9pt;
-                        color: #000;
+                        color: #111;
                         box-sizing: border-box;
+                        }
+                        
+                        .muted{ color:#666; }
+                        .mono{ font-family: monospace; }
+                        .up{ text-transform: uppercase; }
+                        
+                        .hr{ height:0.2mm; background:#e5e5e5; margin:2.5mm 0; }
+                        
+                        .card{
+                        border:0.2mm solid #e6e6e6;
+                        background:#f7f7f7;
+                        padding:2.2mm;
+                        border-radius:1.2mm;
+                        }
+                        
+                        .card-white{
+                        border:0.2mm solid #e6e6e6;
+                        background:#fff;
+                        padding:2.2mm;
+                        border-radius:1.2mm;
+                        }
+                        
+                        .title-xs{
+                        font-size:7pt;
+                        font-weight:800;
+                        letter-spacing:0.2mm;
+                        color:#666;
+                        text-transform:uppercase;
+                        }
+                        
+                        .block-title{
+                        font-size:7pt;
+                        font-weight:900;
+                        letter-spacing:0.15mm;
+                        text-transform:uppercase;
+                        color:#555;
+                        margin-bottom:1.5mm;
+                        }
+                        
+                        .badge{
+                        display:inline-block;
+                        padding:0.6mm 1.2mm;
+                        border:0.2mm solid #ddd;
+                        border-radius:1.2mm;
+                        background:#fff;
+                        font-size:7pt;
+                        font-weight:800;
+                        color:#444;
+                        }
+                        
+                        .header-strip{
+                        background:#000;
+                        color:#fff;
+                        padding:2.2mm 2mm;
+                        border-radius:1.2mm;
+                        text-align:center;
+                        margin:2.5mm 0 3mm 0;
+                        }
+                        
+                        .header-strip .kicker{
+                        font-size:7pt;
+                        opacity:0.85;
+                        text-transform:uppercase;
+                        letter-spacing:0.25mm;
+                        font-weight:800;
+                        }
+                        
+                        .header-strip .ord{
+                        font-size:16pt;
+                        font-weight:900;
+                        margin-top:0.6mm;
+                        }
+                        
+                        .table{
+                        width:100%;
+                        border-collapse:collapse;
+                        font-size:8.5pt;
+                        }
+                        .table td{ padding:0.6mm 0; vertical-align:top; }
+                        .table .k{ width:18mm; color:#666; }
+                        
+                        .notes{
+                        font-size:9pt;
+                        line-height:1.25;
+                        text-align:left;
+                        white-space:pre-wrap;
+                        color:#111;
+                        margin:0;            /* evita centrados raros */
+                        padding:0;
+                        }
+                        
+                        .barcode-box{
+                        text-align:center;
+                        padding:2mm 0 0 0;
+                        }
+                        
+                        .terms{
+                        border-top:0.3mm dashed #cfcfcf;
+                        margin-top:3mm;
+                        padding-top:3mm;
                         }
                     </style>
                     
                     <div class="ticket-container">
                         
-                        <div style="text-align:center; margin-bottom:3mm;">
+                        <!-- HEADER -->
+                        <div style="text-align:center;">
                             <t t-if="o.company_id.logo">
-                                <img t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 12mm; max-width: 45mm;" alt="Logo"/>
+                                <img t-att-src="image_data_uri(o.company_id.logo)"
+                                     style="max-height: 13mm; max-width: 50mm;"
+                                     alt="Logo"/>
                             </t>
-                            <div style="font-size:7pt; font-weight:bold; text-transform:uppercase; color:#666; margin-top:1mm;">
+                            
+                            <div class="title-xs" style="margin-top:1.2mm;">
                                 Resguardo Servicio Técnico
                             </div>
-                        </div>
-                        
-                        <div style="background:#000; color:#fff; width: 100%; padding: 2mm 0; text-align:center; margin-bottom:4mm;">
-                            <div style="font-size:7pt; text-transform:uppercase; opacity:0.8;">Orden de Reparación</div>
-                            <div style="font-size:16pt; font-weight:900;"><t t-esc="o.name or ''"/></div>
-                        </div>
-                        
-                        <div style="border-bottom:0.3mm solid #000; padding-bottom:2mm; margin-bottom:3mm;">
-                            <div style="font-size:7pt; font-weight:bold; color:#666; text-transform:uppercase;">Cliente</div>
-                            <div style="font-size:10pt; font-weight:900;"><t t-esc="o.partner_id.name or ''"/></div>
-                            <div style="font-size:9pt; font-family:monospace; margin-top:0.5mm;">
-                                <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
-                            </div>
-                            <div style="font-size:8pt; margin-top:1mm; color:#444;">
-                                Fecha: <t t-esc="o.create_date" t-options='{"widget": "datetime", "format": "dd/MM/yyyy HH:mm"}'/>
+                            
+                            <!-- Mini info row -->
+                            <div style="margin-top:1.6mm;">
+                                <span class="badge">
+                                    <span class="up">Fecha</span>:
+                                    <t t-esc="o.create_date" t-options='{"widget":"datetime","format":"dd/MM/yyyy HH:mm"}'/>
+                                </span>
                             </div>
                         </div>
                         
-                        <div style="background:#f8f8f8; padding:2mm; border:0.1mm solid #eee; margin-bottom:3mm;">
-                            <table style="width:100%; font-size:8.5pt; border-collapse:collapse;">
+                        <!-- ORDER STRIP -->
+                        <div class="header-strip">
+                            <div class="kicker">Orden de reparación</div>
+                            <div class="ord"><t t-esc="o.name or ''"/></div>
+                        </div>
+                        
+                        <!-- CLIENT CARD -->
+                        <div class="card">
+                            <div class="block-title">Cliente</div>
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:2mm;">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-size:11pt; font-weight:900; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                        <t t-esc="o.partner_id.name or ''"/>
+                                    </div>
+                                    
+                                    <div style="margin-top:1mm; font-size:9pt; font-weight:800;" class="mono">
+                                        <t t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/>
+                                    </div>
+                                </div>
+                                
+                                <div style="text-align:right; white-space:nowrap;">
+                                    <div class="title-xs">Entrada</div>
+                                    <div style="font-size:9pt; font-weight:900;">
+                                        <t t-esc="o.create_date" t-options='{"widget":"datetime","format":"dd/MM/yyyy HH:mm"}'/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="hr"></div>
+                        
+                        <!-- DEVICE CARD -->
+                        <div class="card-white">
+                            <div class="block-title">Equipo</div>
+                            
+                            <table class="table">
                                 <tr>
-                                    <td style="color:#666; width:18mm;">Modelo:</td>
-                                    <td style="font-weight:bold;"><t t-esc="o.x_model_id.display_name if 'x_model_id' in o._fields else '—'"/></td>
+                                    <td class="k">Modelo:</td>
+                                    <td style="font-weight:900;">
+                                        <t t-esc="o.x_model_id.display_name if 'x_model_id' in o._fields and o.x_model_id else '—'"/>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="color:#666;">IMEI/SN:</td>
-                                    <td style="font-family:monospace;"><t t-esc="o.x_imei if 'x_imei' in o._fields else '—'"/></td>
+                                    <td class="k">IMEI/SN:</td>
+                                    <td class="mono">
+                                        <t t-esc="o.x_imei if 'x_imei' in o._fields and o.x_imei else '—'"/>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="color:#666; vertical-align:top;">Accesorios:</td>
-                                    <td style="font-style:italic; line-height:1.1;">
-                                        <t t-esc="o.x_accessories if 'x_accessories' in o._fields and o.x_accessories else 'Ninguno'"/>
+                                    <td class="k">Accesorios:</td>
+                                    <td style="font-style:italic; line-height:1.15;">
+                                        <t t-if="'x_accessories' in o._fields and (o.x_accessories or '').strip()">
+                                            <t t-esc="(o.x_accessories or '')[:140]"/>
+                                            <t t-if="(o.x_accessories or '')[140:]">...</t>
+                                        </t>
+                                        <t t-else="">Ninguno</t>
                                     </td>
                                 </tr>
                             </table>
                         </div>
                         
-                        <div style="margin-bottom:4mm;">
-                            <div style="font-size:7pt; font-weight:bold; color:#666; text-transform:uppercase; border-bottom:0.2mm solid #ddd; padding-bottom:0.5mm; margin-bottom:1.5mm;">Avería / Notas</div>
-                            <div style="font-size:9pt; line-height:1.2; text-align:left; white-space:pre-wrap;">
-                                <t t-if="o.x_reported_issue">
+                        <div class="hr"></div>
+                        
+                        <!-- NOTES CARD -->
+                        <div class="card-white">
+                            <div class="block-title">Avería / Notas</div>
+                            
+                            <!-- IMPORTANTE: forzar alineación izquierda -->
+                            <div class="notes">
+                                <t t-if="'x_reported_issue' in o._fields and (o.x_reported_issue or '').strip()">
                                     <t t-esc="o.x_reported_issue"/>
                                 </t>
                                 <t t-else="">— No detallada —</t>
                             </div>
                         </div>
                         
-                        <div style="text-align:center; margin: 4mm 0;">
-                            <img t-if="o.name" t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=600&amp;height=100' % o.name" style="width:50mm; height:8mm;"/>
-                            <div style="font-size:6pt; font-family:monospace; margin-top:1mm;"><t t-esc="o.name"/></div>
+                        <!-- BARCODE -->
+                        <div class="barcode-box">
+                            <t t-if="o.name">
+                                <!-- Recomendado: evitar / en value -->
+                                <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
+                                <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                                
+                                <img t-att-src="'%s/report/barcode/Code128/%s?width=360&amp;height=95&amp;humanreadable=0' % (base_url, sat_barcode)"
+                                     style="width:56mm; height:10mm; display:block; margin:0 auto;"/>
+                                
+                                <div class="mono" style="font-size:7pt; margin-top:1.2mm; color:#333;">
+                                    <t t-esc="o.name"/>
+                                </div>
+                            </t>
                         </div>
                         
-                        <div style="border-top:0.3mm dashed #ccc; padding-top:3mm; text-align:center;">
-                            <div style="font-size:7.5pt; font-weight:bold; margin-bottom:1.5mm;">CONDICIONES DE RECOGIDA</div>
-                            <div style="font-size:6.8pt; line-height:1.2; color:#333; text-align:justify;">
-                                Es imprescindible presentar este documento para la retirada del equipo. 
-                                No nos hacemos responsables de la pérdida de datos. 
+                        <!-- TERMS -->
+                        <div class="terms">
+                            <div style="text-align:center; font-size:8pt; font-weight:900; margin-bottom:1.5mm;">
+                                CONDICIONES DE RECOGIDA
+                            </div>
+                            
+                            <div style="font-size:7pt; line-height:1.25; color:#333; text-align:justify;">
+                                Es imprescindible presentar este documento para la retirada del equipo.
+                                No nos hacemos responsables de la pérdida de datos.
                                 Pasado <strong>1 año</strong>, el equipo pasará a ser propiedad del SAT.
                             </div>
-                            <div style="font-size:6pt; color:#999; margin-top:3mm; text-transform:uppercase;">
+                            
+                            <div style="text-align:center; font-size:6pt; color:#999; margin-top:3mm; text-transform:uppercase;">
                                 <t t-esc="o.company_id.name"/> · <t t-esc="o.company_id.vat"/>
                             </div>
                         </div>
