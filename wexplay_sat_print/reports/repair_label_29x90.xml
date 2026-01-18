@@ -121,12 +121,12 @@
                     <!-- Footer: código de barras SAT -->
                     <t t-if="o.name">
                         <img
-                            t-att-src="'/report/barcode/Code128/%s?width=420&amp;height=70&amp;humanreadable=0' % o.name"
+                            t-att-src="'/report/barcode/Code128/%s?width=260&amp;height=90&amp;humanreadable=1' % o.name"
                             style="
                             position:absolute;
-                            bottom:0.5mm;
-                            right:28mm;
-                            height:7mm;
+                            bottom:0.8mm;
+                            right:26mm;
+                            height:8mm;
                             width:auto;
                             "
                             />
