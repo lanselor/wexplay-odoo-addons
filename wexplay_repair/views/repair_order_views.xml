@@ -70,13 +70,7 @@
 
 
             <!-- D) Notebook Wexplay (nuevo, antes del estándar) -->
-            Para elevar el diseño de este notebook y que mantenga la coherencia con el estilo de "tarjeta profesional" que hemos definido, vamos a transformar los grupos estándar de Odoo en contenedores con iconos, espaciados amplios y una estructura mucho más limpia.
-            
-            Aquí tienes la propuesta de mejora para tu XML, aplicando clases de utilidad de Odoo y Bootstrap:
-            
-            XML del Notebook Refactorizado
-            XML
-            
+
             <xpath expr="//sheet//notebook[1]" position="before">
                 <notebook name="wexplay_notebook" class="mt-4 shadow-sm border rounded">
                     
