@@ -19,30 +19,28 @@
             <xpath expr="//sheet//field[@name='partner_id']" position="replace"/>
             
             <!-- C) Panel cliente arriba del todo (antes del group que contiene schedule_date) -->
-            <xpath expr="//sheet//field[@name='schedule_date']/ancestor::group[1]" position="before">
-                <group col="1">
-                    <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
-                        <div class="o_horizontal_separator text-uppercase fw-bold mb-3"
-                             style="font-size: 0.85rem; color: #714B67;">
-                            <i class="fa fa-user-circle me-2"></i>
-                            Información del Cliente
+            <xpath expr="//sheet//field[@name='schedule_date']" position="before">
+                <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
+                    <div class="o_horizontal_separator text-uppercase fw-bold mb-3"
+                         style="font-size: 0.85rem; color: #714B67;">
+                        <i class="fa fa-user-circle me-2"></i>
+                        Información del Cliente
+                    </div>
+                    
+                    <group col="1" class="m-0">
+                        <field name="partner_id" required="1"/>
+                        
+                        <div class="d-flex align-items-center text-muted mt-2">
+                            <i class="fa fa-phone me-2" style="width: 15px;"></i>
+                            <field name="x_partner_phone" readonly="1" nolabel="1"/>
                         </div>
                         
-                        <group col="1" class="m-0">
-                            <field name="partner_id" required="1"/>
-                            
-                            <div class="d-flex align-items-center text-muted mt-2">
-                                <i class="fa fa-phone me-2" style="width: 15px;"></i>
-                                <field name="x_partner_phone" readonly="1" nolabel="1"/>
-                            </div>
-                            
-                            <div class="d-flex align-items-center text-muted">
-                                <i class="fa fa-mobile me-2" style="width: 15px;"></i>
-                                <field name="x_partner_mobile" readonly="1" nolabel="1"/>
-                            </div>
-                        </group>
-                    </div>
-                </group>
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="fa fa-mobile me-2" style="width: 15px;"></i>
+                            <field name="x_partner_mobile" readonly="1" nolabel="1"/>
+                        </div>
+                    </group>
+                </div>
             </xpath>
             
             <!-- D) Notebook Wexplay (nuevo, antes del estándar) -->
