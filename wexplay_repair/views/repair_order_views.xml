@@ -50,18 +50,16 @@
                     <page string="Datos del dispositivo" name="wex_device">
                         <group col="2">
                             
-                            <!-- Columna izquierda -->
                             <group>
                                 <separator string="ESPECIFICACIONES DEL TERMINAL"/>
                                 
                                 <field name="x_device_type"/>
-                                <field name="x_model_id"/>
-                                <field name="x_brand_id" readonly="1"/>
-                                <field name="x_imei"/>
-                                <field name="x_accessories"/>
+                                <field name="x_model_id" placeholder="Ej: Galaxy S24 Ultra..."/>
+                                <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
+                                <field name="x_imei" placeholder="15 dígitos..."/>
+                                <field name="x_accessories" placeholder="Cargador, funda, tarjeta SD..."/>
                             </group>
                             
-                            <!-- Columna derecha -->
                             <group>
                                 <separator string="SEGURIDAD Y ACCESO"/>
                                 
@@ -70,7 +68,7 @@
                                        invisible="x_unlock_type in ('none','unknown')"/>
                                 <field name="x_unlock_pattern"
                                        invisible="x_unlock_type != 'pattern'"/>
-                                <field name="x_unlock_notes"/>
+                                <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
                             </group>
                             
                         </group>
@@ -81,12 +79,12 @@
                             
                             <group>
                                 <separator string="PROBLEMA REPORTADO"/>
-                                <field name="x_reported_issue"/>
+                                <field name="x_reported_issue" placeholder="Describa el fallo detalladamente..."/>
                             </group>
                             
                             <group>
                                 <separator string="NOTAS TÉCNICAS INTERNAS"/>
-                                <field name="x_internal_notes"/>
+                                <field name="x_internal_notes" placeholder="Observaciones para el técnico..."/>
                             </group>
                             
                         </group>
