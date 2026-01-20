@@ -24,9 +24,6 @@
                                style="font-size: 1rem; border: none !important;"/>
                     </div>
                     
-                    <div class="badge rounded-pill bg-info text-white px-3 py-2 ms-2 d-none d-md-inline-block" style="font-size: 0.7rem; font-weight: 500;">
-                        <i class="fa fa-hdd-o me-1"/> STOCK SAT
-                    </div>
                 </div>
             </xpath>
             
