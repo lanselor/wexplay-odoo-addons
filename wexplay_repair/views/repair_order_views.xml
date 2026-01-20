@@ -50,9 +50,6 @@
             <xpath expr="//sheet//notebook[1]" position="before">
                 <group col="2">
                     <field name="product_id" required="1"/>
-                    <field name="product_location_src_id"
-                           string="Ubicación / Estado SAT"
-                           domain="[('display_name', 'ilike', '/REPARACIONES/')]"/>
                 </group>
             </xpath>
 
