@@ -42,6 +42,16 @@
                     </group>
                 </div>
             </xpath>
+
+            <!-- 1) Quitar product_id de su posición original -->
+            <xpath expr="//sheet//field[@name='product_id']" position="replace"/>
+            
+            <!-- 2) Reinsertarlo justo antes del notebook Wexplay -->
+            <xpath expr="//sheet//notebook[@name='wexplay_notebook']" position="before">
+                <group>
+                    <field name="product_id" required="1"/>
+                </group>
+            </xpath>
             
             <!-- D) Notebook Wexplay (nuevo, antes del estándar) -->
             <xpath expr="//sheet//notebook[1]" position="before">
