@@ -10,9 +10,25 @@
             
             <!-- A) Reemplazo de la vista Studio "Wexplay-UbicaciónSAT" -->
             <xpath expr="//field[@name='product_id']" position="after">
-                <field name="product_location_src_id"
-                       string="Ubicación / Estado SAT"
-                       domain="[('display_name', 'ilike', '/REPARACIONES/')]"/>
+                <div class="d-flex align-items-center mt-2 pb-2 border-bottom">
+                    <i class="fa fa-map-marker me-2 text-muted" style="font-size: 1.1rem;"/>
+                    
+                    <div class="flex-grow-1">
+                        <span class="text-uppercase fw-bold text-muted d-block" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            Ubicación / Estado SAT
+                        </span>
+                        <field name="product_location_src_id" 
+                               string="Ubicación / Estado SAT"
+                               nolabel="1"
+                               domain="[('display_name', 'ilike', '/REPARACIONES/')]"
+                               class="fw-bold text-primary"
+                               style="font-size: 1.05rem; border: none !important;"/>
+                    </div>
+                    
+                    <span class="badge rounded-pill bg-info bg-opacity-10 text-info px-3 py-2 ms-2" style="font-size: 0.65rem; border: 1px solid rgba(13, 202, 240, 0.2);">
+                        <i class="fa fa-exchange me-1"/> STOCK INTERNO
+                    </span>
+                </div>
             </xpath>
             
             <!-- B) Quitar el cliente de su posición original -->
