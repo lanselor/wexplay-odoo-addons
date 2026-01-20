@@ -70,50 +70,71 @@
 
 
             <!-- D) Notebook Wexplay (nuevo, antes del estándar) -->
+            Para elevar el diseño de este notebook y que mantenga la coherencia con el estilo de "tarjeta profesional" que hemos definido, vamos a transformar los grupos estándar de Odoo en contenedores con iconos, espaciados amplios y una estructura mucho más limpia.
+            
+            Aquí tienes la propuesta de mejora para tu XML, aplicando clases de utilidad de Odoo y Bootstrap:
+            
+            XML del Notebook Refactorizado
+            XML
+            
             <xpath expr="//sheet//notebook[1]" position="before">
-                <notebook name="wexplay_notebook">
+                <notebook name="wexplay_notebook" class="mt-4 shadow-sm border rounded">
                     
-                    <page string="Datos del dispositivo" name="wex_device">
-                        <group col="2">
+                    <page string="💻 Datos del dispositivo" name="wex_device" class="p-3">
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
+                                    <i class="fa fa-tablet me-2"/> Especificaciones del terminal
+                                </div>
+                                <group col="1" class="mt-0">
+                                    <field name="x_device_type" class="fw-bold text-primary"/>
+                                    <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
+                                    <field name="x_model_id" placeholder="Ej: Galaxy S24 Ultra..."/>
+                                    <field name="x_imei" placeholder="15 dígitos..." class="o_field_highlight"/>
+                                    <field name="x_accessories" widget="text" placeholder="Cargador, funda, tarjeta SD..."/>
+                                </group>
+                            </div>
                             
-                            <group>
-                                <separator string="ESPECIFICACIONES DEL TERMINAL"/>
-                                
-                                <field name="x_device_type"/>
-                                <field name="x_model_id" placeholder="Ej: Galaxy S24 Ultra..."/>
-                                <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
-                                <field name="x_imei" placeholder="15 dígitos..."/>
-                                <field name="x_accessories" placeholder="Cargador, funda, tarjeta SD..."/>
-                            </group>
-                            
-                            <group>
-                                <separator string="SEGURIDAD Y ACCESO"/>
-                                
-                                <field name="x_unlock_type"/>
-                                <field name="x_unlock_code"
-                                       invisible="x_unlock_type in ('none','unknown')"/>
-                                <field name="x_unlock_pattern"
-                                       invisible="x_unlock_type != 'pattern'"/>
-                                <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
-                            </group>
-                            
-                        </group>
+                            <div class="col-md-6 ps-md-4">
+                                <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
+                                    <i class="fa fa-lock me-2"/> Seguridad y Acceso
+                                </div>
+                                <group col="1" class="mt-0">
+                                    <field name="x_unlock_type" widget="selection_badge"/> 
+                                    
+                                    <div class="alert alert-info py-2 px-3 mb-2 d-flex align-items-center shadow-sm" 
+                                         invisible="x_unlock_type in ('none', 'unknown')">
+                                        <i class="fa fa-key me-2 text-primary"/>
+                                        <field name="x_unlock_code" class="fw-bold mb-0" nolabel="1" placeholder="Código numérico"/>
+                                    </div>
+                                    
+                                    <field name="x_unlock_pattern" invisible="x_unlock_type != 'pattern'"/>
+                                    <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
+                                </group>
+                            </div>
+                        </div>
                     </page>
                     
-                    <page string="Detalles de Avería" name="wex_issue">
-                        <group col="2">
+                    <page string="🛠️ Detalles de Avería" name="wex_issue" class="p-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="bg-light p-3 border rounded shadow-sm h-100">
+                                    <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #d9534f;">
+                                        <i class="fa fa-exclamation-triangle me-2"/> Problema Reportado
+                                    </div>
+                                    <field name="x_reported_issue" widget="text" nolabel="1" placeholder="Describa el fallo detalladamente..."/>
+                                </div>
+                            </div>
                             
-                            <group>
-                                <separator string="PROBLEMA REPORTADO"/>
-                                <field name="x_reported_issue" placeholder="Describa el fallo detalladamente..."/>
-                            </group>
-                            
-                            <group>
-                                <separator string="NOTAS TÉCNICAS INTERNAS"/>
-                                <field name="x_internal_notes" placeholder="Observaciones para el técnico..."/>
-                            </group>
-                            
-                        </group>
+                            <div class="col-md-6">
+                                <div class="bg-white p-3 border rounded shadow-sm h-100" style="border-left: 4px solid #714B67 !important;">
+                                    <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
+                                        <i class="fa fa-sticky-note-o me-2"/> Notas Técnicas Internas
+                                    </div>
+                                    <field name="x_internal_notes" widget="text" nolabel="1" placeholder="Observaciones exclusivas para el técnico..."/>
+                                </div>
+                            </div>
+                        </div>
                     </page>
                     
                 </notebook>
