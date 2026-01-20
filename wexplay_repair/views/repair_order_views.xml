@@ -5,11 +5,10 @@
     <record id="view_repair_order_form_wexplay" model="ir.ui.view">
         <field name="name">repair.order.form.wexplay</field>
         <field name="model">repair.order</field>
-        <!-- Base form view -->
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             
-            <!-- A) Reemplazo de la vista "Wexplay-UbicaciónSAT" (Studio) -->
+            <!-- A) Reemplazo de la vista Studio "Wexplay-UbicaciónSAT" -->
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="product_location_src_id"
                        string="Ubicación / Estado SAT"
@@ -19,8 +18,7 @@
             <!-- B) Quitar el cliente de su posición original -->
             <xpath expr="//sheet//field[@name='partner_id']" position="replace"/>
             
-            <!-- C) Insertar panel de cliente arriba del todo (columna derecha) -->
-            <!-- Inserta el panel ANTES del group que contiene schedule_date -->
+            <!-- C) Panel cliente arriba del todo (antes del group que contiene schedule_date) -->
             <xpath expr="//sheet//field[@name='schedule_date']/ancestor::group[1]" position="before">
                 <group col="1">
                     <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
@@ -47,7 +45,7 @@
                 </group>
             </xpath>
             
-            <!-- D) Notebook Wexplay (se añade antes del notebook estándar, como quieres) -->
+            <!-- D) Notebook Wexplay (nuevo, antes del estándar) -->
             <xpath expr="//sheet//notebook[1]" position="before">
                 <notebook name="wexplay_notebook" class="mt-4 shadow-sm border rounded">
                     
@@ -77,9 +75,9 @@
                                 
                                 <field name="x_unlock_type"/>
                                 <field name="x_unlock_code"
-                                       attrs="{'invisible': [('x_unlock_type','in',['none','unknown'])]}"/>
+                                       invisible="x_unlock_type in ('none','unknown')"/>
                                 <field name="x_unlock_pattern"
-                                       attrs="{'invisible': [('x_unlock_type','!=','pattern')]}"/>
+                                       invisible="x_unlock_type != 'pattern'"/>
                                 <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
                             </group>
                             
