@@ -19,30 +19,13 @@
         </field>
     </record>
     
-    <!-- Botón en líneas de Piezas: intento 1 (field name=operations) -->
-    <record id="view_repair_order_form_parts_inherit_wex_purchase_list_ops" model="ir.ui.view">
-        <field name="name">repair.order.form.parts.inherit.wex.purchase.list.ops</field>
+    <!-- Botón en líneas de Piezas (OCA Repair usa move_ids -> stock.move) -->
+    <record id="view_repair_order_form_parts_inherit_wex_purchase_list_moves" model="ir.ui.view">
+        <field name="name">repair.order.form.parts.inherit.wex.purchase.list.moves</field>
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.repair_order_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[.//field[@name='operations']]//field[@name='operations']//list" position="inside">
-                <button name="action_add_to_purchase_list"
-                        type="object"
-                        string="Añadir a lista"
-                        class="btn btn-secondary"
-                        attrs="{'invisible': [('purchase_list_line_id','!=',False)]}"/>
-                <field name="purchase_list_line_id" optional="hide"/>
-            </xpath>
-        </field>
-    </record>
-    
-    <!-- Botón en líneas de Piezas: intento 2 (field name=line_ids) -->
-    <record id="view_repair_order_form_parts_inherit_wex_purchase_list_lines" model="ir.ui.view">
-        <field name="name">repair.order.form.parts.inherit.wex.purchase.list.lines</field>
-        <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.repair_order_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//page[.//field[@name='line_ids']]//field[@name='line_ids']//list" position="inside">
+            <xpath expr="//page[.//field[@name='move_ids']]//field[@name='move_ids']//list" position="inside">
                 <button name="action_add_to_purchase_list"
                         type="object"
                         string="Añadir a lista"

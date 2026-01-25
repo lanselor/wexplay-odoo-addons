@@ -22,9 +22,8 @@ class RepairOrder(models.Model):
         action["context"] = {"default_repair_id": self.id}
         return action
 
-
-class RepairOrderLine(models.Model):
-   # _inherit = "repair.order.line"
+class StockMove(models.Model):
+    _inherit = "stock.move"
 
     purchase_list_line_id = fields.Many2one(
         "wex_purchase_list.line",
@@ -39,15 +38,14 @@ class RepairOrderLine(models.Model):
         self.ensure_one()
 
         missing = []
-        product = getattr(self, "product_id", False)
-        qty = getattr(self, "product_uom_qty", False) or getattr(self, "quantity", False) or 0.0
+        product = self.product_id
+        qty = self.product_uom_qty or 0.0
 
         if not product:
             missing.append(_("Producto"))
         if not qty or qty <= 0:
             missing.append(_("Cantidad"))
 
-        # Evitar duplicados desde la misma línea
         if self.purchase_list_line_id:
             raise UserError(_("Esta línea ya tiene una solicitud en la lista de compra."))
 
@@ -72,7 +70,7 @@ class RepairOrderLine(models.Model):
                 "El proveedor del producto no está marcado como proveedor válido."
             ))
 
-        repair = self.order_id if hasattr(self, "order_id") else self.repair_id
+        repair = self.repair_id
         if not repair:
             raise UserError(_("No se ha podido determinar la reparación asociada."))
 
@@ -84,7 +82,7 @@ class RepairOrderLine(models.Model):
             "vendor_id": vendor.id,
             "state": "to_purchase",
             "repair_id": repair.id,
-            "repair_part_line_id": self.id,
+            "repair_part_move_id": self.id,
         }
 
         line = self.env["wex_purchase_list.line"].create(vals)

@@ -3,7 +3,7 @@ from odoo.exceptions import ValidationError, UserError
 
 
 class WexPurchaseListLine(models.Model):
-    #_name = "wex_purchase_list.line"
+    _name = "wex_purchase_list.line"
     _description = "Wexplay Purchase List Line"
     _order = "create_date desc, id desc"
 
@@ -75,7 +75,7 @@ class WexPurchaseListLine(models.Model):
         required=True,
         index=True,
     )
-    
+
     purchase_order_id = fields.Many2one(
         "purchase.order",
         string="RFQ/PO",
@@ -83,14 +83,15 @@ class WexPurchaseListLine(models.Model):
         copy=False,
         index=True,
     )
-  #  purchase_order_line_id = fields.Many2one(
-  #      "purchase.order.line",
-  #      string="Línea RFQ/PO",
-  #      readonly=True,
-  #      copy=False,
-  #      index=True,
-  #  )
-    
+    purchase_order_line_id = fields.Many2one(
+        "purchase.order.line",
+        string="Línea RFQ/PO",
+        readonly=True,
+        copy=False,
+        index=True,
+    )
+
+    # SAT
     repair_id = fields.Many2one(
         "repair.order",
         string="Reparación",
@@ -98,40 +99,37 @@ class WexPurchaseListLine(models.Model):
         index=True,
     )
 
-    repair_part_line_id = fields.Many2one(
-       # "repair.order.line",
+    # IMPORTANTE: en tu OCA Repair las piezas son stock.move (move_ids), no repair.order.line
+    repair_part_move_id = fields.Many2one(
+        "stock.move",
         string="Línea de pieza (SAT)",
         ondelete="set null",
         index=True,
-        help="Línea de Piezas desde la que se generó esta solicitud.",
+        help="Movimiento de stock (Piezas) desde el que se generó esta solicitud.",
     )
-
 
     def action_create_rfqs(self):
         """Crea RFQ(s) agrupadas por proveedor (y compañía) a partir de líneas to_purchase.
-        - Requiere vendor_id (ya obligatorio en tu fase 1.5)
+        - Requiere vendor_id
         - Solo procesa líneas en estado to_purchase
         - Evita duplicados: si ya tiene purchase_order_line_id, no lo procesa
         """
-        #self.ensure_one() if isinstance(self.id, int) else None  # no-op, permite multi
-
         lines = self
         if not lines:
             raise UserError(_("No hay líneas seleccionadas."))
 
-        # Validaciones
         not_ready = lines.filtered(lambda l: l.state != "to_purchase")
         if not_ready:
             raise UserError(_(
                 "Solo se pueden crear RFQ desde líneas en estado 'Pendiente de compra'."
             ))
 
-#        already_linked = lines.filtered(lambda l: l.purchase_order_line_id)
-#        if already_linked:
-#            raise UserError(_(
-#                "Hay líneas ya vinculadas a una RFQ/PO. "
-#                "Quita esas líneas de la selección o duplica la línea si necesitas pedir de nuevo."
-#            ))
+        already_linked = lines.filtered(lambda l: l.purchase_order_line_id)
+        if already_linked:
+            raise UserError(_(
+                "Hay líneas ya vinculadas a una RFQ/PO. "
+                "Quita esas líneas de la selección o duplica la línea si necesitas pedir de nuevo."
+            ))
 
         missing_vendor = lines.filtered(lambda l: not l.vendor_id)
         if missing_vendor:
@@ -151,7 +149,6 @@ class WexPurchaseListLine(models.Model):
             company = self.env["res.company"].browse(company_id)
             vendor = self.env["res.partner"].browse(vendor_id)
 
-            # Crear RFQ (purchase.order)
             po_vals = {
                 "partner_id": vendor.id,
                 "company_id": company.id,
@@ -159,7 +156,6 @@ class WexPurchaseListLine(models.Model):
             }
             po = self.env["purchase.order"].with_company(company).create(po_vals)
 
-            # Crear líneas RFQ
             now = fields.Datetime.now()
             pol_model = self.env["purchase.order.line"].with_company(company)
 
@@ -173,26 +169,19 @@ class WexPurchaseListLine(models.Model):
                     "name": product.display_name,
                     "product_qty": line.quantity or 1.0,
                     "product_uom": uom.id,
-                    "price_unit": 0.0,          # mínimo estable: el comprador rellena
-                    "date_planned": now,        # requerido
+                    "price_unit": 0.0,
+                    "date_planned": now,
                 }
                 pol = pol_model.create(pol_vals)
 
-                # Vincular y marcar estado
                 line.write({
                     "purchase_order_id": po.id,
-                #    "purchase_order_line_id": pol.id,
+                    "purchase_order_line_id": pol.id,
                     "state": "ordered",
                 })
 
-
-
-
             created_orders |= po
 
-
-
-        # Devolver acción para abrir las RFQ creadas
         action = self.env.ref("purchase.purchase_rfq").read()[0]
         action["domain"] = [("id", "in", created_orders.ids)]
         action["context"] = {"create": False}
@@ -200,8 +189,6 @@ class WexPurchaseListLine(models.Model):
 
     @api.onchange("is_reservation")
     def _onchange_is_reservation(self):
-        # Mantenerlo simple en fase 1: si deja de ser reserva, desmarcamos avisado.
-        # (El usuario puede volver a marcarlo manualmente si lo desea.)
         for rec in self:
             if not rec.is_reservation:
                 rec.customer_notified = False
