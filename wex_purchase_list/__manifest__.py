@@ -2,9 +2,9 @@
     "name": "Wexplay - Purchase List (SAT)",
     "version": "18.0.1.0.0",
     "category": "Purchases",
-    "summary": "Lista interna de compra tipo hoja para repuestos (Wexplay SAT).",
+    "summary": "Lista interna de compra tipo hoja (Wexplay SAT).",
     "description": """
-Lista de compra mínima para SAT (taller de reparaciones).
+Lista de compra mínima para taller de reparaciones.
 Fase 1: líneas sueltas, sin RFQ/PO automáticos.
 """,
     "author": "Wexplay",
