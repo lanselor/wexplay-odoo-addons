@@ -14,7 +14,7 @@
                 <field name="requested_by" string="Solicitado por" optional="show"/>
                 <field name="product_id" string="Producto" required="1"/>
                 <field name="quantity" string="Cantidad"/>
-                <field name="vendor_id" string="Proveedor" optional="show"/>
+                <field name="vendor_id" string="Proveedor" required="1" />
                 <field name="vendor_url" string="URL proveedor" widget="url" optional="show"/>
                 <field name="state" string="Estado"/>
                 <field name="is_reservation" string="Reserva"/>

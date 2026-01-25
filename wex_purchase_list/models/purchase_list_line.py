@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class WexPurchaseListLine(models.Model):
@@ -45,6 +46,7 @@ class WexPurchaseListLine(models.Model):
         "res.partner",
         string="Vendor",
         domain=[("supplier_rank", ">", 0)],
+        required=True,
         index=True,
     )
     vendor_url = fields.Char(string="Vendor URL")
@@ -81,3 +83,9 @@ class WexPurchaseListLine(models.Model):
         for rec in self:
             if not rec.is_reservation:
                 rec.customer_notified = False
+
+    @api.constrains("vendor_id")
+    def _check_vendor_required(self):
+        for rec in self:
+            if not rec.vendor_id:
+                raise ValidationError(_("El proveedor es obligatorio."))
