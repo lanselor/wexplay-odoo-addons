@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     
-    <!-- Smart button en repair.order -->
+    <!-- =========================================================
+         Smart button en repair.order
+         ========================================================= -->
     <record id="view_repair_order_form_inherit_wex_purchase_list" model="ir.ui.view">
         <field name="name">repair.order.form.inherit.wex.purchase.list</field>
         <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.repair_order_view_form"/>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
                 <button type="object"
@@ -19,11 +21,13 @@
         </field>
     </record>
     
-    <!-- Botón en líneas de Piezas (OCA Repair usa move_ids -> stock.move) -->
-    <record id="view_repair_order_form_parts_inherit_wex_purchase_list_moves" model="ir.ui.view">
-        <field name="name">repair.order.form.parts.inherit.wex.purchase.list.moves</field>
+    <!-- =========================================================
+         Botón en líneas de Piezas (stock.move / move_ids)
+         ========================================================= -->
+    <record id="view_repair_order_form_parts_inherit_wex_purchase_list" model="ir.ui.view">
+        <field name="name">repair.order.form.parts.inherit.wex.purchase.list</field>
         <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.repair_order_view_form"/>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[.//field[@name='move_ids']]//field[@name='move_ids']//list" position="inside">
                 <button name="action_add_to_purchase_list"
