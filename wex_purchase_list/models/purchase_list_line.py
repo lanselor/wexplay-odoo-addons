@@ -3,7 +3,7 @@ from odoo.exceptions import ValidationError, UserError
 
 
 class WexPurchaseListLine(models.Model):
-    _name = "wex_purchase_list.line"
+    #_name = "wex_purchase_list.line"
     _description = "Wexplay Purchase List Line"
     _order = "create_date desc, id desc"
 
@@ -83,13 +83,13 @@ class WexPurchaseListLine(models.Model):
         copy=False,
         index=True,
     )
-    purchase_order_line_id = fields.Many2one(
-        "purchase.order.line",
-        string="Línea RFQ/PO",
-        readonly=True,
-        copy=False,
-        index=True,
-    )
+  #  purchase_order_line_id = fields.Many2one(
+  #      "purchase.order.line",
+  #      string="Línea RFQ/PO",
+  #      readonly=True,
+  #      copy=False,
+  #      index=True,
+  #  )
     
     repair_id = fields.Many2one(
         "repair.order",
@@ -126,12 +126,12 @@ class WexPurchaseListLine(models.Model):
                 "Solo se pueden crear RFQ desde líneas en estado 'Pendiente de compra'."
             ))
 
-        already_linked = lines.filtered(lambda l: l.purchase_order_line_id)
-        if already_linked:
-            raise UserError(_(
-                "Hay líneas ya vinculadas a una RFQ/PO. "
-                "Quita esas líneas de la selección o duplica la línea si necesitas pedir de nuevo."
-            ))
+#        already_linked = lines.filtered(lambda l: l.purchase_order_line_id)
+#        if already_linked:
+#            raise UserError(_(
+#                "Hay líneas ya vinculadas a una RFQ/PO. "
+#                "Quita esas líneas de la selección o duplica la línea si necesitas pedir de nuevo."
+#            ))
 
         missing_vendor = lines.filtered(lambda l: not l.vendor_id)
         if missing_vendor:
@@ -181,7 +181,7 @@ class WexPurchaseListLine(models.Model):
                 # Vincular y marcar estado
                 line.write({
                     "purchase_order_id": po.id,
-                    "purchase_order_line_id": pol.id,
+                #    "purchase_order_line_id": pol.id,
                     "state": "ordered",
                 })
 
