@@ -24,7 +24,7 @@ class RepairOrder(models.Model):
 
 
 class RepairOrderLine(models.Model):
-    _inherit = "repair.order.line"
+   # _inherit = "repair.order.line"
 
     purchase_list_line_id = fields.Many2one(
         "wex_purchase_list.line",

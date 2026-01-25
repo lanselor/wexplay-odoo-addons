@@ -99,7 +99,7 @@ class WexPurchaseListLine(models.Model):
     )
 
     repair_part_line_id = fields.Many2one(
-        "repair.order.line",
+       # "repair.order.line",
         string="Línea de pieza (SAT)",
         ondelete="set null",
         index=True,
