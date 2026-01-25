@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wex_purchase_list_line_user,wex_purchase_list.line user,model_wex_purchase_list_line,wex_purchase_list.group_wex_purchase_list_user,1,1,1,0
 access_wex_purchase_list_line_manager,wex_purchase_list.line manager,model_wex_purchase_list_line,wex_purchase_list.group_wex_purchase_list_manager,1,1,1,1
+access_wex_purchase_list_sat_repair_line,access_wex_purchase_list_sat_repair_line,model_repair_order_line,base.group_user,1,1,0,0

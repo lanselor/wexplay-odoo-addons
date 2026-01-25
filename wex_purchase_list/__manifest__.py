@@ -13,11 +13,13 @@ Fase 1: líneas sueltas, sin RFQ/PO automáticos.
         "base",
         "product",
         "purchase",
+        "repair",
     ],
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",
         "views/purchase_list_line_views.xml",
+        "views/repair_order_views.xml",
     ],
     "installable": True,
     "application": False,

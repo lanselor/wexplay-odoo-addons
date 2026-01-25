@@ -90,6 +90,22 @@ class WexPurchaseListLine(models.Model):
         copy=False,
         index=True,
     )
+    
+    repair_id = fields.Many2one(
+        "repair.order",
+        string="Reparación",
+        ondelete="set null",
+        index=True,
+    )
+
+    repair_part_line_id = fields.Many2one(
+        "repair.order.line",
+        string="Línea de pieza (SAT)",
+        ondelete="set null",
+        index=True,
+        help="Línea de Piezas desde la que se generó esta solicitud.",
+    )
+
 
     def action_create_rfqs(self):
         """Crea RFQ(s) agrupadas por proveedor (y compañía) a partir de líneas to_purchase.
@@ -169,7 +185,12 @@ class WexPurchaseListLine(models.Model):
                     "state": "ordered",
                 })
 
+
+
+
             created_orders |= po
+
+
 
         # Devolver acción para abrir las RFQ creadas
         action = self.env.ref("purchase.purchase_rfq").read()[0]
