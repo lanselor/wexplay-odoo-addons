@@ -20,6 +20,8 @@
                 <field name="is_reservation" string="Reserva"/>
                 <field name="customer_notified" string="Cliente avisado"/>
                 <field name="customer_price_note" string="Precio al cliente" widget="monetary" optional="show"/>
+                <field name="purchase_order_id" string="RFQ/PO" optional="show"/>
+                <field name="purchase_order_line_id" string="Línea RFQ/PO" optional="hide"/>
             </list>
         </field>
     </record>
@@ -76,6 +78,7 @@
                 <field name="state" string="Estado"/>
                 
                 <filter string="Esperando cliente (no pedir)" name="f_wait" domain="[('state','=','draft_wait_customer')]"/>
+                <filter string="Pendiente de compra" name="f_to_purchase" domain="[('state','=','to_purchase')]"/>
                 <filter string="Pedido realizado" name="f_ordered" domain="[('state','=','ordered')]"/>
                 <filter string="Recibido" name="f_received" domain="[('state','=','received')]"/>
                 <filter string="Cancelado" name="f_cancelled" domain="[('state','=','cancelled')]"/>
@@ -101,7 +104,7 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_wex_purchase_list_line_list"/>
         <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
-        <field name="context">{'search_default_f_wait': 1}</field>
+        <field name="context">{'search_default_f_to_purchase': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Lista de compra (Fase 1).
@@ -111,6 +114,27 @@
             </p>
         </field>
     </record>
+    
+    <!-- Server Action: Crear RFQ desde líneas seleccionadas -->
+    <record id="action_server_create_rfq_from_purchase_list" model="ir.actions.server">
+        <field name="name">Crear RFQ (agrupar por proveedor)</field>
+        <field name="model_id" ref="model_wex_purchase_list_line"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_create_rfqs()</field>
+        
+        <!-- Vincular al modelo para que aparezca en el menú "Acciones" de la lista -->
+        <field name="binding_model_id" ref="model_wex_purchase_list_line"/>
+        <field name="binding_view_types">list</field>
+        
+        <!-- Opcional: restringir a managers -->
+        <field name="groups_id" eval="[(4, ref('wex_purchase_list.group_wex_purchase_list_manager'))]"/>
+    </record>
+
+    
+    
+    
+    
+
     
     <!-- Menu: Compras → Lista de compra (Wexplay) -->
     <menuitem id="menu_wex_purchase_list_root"
