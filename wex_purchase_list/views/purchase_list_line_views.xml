@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     
-    <!-- Tree View (main) -->
-    <record id="view_wex_purchase_list_line_tree" model="ir.ui.view">
-        <field name="name">wex_purchase_list.line.tree</field>
+    <!-- List View (main) -->
+    <record id="view_wex_purchase_list_line_list" model="ir.ui.view">
+        <field name="name">wex_purchase_list.line.list</field>
         <field name="model">wex_purchase_list.line</field>
         <field name="arch" type="xml">
-            <tree string="Purchase List (Wexplay)" editable="bottom"
+            <list string="Purchase List (Wexplay)" editable="bottom"
                   decoration-warning="state == 'draft_wait_customer'"
                   decoration-info="state == 'ordered'"
                   decoration-success="state == 'received'"
@@ -20,7 +20,7 @@
                 <field name="is_reservation"/>
                 <field name="customer_notified"/>
                 <field name="customer_price_note" widget="monetary" optional="show"/>
-            </tree>
+            </list>
         </field>
     </record>
     
@@ -97,8 +97,8 @@
     <record id="action_wex_purchase_list_line" model="ir.actions.act_window">
         <field name="name">Lista de compra (Wexplay)</field>
         <field name="res_model">wex_purchase_list.line</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_wex_purchase_list_line_tree"/>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_list"/>
         <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
         <field name="context">{'search_default_f_wait': 1}</field>
         <field name="help" type="html">
