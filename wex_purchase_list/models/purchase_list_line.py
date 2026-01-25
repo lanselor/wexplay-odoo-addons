@@ -30,20 +30,20 @@ class WexPurchaseListLine(models.Model):
     )
     product_id = fields.Many2one(
         "product.product",
-        string="Producto",
+        string="Product",
         required=True,
         index=True,
         ondelete="restrict",
     )
     quantity = fields.Float(
-        string="Cantidad",
+        string="Quantity",
         default=1.0,
         required=True,
     )
 
     vendor_id = fields.Many2one(
         "res.partner",
-        string="Proveedor",
+        string="Vendor",
         domain=[("supplier_rank", ">", 0)],
         index=True,
     )
@@ -56,19 +56,19 @@ class WexPurchaseListLine(models.Model):
     )
 
     is_reservation = fields.Boolean(string="Reservation")
-    customer_notified = fields.Boolean(string="Es Reserva?")
+    customer_notified = fields.Boolean(string="Customer notified")
 
     notes = fields.Text(string="Notes")
 
     state = fields.Selection(
         selection=[
-            ("draft_wait_customer", "Pendiente Confirmación"),
+            ("draft_wait_customer", "Espera de Confirmación"),
             ("to_purchase", "Pendiente de compra"),
-            ("ordered", "Ordered"),
-            ("received", "Received"),
-            ("cancelled", "Cancelled"),
+            ("ordered", "Pedido"),
+            ("received", "Recibido"),
+            ("cancelled", "Cancelado"),
         ],
-        string="Estado",
+        string="State",
         default="draft_wait_customer",
         required=True,
         index=True,
