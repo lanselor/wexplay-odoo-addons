@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     
+    <!-- =========================================================
+         VISTAS: wex_purchase_list.line
+         ========================================================= -->
+    
     <!-- List View (main) -->
     <record id="view_wex_purchase_list_line_list" model="ir.ui.view">
         <field name="name">wex_purchase_list.line.list</field>
@@ -15,16 +19,17 @@
                 <field name="requested_by" string="Solicitado por" optional="show"/>
                 <field name="product_id" string="Producto" required="1"/>
                 <field name="quantity" string="Cantidad"/>
-                <field name="vendor_id" string="Proveedor" required="1" />
+                <field name="vendor_id" string="Proveedor" required="1"/>
                 <field name="vendor_url" string="URL proveedor" widget="url" optional="show"/>
                 
-                <!-- NUEVO: origen SAT -->
+                <!-- Origen SAT -->
                 <field name="repair_id" string="Reparación" optional="show"/>
                 
                 <field name="state" string="Estado"/>
                 <field name="is_reservation" string="Reserva"/>
                 <field name="customer_notified" string="Cliente avisado"/>
                 <field name="customer_price_note" string="Precio al cliente" widget="monetary" optional="show"/>
+                
                 <field name="purchase_order_id" string="RFQ/PO" optional="show"/>
                 <field name="purchase_order_line_id" string="Línea RFQ/PO" optional="hide"/>
             </list>
@@ -54,9 +59,8 @@
                     
                     <group>
                         <group>
-                            <!-- NUEVO: origen SAT -->
+                            <!-- Origen SAT -->
                             <field name="repair_id" string="Reparación" options="{'no_create': True}"/>
-                            <field name="repair_part_line_id" string="Línea SAT" options="{'no_create': True}" optional="hide"/>
                         </group>
                         <group>
                             <field name="is_reservation" string="Reserva"/>
@@ -85,10 +89,11 @@
                 <field name="vendor_id" string="Proveedor"/>
                 <field name="state" string="Estado"/>
                 
-                <!-- NUEVO -->
+                <!-- Origen SAT -->
                 <field name="repair_id" string="Reparación"/>
                 
                 <filter string="Esperando cliente (no pedir)" name="f_wait" domain="[('state','=','draft_wait_customer')]"/>
+                <filter string="Pendiente de compra" name="f_to_purchase" domain="[('state','=','to_purchase')]"/>
                 <filter string="Pedido realizado" name="f_ordered" domain="[('state','=','ordered')]"/>
                 <filter string="Recibido" name="f_received" domain="[('state','=','received')]"/>
                 <filter string="Cancelado" name="f_cancelled" domain="[('state','=','cancelled')]"/>
@@ -102,8 +107,6 @@
                     <filter string="Solicitado por" name="gb_requested_by" context="{'group_by':'requested_by'}"/>
                     <filter string="Proveedor" name="gb_vendor" context="{'group_by':'vendor_id'}"/>
                     <filter string="Estado" name="gb_state" context="{'group_by':'state'}"/>
-                    
-                    <!-- NUEVO -->
                     <filter string="Reparación" name="gb_repair" context="{'group_by':'repair_id'}"/>
                 </group>
             </search>
@@ -117,10 +120,11 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_wex_purchase_list_line_list"/>
         <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
-        <field name="context">{'search_default_f_wait': 1}</field>
+        <!-- por defecto: ver "Pendiente de compra" -->
+        <field name="context">{'search_default_f_to_purchase': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Lista de compra (Wexplay).
+                Lista de compra (Fase 1).
             </p>
             <p>
                 Añade repuestos a pedir, proveedor y enlace rápido.
@@ -128,7 +132,9 @@
         </field>
     </record>
     
-    <!-- Server Action: Crear RFQ desde líneas seleccionadas -->
+    <!-- =========================================================
+         ACCIÓN SERVIDOR: Crear RFQ desde líneas seleccionadas
+         ========================================================= -->
     <record id="action_server_create_rfq_from_purchase_list" model="ir.actions.server">
         <field name="name">Crear RFQ (agrupar por proveedor)</field>
         <field name="model_id" ref="model_wex_purchase_list_line"/>
@@ -139,17 +145,13 @@
         <field name="binding_model_id" ref="model_wex_purchase_list_line"/>
         <field name="binding_view_types">list</field>
         
-        <!-- Opcional: restringir a managers -->
+        <!-- Restringir a managers -->
         <field name="groups_id" eval="[(4, ref('wex_purchase_list.group_wex_purchase_list_manager'))]"/>
     </record>
-
     
-    
-    
-    
-
-    
-    <!-- Menu: Compras → Lista de compra (Wexplay) -->
+    <!-- =========================================================
+         MENÚ: Compras → Lista de compra (Wexplay)
+         ========================================================= -->
     <menuitem id="menu_wex_purchase_list_root"
               name="Lista de compra (Wexplay)"
               parent="purchase.menu_purchase_root"
