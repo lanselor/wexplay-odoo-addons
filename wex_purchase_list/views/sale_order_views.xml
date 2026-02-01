@@ -7,7 +7,9 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             
-            <xpath expr="//field[@name='order_line']//tree" position="inside">
+            <!-- Odoo 18 usa <list>, no <tree> -->
+            <xpath expr="//field[@name='order_line']//list" position="inside">
+                
                 <button
                     name="action_add_to_purchase_list"
                     type="object"
@@ -19,7 +21,10 @@
                     ('purchase_list_line_id', '!=', False)
                     ]
                     }"/>
+                
+                <!-- El campo DEBE estar presente -->
                 <field name="purchase_list_line_id" optional="hide"/>
+                
             </xpath>
             
         </field>
