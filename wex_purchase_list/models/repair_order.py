@@ -13,14 +13,19 @@ class RepairOrder(models.Model):
     def _compute_purchase_list_line_count(self):
         line_model = self.env["wex_purchase_list.line"]
         for rec in self:
-            rec.purchase_list_line_count = line_model.search_count([("repair_id", "=", rec.id)])
+            rec.purchase_list_line_count = line_model.search_count([
+                ("repair_id", "=", rec.id)
+            ])
 
     def action_view_purchase_list_lines(self):
         self.ensure_one()
-        action = self.env.ref("wex_purchase_list.action_wex_purchase_list_line").read()[0]
+        action = self.env.ref(
+            "wex_purchase_list.action_wex_purchase_list_line"
+        ).read()[0]
         action["domain"] = [("repair_id", "=", self.id)]
         action["context"] = {"default_repair_id": self.id}
         return action
+
 
 class StockMove(models.Model):
     _inherit = "stock.move"
@@ -37,17 +42,14 @@ class StockMove(models.Model):
     def action_add_to_purchase_list(self):
         self.ensure_one()
 
-        missing = []
         product = self.product_id
         qty = self.product_uom_qty or 0.0
 
+        missing = []
         if not product:
             missing.append(_("Producto"))
         if not qty or qty <= 0:
             missing.append(_("Cantidad"))
-
-        if self.purchase_list_line_id:
-            raise UserError(_("Esta línea ya tiene una solicitud en la lista de compra."))
 
         seller = False
         if product:
@@ -74,6 +76,33 @@ class StockMove(models.Model):
         if not repair:
             raise UserError(_("No se ha podido determinar la reparación asociada."))
 
+        PurchaseLine = self.env["wex_purchase_list.line"]
+
+        # 🔹 FASE 2.1 — buscar línea existente activa
+        existing_line = PurchaseLine.search([
+            ("repair_id", "=", repair.id),
+            ("product_id", "=", product.id),
+            ("state", "not in", ("cancelled", "received")),
+        ], limit=1)
+
+        if existing_line:
+            existing_line.quantity += qty
+            self.purchase_list_line_id = existing_line.id
+
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": _("OK"),
+                    "message": _(
+                        "La cantidad se ha sumado a una línea existente de la lista de compra."
+                    ),
+                    "type": "success",
+                    "sticky": False,
+                }
+            }
+
+        # 🔹 comportamiento actual (crear línea nueva)
         vals = {
             "company_id": repair.company_id.id if repair.company_id else self.env.company.id,
             "requested_by": self.env.user.id,
@@ -85,7 +114,7 @@ class StockMove(models.Model):
             "repair_part_move_id": self.id,
         }
 
-        line = self.env["wex_purchase_list.line"].create(vals)
+        line = PurchaseLine.create(vals)
         self.purchase_list_line_id = line.id
 
         return {
