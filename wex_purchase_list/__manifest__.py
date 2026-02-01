@@ -31,6 +31,6 @@ Lista de compra mínima para taller de reparaciones.
         "views/repair_order_views.xml",
 
         # Si has creado la vista de ventas, debe ir aquí
-        # "views/sale_order_views.xml",
+        "views/sale_order_views.xml",
     ],
 }
