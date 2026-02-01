@@ -16,7 +16,7 @@
                     class="btn btn-secondary"
                     attrs="{
                     'invisible': [
-                    ('product_id.type', '!=', 'product'),
+                    ('product_id.type', '=', 'service'),
                     ('purchase_list_line_id', '!=', False)
                     ]
                     }"/>

@@ -22,8 +22,8 @@ class SaleOrderLine(models.Model):
         product = self.product_id
         qty = self.product_uom_qty or 0.0
 
-        if not product or product.type != "product":
-            raise UserError(_("Solo se pueden añadir productos almacenables."))
+        if not product or product.type == "service":
+            raise UserError(_("Solo se pueden añadir productos que no sean servicios."))
 
         if qty <= 0:
             raise UserError(_("La cantidad debe ser mayor que cero."))
