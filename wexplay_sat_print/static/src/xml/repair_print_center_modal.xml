@@ -50,11 +50,13 @@
                         <button type="button" class="btn btn-success btn-lg w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintAll">
                             <i class="fa fa-check-circle me-2"></i> IMPRIMIR TODO
                         </button>
-                         <button type="button" class="btn btn-info btn-lg w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintSat">
-                            <i class="fa fa-check-circle me-2"></i> IMPRIMIR DOCUMENTOS CLIENTE
-                        </button>
+
                     </div>
 
+                        <button type="button" class="btn btn-info btn-lg w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintSat">
+                            <i class="fa fa-check-circle me-2"></i> IMPRIMIR DOCUMENTOS CLIENTE
+                        </button>
+                        
                     <div class="modal-footer border-top-0 justify-content-center">
                         <button type="button" class="btn btn-link text-muted" t-on-click="close">Cancelar y Salir</button>
                     </div>
