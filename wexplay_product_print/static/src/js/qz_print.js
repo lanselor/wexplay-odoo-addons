@@ -103,10 +103,11 @@ export function buildQlLabelConfig(printer, opts = {}) {
 export function buildThermalConfig(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
-        margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        margins: { top: 3, right: 0, bottom: 0, left: 0 },
         scaleContent: false,
-        colorType: "blackwhite",
-        rasterize: true,
+        colorType: "grayscale",
+        rasterize: false,
+       // rasterize: true,
         interpolation: "nearest",
         forceDetailed: true,
         copies: 1,
