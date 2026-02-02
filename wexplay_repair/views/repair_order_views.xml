@@ -41,12 +41,6 @@
                     
                     <group col="1" class="m-0">
                         <field name="partner_id" required="1"/>
-
-                        <!-- NUEVO: empleado que recepciona -->
-                        <div class="d-flex align-items-center text-muted mt-2">
-                            <i class="fa fa-user me-2" style="width: 15px;"></i>
-                            <field name="x_reception_employee_id" nolabel="1"/>
-                        </div>
                         
                         <div class="d-flex align-items-center text-muted mt-2">
                             <i class="fa fa-phone me-2" style="width: 15px;"></i>
@@ -58,6 +52,14 @@
                             <field name="x_partner_mobile" readonly="1" nolabel="1"/>
                         </div>
                     </group>
+                </div>
+            </xpath>
+
+            <!-- NUEVO: Recepciona justo encima de Responsable (user_id) -->
+            <xpath expr="//sheet//field[@name='user_id']" position="before">
+                <div class="d-flex align-items-center text-muted mt-2">
+                    <i class="fa fa-user me-2" style="width: 15px;"></i>
+                    <field name="x_reception_employee_id" nolabel="1"/>
                 </div>
             </xpath>
             
@@ -87,11 +89,11 @@
             </xpath>
 
 
-            <!-- D) Notebook Wexplay (antes separado): AHORA se integra dentro del "page1" (page[1]) del notebook estándar -->
+            <!-- D) Contenido Wexplay: AHORA va ANTES del notebook estándar para que las pestañas queden debajo -->
 
-            <xpath expr="//sheet//notebook[1]/page[1]" position="inside">
+            <xpath expr="//sheet//notebook[1]" position="before">
 
-                <!-- Page "💻 Datos del dispositivo" (contenido integrado) -->
+                <!-- “💻 Datos del dispositivo” (contenido integrado fuera de pestañas) -->
                 <div class="row">
                     <div class="col-md-6 border-end">
                         <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
@@ -143,7 +145,7 @@
                     <field name="x_accessories" widget="text" nolabel="1" placeholder="Cargador, funda, tarjeta SIM..."/>
                 </div>
 
-                <!-- Page "🛠️ Detalles de Avería" (contenido integrado) -->
+                <!-- “🛠️ Detalles de Avería” (contenido integrado fuera de pestañas) -->
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <div class="bg-light p-3 border rounded shadow-sm h-100">
