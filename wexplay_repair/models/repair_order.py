@@ -10,6 +10,13 @@ class RepairOrder(models.Model):
         string="Tipo de dispositivo",
     )
 
+    # NUEVO: empleado que recepciona el equipo
+    x_reception_employee_id = fields.Many2one(
+        comodel_name="hr.employee",
+        string="Recepciona",
+        help="Empleado que recepciona el equipo en mostrador.",
+    )
+
     # Re-declaramos el campo original para hacerlo obligatorio
     partner_id = fields.Many2one(
         "res.partner",
