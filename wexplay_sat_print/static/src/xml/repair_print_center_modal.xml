@@ -47,12 +47,16 @@
                             </button>
                         </div>
 
-                        <div>
-                            <button type="button" class="btn btn-success btn-sm w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintAll">
+                        <div class="d-grid gap-3">
+                            <button type="button"
+                                    class="btn btn-success btn-sm w-100 shadow-sm py-3 fw-bold"
+                                    t-on-click="onPrintAll">
                                 <i class="fa fa-check-circle me-2"></i> IMPRIMIR TODO
                             </button>
 
-                            <button type="button" class="btn btn-info btn-sm w-100 shadow-sm py-3 fw-bold" t-on-click="onPrintSat">
+                            <button type="button"
+                                    class="btn btn-info btn-sm w-100 shadow-sm py-3 fw-bold"
+                                    t-on-click="onPrintSat">
                                 <i class="fa fa-check-circle me-2"></i> IMPRIMIR DOCUMENTOS CLIENTE
                             </button>
                         </div>
