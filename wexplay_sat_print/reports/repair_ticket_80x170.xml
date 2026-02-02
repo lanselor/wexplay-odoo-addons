@@ -227,7 +227,7 @@
                             </div>
                         </div>
 
-                        <!-- BARCODE -->
+                       <!-- BARCODE -->
                         <div class="barcode-box">
                             <t t-if="o.name">
                                 <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
@@ -236,3 +236,33 @@
                                 <!-- un poco más grande -->
                                 <img t-att-src="'%s/report/barcode/Code128/%s?width=420&amp;height=120&amp;humanreadable=0' % (base_url, sat_barcode)"
                                      style="width:62mm; height:12mm; display:block; margin:0 auto;"/>
+
+                                <div class="mono" style="font-size:10pt; margin-top:1.2mm; font-weight:900;">
+                                    <t t-esc="o.name"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- TERMS -->
+                        <div class="terms">
+                            <div style="text-align:center; font-size:10pt; font-weight:900; margin-bottom:1.5mm;">
+                                CONDICIONES DE RECOGIDA
+                            </div>
+
+                            <div style="font-size:9pt; line-height:1.2; text-align:justify; font-weight:700;">
+                                Es imprescindible presentar este documento para la retirada del equipo.
+                                No nos hacemos responsables de la pérdida de datos.
+                                Pasado <strong>1 año</strong>, el equipo pasará a ser propiedad del SAT.
+                            </div>
+
+                            <div style="text-align:center; font-size:8pt; margin-top:3mm; text-transform:uppercase; font-weight:800;">
+                                <t t-esc="o.company_id.name"/> · <t t-esc="o.company_id.vat"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
