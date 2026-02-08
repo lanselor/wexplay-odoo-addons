@@ -17,10 +17,7 @@
             <!-- NUEVO: PVP con IVA debajo de Precio de venta -->
             <xpath expr="//field[@name='standard_price']" position="after">
                 <group string="Wexplay">
-                    <label for="wex_list_price_tax_included"/>
-                    <field name="wex_list_price_tax_included"
-                           class="oe_inline"
-                           placeholder="Precio final con IVA"/>
+                    <field name="wex_list_price_tax_included" string="Precio con IVA"/>
                 </group>
             </xpath>
             
