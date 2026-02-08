@@ -18,6 +18,8 @@
             <xpath expr="//field[@name='standard_price']" position="after">
                 <group string="Wexplay">
                     <field name="wex_list_price_tax_included" string="Precio con IVA"/>
+                    <field name="wex_margin_percent"/>
+                    <field name="wex_suggested_price_tax_included" readonly="1" widget="monetary"/>
                 </group>
             </xpath>
             
