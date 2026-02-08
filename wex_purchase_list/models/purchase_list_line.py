@@ -206,6 +206,8 @@ class WexPurchaseListLine(models.Model):
                     "date_planned": now,
                 }
                 pol = pol_model.create(pol_vals)
+                if price_unit:
+                    pol.write({"price_unit": price_unit})
 
                 line.write({
                     "purchase_order_id": po.id,

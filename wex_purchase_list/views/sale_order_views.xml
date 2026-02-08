@@ -26,14 +26,16 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='order_lines']//field[@name='order_line']//list" position="inside">
+                <field name="product_id" invisible="1"/>
                 <button name="action_add_to_purchase_list"
                         type="object"
                         string="Añadir a lista"
-                        class="btn btn-secondary"
+                        class="btn btn-outline-success"
                         attrs="{
                             'invisible': [
-                            ('product_id.type', '=', 'service'),
-                            ('purchase_list_line_id', '!=', False)
+                            '|',
+                            ('purchase_list_line_id', '!=', False),
+                            ('product_id.product_tmpl_id.detailed_type', '=', 'service')
                             ]
                             }"/>
                 <field name="purchase_list_line_id" optional="hide"/>
