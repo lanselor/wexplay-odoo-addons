@@ -1,49 +1,47 @@
 from odoo import api, fields, models
 
+
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
     wex_list_price_tax_included = fields.Monetary(
         string="Precio con IVA",
         currency_field="currency_id",
-        compute="_compute_wex_list_price_tax_included",
-        inverse="_inverse_wex_list_price_tax_included",
-        store=False, # No necesitamos guardarlo en DB, es un ayudante de cálculo
-        help="Introduce el precio final con impuestos. Odoo recalcula automáticamente el Precio de venta (sin IVA).",
+        help="Introduce el precio final con IVA. Se recalculará el Precio de venta (sin IVA).",
     )
 
-    @api.depends("list_price", "taxes_id")
-    def _compute_wex_list_price_tax_included(self):
-        """Calcula el precio CON IVA basándose en el precio base (list_price)."""
-        for rec in self:
-            if rec.taxes_id:
-                # Calculamos el total incluido
-                taxes = rec.taxes_id.compute_all(
-                    rec.list_price, 
-                    rec.currency_id, 
-                    1.0, 
-                    product=rec.product_variant_id, 
-                    partner=False
-                )
-                rec.wex_list_price_tax_included = taxes['total_included']
-            else:
-                rec.wex_list_price_tax_included = rec.list_price
+    def _wex_get_tax_product(self):
+        self.ensure_one()
+        # En template, mejor pasar una variante existente si la hay
+        return self.product_variant_id or self.product_variant_ids[:1]
 
-    def _inverse_wex_list_price_tax_included(self):
-        """Cuando escribes en 'Precio con IVA', extrae el IVA y actualiza 'list_price'."""
+    @api.onchange("wex_list_price_tax_included", "taxes_id", "currency_id")
+    def _onchange_wex_list_price_tax_included(self):
+        """
+        Entrada: precio con IVA (wex_list_price_tax_included)
+        Salida: list_price (sin IVA)
+        """
         for rec in self:
-            if rec.taxes_id:
-                # El truco está en 'price_include=True' para que Odoo entienda 
-                # que el valor que le damos ya tiene el impuesto dentro.
-                # 'total_excluded' nos dará la base imponible.
-                taxes = rec.taxes_id.compute_all(
-                    rec.wex_list_price_tax_included, 
-                    rec.currency_id, 
-                    1.0, 
-                    product=rec.product_variant_id, 
-                    partner=False,
-                    handle_price_include=True # Crucial para restar el IVA
-                )
-                rec.list_price = taxes['total_excluded']
-            else:
-                rec.list_price = rec.wex_list_price_tax_included
+            if rec.wex_list_price_tax_included is False:
+                continue
+            if not rec.currency_id:
+                continue
+
+            price_inc = rec.wex_list_price_tax_included or 0.0
+
+            # Si no hay impuestos, el precio sin IVA es igual
+            if not rec.taxes_id:
+                rec.list_price = rec.currency_id.round(price_inc)
+                continue
+
+            product = rec._wex_get_tax_product()
+            taxes_res = rec.taxes_id.compute_all(
+                price_inc,
+                currency=rec.currency_id,
+                quantity=1.0,
+                product=product,
+                partner=False,
+                is_refund=False,
+                handle_price_include=True,  # input es con IVA
+            )
+            rec.list_price = rec.currency_id.round(taxes_res["total_excluded"])
