@@ -10,7 +10,7 @@
             <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
                 <button type="object"
                         name="action_view_purchase_list_lines"
-                        class="btn btn-outline-success"
+                        class="oe_stat_button"
                         icon="fa-shopping-cart"
                         string="Lista de compra">
                     <field name="purchase_list_line_count" widget="statinfo"/>
@@ -26,16 +26,14 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='order_lines']//field[@name='order_line']//list" position="inside">
-                <field name="product_id" invisible="1"/>
                 <button name="action_add_to_purchase_list"
                         type="object"
                         string="Añadir a lista"
                         class="btn btn-secondary"
                         attrs="{
                             'invisible': [
-                            '|',
-                            ('purchase_list_line_id', '!=', False),
-                            ('product_id.type', '=', 'service')
+                            ('product_id.type', '=', 'service'),
+                            ('purchase_list_line_id', '!=', False)
                             ]
                             }"/>
                 <field name="purchase_list_line_id" optional="hide"/>
