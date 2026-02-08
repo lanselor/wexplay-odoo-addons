@@ -8,48 +8,45 @@ class ProductTemplate(models.Model):
         currency_field="currency_id",
         compute="_compute_wex_list_price_tax_included",
         inverse="_inverse_wex_list_price_tax_included",
-        store=True,
-        help="Introduce el precio con IVA para recalcular el precio base.",
+        help="Introduce el precio final. Odoo extraerá la base usando el motor fiscal.",
     )
 
     @api.depends("list_price", "taxes_id", "currency_id")
     def _compute_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.taxes_id:
-                # Calculamos el PVP (Base + IVA)
-                res = rec.taxes_id.compute_all(
-                    rec.list_price,
-                    product=rec.product_variant_id,
-                    currency=rec.currency_id,
-                    quantity=1.0
-                )
-                # Redondeamos según la moneda para evitar decimales infinitos en UI
-                rec.wex_list_price_tax_included = rec.currency_id.round(res['total_included'])
-            else:
-                rec.wex_list_price_tax_included = rec.list_price
+            # Cálculo estándar: Base -> Total
+            taxes_res = rec.taxes_id.compute_all(
+                rec.list_price,
+                currency=rec.currency_id,
+                quantity=1.0,
+                product=rec.product_variant_id,
+            )
+            rec.wex_list_price_tax_included = taxes_res['total_included']
 
     def _inverse_wex_list_price_tax_included(self):
         for rec in self:
             if rec.taxes_id:
-                # Calculamos la proporción del IVA sin "forzar" el objeto impuesto.
-                # Obtenemos cuánto IVA se añadiría a 1.0 unidad de base.
-                dummy_res = rec.taxes_id.compute_all(
-                    1.0, 
-                    product=rec.product_variant_id, 
-                    currency=rec.currency_id
+                # CLAVE: Para que handle_price_include funcione, los impuestos 
+                # evaluados DEBEN tener el atributo price_include = True.
+                # Lo hacemos en memoria sin tocar la base de datos.
+                taxes_to_calculate = rec.taxes_id.mapped(
+                    lambda t: t.with_context(force_price_include=True)
                 )
                 
-                # Ratio = Total con IVA / Base 1.0
-                # Ejemplo: 1.21 si el IVA es 21%
-                ratio = dummy_res['total_included'] 
-                
-                if ratio > 0:
-                    base_price = rec.wex_list_price_tax_included / ratio
-                    rec.list_price = rec.currency_id.round(base_price)
+                # Cálculo inverso: Total -> Base
+                taxes_res = taxes_to_calculate.compute_all(
+                    rec.wex_list_price_tax_included,
+                    currency=rec.currency_id,
+                    quantity=1.0,
+                    product=rec.product_variant_id,
+                    handle_price_include=True  # Odoo ahora sí sabe qué hacer
+                )
+                # total_excluded es la base imponible exacta según el motor de Odoo
+                rec.list_price = taxes_res['total_excluded']
             else:
                 rec.list_price = rec.wex_list_price_tax_included
 
     @api.onchange("wex_list_price_tax_included")
     def _onchange_wex_list_price_tax_included(self):
-        """Dispara el recálculo visual inmediato sin esperar al guardado físico."""
+        """Permite ver el cambio en list_price antes de guardar."""
         self._inverse_wex_list_price_tax_included()
