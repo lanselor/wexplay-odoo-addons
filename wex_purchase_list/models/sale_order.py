@@ -2,6 +2,29 @@ from odoo import _, fields, models
 from odoo.exceptions import UserError
 
 
+class SaleOrder(models.Model):
+    _inherit = "sale.order"
+
+    purchase_list_line_count = fields.Integer(
+        string="Líneas de compra",
+        compute="_compute_purchase_list_line_count",
+    )
+
+    def _compute_purchase_list_line_count(self):
+        Line = self.env["wex_purchase_list.line"]
+        for order in self:
+            order.purchase_list_line_count = Line.search_count([
+                ("sale_line_id.order_id", "=", order.id),
+            ])
+
+    def action_view_purchase_list_lines(self):
+        self.ensure_one()
+        action = self.env.ref("wex_purchase_list.action_wex_purchase_list_line").read()[0]
+        action["domain"] = [("sale_line_id.order_id", "=", self.id)]
+        action["context"] = {}
+        return action
+
+
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
@@ -30,9 +53,7 @@ class SaleOrderLine(models.Model):
 
         sellers = product.seller_ids
         if not sellers:
-            raise UserError(_(
-                "El producto no tiene proveedores configurados."
-            ))
+            raise UserError(_("El producto no tiene proveedores configurados."))
 
         seller = sellers[0]
         vendor = seller.partner_id
