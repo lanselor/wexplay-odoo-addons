@@ -40,7 +40,7 @@
                                decoration-info="1"
                                widget="monetary"/>
                         <p class="text-muted small" colspan="2">
-                            * Precio recomendado basado en el margen sobre el coste.
+                            * Precio recomendado basado en el margen sobre el venta.
                         </p>
                     </group>
                 </group>

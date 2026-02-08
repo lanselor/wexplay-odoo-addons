@@ -17,7 +17,7 @@ class ProductTemplate(models.Model):
     # NUEVO: margen real sobre PVP (margen sobre venta)
     wex_margin_percent = fields.Float(
         string="Margen (%)",
-        default=0.0,
+        default=15.0,
         help="Margen real sobre PVP (margen sobre venta). "
              "Base sugerida (sin IVA) = Coste / (1 - margen/100).",
     )
