@@ -14,6 +14,6 @@
     <menuitem id="menu_wex_purchase_list_root"
               name="Lista de la compra"
               action="action_wex_purchase_list_line"
-              web_icon="base,static/description/icon.png"
+              web_icon="wex_purchase_list,static/description/icon.png"
               sequence="35"/>
 </odoo>
