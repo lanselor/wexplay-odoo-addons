@@ -21,12 +21,19 @@ class SaleOrder(models.Model):
         self.ensure_one()
         action = self.env.ref("wex_purchase_list.action_wex_purchase_list_line").read()[0]
         action["domain"] = [("sale_line_id.order_id", "=", self.id)]
-        action["context"] = {}
         return action
 
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
+
+    # ✅ Campo estable para attrs en tree (store=True)
+    # Valores típicos: 'product', 'consu', 'service'
+    wex_detailed_type = fields.Selection(
+        related="product_id.product_tmpl_id.detailed_type",
+        store=True,
+        readonly=True,
+    )
 
     purchase_list_line_id = fields.Many2one(
         "wex_purchase_list.line",
@@ -45,7 +52,8 @@ class SaleOrderLine(models.Model):
         product = self.product_id
         qty = self.product_uom_qty or 0.0
 
-        if not product or product.type == "service":
+        # Seguridad lógica (aunque el botón esté oculto)
+        if not product or self.wex_detailed_type == "service":
             raise UserError(_("Solo se pueden añadir productos que no sean servicios."))
 
         if qty <= 0:
@@ -55,9 +63,7 @@ class SaleOrderLine(models.Model):
         if not sellers:
             raise UserError(_("El producto no tiene proveedores configurados."))
 
-        seller = sellers[0]
-        vendor = seller.partner_id
-
+        vendor = sellers[0].partner_id
         if not vendor or vendor.supplier_rank <= 0:
             raise UserError(_("El proveedor no es válido."))
 
