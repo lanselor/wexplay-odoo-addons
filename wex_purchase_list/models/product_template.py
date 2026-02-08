@@ -1,5 +1,6 @@
 from odoo import api, fields, models
 
+
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
@@ -8,45 +9,63 @@ class ProductTemplate(models.Model):
         currency_field="currency_id",
         compute="_compute_wex_list_price_tax_included",
         inverse="_inverse_wex_list_price_tax_included",
-        store=True, # Lo guardamos para evitar recálculos infinitos en UI
+        store=True,
+        help="Introduce el precio final con IVA. Odoo recalcula el Precio de venta (sin IVA).",
     )
 
-    @api.depends("list_price", "taxes_id")
+    @api.depends("list_price", "taxes_id", "currency_id")
     def _compute_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.taxes_id:
-                # Calculamos el precio CON impuestos partiendo de la base
-                res = rec.taxes_id.compute_all(
-                    rec.list_price,
-                    product=rec.product_variant_id,
-                    currency=rec.currency_id,
-                    quantity=1.0
-                )
-                rec.wex_list_price_tax_included = res['total_included']
-            else:
-                rec.wex_list_price_tax_included = rec.list_price
+            currency = rec.currency_id
+            base = rec.list_price or 0.0
+
+            if not currency:
+                rec.wex_list_price_tax_included = base
+                continue
+
+            if not rec.taxes_id:
+                rec.wex_list_price_tax_included = currency.round(base)
+                continue
+
+            res = rec.taxes_id.compute_all(
+                base,
+                currency=currency,
+                quantity=1.0,
+                product=rec.product_variant_id,
+                partner=False,
+                is_refund=False,
+                handle_price_include=False,  # list_price es base sin IVA
+            )
+            rec.wex_list_price_tax_included = currency.round(res["total_included"])
 
     def _inverse_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.taxes_id:
-                # PASO CLAVE: Marcamos los impuestos como "incluidos" temporalmente
-                # para que compute_all haga la división (Precio / 1.21)
-                taxes_included = rec.taxes_id.filtered(lambda t: t.amount_type == 'percent')
-                
-                # Simulamos que el impuesto YA está incluido para extraer la base
-                # Usamos handle_price_include=True para que el resultado total_excluded sea la base real
-                res = rec.taxes_id.with_context(force_price_include=True).compute_all(
-                    rec.wex_list_price_tax_included,
-                    product=rec.product_variant_id,
-                    currency=rec.currency_id,
-                    quantity=1.0,
-                    handle_price_include=True
-                )
-                rec.list_price = res['total_excluded']
-            else:
-                rec.list_price = rec.wex_list_price_tax_included
+            currency = rec.currency_id
+            price_inc = rec.wex_list_price_tax_included or 0.0
+
+            if not currency:
+                rec.list_price = price_inc
+                continue
+
+            if not rec.taxes_id:
+                rec.list_price = currency.round(price_inc)
+                continue
+
+            # El input es "precio final con impuestos".
+            # Para extraer la base, compute_all debe tratar el input como "price_include".
+            # En vez de forzar contextos globales, usamos handle_price_include=True.
+            res = rec.taxes_id.compute_all(
+                price_inc,
+                currency=currency,
+                quantity=1.0,
+                product=rec.product_variant_id,
+                partner=False,
+                is_refund=False,
+                handle_price_include=True,
+            )
+            rec.list_price = currency.round(res["total_excluded"])
 
     @api.onchange("wex_list_price_tax_included")
     def _onchange_wex_price_tax_included(self):
-        # Esto permite que la UI se actualice al momento de escribir sin esperar a guardar
+        # UX: aplicar al momento en formulario
         self._inverse_wex_list_price_tax_included()
