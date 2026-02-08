@@ -15,8 +15,15 @@
             </xpath>
             
             <!-- NUEVO: PVP con IVA debajo de Precio de venta -->
-            <xpath expr="//field[@name='list_price']" position="after">
-                <field name="wex_list_price_tax_included"/>
+            <xpath expr="//field[@name='list_price']" position="replace">
+                <div class="o_row">
+                    <div class="o_col">
+                        <field name="list_price"/>
+                    </div>
+                    <div class="o_col">
+                        <field name="wex_list_price_tax_included" string="Precio de venta (con IVA)"/>
+                    </div>
+                </div>
             </xpath>
             
         </field>
