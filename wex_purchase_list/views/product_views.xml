@@ -6,11 +6,19 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
+            
+            <!-- Campo URL proveedor (tu cambio actual) -->
             <xpath expr="//page[@name='purchase']" position="inside">
                 <group string="Wexplay">
                     <field name="wex_vendor_url" widget="url"/>
                 </group>
             </xpath>
+            
+            <!-- NUEVO: PVP con IVA debajo de Precio de venta -->
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="wex_list_price_tax_included"/>
+            </xpath>
+            
         </field>
     </record>
     
