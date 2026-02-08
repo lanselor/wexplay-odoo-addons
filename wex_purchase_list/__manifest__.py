@@ -36,6 +36,9 @@ Lista de compra mínima para taller de reparaciones.
 
         #Vistas de Productos
         "views/product_views.xml",
+
+        #Vistas de menu
+        "views/menu.xml",
     ],
     "installable": True,
     "application": False,
