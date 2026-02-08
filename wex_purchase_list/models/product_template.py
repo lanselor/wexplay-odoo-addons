@@ -1,6 +1,5 @@
 from odoo import api, fields, models
 
-
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
@@ -10,62 +9,47 @@ class ProductTemplate(models.Model):
         compute="_compute_wex_list_price_tax_included",
         inverse="_inverse_wex_list_price_tax_included",
         store=True,
-        help="Introduce el precio final con IVA. Odoo recalcula el Precio de venta (sin IVA).",
+        help="Introduce el precio con IVA para recalcular el precio base.",
     )
 
     @api.depends("list_price", "taxes_id", "currency_id")
     def _compute_wex_list_price_tax_included(self):
         for rec in self:
-            currency = rec.currency_id
-            base = rec.list_price or 0.0
-
-            if not currency:
-                rec.wex_list_price_tax_included = base
-                continue
-
-            if not rec.taxes_id:
-                rec.wex_list_price_tax_included = currency.round(base)
-                continue
-
-            res = rec.taxes_id.compute_all(
-                base,
-                currency=currency,
-                quantity=1.0,
-                product=rec.product_variant_id,
-                partner=False,
-                is_refund=False,
-                handle_price_include=False,  # list_price es base sin IVA
-            )
-            rec.wex_list_price_tax_included = currency.round(res["total_included"])
+            if rec.taxes_id:
+                # Calculamos el PVP (Base + IVA)
+                res = rec.taxes_id.compute_all(
+                    rec.list_price,
+                    product=rec.product_variant_id,
+                    currency=rec.currency_id,
+                    quantity=1.0
+                )
+                # Redondeamos según la moneda para evitar decimales infinitos en UI
+                rec.wex_list_price_tax_included = rec.currency_id.round(res['total_included'])
+            else:
+                rec.wex_list_price_tax_included = rec.list_price
 
     def _inverse_wex_list_price_tax_included(self):
         for rec in self:
-            currency = rec.currency_id
-            price_inc = rec.wex_list_price_tax_included or 0.0
-
-            if not currency:
-                rec.list_price = price_inc
-                continue
-
-            if not rec.taxes_id:
-                rec.list_price = currency.round(price_inc)
-                continue
-
-            # El input es "precio final con impuestos".
-            # Para extraer la base, compute_all debe tratar el input como "price_include".
-            # En vez de forzar contextos globales, usamos handle_price_include=True.
-            res = rec.taxes_id.compute_all(
-                price_inc,
-                currency=currency,
-                quantity=1.0,
-                product=rec.product_variant_id,
-                partner=False,
-                is_refund=False,
-                handle_price_include=True,
-            )
-            rec.list_price = currency.round(res["total_excluded"])
+            if rec.taxes_id:
+                # Calculamos la proporción del IVA sin "forzar" el objeto impuesto.
+                # Obtenemos cuánto IVA se añadiría a 1.0 unidad de base.
+                dummy_res = rec.taxes_id.compute_all(
+                    1.0, 
+                    product=rec.product_variant_id, 
+                    currency=rec.currency_id
+                )
+                
+                # Ratio = Total con IVA / Base 1.0
+                # Ejemplo: 1.21 si el IVA es 21%
+                ratio = dummy_res['total_included'] 
+                
+                if ratio > 0:
+                    base_price = rec.wex_list_price_tax_included / ratio
+                    rec.list_price = rec.currency_id.round(base_price)
+            else:
+                rec.list_price = rec.wex_list_price_tax_included
 
     @api.onchange("wex_list_price_tax_included")
-    def _onchange_wex_price_tax_included(self):
-        # UX: aplicar al momento en formulario
+    def _onchange_wex_list_price_tax_included(self):
+        """Dispara el recálculo visual inmediato sin esperar al guardado físico."""
         self._inverse_wex_list_price_tax_included()
