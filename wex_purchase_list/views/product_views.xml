@@ -16,10 +16,33 @@
             
             <!-- NUEVO: PVP con IVA debajo de Precio de venta -->
             <xpath expr="//field[@name='standard_price']" position="after">
-                <group string="Wexplay">
-                    <field name="wex_list_price_tax_included" string="Precio con IVA"/>
-                    <field name="wex_margin_percent"/>
-                    <field name="wex_suggested_price_tax_included" readonly="1" widget="monetary"/>
+                <separator string="Cálculo de Precios y Margen (Wexplay)" class="mt-4 mb-2"/>
+                
+                <group name="wexplay_pricing">
+                    <group>
+                        <label for="wex_list_price_tax_included"/>
+                        <div class="o_row">
+                            <field name="wex_list_price_tax_included" class="oe_inline"/>
+                            <span class="text-muted">IVA Incl.</span>
+                        </div>
+                        
+                        <label for="wex_margin_percent"/>
+                        <div class="o_row">
+                            <field name="wex_margin_percent" class="oe_inline" style="width: 70px !important;"/>
+                            <span>%</span>
+                        </div>
+                    </group>
+                    
+                    <group>
+                        <field name="wex_suggested_price_tax_included" 
+                               string="Sugerencia (PVP)" 
+                               decoration-bf="1" 
+                               decoration-info="1"
+                               widget="monetary"/>
+                        <p class="text-muted small" colspan="2">
+                            * Precio recomendado basado en el margen sobre el coste.
+                        </p>
+                    </group>
                 </group>
             </xpath>
             
