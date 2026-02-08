@@ -5,57 +5,26 @@ class ProductTemplate(models.Model):
     _inherit = "product.template"
 
     wex_list_price_tax_included = fields.Monetary(
-        string="PVP (con IVA)",
+        string="Precio con IVA",
         currency_field="currency_id",
-        help="Campo auxiliar: al introducirlo, recalcula el Precio de venta (sin IVA).",
+        compute="_compute_wex_list_price_tax_included",
+        inverse="_inverse_wex_list_price_tax_included",
+        help="Introduce el precio final con impuestos. Odoo recalcula automáticamente el Precio de venta (sin IVA).",
     )
 
-    @api.onchange("wex_list_price_tax_included", "taxes_id", "currency_id")
-    def _onchange_wex_list_price_tax_included(self):
-        """
-        Si el usuario introduce PVP con IVA, recalcula list_price (sin IVA)
-        usando impuestos de ventas del producto.
-        """
+    @api.depends("list_price", "taxes_id", "currency_id")
+    def _compute_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.wex_list_price_tax_included is False:
-                continue
-
-            # Si no hay impuestos, el precio sin IVA es el mismo
-            if not rec.taxes_id:
-                rec.list_price = rec.wex_list_price_tax_included
-                continue
-
-            # Usar motor fiscal de Odoo para calcular base sin IVA
-            # compute_all: pasar price_include=True para tratar el input como "con IVA"
-            taxes_res = rec.taxes_id.compute_all(
-                rec.wex_list_price_tax_included,
-                currency=rec.currency_id,
-                quantity=1.0,
-                product=rec.product_variant_id,
-                partner=False,
-                is_refund=False,
-                handle_price_include=True,
-            )
-
-            # total_excluded es base sin IVA
-            rec.list_price = rec.currency_id.round(taxes_res["total_excluded"])
-
-    @api.onchange("list_price", "taxes_id", "currency_id")
-    def _onchange_list_price_to_wex_tax_included(self):
-        """
-        Si cambia list_price o impuestos, recalcula el campo auxiliar PVP con IVA.
-        """
-        for rec in self:
-            if not rec.list_price:
+            if not rec.currency_id:
                 rec.wex_list_price_tax_included = rec.list_price
                 continue
 
             if not rec.taxes_id:
-                rec.wex_list_price_tax_included = rec.list_price
+                rec.wex_list_price_tax_included = rec.currency_id.round(rec.list_price or 0.0)
                 continue
 
             taxes_res = rec.taxes_id.compute_all(
-                rec.list_price,
+                rec.list_price or 0.0,
                 currency=rec.currency_id,
                 quantity=1.0,
                 product=rec.product_variant_id,
@@ -63,5 +32,27 @@ class ProductTemplate(models.Model):
                 is_refund=False,
                 handle_price_include=False,
             )
-
             rec.wex_list_price_tax_included = rec.currency_id.round(taxes_res["total_included"])
+
+    def _inverse_wex_list_price_tax_included(self):
+        for rec in self:
+            if not rec.currency_id:
+                rec.list_price = rec.wex_list_price_tax_included
+                continue
+
+            price_inc = rec.wex_list_price_tax_included or 0.0
+
+            if not rec.taxes_id:
+                rec.list_price = rec.currency_id.round(price_inc)
+                continue
+
+            taxes_res = rec.taxes_id.compute_all(
+                price_inc,
+                currency=rec.currency_id,
+                quantity=1.0,
+                product=rec.product_variant_id,
+                partner=False,
+                is_refund=False,
+                handle_price_include=True,  # <- el input es "con IVA"
+            )
+            rec.list_price = rec.currency_id.round(taxes_res["total_excluded"])
