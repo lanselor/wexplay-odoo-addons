@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <menuitem
-        id="menu_wex_purchase_list_root"
-        name="Lista de la compra"
-        action="wex_purchase_list.action_wex_purchase_list_line"
-        sequence="35"
-        application="True"
-        />
+    <data>
+        
+        <!-- MENÚ RAÍZ = APP -->
+        <menuitem
+            id="menu_wex_purchase_list_root"
+            name="Lista de la compra"
+            action="wex_purchase_list.action_wex_purchase_list_line"
+            sequence="35"
+            application="True"
+            />
+        
+    </data>
 </odoo>
