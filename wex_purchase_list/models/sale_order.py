@@ -27,10 +27,10 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    # ✅ Campo estable para attrs en tree (store=True)
-    # Valores típicos: 'product', 'consu', 'service'
-    wex_detailed_type = fields.Selection(
-        related="product_id.product_tmpl_id.detailed_type",
+    # Campo estable para attrs en tree (store=True)
+    # Valores: 'product', 'consu', 'service'
+    wex_product_type = fields.Selection(
+        related="product_id.type",
         store=True,
         readonly=True,
     )
@@ -53,7 +53,7 @@ class SaleOrderLine(models.Model):
         qty = self.product_uom_qty or 0.0
 
         # Seguridad lógica (aunque el botón esté oculto)
-        if not product or self.wex_detailed_type == "service":
+        if not product or self.wex_product_type == "service":
             raise UserError(_("Solo se pueden añadir productos que no sean servicios."))
 
         if qty <= 0:
