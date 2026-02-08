@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <record id="product_template_form_inherit_wex_vendor_url" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.wex.vendor.url</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase']" position="inside">
+                <group string="Wexplay">
+                    <field name="wex_vendor_url" widget="url"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>

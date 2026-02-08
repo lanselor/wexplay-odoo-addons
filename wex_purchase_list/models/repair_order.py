@@ -78,6 +78,10 @@ class StockMove(models.Model):
 
         PurchaseLine = self.env["wex_purchase_list.line"]
 
+        # ✅ Nuevo: URL desde producto (plantilla).
+        # Requiere campo wex_vendor_url en product.template (según lo que quieres implementar).
+        vendor_url = product.product_tmpl_id.wex_vendor_url if product and product.product_tmpl_id else False
+
         # 🔹 FASE 2.1 — buscar línea existente activa
         existing_line = PurchaseLine.search([
             ("repair_id", "=", repair.id),
@@ -87,6 +91,11 @@ class StockMove(models.Model):
 
         if existing_line:
             existing_line.quantity += qty
+
+            # ✅ Nuevo: si la línea existente no tenía URL, la rellenamos.
+            if vendor_url and not existing_line.vendor_url:
+                existing_line.vendor_url = vendor_url
+
             self.purchase_list_line_id = existing_line.id
 
             return {
@@ -109,6 +118,7 @@ class StockMove(models.Model):
             "product_id": product.id,
             "quantity": qty,
             "vendor_id": vendor.id,
+            "vendor_url": vendor_url or False,  # ✅ Nuevo
             "state": "to_purchase",
             "repair_id": repair.id,
             "repair_part_move_id": self.id,

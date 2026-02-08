@@ -9,6 +9,7 @@ class WexPurchaseListLine(models.Model):
 
     company_id = fields.Many2one(
         "res.company",
+        string="Company",
         required=True,
         default=lambda self: self.env.company,
         index=True,
@@ -16,6 +17,7 @@ class WexPurchaseListLine(models.Model):
 
     currency_id = fields.Many2one(
         "res.currency",
+        string="Currency",
         related="company_id.currency_id",
         store=True,
         readonly=True,
@@ -23,6 +25,7 @@ class WexPurchaseListLine(models.Model):
 
     requested_by = fields.Many2one(
         "res.users",
+        string="Requested by",
         required=True,
         default=lambda self: self.env.user,
         index=True,
@@ -30,24 +33,29 @@ class WexPurchaseListLine(models.Model):
 
     product_id = fields.Many2one(
         "product.product",
+        string="Product",
         required=True,
         index=True,
         ondelete="restrict",
     )
 
     quantity = fields.Float(
+        string="Quantity",
         default=1.0,
         required=True,
     )
 
     vendor_id = fields.Many2one(
         "res.partner",
+        string="Vendor",
         domain=[("supplier_rank", ">", 0)],
         required=True,
         index=True,
     )
 
-    vendor_url = fields.Char()
+    vendor_url = fields.Char(
+        string="Vendor URL"
+    )
 
     customer_price_note = fields.Monetary(
         currency_field="currency_id",
@@ -106,6 +114,30 @@ class WexPurchaseListLine(models.Model):
         index=True,
     )
 
+    @api.onchange("product_id")
+    def _onchange_product_id_autofill_vendor(self):
+        """
+        Al crear/editar líneas manualmente desde la lista:
+        - Autocompleta proveedor (primer seller válido) si no está puesto
+        - Autocompleta URL desde el producto si existe y no está puesta
+        """
+        for rec in self:
+            if not rec.product_id:
+                continue
+
+            # URL desde producto (plantilla). Requiere campo wex_vendor_url en product.template.
+            tmpl = rec.product_id.product_tmpl_id
+            if tmpl and getattr(tmpl, "wex_vendor_url", False) and not rec.vendor_url:
+                rec.vendor_url = tmpl.wex_vendor_url
+
+            # proveedor: primer seller válido
+            if not rec.vendor_id:
+                sellers = rec.product_id.seller_ids
+                if sellers:
+                    vendor = sellers[0].partner_id
+                    if vendor and vendor.supplier_rank > 0:
+                        rec.vendor_id = vendor
+
     def action_create_rfqs(self):
         """
         Crea RFQ(s) agrupadas por proveedor (y compañía) a partir de líneas 'to_purchase'.
@@ -157,8 +189,12 @@ class WexPurchaseListLine(models.Model):
             pol_model = self.env["purchase.order.line"].with_company(company)
 
             for line in group_lines:
-                product = line.product_id
+                # Multi-company safe: leer costes y UoM en contexto de compañía
+                product = line.product_id.with_company(company)
                 uom = product.uom_po_id or product.uom_id
+
+                # ✅ Precio por defecto: coste del producto
+                price_unit = product.standard_price or 0.0
 
                 pol_vals = {
                     "order_id": po.id,
@@ -166,7 +202,7 @@ class WexPurchaseListLine(models.Model):
                     "name": product.display_name,
                     "product_qty": line.quantity or 1.0,
                     "product_uom": uom.id,
-                    "price_unit": 0.0,
+                    "price_unit": price_unit,
                     "date_planned": now,
                 }
                 pol = pol_model.create(pol_vals)

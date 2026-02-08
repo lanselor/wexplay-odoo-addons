@@ -20,6 +20,7 @@ Lista de compra mínima para taller de reparaciones.
         "purchase",
         "repair",
         "sale",   # necesario si heredamos vistas/modelos de ventas
+        "stock",
     ],
     "data": [
         # Seguridad siempre primero
@@ -30,7 +31,12 @@ Lista de compra mínima para taller de reparaciones.
         "views/purchase_list_line_views.xml",
         "views/repair_order_views.xml",
 
-        # Si has creado la vista de ventas, debe ir aquí
+        # Vista de Ventas
         "views/sale_order_views.xml",
+
+        #Vistas de Productos
+        "views/product_views.xml",
     ],
+    "installable": True,
+    "application": False,
 }
