@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    
-    <!-- Menú raíz (APP) apuntando a la acción ya definida en purchase_list_line_views.xml -->
-    <menuitem id="menu_wex_purchase_list_root"
-              name="Lista de la compra"
-              action="action_wex_purchase_list_line"
-              web_icon="wex_purchase_list,static/description/icon.png"
-              sequence="35"
-              application="True"/>
-    
+    <data>
+        
+        <!-- Menú raíz (APP) apuntando a la acción ya definida en purchase_list_line_views.xml -->
+        <menuitem id="menu_wex_purchase_list_root"
+                  name="Lista de la compra"
+                  action="action_wex_purchase_list_line"
+                  web_icon="wex_purchase_list,static/description/icon.png"
+                  sequence="35"
+                  application="True"/>
+        
+    </data>
 </odoo>
