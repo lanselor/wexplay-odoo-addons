@@ -27,10 +27,10 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    # Campo estable para attrs en tree (store=True)
-    # Valores: 'product', 'consu', 'service'
+    # ✅ Campo estable para attrs en tree (store=True)
+    # Valores típicos: 'product', 'consu', 'service'
     wex_product_type = fields.Selection(
-        related="product_id.detailed_type",
+        related="product_id.type",
         store=True,
         readonly=True,
     )

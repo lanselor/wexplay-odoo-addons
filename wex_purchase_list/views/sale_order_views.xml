@@ -28,7 +28,7 @@
             <xpath expr="//page[@name='order_lines']//field[@name='order_line']//list" position="inside">
                 
                 <!-- ✅ Necesario para que attrs evalúe en tree -->
-                <field name="wex_detailed_type" invisible="1"/>
+                <field name="wex_product_type" invisible="1"/>
                 
                 <button name="action_add_to_purchase_list"
                         type="object"
