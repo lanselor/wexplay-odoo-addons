@@ -8,36 +8,26 @@ Lista de compra mínima para taller de reparaciones.
 
 - SAT: añadir piezas desde repair (stock.move) a lista interna
 - Compras: generar RFQ agrupadas por proveedor desde la lista
-
 """,
     "author": "Wexplay",
     "license": "LGPL-3",
-    "installable": True,
-    "application": False,
     "depends": [
         "base",
         "product",
         "purchase",
         "repair",
-        "sale",   # necesario si heredamos vistas/modelos de ventas
+        "sale",
         "stock",
     ],
     "data": [
-        # Seguridad siempre primero
         "security/security.xml",
         "security/ir.model.access.csv",
 
-        # Vistas
         "views/purchase_list_line_views.xml",
         "views/repair_order_views.xml",
-
-        # Vista de Ventas
         "views/sale_order_views.xml",
-
-        #Vistas de Productos
         "views/product_views.xml",
 
-        #Vistas de menu
         "views/menu.xml",
     ],
     "installable": True,
