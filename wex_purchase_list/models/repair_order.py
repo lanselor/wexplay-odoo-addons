@@ -42,97 +42,20 @@ class StockMove(models.Model):
     def action_add_to_purchase_list(self):
         self.ensure_one()
 
-        product = self.product_id
-        qty = self.product_uom_qty or 0.0
-
-        missing = []
-        if not product:
-            missing.append(_("Producto"))
-        if not qty or qty <= 0:
-            missing.append(_("Cantidad"))
-
-        seller = False
-        if product:
-            sellers = product.seller_ids
-            if not sellers:
-                missing.append(_("Proveedor en el producto (pestaña Compras / Proveedores)"))
-            else:
-                seller = sellers[0]
-
-        if missing:
-            raise UserError(_(
-                "No se puede añadir a la lista de la compra.\n"
-                "Faltan datos: %s"
-            ) % (", ".join(missing)))
-
-        vendor = seller.partner_id
-        if not vendor or vendor.supplier_rank <= 0:
-            raise UserError(_(
-                "No se puede añadir a la lista de la compra.\n"
-                "El proveedor del producto no está marcado como proveedor válido."
-            ))
-
-        repair = self.repair_id
-        if not repair:
-            raise UserError(_("No se ha podido determinar la reparación asociada."))
-
-        PurchaseLine = self.env["wex_purchase_list.line"]
-
-        # ✅ Nuevo: URL desde producto (plantilla).
-        # Requiere campo wex_vendor_url en product.template (según lo que quieres implementar).
-        vendor_url = product.product_tmpl_id.wex_vendor_url if product and product.product_tmpl_id else False
-
-        # 🔹 FASE 2.1 — buscar línea existente activa
-        existing_line = PurchaseLine.search([
-            ("repair_id", "=", repair.id),
-            ("product_id", "=", product.id),
-            ("state", "not in", ("cancelled", "received")),
-        ], limit=1)
-
-        if existing_line:
-            existing_line.quantity += qty
-
-            # ✅ Nuevo: si la línea existente no tenía URL, la rellenamos.
-            if vendor_url and not existing_line.vendor_url:
-                existing_line.vendor_url = vendor_url
-
-            self.purchase_list_line_id = existing_line.id
-
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("OK"),
-                    "message": _(
-                        "La cantidad se ha sumado a una línea existente de la lista de compra."
-                    ),
-                    "type": "success",
-                    "sticky": False,
-                }
-            }
-
-        # 🔹 comportamiento actual (crear línea nueva)
-        vals = {
-            "company_id": repair.company_id.id if repair.company_id else self.env.company.id,
-            "requested_by": self.env.user.id,
-            "product_id": product.id,
-            "quantity": qty,
-            "vendor_id": vendor.id,
-            "vendor_url": vendor_url or False,  # ✅ Nuevo
-            "state": "to_purchase",
-            "repair_id": repair.id,
-            "repair_part_move_id": self.id,
-        }
-
-        line = PurchaseLine.create(vals)
-        self.purchase_list_line_id = line.id
+        result = self.env["wex_purchase_list.line"].add_from_origin(
+            origin_model="stock.move",
+            origin_id=self.id,
+            product_id=self.product_id.id,
+            qty=self.product_uom_qty or 0.0,
+            state="to_purchase",
+        )
 
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
                 "title": _("OK"),
-                "message": _("Producto añadido a la lista de la compra correctamente."),
+                "message": result.get("message") or _("Operación completada."),
                 "type": "success",
                 "sticky": False,
             }

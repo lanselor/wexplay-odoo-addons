@@ -7,6 +7,20 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
             
+            <!-- Botón de añadir a lista desde ficha de producto -->
+            <xpath expr="//form/header" position="inside">
+                <button
+                    name="action_add_to_purchase_list"
+                    type="object"
+                    string="Añadir a lista"
+                    class="btn-primary"
+                    context="{'wex_qty': 1.0}"
+                    attrs="{'invisible': [('type', '=', 'service')]}"
+                    />
+            </xpath>
+            
+            
+            
             <!-- Campo URL proveedor (tu cambio actual) -->
             <xpath expr="//page[@name='purchase']" position="inside">
                 <group string="Wexplay">
