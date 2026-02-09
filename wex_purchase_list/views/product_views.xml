@@ -15,7 +15,7 @@
                     string="Añadir a lista"
                     class="btn-primary"
                     context="{'wex_qty': 1.0}"
-                    attrs="{'invisible': [('type', '=', 'service')]}"
+                    invisible="type == 'service'"
                     />
             </xpath>
             

@@ -34,13 +34,7 @@
                         type="object"
                         string="Añadir a lista"
                         class="btn btn-secondary"
-                        attrs="{
-                            'invisible': [
-                            '&amp;',
-                            ('purchase_list_line_id', '!=', False),
-                            ('purchase_list_line_id.state', 'not in', ('cancelled', 'received'))
-                            ]
-                            }"/>
+                        invisible="purchase_list_line_id and purchase_list_line_id.state not in ('cancelled', 'received')"/>
                 <field name="purchase_list_line_id" optional="hide"/>
             </xpath>
         </field>

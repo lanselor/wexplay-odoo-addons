@@ -34,13 +34,7 @@
                         type="object"
                         string="Añadir a lista"
                         class="btn btn-outline-success"
-                        attrs="{
-                            'invisible': [
-                            '|',
-                            ('purchase_list_line_id', '!=', False),
-                            ('wex_product_type', '=', 'service')
-                            ]
-                            }"/>
+                        invisible="purchase_list_line_id or wex_product_type == 'service'"/>
                 
                 <field name="purchase_list_line_id" optional="hide"/>
             </xpath>
