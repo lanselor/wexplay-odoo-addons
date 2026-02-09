@@ -30,6 +30,11 @@ Lista de compra mínima para taller de reparaciones.
 
         "views/menu.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "wex_purchase_list/static/src/css/purchase_list.css",
+    ],
+},
     "installable": True,
     "application": False,
 }
