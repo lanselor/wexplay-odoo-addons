@@ -18,3 +18,4 @@
     background-color: #fdecea;
 }
 .o_list_view { outline: 3px solid red !important; }
+body { outline: 6px solid red !important; }
