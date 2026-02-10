@@ -1,21 +1,13 @@
-.o_list_view .o_data_row.text-muted {
-    background-color: #f6f6f6;
-}
+/* Pintar la fila completa (TD) según decoration */
+.o_list_view .o_data_row.text-muted  > .o_data_cell { background-color: #f6f6f6 !important; }
+.o_list_view .o_data_row.text-warning> .o_data_cell { background-color: #fff4d6 !important; }
+.o_list_view .o_data_row.text-info   > .o_data_cell { background-color: #eef5ff !important; }
+.o_list_view .o_data_row.text-success> .o_data_cell { background-color: #edf7ed !important; }
+.o_list_view .o_data_row.text-danger > .o_data_cell { background-color: #fdecea !important; }
 
-.o_list_view .o_data_row.text-warning {
-    background-color: #fff4d6;
-}
-
-.o_list_view .o_data_row.text-info {
-    background-color: #eef5ff;
-}
-
-.o_list_view .o_data_row.text-success {
-    background-color: #edf7ed;
-}
-
-.o_list_view .o_data_row.text-danger {
-    background-color: #fdecea;
-}
-.o_list_view { outline: 3px solid red !important; }
-body { outline: 6px solid red !important; }
+/* Fallback por si en alguna vista no usa o_data_cell */
+.o_list_view .o_data_row.text-muted  { background-color: #f6f6f6 !important; }
+.o_list_view .o_data_row.text-warning{ background-color: #fff4d6 !important; }
+.o_list_view .o_data_row.text-info   { background-color: #eef5ff !important; }
+.o_list_view .o_data_row.text-success{ background-color: #edf7ed !important; }
+.o_list_view .o_data_row.text-danger { background-color: #fdecea !important; }
