@@ -17,3 +17,4 @@
 .o_list_view .o_data_row.text-danger {
     background-color: #fdecea;
 }
+.o_list_view { outline: 3px solid red !important; }
