@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    "name": "Wexplay WhatsApp Chatter (Base)",
+    "name": "Wex WhatsApp Chatter (Base)",
     "version": "18.0.1.0.0",
     "category": "Productivity",
     "summary": "WhatsApp click-to-chat base + templates (no wizard yet).",
