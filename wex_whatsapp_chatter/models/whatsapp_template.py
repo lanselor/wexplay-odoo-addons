@@ -21,7 +21,6 @@ class WhatsappTemplate(models.Model):
         string="Applies to Model",
         required=True,
         index=True,
-        ondelete="restrict",
         help="Templates are filtered by the target document model (sale.order, account.move, repair.order, etc.).",
     )
 
