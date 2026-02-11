@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Root menu: visible only to WhatsApp User -->
+    <menuitem
+        id="menu_whatsapp_root"
+        name="WhatsApp"
+        sequence="10"
+        groups="wex_whatsapp_chatter.group_whatsapp_user"
+        />
+    
+    <!-- Placeholder submenu (no action in Iteration 0) -->
+    <menuitem
+        id="menu_whatsapp_templates"
+        name="Plantillas"
+        parent="wex_whatsapp_chatter.menu_whatsapp_root"
+        sequence="20"
+        groups="wex_whatsapp_chatter.group_whatsapp_user"
+        />
+</odoo>

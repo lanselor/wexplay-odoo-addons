@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Category (so groups appear grouped in Settings) -->
+    <record id="module_category_whatsapp" model="ir.module.category">
+        <field name="name">WhatsApp</field>
+        <field name="description">Permissions for WhatsApp click-to-chat features.</field>
+        <field name="sequence">60</field>
+    </record>
+    
+    <!-- Groups -->
+    <record id="group_whatsapp_user" model="res.groups">
+        <field name="name">WhatsApp User</field>
+        <field name="category_id" ref="module_category_whatsapp"/>
+        <!-- No implied groups by default; we keep it strict -->
+    </record>
+    
+    <record id="group_whatsapp_template_manager" model="res.groups">
+        <field name="name">WhatsApp Template Manager</field>
+        <field name="category_id" ref="module_category_whatsapp"/>
+        <!-- Managers are also users -->
+        <field name="implied_ids" eval="[(4, ref('wex_whatsapp_chatter.group_whatsapp_user'))]"/>
+    </record>
+</odoo>
