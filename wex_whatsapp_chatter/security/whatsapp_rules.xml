@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Multi-company rule:
+         - allow templates with company_id = False (global)
+         - or company_id in user's allowed companies
+    -->
+    <record id="rule_whatsapp_template_multicompany" model="ir.rule">
+        <field name="name">WhatsApp Templates: multi-company</field>
+        <field name="model_id" ref="model_whatsapp_template"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_whatsapp_chatter.group_whatsapp_user'))]"/>
+    </record>
+</odoo>

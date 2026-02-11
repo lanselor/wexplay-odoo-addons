@@ -9,7 +9,6 @@
         <field name="context">{}</field>
     </record>
     
-    <!-- Root menu: now has an action -->
     <menuitem
         id="menu_whatsapp_root"
         name="WhatsApp"
@@ -18,11 +17,12 @@
         groups="wex_whatsapp_chatter.group_whatsapp_user"
         />
     
-    <!-- Placeholder submenu (still no action in Iteration 0) -->
+    <!-- Now points to real templates action -->
     <menuitem
         id="menu_whatsapp_templates"
         name="Plantillas"
         parent="wex_whatsapp_chatter.menu_whatsapp_root"
+        action="wex_whatsapp_chatter.action_whatsapp_template"
         sequence="20"
         groups="wex_whatsapp_chatter.group_whatsapp_user"
         />
