@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Root menu: visible only to WhatsApp User -->
+    <!-- Placeholder action so the root menu is visible as an App -->
+    <record id="action_whatsapp_placeholder" model="ir.actions.act_window">
+        <field name="name">WhatsApp</field>
+        <field name="res_model">res.groups</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('category_id.name', '=', 'WhatsApp')]</field>
+        <field name="context">{}</field>
+    </record>
+    
+    <!-- Root menu: now has an action -->
     <menuitem
         id="menu_whatsapp_root"
         name="WhatsApp"
         sequence="10"
+        action="wex_whatsapp_chatter.action_whatsapp_placeholder"
         groups="wex_whatsapp_chatter.group_whatsapp_user"
         />
     
-    <!-- Placeholder submenu (no action in Iteration 0) -->
+    <!-- Placeholder submenu (still no action in Iteration 0) -->
     <menuitem
         id="menu_whatsapp_templates"
         name="Plantillas"
