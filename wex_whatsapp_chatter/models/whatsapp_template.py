@@ -16,12 +16,12 @@ class WhatsappTemplate(models.Model):
         index=True,
     )
 
-    model_id = fields.Many2one(
-        comodel_name="ir.model",
-        string="Applies to Model",
+    # Reemplazo robusto: no depende de ir.model
+    res_model = fields.Char(
+        string="Applies to Model (technical name)",
         required=True,
         index=True,
-        help="Templates are filtered by the target document model (sale.order, account.move, repair.order, etc.).",
+        help="Use technical model names like: sale.order, account.move, repair.order",
     )
 
     body = fields.Text(
