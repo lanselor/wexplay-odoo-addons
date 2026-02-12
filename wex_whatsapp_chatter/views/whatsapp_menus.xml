@@ -11,6 +11,7 @@
     <!-- FORZAMOS que el menú raíz no tenga acción -->
     <record id="menu_whatsapp_root" model="ir.ui.menu">
         <field name="action" eval="False"/>
+        <field name="web_icon_data" type="base64" file="wex_whatsapp_chatter/static/description/icon.png"/>
     </record>
     
     <menuitem

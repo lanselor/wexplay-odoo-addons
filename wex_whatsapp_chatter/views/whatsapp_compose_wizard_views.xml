@@ -24,9 +24,11 @@
                     <group string="Message">
                         <field name="rendered_body" nolabel="1" placeholder="Mensaje..."/>
                     </group>
-
+                    
                     <group string="Document">
-                        <label string="Select the document to generate the portal link (Sales or Invoice)."/>
+                        <div class="text-muted">
+                            Select the document to generate the portal link (Sales or Invoice).
+                        </div>
                         <field name="sale_order_id"/>
                         <field name="account_move_id"/>
                         <field name="portal_url" readonly="1"/>
