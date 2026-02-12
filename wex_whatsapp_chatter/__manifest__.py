@@ -15,6 +15,7 @@
         "security/ir.model.access.csv",
         "security/whatsapp_rules.xml",
         "views/whatsapp_template_views.xml",
+        "views/whatsapp_compose_wizard_views.xml",
         "views/whatsapp_menus.xml",
     ],
     "application": False,

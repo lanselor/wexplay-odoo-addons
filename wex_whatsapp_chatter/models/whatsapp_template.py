@@ -17,11 +17,16 @@ class WhatsappTemplate(models.Model):
     )
 
     # Reemplazo robusto: no depende de ir.model
-    res_model = fields.Char(
-        string="Applies to Model (technical name)",
+    res_model = fields.Selection(
+        selection=[
+            ("sale.order", "Sales: Quotation / Order"),
+            ("account.move", "Accounting: Invoice"),
+            ("repair.order", "Repairs: Repair Order"),
+        ],
+        string="Applies to",
         required=True,
         index=True,
-        help="Use technical model names like: sale.order, account.move, repair.order",
+        help="Used to filter templates by document type (sale.order includes quotations & orders).",
     )
 
     body = fields.Text(

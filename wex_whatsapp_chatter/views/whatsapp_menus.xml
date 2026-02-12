@@ -16,7 +16,14 @@
         action="wex_whatsapp_chatter.action_whatsapp_placeholder"
         groups="wex_whatsapp_chatter.group_whatsapp_user"
         />
-    
+    <menuitem
+        id="menu_whatsapp_compose"
+        name="Redactar WhatsApp"
+        parent="wex_whatsapp_chatter.menu_whatsapp_root"
+        action="wex_whatsapp_chatter.action_whatsapp_compose_wizard"
+        sequence="10"
+        groups="wex_whatsapp_chatter.group_whatsapp_user"
+        />
     <!-- Now points to real templates action -->
     <menuitem
         id="menu_whatsapp_templates"

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_whatsapp_compose_wizard_form" model="ir.ui.view">
+        <field name="name">whatsapp.compose.wizard.form</field>
+        <field name="model">whatsapp.compose.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Redactar WhatsApp">
+                <sheet>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="res_model"/>
+                    </group>
+                    
+                    <group string="Recipient">
+                        <field name="partner_id" options="{'no_create': False}"/>
+                        <field name="phone_source"/>
+                        <field name="phone_number"
+                               placeholder="+34XXXXXXXXX"
+                               attrs="{'readonly': [('phone_source', '!=', 'custom')]}"/>
+                    </group>
+                    
+                    <group string="Template">
+                        <field name="template_id" domain="[('res_model', '=', res_model)]"/>
+                    </group>
+                    
+                    <group string="Message">
+                        <field name="rendered_body" nolabel="1" placeholder="Mensaje..."/>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                    <!-- En Iteración 2 no enviamos; solo dejamos el texto listo -->
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_whatsapp_compose_wizard" model="ir.actions.act_window">
+        <field name="name">Redactar WhatsApp</field>
+        <field name="res_model">whatsapp.compose.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>
