@@ -105,14 +105,25 @@ class WhatsappComposeWizard(models.TransientModel):
             w.sale_order_id = False
             w.account_move_id = False
 
+    
+
     @api.depends("res_model", "sale_order_id", "account_move_id")
     def _compute_portal_url(self):
+        base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url", "").rstrip("/")
         for w in self:
             w.portal_url = ""
+            relative = ""
             if w.res_model == "sale.order" and w.sale_order_id:
-                w.portal_url = w.sale_order_id.get_portal_url()
+                relative = w.sale_order_id.get_portal_url()
             elif w.res_model == "account.move" and w.account_move_id:
-                w.portal_url = w.account_move_id.get_portal_url()
+                relative = w.account_move_id.get_portal_url()
+
+            if relative:
+                # get_portal_url suele devolver relativo; lo convertimos a absoluto
+                if relative.startswith("http://") or relative.startswith("https://"):
+                    w.portal_url = relative
+                else:
+                    w.portal_url = f"{base_url}{relative}"
 
     def action_insert_portal_link(self):
         self.ensure_one()
