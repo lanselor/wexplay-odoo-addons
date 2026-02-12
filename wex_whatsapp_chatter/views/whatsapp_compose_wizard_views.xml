@@ -14,9 +14,7 @@
                     <group string="Recipient">
                         <field name="partner_id" options="{'no_create': False}"/>
                         <field name="phone_source"/>
-                        <field name="phone_number"
-                               placeholder="+34XXXXXXXXX"
-                               attrs="{'readonly': [('phone_source', '!=', 'custom')]}"/>
+                        <field name="phone_number" placeholder="+34XXXXXXXXX"/>
                     </group>
                     
                     <group string="Template">
