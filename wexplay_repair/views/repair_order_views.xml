@@ -57,9 +57,16 @@
 
             <!-- NUEVO: Recepciona justo encima de Responsable (user_id) -->
             <xpath expr="//sheet//field[@name='user_id']" position="before">
-                <div class="d-flex align-items-center text-muted mt-2">
-                    <i class="fa fa-user me-2" style="width: 15px;"></i>
-                    <field name="x_reception_employee_id" nolabel="1"/>
+                <div class="d-flex align-items-center mt-2">
+                    <i class="fa fa-user me-2 text-muted" style="width: 15px;"/>
+                    
+                    <span class="me-2 fw-semibold">
+                        Recepcionado por:
+                    </span>
+                    
+                    <field name="x_reception_employee_id"
+                           nolabel="1"
+                           required="1"/>
                 </div>
             </xpath>
             
