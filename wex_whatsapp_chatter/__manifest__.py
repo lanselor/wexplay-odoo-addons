@@ -9,6 +9,8 @@
     "depends": [
         "base",
         "mail",
+        "sale",
+        "account"
     ],
     "data": [
         "security/whatsapp_security.xml",

@@ -24,9 +24,20 @@
                     <group string="Message">
                         <field name="rendered_body" nolabel="1" placeholder="Mensaje..."/>
                     </group>
+
+                    <group string="Document">
+                        <label string="Select the document to generate the portal link (Sales or Invoice)."/>
+                        <field name="sale_order_id"/>
+                        <field name="account_move_id"/>
+                        <field name="portal_url" readonly="1"/>
+                    </group>
                 </sheet>
                 
                 <footer>
+                    <button string="Insertar enlace portal" type="object"
+                            name="action_insert_portal_link"
+                            class="btn-primary"/>
+                    
                     <button string="Cerrar" class="btn-secondary" special="cancel"/>
                     <!-- En Iteración 2 no enviamos; solo dejamos el texto listo -->
                 </footer>
