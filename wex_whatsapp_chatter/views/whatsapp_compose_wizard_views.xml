@@ -36,12 +36,13 @@
                 </sheet>
                 
                 <footer>
+                    <button string="Abrir WhatsApp" type="object"
+                            name="action_open_whatsapp"
+                            class="btn-primary"/>
                     <button string="Insertar enlace portal" type="object"
                             name="action_insert_portal_link"
-                            class="btn-primary"/>
-                    
+                            class="btn-secondary"/>
                     <button string="Cerrar" class="btn-secondary" special="cancel"/>
-                    <!-- En Iteración 2 no enviamos; solo dejamos el texto listo -->
                 </footer>
             </form>
         </field>
