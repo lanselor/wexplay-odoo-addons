@@ -19,24 +19,16 @@ function update() {
     tab.classList.toggle("wex_has_repair_notes", hasNotes);
 }
 
-function start() {
-    document.addEventListener("input", (ev) => {
-        if (ev.target && ev.target.closest(".o_form_view")) update();
-    });
-    document.addEventListener("change", (ev) => {
-        if (ev.target && ev.target.closest(".o_form_view")) update();
-    });
+(function boot() {
+    const handler = () => update();
 
-    const target = document.body || document.documentElement;
-    if (target) {
-        new MutationObserver(update).observe(target, { childList: true, subtree: true });
-    }
+    document.addEventListener("input", handler, true);
+    document.addEventListener("change", handler, true);
+
+    // Observa SIEMPRE un Node válido
+    const target = document.documentElement; // siempre existe y es Node
+    const obs = new MutationObserver(() => update());
+    obs.observe(target, { childList: true, subtree: true });
 
     update();
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
-} else {
-    start();
-}
+})();
