@@ -1,6 +1,8 @@
-.o_notebook .nav-link[name="repair_notes"].wex_has_repair_notes,
-.o_notebook .nav-link[name="repair_notes"].wex_has_repair_notes.active {
-    color: var(--o-success) !important;
+.o_notebook .nav-link[name="repair_notes"].wex_has_repair_notes::after {
+    display: inline-block !important;
+    margin-left: 8px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .o_notebook .nav-link[name="repair_notes"].wex_has_repair_notes::after {
