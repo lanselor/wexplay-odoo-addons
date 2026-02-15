@@ -1,15 +1,22 @@
-.o_notebook .o_notebook_headers .nav-link[name="repair_notes"].wex_has_repair_notes,
-.o_notebook .o_notebook_headers .nav-link[name="repair_notes"].wex_has_repair_notes.active {
-    color: var(--o-success) !important;
-}
-.o_notebook .o_notebook_headers .nav-link[name="repair_notes"].wex_has_repair_notes::after {
-    content: "CON NOTAS";
-    margin-left: 8px;
-    padding: 1px 6px;
-    border-radius: 999px;
-    font-size: 11px;
-    background: var(--o-success) !important;
-    color: #fff !important;
-    display: inline-block;
-    vertical-align: middle;
+.o_notebook .nav-tabs .nav-link[name="repair_notes"] {
+    &.wex_has_repair_notes {
+        color: #28a745 !important; // Color verde directo para asegurar visibilidad
+        font-weight: bold;
+
+        &::after {
+            content: "CON NOTAS" !important;
+            display: inline-block !important;
+            margin-left: 8px !important;
+            padding: 2px 8px !important;
+            font-size: 10px !important;
+            line-height: 1 !important;
+            text-transform: uppercase;
+            vertical-align: middle;
+            background-color: #28a745 !important; // Forzamos el verde
+            color: white !important;
+            border-radius: 10px;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    }
 }
