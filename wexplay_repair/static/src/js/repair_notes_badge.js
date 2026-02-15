@@ -42,7 +42,7 @@ function applyBadge(renderer) {
     }
 }
 
-patch(FormRenderer.prototype, "wexplay_repair.repair_notes_badge", {
+patch(FormRenderer.prototype, {
     setup() {
         super.setup();
         onMounted(() => applyBadge(this));
