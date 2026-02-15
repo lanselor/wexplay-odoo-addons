@@ -28,6 +28,8 @@ consolas y otros dispositivos electrónicos).
     "assets": {
         "web.assets_backend": [
             "wexplay_repair/static/src/js/repair_order_expand_button.js",
+            "wexplay_repair/static/src/js/repair_notes_badge.js",
+            "wexplay_repair/static/src/scss/repair_notes_badge.scss",
             #"wexplay_repair/static/src/xml/repair_order_expand_button.xml",
         ],
     },
