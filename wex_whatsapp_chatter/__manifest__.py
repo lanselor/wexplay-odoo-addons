@@ -20,6 +20,13 @@
         "views/whatsapp_compose_wizard_views.xml",
         "views/whatsapp_menus.xml",
     ],
+    "assets": {
+    "web.assets_backend": [
+        "wex_whatsapp_chatter/static/src/js/chatter_whatsapp_button.js",
+        "wex_whatsapp_chatter/static/src/xml/chatter_whatsapp_button.xml",
+    ],
+    },
+    
     "application": False,
     "installable": True,
 }
