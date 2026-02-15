@@ -3,42 +3,55 @@
 (function () {
     "use strict";
 
+    function getPane() {
+        return (
+            document.querySelector(".o_form_view .tab-pane[name='repair_notes']") ||
+            document.querySelector(".o_form_view .tab-pane[data-name='repair_notes']")
+        );
+    }
+
+    function hasHtmlNotes(pane) {
+        // 1) Cualquier contenteditable dentro del pane (Odoo HTML editor)
+        const editables = pane.querySelectorAll("[contenteditable='true']");
+        for (const el of editables) {
+            const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim(); // nbsp -> space
+            if (txt) return true;
+        }
+
+        // 2) Fallback: algunos editores guardan en un textarea/input oculto
+        for (const el of pane.querySelectorAll("textarea, input")) {
+            const v = (el.value || "").trim();
+            if (v) return true;
+        }
+
+        return false;
+    }
+
     function update() {
         try {
             const tab = document.querySelector(".o_notebook .nav-link[name='repair_notes']");
             if (!tab) return;
 
-            const pane =
-                document.querySelector(".o_form_view .tab-pane[name='repair_notes']") ||
-                document.querySelector(".o_form_view .tab-pane[data-name='repair_notes']");
+            const pane = getPane();
             if (!pane) return;
 
-            let hasNotes = false;
-            for (const el of pane.querySelectorAll("input, textarea")) {
-                if ((el.value || "").trim()) {
-                    hasNotes = true;
-                    break;
-                }
-            }
+            const hasNotes = hasHtmlNotes(pane);
             tab.classList.toggle("wex_has_repair_notes", hasNotes);
         } catch (e) {
-            console.warn("repair_notes_badge update error:", e);
+            console.warn("repair_notes_badge:", e);
         }
     }
 
     function boot() {
-        try {
-            window.addEventListener("input", update, true);
-            window.addEventListener("change", update, true);
+        // input/change cubre muchas interacciones del editor
+        window.addEventListener("input", update, true);
+        window.addEventListener("change", update, true);
 
-            const target = document.documentElement; // siempre Node
-            const obs = new MutationObserver(() => update());
-            obs.observe(target, { childList: true, subtree: true });
+        // observer para re-render OWL / cambios de tab
+        const obs = new MutationObserver(update);
+        obs.observe(document.documentElement, { childList: true, subtree: true });
 
-            update();
-        } catch (e) {
-            console.warn("repair_notes_badge boot error:", e);
-        }
+        update();
     }
 
     if (document.readyState === "loading") {
