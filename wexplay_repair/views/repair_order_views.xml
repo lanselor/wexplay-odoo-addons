@@ -177,7 +177,7 @@
             
             <xpath expr="//page[@name='repair_notes']" position="inside">
                 <div class="alert alert-success py-2 mb-2"
-                     attrs="{'invisible': [('repair_note','=',False)]}">
+                     invisible="not repair_note">
                     <i class="fa fa-check-circle me-2"/>
                     Hay notas de reparación registradas.
                 </div>
