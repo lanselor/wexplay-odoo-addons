@@ -8,28 +8,15 @@ patch(Chatter.prototype, {
     setup() {
         super.setup(...arguments);
         this.actionService = useService("action");
-        this.userService = useService("user");
     },
 
-    async onClickWhatsApp() {
-        const hasGroup = await this.userService.hasGroup(
-            "wex_whatsapp_chatter.group_whatsapp_user"
-        );
-        if (!hasGroup) {
-            return;
-        }
-
-        // En este Chatter, el documento real viene por props.threadModel/props.threadId
+    onClickWhatsApp() {
         const resModel = this.props.threadModel;
         const resId = this.props.threadId;
-
         if (!resModel || !resId) {
             return;
         }
 
-        // Partner/company: no siempre están en props en backend.
-        // En esta iteración 5B, precargamos modelo/id y dejamos partner para Iteración 6
-        // (o lo resolveremos consultando el ORM con un mapping por modelo).
         this.actionService.doAction({
             type: "ir.actions.act_window",
             res_model: "whatsapp.compose.wizard",
