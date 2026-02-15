@@ -1,77 +1,41 @@
 /** @odoo-module **/
 
-(function () {
-    "use strict";
+import { patch } from "@web/core/utils/patch";
+import { FormRenderer } from "@web/views/form/form_renderer";
+import { onMounted, onPatched } from "@odoo/owl";
 
-    function getTab() {
-        return document.querySelector(".o_notebook .nav-link[name='repair_notes']");
+function htmlToText(html) {
+    if (!html) return "";
+    try {
+        const doc = new DOMParser().parseFromString(String(html), "text/html");
+        return (doc.body?.textContent || "").replace(/\u00A0/g, " ").trim(); // nbsp -> space
+    } catch {
+        // fallback ultra simple
+        return String(html).replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
     }
+}
 
-    function getPaneFromTab(tab) {
-        if (!tab) return null;
+function applyBadge(el, record) {
+    if (!el || !record) return;
 
-        // Odoo normalmente pone aria-controls con el id del panel
-        const paneId = tab.getAttribute("aria-controls");
-        if (paneId) {
-            return document.getElementById(paneId);
-        }
+    // Limitar a repair.order para no afectar a otros formularios
+    if (record.resModel !== "repair.order") return;
 
-        // Fallback: si usa href="#id"
-        const href = tab.getAttribute("href") || "";
-        if (href.startsWith("#")) {
-            return document.getElementById(href.slice(1));
-        }
+    const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
+    if (!tab) return;
 
-        return null;
-    }
+    // Campo real detectado en tu UI: internal_notes (Html)
+    const raw = record.data?.internal_notes;
+    const hasNotes = !!htmlToText(raw);
 
-    function hasHtmlNotes(pane) {
-        if (!pane) return false;
+    tab.classList.toggle("wex_has_repair_notes", hasNotes);
+}
 
-        // HTML editor -> contenteditable (cuando el tab ya se ha renderizado)
-        const editables = pane.querySelectorAll("[contenteditable='true']");
-        for (const el of editables) {
-            const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim();
-            if (txt) return true;
-        }
+patch(FormRenderer.prototype, "wexplay_repair.repair_notes_badge", {
+    setup() {
+        super.setup();
 
-        // Fallback: input/textarea ocultos
-        for (const el of pane.querySelectorAll("textarea, input")) {
-            const v = (el.value || "").trim();
-            if (v) return true;
-        }
-
-        return false;
-    }
-
-    function update() {
-        try {
-            const tab = getTab();
-            if (!tab) return;
-
-            const pane = getPaneFromTab(tab);
-            if (!pane) return;
-
-            const hasNotes = hasHtmlNotes(pane);
-            tab.classList.toggle("wex_has_repair_notes", hasNotes);
-        } catch (e) {
-            console.warn("repair_notes_badge:", e);
-        }
-    }
-
-    function boot() {
-        window.addEventListener("input", update, true);
-        window.addEventListener("change", update, true);
-
-        const obs = new MutationObserver(update);
-        obs.observe(document.documentElement, { childList: true, subtree: true });
-
-        update();
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", boot, { once: true });
-    } else {
-        boot();
-    }
-})();
+        onMounted(() => applyBadge(this.el, this.props.record));
+        onPatched(() => applyBadge(this.el, this.props.record));
+    },
+});
