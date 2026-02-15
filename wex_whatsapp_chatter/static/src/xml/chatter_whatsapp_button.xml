@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="wex_whatsapp_chatter.chatter_whatsapp_button" owl="1">
-        <t t-extend="mail.Chatter">
-            <t t-jquery=".o-mail-Chatter-topbar" t-operation="append">
-                <button type="button"
-                        class="btn btn-outline-success btn-sm ms-2"
-                        t-on-click="onClickWhatsApp">
-                    <i class="fa fa-whatsapp me-1"/>
-                    WhatsApp
-                </button>
-            </t>
-        </t>
+    <!-- Extend OWL template mail.Chatter -->
+    <t t-name="wex_whatsapp_chatter.chatter_whatsapp_button"
+       t-inherit="mail.Chatter"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <!-- Insert right after "Send message" button in topbar -->
+        <xpath expr="//button[contains(@class,'o-mail-Chatter-sendMessage')]" position="after">
+            <button type="button"
+                    class="btn btn-outline-success btn-sm ms-2"
+                    t-on-click="onClickWhatsApp">
+                <i class="fa fa-whatsapp me-1"/>
+                WhatsApp
+            </button>
+        </xpath>
+
     </t>
 
 </templates>

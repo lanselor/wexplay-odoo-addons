@@ -1,4 +1,5 @@
 /** @odoo-module **/
+console.warn("WEX_WHATSAPP_CHATTER: loaded Version 10");
 
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
