@@ -47,7 +47,12 @@ function applyBadge(renderer) {
 
         console.warn("WEX internal_notes length", (raw || "").length, "hasNotes", hasNotes);
 
+        const prev = tab.dataset.wexHasRepairNotes;
+        const next = hasNotes ? "1" : "0";
+        if (prev === next) return;           // no tocar DOM si no cambia
+        tab.dataset.wexHasRepairNotes = next;
         tab.classList.toggle("wex_has_repair_notes", hasNotes);
+        
     } catch (e) {
         console.warn("WEX applyBadge error:", e);
     }
