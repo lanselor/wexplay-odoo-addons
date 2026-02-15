@@ -15,7 +15,10 @@ function htmlToText(html) {
 function applyBadge(renderer) {
     try {
         const record = renderer?.props?.record;
-        const el = renderer?.el;
+
+        // FIX: en algunos ciclos OWL renderer.el aún no existe
+        // Fallback al formulario visible
+        const el = renderer?.el || document.querySelector(".o_form_view");
 
         console.warn("WEX applyBadge() called", {
             hasEl: !!el,
@@ -28,14 +31,15 @@ function applyBadge(renderer) {
 
         const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
         console.warn("WEX tab found?", !!tab);
+
         console.warn("WEX applyBadge debug", {
             model: record?.resModel,
             hasEl: !!el,
-            tabFound: !!el?.querySelector(".o_notebook .nav-link[name='repair_notes']"),
+            tabFound: !!tab,
             internalNotesType: typeof record?.data?.internal_notes,
             internalNotesLen: (record?.data?.internal_notes || "").length,
         });
-        
+
         if (!tab) return;
 
         const raw = record.data?.internal_notes;
