@@ -35,22 +35,20 @@ patch(Chatter.prototype, {
     onClickWhatsApp() {
         const resModel = this.props.threadModel;
         const resId = this.props.threadId;
-
-        // Si no hay documento (por ejemplo, formulario aún no guardado), no hacemos nada
         if (!resModel || !resId) {
             return;
         }
 
         this.actionService.doAction({
             type: "ir.actions.act_window",
+            name: "Redactar WhatsApp",
             res_model: "whatsapp.compose.wizard",
-            view_mode: "form",
+            views: [[false, "form"]],
             target: "new",
             context: {
-                // Claves estándar para default_get / defaults en TransientModel
                 default_res_model: resModel,
                 default_res_id: resId,
             },
         });
-    },
+    }
 });
