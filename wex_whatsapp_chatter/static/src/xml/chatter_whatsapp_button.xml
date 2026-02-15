@@ -11,6 +11,7 @@
         <xpath expr="//button[contains(@class,'o-mail-Chatter-sendMessage')]" position="after">
             <button type="button"
                     class="btn btn-outline-success btn-sm ms-2"
+                    groups="wex_whatsapp_chatter.group_whatsapp_user"
                     t-on-click="onClickWhatsApp">
                 <i class="fa fa-whatsapp me-1"/>
                 WhatsApp
