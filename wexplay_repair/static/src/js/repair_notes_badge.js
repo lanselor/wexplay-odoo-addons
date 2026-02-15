@@ -4,63 +4,48 @@ import { patch } from "@web/core/utils/patch";
 import { FormRenderer } from "@web/views/form/form_renderer";
 import { onMounted, onPatched } from "@odoo/owl";
 
-console.warn("WEX repair_notes_badge asset LOADED");
-
 function htmlToText(html) {
     if (!html) return "";
-    const doc = new DOMParser().parseFromString(String(html), "text/html");
-    return (doc.body?.textContent || "").replace(/\u00A0/g, " ").trim();
+    try {
+        const doc = new DOMParser().parseFromString(String(html), "text/html");
+        return (doc.body?.textContent || "").replace(/\u00A0/g, " ").trim();
+    } catch {
+        return String(html).replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
+    }
 }
 
 function applyBadge(renderer) {
     try {
         const record = renderer?.props?.record;
+        if (!record || record.resModel !== "repair.order") return;
 
-        // FIX: en algunos ciclos OWL renderer.el aún no existe
-        // Fallback al formulario visible
+        // renderer.el puede no existir en algunos ciclos -> fallback al formulario visible
         const el = renderer?.el || document.querySelector(".o_form_view");
-
-        console.warn("WEX applyBadge() called", {
-            hasEl: !!el,
-            model: record?.resModel,
-            hasRecord: !!record,
-        });
-
-        if (!record || !el) return;
-        if (record.resModel !== "repair.order") return;
+        if (!el) return;
 
         const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
-        console.warn("WEX tab found?", !!tab);
-
-        console.warn("WEX applyBadge debug", {
-            model: record?.resModel,
-            hasEl: !!el,
-            tabFound: !!tab,
-            internalNotesType: typeof record?.data?.internal_notes,
-            internalNotesLen: (record?.data?.internal_notes || "").length,
-        });
-
         if (!tab) return;
 
         const raw = record.data?.internal_notes;
         const hasNotes = !!htmlToText(raw);
 
-        console.warn("WEX internal_notes length", (raw || "").length, "hasNotes", hasNotes);
-
-        const prev = tab.dataset.wexHasRepairNotes;
+        // Guard: evita bucles (solo tocar DOM si cambia)
         const next = hasNotes ? "1" : "0";
-        if (prev === next) return;           // no tocar DOM si no cambia
+        if (tab.dataset.wexHasRepairNotes === next) return;
+
         tab.dataset.wexHasRepairNotes = next;
         tab.classList.toggle("wex_has_repair_notes", hasNotes);
-        
     } catch (e) {
-        console.warn("WEX applyBadge error:", e);
+        // No romper el backend por un badge
+        console.warn("WEX repair_notes_badge:", e);
     }
 }
 
 patch(FormRenderer.prototype, {
     setup() {
         super.setup();
+
+        // Inicial y tras cada patch
         onMounted(() => applyBadge(this));
         onPatched(() => applyBadge(this));
     },
