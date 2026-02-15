@@ -175,6 +175,10 @@
 
             </xpath>
             
+            <xpath expr="//sheet" position="inside">
+                <field name="internal_notes" invisible="1"/>
+            </xpath>
+            
         </field>
     </record>
 
