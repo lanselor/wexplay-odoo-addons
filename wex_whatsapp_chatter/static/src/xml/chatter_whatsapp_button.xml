@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <!--
-        QWeb assets REQUIRE a template with t-name somewhere in the file.
-        We define one, and inside we extend mail.Chatter to inject our button.
-    -->
-    <t t-name="wex_whatsapp_chatter.chatter_whatsapp_button" owl="1">
-
-        <t t-extend="mail.Chatter">
-            <!-- Insert the button in the chatter topbar -->
-            <t t-jquery=".o_Chatter_topbar" t-operation="append">
-                <button type="button"
-                        class="btn btn-success btn-sm ms-2"
-                        t-on-click="onClickWhatsApp">
-                    <i class="fa fa-whatsapp me-1"/>
-                    WhatsApp
-                </button>
-            </t>
-        </t>
-
+    <t t-name="wex_whatsapp_chatter.Chatter" t-inherit="mail.Chatter" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o-mail-Chatter-topbar')]" position="inside">
+            <button type="button"
+                    class="btn btn-outline-success btn-sm ms-2"
+                    t-on-click="() => this.onWhatsAppClick()">
+                <i class="fa fa-whatsapp me-1"/>
+                WhatsApp
+            </button>
+        </xpath>
     </t>
 
 </templates>
