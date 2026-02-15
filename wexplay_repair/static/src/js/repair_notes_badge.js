@@ -28,7 +28,14 @@ function applyBadge(renderer) {
 
         const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
         console.warn("WEX tab found?", !!tab);
-
+        console.warn("WEX applyBadge debug", {
+            model: record?.resModel,
+            hasEl: !!el,
+            tabFound: !!el?.querySelector(".o_notebook .nav-link[name='repair_notes']"),
+            internalNotesType: typeof record?.data?.internal_notes,
+            internalNotesLen: (record?.data?.internal_notes || "").length,
+        });
+        
         if (!tab) return;
 
         const raw = record.data?.internal_notes;
