@@ -3,22 +3,39 @@
 (function () {
     "use strict";
 
-    function getPane() {
-        return (
-            document.querySelector(".o_form_view .tab-pane[name='repair_notes']") ||
-            document.querySelector(".o_form_view .tab-pane[data-name='repair_notes']")
-        );
+    function getTab() {
+        return document.querySelector(".o_notebook .nav-link[name='repair_notes']");
+    }
+
+    function getPaneFromTab(tab) {
+        if (!tab) return null;
+
+        // Odoo normalmente pone aria-controls con el id del panel
+        const paneId = tab.getAttribute("aria-controls");
+        if (paneId) {
+            return document.getElementById(paneId);
+        }
+
+        // Fallback: si usa href="#id"
+        const href = tab.getAttribute("href") || "";
+        if (href.startsWith("#")) {
+            return document.getElementById(href.slice(1));
+        }
+
+        return null;
     }
 
     function hasHtmlNotes(pane) {
-        // 1) Cualquier contenteditable dentro del pane (Odoo HTML editor)
+        if (!pane) return false;
+
+        // HTML editor -> contenteditable (cuando el tab ya se ha renderizado)
         const editables = pane.querySelectorAll("[contenteditable='true']");
         for (const el of editables) {
-            const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim(); // nbsp -> space
+            const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim();
             if (txt) return true;
         }
 
-        // 2) Fallback: algunos editores guardan en un textarea/input oculto
+        // Fallback: input/textarea ocultos
         for (const el of pane.querySelectorAll("textarea, input")) {
             const v = (el.value || "").trim();
             if (v) return true;
@@ -29,10 +46,10 @@
 
     function update() {
         try {
-            const tab = document.querySelector(".o_notebook .nav-link[name='repair_notes']");
+            const tab = getTab();
             if (!tab) return;
 
-            const pane = getPane();
+            const pane = getPaneFromTab(tab);
             if (!pane) return;
 
             const hasNotes = hasHtmlNotes(pane);
@@ -43,11 +60,9 @@
     }
 
     function boot() {
-        // input/change cubre muchas interacciones del editor
         window.addEventListener("input", update, true);
         window.addEventListener("change", update, true);
 
-        // observer para re-render OWL / cambios de tab
         const obs = new MutationObserver(update);
         obs.observe(document.documentElement, { childList: true, subtree: true });
 
