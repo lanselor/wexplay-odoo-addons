@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <!-- IMPORTANTE:
-         En assets QWeb debe existir AL MENOS un template con t-name.
-         Aquí lo definimos y dentro usamos t-extend/t-jquery que es el patrón más compatible.
-    -->
     <t t-name="wex_whatsapp_chatter.chatter_whatsapp_button" owl="1">
         <t t-extend="mail.Chatter">
-            <t t-jquery=".o_Chatter_topbar" t-operation="append">
+            <t t-jquery=".o-mail-Chatter-topbar" t-operation="append">
                 <button type="button"
                         class="btn btn-outline-success btn-sm ms-2"
                         t-on-click="onClickWhatsApp">
