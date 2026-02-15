@@ -4,38 +4,48 @@ import { patch } from "@web/core/utils/patch";
 import { FormRenderer } from "@web/views/form/form_renderer";
 import { onMounted, onPatched } from "@odoo/owl";
 
+console.warn("WEX repair_notes_badge asset LOADED");
+
 function htmlToText(html) {
     if (!html) return "";
-    try {
-        const doc = new DOMParser().parseFromString(String(html), "text/html");
-        return (doc.body?.textContent || "").replace(/\u00A0/g, " ").trim(); // nbsp -> space
-    } catch {
-        // fallback ultra simple
-        return String(html).replace(/<[^>]*>/g, "").replace(/\u00A0/g, " ").trim();
-    }
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+    return (doc.body?.textContent || "").replace(/\u00A0/g, " ").trim();
 }
 
-function applyBadge(el, record) {
-    if (!el || !record) return;
+function applyBadge(renderer) {
+    try {
+        const record = renderer?.props?.record;
+        const el = renderer?.el;
 
-    // Limitar a repair.order para no afectar a otros formularios
-    if (record.resModel !== "repair.order") return;
+        console.warn("WEX applyBadge() called", {
+            hasEl: !!el,
+            model: record?.resModel,
+            hasRecord: !!record,
+        });
 
-    const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
-    if (!tab) return;
+        if (!record || !el) return;
+        if (record.resModel !== "repair.order") return;
 
-    // Campo real detectado en tu UI: internal_notes (Html)
-    const raw = record.data?.internal_notes;
-    const hasNotes = !!htmlToText(raw);
+        const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
+        console.warn("WEX tab found?", !!tab);
 
-    tab.classList.toggle("wex_has_repair_notes", hasNotes);
+        if (!tab) return;
+
+        const raw = record.data?.internal_notes;
+        const hasNotes = !!htmlToText(raw);
+
+        console.warn("WEX internal_notes length", (raw || "").length, "hasNotes", hasNotes);
+
+        tab.classList.toggle("wex_has_repair_notes", hasNotes);
+    } catch (e) {
+        console.warn("WEX applyBadge error:", e);
+    }
 }
 
 patch(FormRenderer.prototype, "wexplay_repair.repair_notes_badge", {
     setup() {
         super.setup();
-
-        onMounted(() => applyBadge(this.el, this.props.record));
-        onPatched(() => applyBadge(this.el, this.props.record));
+        onMounted(() => applyBadge(this));
+        onPatched(() => applyBadge(this));
     },
 });
