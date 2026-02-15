@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-
     <t t-name="wex_whatsapp_chatter.Chatter" t-inherit="mail.Chatter" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('o-mail-Chatter-topbar')]" position="inside">
             <button type="button"
                     class="btn btn-outline-success btn-sm ms-2"
-                    t-on-click="() => this.onWhatsAppClick()">
+                    t-on-click="() => this.onClickWhatsApp()">
                 <i class="fa fa-whatsapp me-1"/>
                 WhatsApp
             </button>
         </xpath>
     </t>
-
 </templates>
