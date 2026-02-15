@@ -19,12 +19,24 @@ function update() {
     tab.classList.toggle("wex_has_repair_notes", hasNotes);
 }
 
-document.addEventListener("input", (ev) => {
-    if (ev.target && ev.target.closest(".o_form_view")) update();
-});
-document.addEventListener("change", (ev) => {
-    if (ev.target && ev.target.closest(".o_form_view")) update();
-});
+function start() {
+    document.addEventListener("input", (ev) => {
+        if (ev.target && ev.target.closest(".o_form_view")) update();
+    });
+    document.addEventListener("change", (ev) => {
+        if (ev.target && ev.target.closest(".o_form_view")) update();
+    });
 
-new MutationObserver(update).observe(document.body, { childList: true, subtree: true });
-update();
+    const target = document.body || document.documentElement;
+    if (target) {
+        new MutationObserver(update).observe(target, { childList: true, subtree: true });
+    }
+
+    update();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+} else {
+    start();
+}
