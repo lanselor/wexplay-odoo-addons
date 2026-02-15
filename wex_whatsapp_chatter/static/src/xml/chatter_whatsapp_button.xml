@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<templates xml:space="preserve">
-
-    <t t-extend="mail.Chatter">
-        <t t-jquery=".o_Chatter_topbar" t-operation="append">
+<odoo>
+    <template id="chatter_whatsapp_button" inherit_id="mail.Chatter" name="Chatter WhatsApp Button" owl="1">
+        <xpath expr="//div[contains(@class, 'o_Chatter_topbar')]" position="inside">
             <button type="button"
                     class="btn btn-success btn-sm ms-2"
                     t-on-click="onClickWhatsApp">
                 <i class="fa fa-whatsapp me-1"/>
                 WhatsApp
             </button>
-        </t>
-    </t>
-
-</templates>
+        </xpath>
+    </template>
+</odoo>
