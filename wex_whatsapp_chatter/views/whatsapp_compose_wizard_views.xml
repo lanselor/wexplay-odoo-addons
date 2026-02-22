@@ -6,43 +6,78 @@
         <field name="arch" type="xml">
             <form string="Redactar WhatsApp">
                 <sheet>
-                    <group>
-                        <field name="company_id" groups="base.group_multi_company"/>
-                        <field name="res_model"/>
+                    <div class="alert alert-secondary d-flex align-items-center mb-3 py-2 shadow-sm" role="alert" invisible="not res_model">
+                        <i class="fa fa-whatsapp me-2" style="font-size: 1.2rem; color: #25D366;"/>
+                        <span class="fw-bold">Redactando mensaje para: </span>
+                        <field name="res_model" class="ms-1 fw-normal text-muted" readonly="1"/>
+                    </div>
+                    
+                    <group name="main_config">
+                        <group string="Destinatario">
+                            <field name="partner_id" string="Cliente" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="phone_source" string="Origen Teléfono"/>
+                            <field name="phone_number" string="Número de Teléfono" placeholder="+34XXXXXXXXX"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        </group>
+                        
+                        <group string="Plantilla">
+                            <field name="template_id" 
+                                   string="Seleccionar Plantilla"
+                                   domain="[('res_model', '=', res_model)]" 
+                                   options="{'no_create': True}"/>
+                        </group>
                     </group>
                     
-                    <group string="Recipient">
-                        <field name="partner_id" options="{'no_create': False}"/>
-                        <field name="phone_source"/>
-                        <field name="phone_number" placeholder="+34XXXXXXXXX"/>
-                    </group>
+                    <div class="mt-4">
+                        <label for="rendered_body" string="Vista previa del mensaje" class="fw-bold text-uppercase small text-muted mb-2 d-block"/>
+                        <field name="rendered_body" 
+                               nolabel="1" 
+                               widget="text"
+                               placeholder="El mensaje se generará aquí al seleccionar una plantilla..."
+                               style="min-height: 140px; border-radius: 10px; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"/>
+                    </div>
                     
-                    <group string="Template">
-                        <field name="template_id" domain="[('res_model', '=', res_model)]"/>
-                    </group>
-                    
-                    <group string="Message">
-                        <field name="rendered_body" nolabel="1" placeholder="Mensaje..."/>
-                    </group>
-                    
-                    <group string="Document">
-                        <div class="text-muted">
-                            Select the document to generate the portal link (Sales or Invoice).
+                    <div class="mt-4 p-3 border rounded shadow-sm bg-white">
+                        <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.75rem; color: #714B67;">
+                            <i class="fa fa-file-text-o me-2"/> Documento para Enlace de Portal
                         </div>
-                        <field name="sale_order_id"/>
-                        <field name="account_move_id"/>
-                        <field name="portal_url" readonly="1"/>
-                    </group>
+                        
+                        <div class="text-muted small mb-3">
+                            <i class="fa fa-info-circle me-1"/>
+                            Seleccione el documento y pulse el botón inferior para generar e insertar el enlace.
+                        </div>
+                        
+                        <group col="2" class="mt-0">
+                            <field name="sale_order_id" string="Pedido de Venta" placeholder="Seleccione pedido..."/>
+                            <field name="account_move_id" string="Factura" placeholder="Seleccione factura..."/>
+                        </group>
+                        
+                        <div class="mt-2 p-2 rounded d-flex align-items-center" style="background-color: #e9ecef; border: 1px dashed #ced4da;" invisible="not portal_url">
+                            <i class="fa fa-link me-2 text-primary"/>
+                            <span class="fw-bold text-muted me-2">Enlace generado: </span>
+                            <field name="portal_url" class="text-primary" widget="url" readonly="1"/>
+                        </div>
+                    </div>
                 </sheet>
                 
                 <footer>
-                    <button string="Abrir WhatsApp" type="object"
+                    <button string="Abrir WhatsApp" 
+                            type="object"
                             name="action_open_whatsapp"
-                            class="btn-primary"/>
-                    <button string="Insertar enlace portal" type="object"
+                            class="btn-success" 
+                            icon="fa-whatsapp"
+                            style="padding: 0.6rem 1.2rem; font-weight: bold;"/>
+                    
+                    <button string="Insertar enlace portal" 
+                            type="object"
                             name="action_insert_portal_link"
-                            class="btn-secondary"/>
-                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                            class="btn-outline-primary" 
+                            icon="fa-magic"
+                            help="Genera el enlace del portal y lo inserta en el cuerpo del mensaje"/>
+                    
+                    <button string="Cerrar" 
+                            class="btn-secondary" 
+                            special="cancel"/>
                 </footer>
             </form>
         </field>
@@ -53,6 +88,5 @@
         <field name="res_model">whatsapp.compose.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="context">{}</field>
     </record>
 </odoo>

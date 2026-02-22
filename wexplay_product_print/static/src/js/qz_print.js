@@ -94,7 +94,7 @@ export function buildQlLabelConfig(printer, opts = {}) {
         colorType: "blackwhite",
         density: 8,
         interpolation: "nearest",
-        rasterize: true,
+        rasterize: false,
         forceDetailed: true,
         copies,
     });

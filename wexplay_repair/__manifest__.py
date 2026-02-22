@@ -18,6 +18,7 @@ consolas y otros dispositivos electrónicos).
         "repair",
         "stock",
         "mail",
+        'hr',
     ],
     "data": [
         'security/ir.model.access.csv',

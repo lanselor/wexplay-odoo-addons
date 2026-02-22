@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     
+    <!-- MENÚ RAÍZ (APP) -->
     <menuitem
         id="menu_whatsapp_root"
         name="WhatsApp"
         sequence="10"
+        action="wex_whatsapp_chatter.action_whatsapp_template"
         groups="wex_whatsapp_chatter.group_whatsapp_user"
         />
     
-    <!-- FORZAMOS que el menú raíz no tenga acción -->
+    <!-- Set icon + (opcional) reescribir campos del menú raíz -->
     <record id="menu_whatsapp_root" model="ir.ui.menu">
-        <field name="action" eval="False"/>
-        <field name="web_icon_data" type="base64" file="wex_whatsapp_chatter/static/description/icon.png"/>
+        <!-- IMPORTANTE: web_icon es lo que mejor pinta el icono en el launcher -->
+        <field name="web_icon">wex_whatsapp_chatter,static/description/icon.png</field>
     </record>
     
+    <!-- SUBMENÚS -->
     <menuitem
         id="menu_whatsapp_compose"
         name="Redactar WhatsApp"

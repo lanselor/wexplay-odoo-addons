@@ -1,117 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  <!-- IMPORTANTE:
-       - id estable para el módulo
-       - t-name EXACTO para que lo encuentre tu ir.actions.report existente
-  -->
   <template id="report_product_label_ql700_62x29">
     <t t-name="wexplay_product_print.report_product_label_ql700_62x29">
-      <t t-call="web.basic_layout">
-        <style>
-          :root {
-            --paper_w: 29mm; /* ancho real */
-            --paper_h: 42mm; /* alto */
-            --pad: 2mm;
-          }
+      <t t-call="web.html_container">
+  
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+          <meta charset="utf-8"/>
 
-          @page {
-            size: var(--paper_w) var(--paper_h);
-            margin: 0;
-          }
 
-          html,
-          body,
-          main {
+        
+        <t t-foreach="docs" t-as="o">
+          <style>
+            @page { size: 42mm 29mm; margin: 0; }
+            html, body {
             margin: 0 !important;
             padding: 0 !important;
+            font-family: "Segoe UI", Arial, "DejaVu Sans", "Noto Sans", sans-serif !important;
             background: #fff;
-          }
-
-          /* Área etiqueta (papel real) */
-          .label-wrapper {
-            width: var(--paper_w);
-            height: var(--paper_h);
-            box-sizing: border-box;
-            padding: var(--pad);
+            }
+            .small-label-container {
+            width: 42mm; height: 29mm;
+            margin: 0; padding: 0;
+            position: relative;
             overflow: hidden;
-            background: #fff;
-          }
-
-          .content {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-          }
-
-          .product-name {
-            font-size: 11pt;
-            font-weight: 800;
-            line-height: 1.05;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
-
-          .product-price {
-            font-size: 12pt;
-            font-weight: 900;
-            line-height: 1;
-            white-space: nowrap;
-            text-align: right;
-            margin-top: 1mm;
-          }
-
-          .bottom-ref {
-            border-top: 0.2mm solid #000;
-            font-size: 10pt;
-            font-family: monospace;
-            padding-top: 1mm;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 1mm;
-          }
-        </style>
-
-        <main>
-          <t t-foreach="docs" t-as="o">
-            <div class="label-wrapper">
-              <div class="content">
-
-                <div class="product-name">
-                  <t t-esc="o.name or o.display_name or ''"/>
-                </div>
-
-                <div class="bottom-ref">
-                  <t t-esc="o.default_code or ''"/>
-                </div>
-
-                <div class="product-price">
-                  <!-- Precio base: product.template -->
-                  <t t-set="base_price" t-value="o.list_price or 0.0"/>
-
-                  <!-- Moneda: la de la compañía (currency_id en product.template no es fiable) -->
-                  <t t-set="company" t-value="o.company_id or env.company"/>
-                  <t t-set="currency" t-value="company.currency_id"/>
-
-                  <!-- Impuestos -->
-                  <t t-set="taxes" t-value="o.taxes_id"/>
-                  <t t-set="res"
-                     t-value="taxes and taxes.compute_all(base_price, currency=currency, quantity=1.0, product=o, partner=None)"/>
-
-                  <!-- Total con IVA -->
-                  <t t-set="price_inc" t-value="(res and res.get('total_included')) or base_price"/>
-
-                  <!-- Formato simple (como en tu XML original funcional) -->
-                  <t t-set="sym" t-value="(currency and currency.symbol) or '€'"/>
-                  <t t-esc="('%0.2f %s' % (price_inc, sym))"/>
-                </div>
-
-
+            }
+          </style>
+          
+          <div class="small-label-container">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:6mm; background:#000; color:#fff;">
+              <div style="
+                    position: absolute;
+                    width: 29mm; height: 6mm;
+                    top: 11.5mm; left: -11.5mm;
+                    -webkit-transform: rotate(-90deg);
+                    text-align: center;
+                    line-height: 6mm;
+                    font-size: 7pt;
+                    font-weight: 900;
+                    white-space: nowrap;
+                    color: #ffffff;">
+                <t t-esc="o.default_code or ''"/>
               </div>
             </div>
-          </t>
-        </main>
+            
+            <div style="
+                  position:absolute;
+                  left:7mm; top:0; right:0; bottom:0;
+                  padding:1.5mm 1.5mm 1mm 1mm;
+                  box-sizing:border-box;
+                  display:flex;
+                  flex-direction:column;
+                  ">
+              <div style="border-bottom: 0.3mm solid #000; padding-bottom: 0.5mm;">
+                <div style="font-size: 5pt; text-transform: uppercase; font-weight: 800; color: #666;">
+                  Producto
+                </div>
+                <div style="
+                      margin-top:0.4mm;
+                      font-size: 7.2pt;
+                      font-weight: 900;
+                      line-height: 1.1;
+                      height: 8.5mm;
+                      overflow: hidden;
+                      display: -webkit-box;
+                      -webkit-line-clamp: 3;
+                      -webkit-box-orient: vertical;
+                      color: #000;
+                      ">
+                  <t t-esc="o.name or o.display_name or ''"/>
+                </div>
+              </div>
+              
+              <div style="padding-top:1mm; text-align: right;">
+                <div style="font-size: 5pt; font-weight: 800; color: #666; text-transform: uppercase; text-align: left;">
+                  Precio PVP
+                </div>
+                
+                <div style="font-size: 11.5pt; font-weight: 900; color: #000; margin-top: 0.2mm; background: #e9f0f7; padding: 0.5mm 1.5mm; display: inline-block; border-radius: 1mm;">
+                  <t t-set="base_price" t-value="o.list_price or 0.0"/>
+                  <t t-set="company" t-value="o.company_id or env.company"/>
+                  <t t-set="currency" t-value="company.currency_id"/>
+                  <t t-set="taxes" t-value="o.taxes_id"/>
+                  <t t-set="res" t-value="taxes and taxes.compute_all(base_price, currency=currency, quantity=1.0, product=o, partner=None)"/>
+                  <t t-set="price_inc" t-value="(res and res.get('total_included')) or base_price"/>
+                  
+                  <span t-esc="'%.2f' % price_inc"/>
+                  <span t-translation="off"> €</span>
+                </div>
+              </div>
+              
+              <div style="position:absolute; left:0; right:0; bottom:1mm;">
+                <div style="height:4.5mm; overflow:hidden;">
+                  <t t-if="company and company.logo">
+                    <img t-att-src="image_data_uri(company.logo)"
+                         style="display:block; max-height:4.5mm; width:auto;"
+                         alt="Logo"/>
+                  </t>
+                </div>
+                <div style="margin-top:0.4mm; font-size: 3pt; color: #bbb; text-transform: uppercase; letter-spacing: 0.2mm;">
+                  ETIQUETA COMERCIAL DE PRODUCTO
+                </div>
+              </div>
+            </div>
+          </div>
+        </t>
       </t>
     </t>
   </template>
-</odoo>
+</odoo> 

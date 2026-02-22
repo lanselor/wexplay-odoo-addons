@@ -3,7 +3,10 @@
     "version": "18.0.1.0.0",
     "category": "Inventory",
     "summary": "Auto-generate product internal references by category with independent sequences",
-    "depends": ["product"],
+    "depends": [
+        "product",
+        'stock',
+        ],
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",

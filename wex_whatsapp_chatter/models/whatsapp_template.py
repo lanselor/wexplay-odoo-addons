@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class WhatsappTemplate(models.Model):
@@ -16,7 +16,7 @@ class WhatsappTemplate(models.Model):
         index=True,
     )
 
-    # Reemplazo robusto: no depende de ir.model
+    # Explicit model selection (keeps system robust and simple)
     res_model = fields.Selection(
         selection=[
             ("sale.order", "Sales: Quotation / Order"),
@@ -26,11 +26,40 @@ class WhatsappTemplate(models.Model):
         string="Applies to",
         required=True,
         index=True,
-        help="Used to filter templates by document type (sale.order includes quotations & orders).",
+        help="Used to filter templates by document type.",
     )
 
     body = fields.Text(
         string="Message Body",
         required=True,
-        help="Template text. Rendering will be implemented in the wizard iteration.",
+        help="Supports dynamic variables like ${object.name}, ${object.partner_id.name}, etc.",
     )
+
+    def render_body(self, res_model, res_id):
+        """
+        Secure dynamic rendering using Odoo's mail.template engine.
+
+        Why:
+        - Avoids unsafe eval.
+        - Reuses official rendering logic.
+        - Supports ${object.field} syntax.
+
+        If no valid record is provided, falls back to raw body.
+        """
+        self.ensure_one()
+
+        if not (res_model and res_id):
+            return self.body or ""
+
+        record = self.env[res_model].browse(res_id).exists()
+        if not record:
+            return self.body or ""
+
+        # Use standard mail.template rendering engine
+        rendered = self.env["mail.template"]._render_template(
+            self.body or "",
+            res_model,
+            [record.id],
+        )
+
+        return rendered.get(record.id) or (self.body or "")

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from .device_constants import DEVICE_TYPE_SELECTION
 
@@ -83,6 +84,43 @@ class RepairOrder(models.Model):
     x_reported_issue = fields.Text(string="Avería descrita por el cliente")
     x_internal_notes = fields.Text(string="Observaciones internas (técnico)")
 
+    # ---------------------------------------------------------
+    # TOTAL SAT (informativo, SIN tocar BD)
+    # Fuente: sale_order_id.amount_total
+    # ---------------------------------------------------------
+    x_sat_total_amount = fields.Monetary(
+        string="Total SAT",
+        currency_field="x_sat_currency_id",
+        compute="_compute_x_sat_total_amount",
+        store=False,
+        readonly=True,
+    )
+
+    x_sat_currency_id = fields.Many2one(
+        "res.currency",
+        compute="_compute_x_sat_currency_id",
+        store=False,
+        readonly=True,
+    )
+
+    @api.depends("company_id")
+    def _compute_x_sat_currency_id(self):
+        for rec in self:
+            rec.x_sat_currency_id = rec.company_id.currency_id
+
+    @api.depends("sale_order_id", "sale_order_id.amount_total", "sale_order_id.currency_id", "company_id")
+    def _compute_x_sat_total_amount(self):
+        for rec in self:
+            if rec.sale_order_id:
+                rec.x_sat_total_amount = rec.sale_order_id.amount_total or 0.0
+                rec.x_sat_currency_id = rec.sale_order_id.currency_id or rec.company_id.currency_id
+            else:
+                rec.x_sat_total_amount = 0.0
+                rec.x_sat_currency_id = rec.company_id.currency_id
+
+    # ---------------------------------------------------------
+    # Onchange
+    # ---------------------------------------------------------
     @api.onchange("x_device_type")
     def _onchange_x_device_type_reset_model_brand(self):
         """Si cambia el tipo, limpiamos modelo/marca para evitar inconsistencias."""

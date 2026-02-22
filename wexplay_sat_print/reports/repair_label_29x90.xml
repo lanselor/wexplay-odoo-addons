@@ -2,6 +2,8 @@
 <odoo>
     <template id="repair_label_29x90">
         <t t-call="web.html_container">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <meta charset="utf-8"/>
             <t t-foreach="docs" t-as="o">
                 <style>
                     @page { size: 90mm 29mm; margin: 0; }
@@ -97,6 +99,8 @@
                             padding:1.5mm 1mm 0 1mm;
                             box-sizing:border-box;
                             ">
+                        
+                        <!-- Fecha entrada -->
                         <div style="text-align:center;">
                             <div style="font-size:6pt;font-weight:800;color:#666;text-transform:uppercase;">
                                 Fecha Entrada
@@ -105,6 +109,36 @@
                                 <t t-esc="o.create_date.strftime('%d/%m/%Y') if o.create_date else ''"/>
                             </div>
                         </div>
+                        
+                        <!-- Acceso / contraseña -->
+                        <t t-if="'x_unlock_type' in o._fields and o.x_unlock_type">
+                            <div style="margin-top:1.2mm;border-top:0.2mm solid #ddd;padding-top:0.8mm;">
+                                <div style="font-size:6pt;font-weight:800;color:#666;text-transform:uppercase;text-align:center;">
+                                    Contraseña
+                                </div>
+                                
+                                <!-- Valor principal según tipo -->
+                                <div style="margin-top:0.5mm;font-size:7pt;font-weight:900;font-family:monospace;color:#000;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    <t t-if="o.x_unlock_type in ('pin','password')">
+                                        <t t-esc="o.x_unlock_code or ''"/>
+                                    </t>
+                                    <t t-elif="o.x_unlock_type == 'pattern'">
+                                        <t t-esc="o.x_unlock_pattern or ''"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="o.x_unlock_type or ''"/>
+                                    </t>
+                                </div>
+                                
+                                <!-- Notas extra (muy cortas) -->
+                                <t t-if="'x_unlock_notes' in o._fields and (o.x_unlock_notes or '').strip()">
+                                    <div style="margin-top:0.6mm;font-size:5.5pt;line-height:1.1;color:#333;max-height:6mm;overflow:hidden;text-align:left;">
+                                        <t t-esc="(o.x_unlock_notes or '')[:80]"/>
+                                        <t t-if="(o.x_unlock_notes or '')[80:]">...</t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
                     </div>
                     
                     <!-- Footer: documento interno (izquierda) -->
@@ -113,7 +147,6 @@
                     </div>
                     
                     <t t-if="o.name">
-                        <!-- Sanitizar para evitar problemas con el controller de barcode -->
                         <t t-set="sat_barcode" t-value="(o.name or '').replace('/', '').replace(' ', '')"/>
                         <t t-set="base_url" t-value="o.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
                         
