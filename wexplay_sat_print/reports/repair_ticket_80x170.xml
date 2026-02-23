@@ -10,7 +10,7 @@
 
                 <t t-foreach="docs" t-as="o">
                     <style>
-                        @page { size: 80mm 210mm; margin: 0mm; }
+                        @page { size: 80mm 170mm; margin: 0mm; }
 
                         html, body {
                             margin: 0 !important;
