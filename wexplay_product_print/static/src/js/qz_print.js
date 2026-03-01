@@ -1,5 +1,5 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 31 (CONFIG BY KIND) 🔥🔥🔥");
+console.log("🔥🔥🔥 QZ_PRINT VERSION 32 (QZ REPORTE SAT) 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
 
