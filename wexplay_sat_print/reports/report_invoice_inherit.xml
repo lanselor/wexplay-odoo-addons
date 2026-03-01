@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- PRUEBA RÁPIDA: diseño sobre el DOCUMENTO base de factura -->
+    <template id="wex_invoice_design_quicktest"
+              inherit_id="account.report_invoice_document">
+        
+        <!-- Inyecta CSS en la página -->
+        <xpath expr="//div[contains(@class,'page')][1]" position="before">
+            <style>
+                /* ===== WEXPLAY QUICK DESIGN TEST ===== */
+                .o_report_layout, .page, body {
+                font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif !important;
+                font-size: 11pt !important;
+                }
+                .footer, footer { border-top: 2px solid #000 !important; padding-top: 4mm !important; }
+                hr { border: 0 !important; border-top: 2px solid #000 !important; }
+                table thead th { border-bottom: 2px solid #000 !important; text-transform: uppercase !important; }
+                table tbody td { border-bottom: 1px solid #000 !important; }
+                .wex_badge_test {
+                display: inline-block;
+                border: 2px solid #000;
+                padding: 2mm 3mm;
+                font-weight: 900;
+                text-transform: uppercase;
+                margin-bottom: 4mm;
+                }
+            </style>
+        </xpath>
+        
+        <!-- Marca visible dentro de la página -->
+        <xpath expr="//div[contains(@class,'page')][1]" position="inside">
+            <div class="wex_badge_test">WEXPLAY · TEST DISEÑO FACTURA</div>
+        </xpath>
+        
+    </template>
+</odoo>

@@ -19,12 +19,17 @@ consolas y otros dispositivos electrónicos).
         "stock",
         "mail",
         'hr',
+        "account",
+        "sale",
+
     ],
     "data": [
         'security/ir.model.access.csv',
         "views/repair_order_views.xml",
         "views/repair_order_list.xml",
         "views/repair_order_search.xml",
+        "views/account_move_view_inherit.xml",
+        "reports/report_invoice_sat.xml",
     ],
     "assets": {
         "web.assets_backend": [
