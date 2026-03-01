@@ -1,5 +1,5 @@
-<!-- wexplay_product_print/reports/report_actions.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- wexplay_product_print/reports/report_actions.xml -->
 <odoo>
     <record id="action_report_product_label_ql700_62x29" model="ir.actions.report">
         <field name="name">Etiqueta Brother QL 62x29</field>

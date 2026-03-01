@@ -144,12 +144,26 @@ function getConfigBuilderByKind(kind) {
  * ========================================================= */
 
 function arrayBufferToBase64(buffer) {
-    const bytes = new Uint8Array(buffer);
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
+    return new Promise((resolve, reject) => {
+        try {
+            const blob = new Blob([buffer], { type: "application/pdf" });
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                const result = reader.result || "";
+                const base64 = result.split(",")[1] || "";
+                resolve(base64);
+            };
+
+            reader.onerror = function () {
+                reject(reader.error || new Error("FileReader error"));
+            };
+
+            reader.readAsDataURL(blob);
+        } catch (e) {
+            reject(e);
+        }
+    });
 }
 
 async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn) {
@@ -166,7 +180,10 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
     const config = buildConfigFn(printer);
 
     const absUrl = new URL(reportUrl, browser.location.origin).toString();
+
+    console.time("[QZ] fetch pdf");
     const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
+    console.timeEnd("[QZ] fetch pdf");
 
     if (!resp.ok) throw new Error(`No se pudo descargar PDF (${resp.status})`);
 
@@ -175,9 +192,12 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
         throw new Error("La respuesta no es un PDF");
     }
 
+    console.time("[QZ] to base64");
     const buffer = await resp.arrayBuffer();
-    const pdfBase64 = arrayBufferToBase64(buffer);
+    const pdfBase64 = await arrayBufferToBase64(buffer);
+    console.timeEnd("[QZ] to base64");
 
+    console.time("[QZ] qz.print");
     await qz.print(config, [
         {
             type: "pixel",
@@ -186,6 +206,7 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
             data: pdfBase64,
         },
     ]);
+    console.timeEnd("[QZ] qz.print");
 
     return true;
 }
