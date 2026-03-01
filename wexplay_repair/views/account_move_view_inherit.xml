@@ -59,7 +59,7 @@
                 </div>
             </xpath>
             
-            <xpath expr="//header/button[@name='action_print_pdf' and contains(@class,'oe_highlight')]" position="attributes">
+            <xpath expr="//header//button[@name='action_print_pdf']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             
