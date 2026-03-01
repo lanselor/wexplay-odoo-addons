@@ -121,7 +121,7 @@ export function buildA4Config(printer) {
         orientation: "portrait",
         scaleContent: true,
         colorType: "color",
-        rasterize: false,
+        rasterize: true,
         copies: 1,
     });
 }
