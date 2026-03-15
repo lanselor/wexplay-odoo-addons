@@ -62,7 +62,11 @@ class RepairOrder(models.Model):
         "rejected": {"estimating"},
     }
 
-    @api.depends("product_location_src_id", "company_id", "company_id.x_repair_state_location_glue_desk_id")
+    @api.depends(
+        "product_location_src_id",
+        "company_id",
+        "company_id.x_repair_state_location_glue_desk_id",
+    )
     def _compute_x_is_in_glue_desk(self):
         for repair in self:
             glue_location = repair.company_id.x_repair_state_location_glue_desk_id
@@ -70,7 +74,11 @@ class RepairOrder(models.Model):
                 glue_location and repair.product_location_src_id == glue_location
             )
 
-    @api.depends("product_location_src_id", "company_id", "company_id.x_repair_state_location_waiting_spare_id")
+    @api.depends(
+        "product_location_src_id",
+        "company_id",
+        "company_id.x_repair_state_location_waiting_spare_id",
+    )
     def _compute_x_is_waiting_spare_location(self):
         for repair in self:
             waiting_location = repair.company_id.x_repair_state_location_waiting_spare_id
@@ -91,7 +99,11 @@ class RepairOrder(models.Model):
         if new_stage not in allowed:
             return False
 
-        if current_stage == "rejected" and new_stage == "estimating" and self.state == "cancel":
+        if (
+            current_stage == "rejected"
+            and new_stage == "estimating"
+            and self.state == "cancel"
+        ):
             return False
 
         return True
@@ -103,7 +115,8 @@ class RepairOrder(models.Model):
             raise UserError(
                 _(
                     "Transición de presupuesto no permitida: %(current)s → %(new)s."
-                ) % {
+                )
+                % {
                     "current": dict(self._fields["x_budget_stage"].selection).get(
                         self.x_budget_stage, self.x_budget_stage
                     ),
@@ -152,13 +165,16 @@ class RepairOrder(models.Model):
         mapping = {
             "under_repair": company.x_repair_state_location_under_repair_id,
             "done": company.x_repair_state_location_done_id,
+            "delivered": company.x_repair_state_location_delivered_id,
             "cancel": company.x_repair_budget_location_rejected_id,
         }
         return mapping.get(state)
 
     def _sync_location_from_budget_stage(self):
         for repair in self:
-            target_location = repair._get_budget_stage_target_location(repair.x_budget_stage)
+            target_location = repair._get_budget_stage_target_location(
+                repair.x_budget_stage
+            )
             if target_location and repair.product_location_src_id != target_location:
                 repair.write({"product_location_src_id": target_location.id})
 
@@ -172,7 +188,9 @@ class RepairOrder(models.Model):
         self.ensure_one()
 
         if not self.x_device_type:
-            raise UserError(_("Debes indicar el Tipo de dispositivo antes de finalizar la reparación."))
+            raise UserError(
+                _("Debes indicar el Tipo de dispositivo antes de finalizar la reparación.")
+            )
 
         return self.x_device_type in ("mobile", "tablet")
 
@@ -206,7 +224,9 @@ class RepairOrder(models.Model):
         for repair in self:
             waiting_location = repair.company_id.x_repair_state_location_waiting_spare_id
             if not waiting_location:
-                raise UserError(_("Configura primero la ubicación 'Pendiente de repuesto' en Ajustes > Wexplay SAT."))
+                raise UserError(
+                    _("Configura primero la ubicación 'Pendiente de repuesto' en Ajustes > Wexplay SAT.")
+                )
 
             vals = {"product_location_src_id": waiting_location.id}
             if not repair.x_waiting_spare_started_at:
@@ -315,13 +335,17 @@ class RepairOrder(models.Model):
     def action_mark_ready_for_pickup_from_glue(self):
         for repair in self:
             if repair.state != "done":
-                raise UserError(_("Solo puedes usar esta acción en reparaciones finalizadas."))
+                raise UserError(
+                    _("Solo puedes usar esta acción en reparaciones finalizadas.")
+                )
             if not repair.x_is_in_glue_desk:
                 raise UserError(_("La reparación no está actualmente en Mesa Pegado."))
 
             pickup_location = repair.company_id.x_repair_state_location_done_id
             if not pickup_location:
-                raise UserError(_("Configura primero la ubicación 'Finalizada' en Ajustes > Wexplay SAT."))
+                raise UserError(
+                    _("Configura primero la ubicación 'Finalizada' en Ajustes > Wexplay SAT.")
+                )
 
             repair.write({"product_location_src_id": pickup_location.id})
         return True
@@ -329,12 +353,17 @@ class RepairOrder(models.Model):
     def action_set_waiting_spare(self):
         for repair in self:
             if repair.state in ("cancel", "delivered"):
-                raise UserError(_("No puedes marcar una reparación cancelada o entregada como pendiente de repuesto."))
+                raise UserError(
+                    _("No puedes marcar una reparación cancelada o entregada como pendiente de repuesto.")
+                )
 
             if repair.x_is_waiting_spare_location:
                 return True
 
-            if not self.env.context.get("skip_waiting_spare_confirm") and not repair.move_ids:
+            if (
+                not self.env.context.get("skip_waiting_spare_confirm")
+                and not repair.move_ids
+            ):
                 return repair._open_waiting_spare_confirm_wizard()
 
         return self._set_waiting_spare_location()
@@ -377,13 +406,15 @@ class RepairOrder(models.Model):
                 to_reject = self.filtered(lambda r: r.x_budget_stage != "rejected")
                 if to_reject:
                     now = fields.Datetime.now()
-                    to_reject.write({
-                        "x_budget_stage": "rejected",
-                        "x_budget_resolved_at": now,
-                    })
+                    to_reject.write(
+                        {
+                            "x_budget_stage": "rejected",
+                            "x_budget_resolved_at": now,
+                        }
+                    )
                 self._sync_location_from_budget_stage()
 
-            elif new_state in ("under_repair", "done"):
+            elif new_state in ("under_repair", "done", "delivered"):
                 self._sync_location_from_repair_state()
 
         return res

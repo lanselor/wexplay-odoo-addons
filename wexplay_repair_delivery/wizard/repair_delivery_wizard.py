@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from odoo import fields, models, _
 
 
@@ -39,18 +40,7 @@ class RepairDeliveryWizard(models.TransientModel):
     def action_mark_delivered(self):
         self.ensure_one()
         self.repair_id.action_mark_delivered()
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": _("Reparación entregada"),
-                "message": _(
-                    "La orden de trabajo %s se ha marcado como entregada."
-                ) % (self.repair_id.name or ""),
-                "type": "success",
-                "sticky": False,
-            },
-        }
+        return {"type": "ir.actions.act_window_close"}
 
     def action_do_nothing(self):
         return {"type": "ir.actions.act_window_close"}

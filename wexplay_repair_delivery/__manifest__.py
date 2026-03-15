@@ -11,13 +11,13 @@
         "account",
         "stock",
         "wexplay_repair",
+        "wexplay_repair_workflow",
     ],
     "data": [
         "security/ir.model.access.csv",
         "views/repair_order_views.xml",
         "views/repair_channel_templates.xml",
         "views/repair_delivery_wizard_views.xml",
-
     ],
     "installable": True,
     "application": False,

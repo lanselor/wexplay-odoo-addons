@@ -48,6 +48,13 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
     )
 
+    x_repair_state_location_delivered_id = fields.Many2one(
+        related="company_id.x_repair_state_location_delivered_id",
+        comodel_name="stock.location",
+        string="Ubicación SAT para Entregada",
+        readonly=False,
+    )
+
     x_repair_state_location_glue_desk_id = fields.Many2one(
         related="company_id.x_repair_state_location_glue_desk_id",
         comodel_name="stock.location",

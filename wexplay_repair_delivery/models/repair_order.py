@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import logging
 
 from markupsafe import Markup
@@ -12,7 +13,6 @@ _logger = logging.getLogger(__name__)
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
-    _DELIVERED_LOCATION_NAME = "09 - Recogido por el Cliente"
     _SAT_CHANNEL_NAMES = ["SAT-Reparaciones", "SAT - Reparaciones", "SAT–Reparaciones"]
     _SAT_BUDGET_ACCEPTED_TEMPLATE = (
         "wexplay_repair_delivery.sat_budget_accepted_channel_message"
@@ -33,16 +33,6 @@ class RepairOrder(models.Model):
     def _compute_x_is_delivered(self):
         for rec in self:
             rec.x_is_delivered = rec.state == "delivered"
-
-    def _get_customer_picked_location(self):
-        self.ensure_one()
-        return self.env["stock.location"].search(
-            [
-                ("name", "=", self._DELIVERED_LOCATION_NAME),
-                ("display_name", "ilike", "/REPARACIONES/"),
-            ],
-            limit=1,
-        )
 
     def _get_sat_channel(self):
         self.ensure_one()
@@ -75,32 +65,26 @@ class RepairOrder(models.Model):
         return Markup(html)
 
     def action_mark_delivered(self):
-        missing_field = "product_location_src_id" not in self._fields
-        if missing_field:
-            raise UserError(
-                _(
-                    "El campo de seguimiento SAT 'product_location_src_id' no existe "
-                    "en la reparación."
-                )
-            )
+        for rec in self:
+            if rec.state == "delivered":
+                continue
 
-        for rec in self.filtered(lambda r: r.state != "delivered"):
-            location = rec._get_customer_picked_location()
-            if not location:
+            if rec.state != "done":
                 raise UserError(
                     _(
-                        "No se encontró la ubicación '%s' dentro del almacén de "
-                        "Reparaciones."
+                        "Solo se puede marcar como entregada una reparación que esté finalizada."
                     )
-                    % self._DELIVERED_LOCATION_NAME
                 )
 
-            rec.write(
-                {
-                    "product_location_src_id": location.id,
-                    "state": "delivered",
-                }
-            )
+            delivered_location = rec.company_id.x_repair_state_location_delivered_id
+            if not delivered_location:
+                raise UserError(
+                    _(
+                        "Configura primero la ubicación 'Entregada' en Ajustes > Wexplay SAT."
+                    )
+                )
+
+            rec.write({"state": "delivered"})
 
         return True
 

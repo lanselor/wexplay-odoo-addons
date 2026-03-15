@@ -5,7 +5,7 @@
         <field name="name">wex.repair.delivery.wizard.form</field>
         <field name="model">wex.repair.delivery.wizard</field>
         <field name="arch" type="xml">
-            <form string="Entrega de reparación">
+            <form string="Entrega de reparación" create="0" edit="0" delete="0">
                 <sheet>
                     <group col="1">
                         <field name="invoice_id" readonly="1"/>

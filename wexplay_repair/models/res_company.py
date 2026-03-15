@@ -48,6 +48,13 @@ class ResCompany(models.Model):
         help="Ubicación SAT a usar cuando la reparación queda finalizada y pendiente de recogida.",
     )
 
+    x_repair_state_location_delivered_id = fields.Many2one(
+        "stock.location",
+        string="Ubicación SAT para Entregada",
+        domain="[('usage', '=', 'internal')]",
+        help="Ubicación SAT a usar cuando la reparación ha sido entregada al cliente.",
+    )
+
     x_repair_state_location_glue_desk_id = fields.Many2one(
         "stock.location",
         string="Ubicación SAT para Mesa Pegado",

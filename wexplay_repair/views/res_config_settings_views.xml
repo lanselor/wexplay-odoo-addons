@@ -60,6 +60,11 @@
                                    options="{'no_create': False, 'no_open': False}"/>
                         </setting>
                         
+                        <setting string="Ubicación para Entregada">
+                            <field name="x_repair_state_location_delivered_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
                         <setting string="Ubicación para Mesa Pegado">
                             <field name="x_repair_state_location_glue_desk_id"
                                    options="{'no_create': False, 'no_open': False}"/>
