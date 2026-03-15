@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_finish_repair_glue_choice_wizard,wex.finish.repair.glue.choice.wizard,model_wex_finish_repair_glue_choice_wizard,base.group_user,1,1,1,1
+access_wex_waiting_spare_confirm_wizard,wex.waiting.spare.confirm.wizard,model_wex_waiting_spare_confirm_wizard,base.group_user,1,1,1,1

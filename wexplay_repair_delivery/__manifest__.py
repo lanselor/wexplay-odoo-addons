@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "Wexplay - Repair Delivery Flow",
+    "version": "18.0.1.0.0",
+    "category": "Repair",
+    "summary": "Flujo de entrega SAT al cobrar factura",
+    "author": "Wexplay",
+    "license": "LGPL-3",
+    "depends": [
+        "repair",
+        "account",
+        "stock",
+        "wexplay_repair",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/repair_order_views.xml",
+        "views/repair_channel_templates.xml",
+        "views/repair_delivery_wizard_views.xml",
+
+    ],
+    "installable": True,
+    "application": False,
+}

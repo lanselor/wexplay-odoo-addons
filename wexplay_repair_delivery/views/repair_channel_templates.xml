@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="sat_budget_accepted_channel_message">
+        <div style="background:#fff4d7;border-left:4px solid #74ba93;border-radius:6px;
+                    padding:10px 14px;margin:0 0 4px 0;font-size:13px;line-height:1.4;">
+            <p style="margin:0 0 8px 0;">
+                ✅ <strong>Presupuesto aceptado</strong> para la reparación
+                <strong><t t-out="repair_name"/></strong>
+            </p>
+            <ul style="margin:0 0 8px 18px;padding:0;">
+                <li><strong>Cliente:</strong> <t t-out="cliente"/></li>
+                <li><strong>Producto:</strong> <t t-out="producto"/></li>
+                <li><strong>Técnico:</strong> <t t-out="tecnico_nombre"/></li>
+                <li><strong>Enlace:</strong>
+                    <a t-att-href="enlace" style="color:#0b5394;text-decoration:underline;">
+                        <t t-out="repair_name"/>
+                    </a>
+                </li>
+            </ul>
+            <p style="margin:0;">El técnico asignado puede continuar con la reparación.</p>
+        </div>
+    </template>
+</odoo>

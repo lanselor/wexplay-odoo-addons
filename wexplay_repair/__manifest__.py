@@ -21,10 +21,13 @@ consolas y otros dispositivos electrónicos).
         'hr',
         "account",
         "sale",
+        "stock",
+         "base",
 
     ],
     "data": [
         'security/ir.model.access.csv',
+        "views/res_config_settings_views.xml",
         "views/repair_order_views.xml",
         "views/repair_order_list.xml",
         "views/repair_order_search.xml",

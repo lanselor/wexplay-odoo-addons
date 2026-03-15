@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <record id="view_repair_order_form_wexplay_budget_workflow" model="ir.ui.view">
+        <field name="name">repair.order.form.wexplay.budget.workflow</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//sheet/*[1]" position="before">
+                <div class="w-100 d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    
+                    <div class="d-flex flex-wrap gap-2">
+                        <button
+                            name="action_start_budget"
+                            type="object"
+                            string="Iniciar presupuesto"
+                            class="btn btn-success"
+                            invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage not in ('none', 'rejected')"
+                            />
+                        
+                        <button
+                            name="action_budget_wait_customer"
+                            type="object"
+                            string="Espera cliente"
+                            class="btn btn-warning"
+                            invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'estimating'"
+                            />
+                        
+                        <button
+                            name="action_budget_accept"
+                            type="object"
+                            string="Aceptar presupuesto"
+                            class="btn btn-success"
+                            invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"
+                            />
+                        
+                        <button
+                            name="action_budget_reject"
+                            type="object"
+                            string="Rechazar presupuesto"
+                            class="btn btn-danger"
+                            invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"
+                            />
+                        
+                        <button
+                            name="action_budget_reestimate"
+                            type="object"
+                            string="Volver a revisar"
+                            class="btn btn-warning"
+                            invisible="state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"
+                            />
+                        
+                        <button
+                            name="action_mark_ready_for_pickup_from_glue"
+                            type="object"
+                            string="Pendiente de recogida"
+                            class="btn btn-info"
+                            invisible="state != 'done' or not x_is_in_glue_desk"
+                            />
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <field
+                            name="x_budget_stage"
+                            widget="statusbar"
+                            statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                            />
+                    </div>
+                    
+                </div>
+            </xpath>
+            
+            <xpath expr="//page[@name='parts']/field[@name='move_ids']" position="before">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button
+                            name="action_set_waiting_spare"
+                            type="object"
+                            string="Pendiente de repuesto"
+                            class="btn btn-warning"
+                            invisible="state in ('cancel', 'delivered')"
+                            />
+                    </div>
+                    
+                    <div class="text-muted"
+                         invisible="not x_waiting_spare_started_at">
+                        <strong>Pendiente de repuesto desde:</strong>
+                        <field name="x_waiting_spare_started_at" readonly="1" nolabel="1"/>
+                    </div>
+                </div>
+            </xpath>
+            
+            <xpath expr="//sheet" position="inside">
+                <group string="Presupuesto / Diagnóstico"
+                       invisible="not x_budget_started_at and not x_budget_resolved_at">
+                    <group>
+                        <field name="x_budget_started_at" readonly="1"/>
+                        <field name="x_budget_resolved_at" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+            
+        </field>
+    </record>
+    
+</odoo>

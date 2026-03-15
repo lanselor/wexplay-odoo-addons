@@ -1,21 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
   <data>
-
+    
     <!-- Wexplay: dejar "Agrupar por" desplegado por defecto para agilizar el filtrado en SAT -->
     <record id="wex_repair_order_search_expand_groupby" model="ir.ui.view">
       <field name="name">wex_repair_order_search_expand_groupby</field>
       <field name="model">repair.order</field>
       <field name="inherit_id" ref="repair.view_repair_order_form_filter"/>
       <field name="arch" type="xml">
-
+        
         <!-- Primer grupo de la search (normalmente es el Group By). -->
         <xpath expr="//search/group[1]" position="attributes">
           <attribute name="expand">1</attribute>
         </xpath>
-
+        
+        <xpath expr="//search/field[@name='partner_id']" position="after">
+          <field name="x_customer_reference" string="Referencia cliente"/>
+        </xpath>
+        
+        <!-- Filtros de prioridad SAT -->
+        <xpath expr="//search" position="inside">
+          <separator/>
+          <filter string="Urgente"
+                  name="wex_priority_urgent"
+                  domain="[('x_sat_priority', '=', 'urgent')]"/>
+          <filter string="Empresa"
+                  name="wex_priority_company"
+                  domain="[('x_sat_priority', '=', 'company')]"/>
+          <filter string="Garantía"
+                  name="wex_priority_warranty"
+                  domain="[('x_sat_priority', '=', 'warranty')]"/>
+        </xpath>
+        
+        <!-- Agrupación por prioridad SAT -->
+        <xpath expr="//search/group[1]" position="inside">
+          <filter string="Prioridad SAT"
+                  name="group_by_x_sat_priority"
+                  context="{'group_by': 'x_sat_priority'}"/>
+        </xpath>
+        
       </field>
     </record>
-
+    
   </data>
 </odoo>

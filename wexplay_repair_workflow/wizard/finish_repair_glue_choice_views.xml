@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <record id="view_wex_finish_repair_glue_choice_wizard_form" model="ir.ui.view">
+        <field name="name">wex.finish.repair.glue.choice.wizard.form</field>
+        <field name="model">wex.finish.repair.glue.choice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Ubicación final de la reparación" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <p>
+                            Este dispositivo es de tipo <strong>Móvil</strong> o <strong>Tablet</strong>.
+                            Selecciona la ubicación final tras finalizar la reparación.
+                        </p>
+                        <field name="repair_id" invisible="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_finish_to_glue_desk"
+                            type="object"
+                            string="Mesa Pegado"
+                            class="btn btn-primary"/>
+                    
+                    <button name="action_finish_to_pickup"
+                            type="object"
+                            string="Pendiente de Recoger"
+                            class="btn btn-secondary"/>
+                    
+                    <button string="Cancelar"
+                            class="btn btn-link"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+</odoo>

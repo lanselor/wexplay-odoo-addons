@@ -26,7 +26,7 @@
             
             
             <!-- A) Reemplazo de la vista Studio "Wexplay-UbicaciónSAT" -->
-            <xpath expr="//field[@name='product_id']" position="after">
+            <xpath expr="//field[@name='under_warranty']" position="after">
                 <div class="o_horizontal_separator mt-3 mb-2 text-uppercase fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">
                     <i class="fa fa-map-marker me-1"/> Seguimiento de Ubicación
                 </div>
@@ -45,10 +45,10 @@
             </xpath>
             
             <!-- B) Quitar el cliente de su posición original -->
-            <xpath expr="//sheet//field[@name='partner_id']" position="replace"/>
+            <xpath expr="(//sheet//field[@name='partner_id'])[1]" position="replace"/>
             
             <!-- C) Panel cliente arriba del todo (antes del group que contiene schedule_date) -->
-            <xpath expr="//sheet//field[@name='schedule_date']" position="before">
+            <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
                 <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
                     <div class="o_horizontal_separator text-uppercase fw-bold mb-3"
                          style="font-size: 0.85rem; color: #714B67;">
@@ -58,6 +58,9 @@
                     
                     <group col="1" class="m-0">
                         <field name="partner_id" required="1"/>
+                        
+                        <field name="x_customer_reference"
+                               placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
                         
                         <div class="d-flex align-items-center text-muted mt-2">
                             <i class="fa fa-phone me-2" style="width: 15px;"></i>
@@ -69,11 +72,30 @@
                             <field name="x_partner_mobile" readonly="1" nolabel="1"/>
                         </div>
                     </group>
+                    <group col="1" class="m-0">
+                        <div class="o_horizontal_separator mb-2 text-uppercase fw-bold text-muted"
+                             style="font-size: 0.75rem; letter-spacing: 1px;">
+                            <i class="fa fa-exclamation-circle me-1"/> Prioridad SAT
+                        </div>
+                        
+                        <div class="d-flex align-items-center bg-white p-2 rounded border shadow-sm">
+                            <div class="flex-grow-1 ps-2">
+                                <field name="x_sat_priority"
+                                       string="Prioridad"
+                                       nolabel="1"
+                                       class="fw-bold text-danger mb-0"
+                                       style="font-size: 1rem; border: none !important;"/>
+                            </div>
+                        </div>
+                    </group>
                 </div>
+                
+
+            
             </xpath>
 
             <!-- NUEVO: Recepciona justo encima de Responsable (user_id) -->
-            <xpath expr="//sheet//field[@name='user_id']" position="before">
+            <xpath expr="(//sheet//field[@name='user_id'])[1]" position="before">
                 <div class="d-flex align-items-center mt-2">
                     <i class="fa fa-user me-2 text-muted" style="width: 15px;"/>
                     
@@ -88,7 +110,7 @@
             </xpath>
             
             <!-- 1) Quitar product_id de su posición original -->
-            <xpath expr="//sheet//field[@name='product_id']" position="replace"/>
+            <xpath expr="(//sheet//field[@name='product_id'])[1]" position="replace"/>
             
             <!-- 2) Reinsertar product_id + Ubicación SAT antes del notebook estándar -->
             <xpath expr="//sheet//notebook[1]" position="before">
@@ -133,8 +155,26 @@
                         </div>
                         
                         <group col="1" class="mt-0">
-                            <field name="x_imei" placeholder="15 dígitos..." class="o_field_highlight"/>
+                            <label for="x_imei" string="IMEI / Nº de serie"/>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="flex-grow-1">
+                                    <field name="x_imei"
+                                           nolabel="1"
+                                           placeholder="15 dígitos..."
+                                           class="o_field_highlight"/>
+                                </div>
+                                <button name="action_view_device_history"
+                                        type="object"
+                                        icon="fa-search"
+                                        class="btn btn-outline-secondary"
+                                        title="Ver historial del dispositivo"
+                                        invisible="not x_imei"/>
+                            </div>
                         </group>
+                        
+                        
+                        
+  
                     </div>
                     
                     <div class="col-md-6 ps-md-4">

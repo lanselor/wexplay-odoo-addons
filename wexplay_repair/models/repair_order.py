@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
+
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 from .device_constants import DEVICE_TYPE_SELECTION
 
 
@@ -9,6 +11,19 @@ class RepairOrder(models.Model):
     x_device_type = fields.Selection(
         DEVICE_TYPE_SELECTION,
         string="Tipo de dispositivo",
+    )
+
+    x_sat_priority = fields.Selection(
+        [
+            ("normal", "Normal"),
+            ("urgent", "Urgente"),
+            ("company", "Empresa"),
+            ("warranty", "Garantía"),
+        ],
+        string="Prioridad SAT",
+        default="normal",
+        tracking=True,
+        index=True,
     )
 
     # NUEVO: empleado que recepciona el equipo
@@ -23,6 +38,12 @@ class RepairOrder(models.Model):
         "res.partner",
         string="Customer",
         required=True,
+    )
+
+    # Campo de Referencia del cliente para empresas.
+    x_customer_reference = fields.Char(
+        string="Referencia del cliente",
+        help="Referencia de la orden de reparación del cliente empresa para vincularla con nuestra orden SAT.",
     )
 
     # Datos del cliente (related)
@@ -126,3 +147,25 @@ class RepairOrder(models.Model):
         """Si cambia el tipo, limpiamos modelo/marca para evitar inconsistencias."""
         for rec in self:
             rec.x_model_id = False
+
+    # ---------------------------------------------------------
+    # Historial por IMEI / Nº de serie
+    # ---------------------------------------------------------
+    def action_view_device_history(self):
+        self.ensure_one()
+
+        serial = (self.x_imei or "").strip()
+        if not serial:
+            raise UserError(_("No hay IMEI / Nº de serie informado en esta orden."))
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Historial del dispositivo"),
+            "res_model": "repair.order",
+            "view_mode": "list,form",
+            "domain": [("x_imei", "=", serial)],
+            "context": {
+                "search_default_group_by_partner_id": 0,
+                "default_x_imei": serial,
+            },
+        }
