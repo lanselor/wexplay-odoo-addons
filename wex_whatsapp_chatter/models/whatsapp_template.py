@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import api, fields, models
+
+from odoo import fields, models
 
 
 class WhatsappTemplate(models.Model):
@@ -22,6 +23,7 @@ class WhatsappTemplate(models.Model):
             ("sale.order", "Sales: Quotation / Order"),
             ("account.move", "Accounting: Invoice"),
             ("repair.order", "Repairs: Repair Order"),
+            ("res.partner", "Contacts: Contact"),
         ],
         string="Applies to",
         required=True,
@@ -55,7 +57,6 @@ class WhatsappTemplate(models.Model):
         if not record:
             return self.body or ""
 
-        # Use standard mail.template rendering engine
         rendered = self.env["mail.template"]._render_template(
             self.body or "",
             res_model,

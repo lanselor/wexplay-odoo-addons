@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+
 import re
 from urllib.parse import quote
 from datetime import date, datetime
+
+from markupsafe import Markup, escape
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools.misc import formatLang
 from odoo.tools import format_date, format_datetime
-
 
 RE_PLACEHOLDER = re.compile(r"\$\{([^}]+)\}")
 
@@ -27,6 +29,7 @@ class WhatsappComposeWizard(models.TransientModel):
             ("sale.order", "Sales: Quotation / Order"),
             ("account.move", "Accounting: Invoice"),
             ("repair.order", "Repairs: Repair Order"),
+            ("res.partner", "Contacts: Contact"),
         ],
         required=True,
         default="sale.order",
@@ -60,7 +63,7 @@ class WhatsappComposeWizard(models.TransientModel):
     sale_order_id = fields.Many2one("sale.order")
     account_move_id = fields.Many2one(
         "account.move",
-        domain="[('move_type','in',('out_invoice','out_refund')),('state','!=','cancel')]",
+        domain="[('move_type', 'in', ('out_invoice', 'out_refund')), ('state', '!=', 'cancel')]",
     )
 
     portal_url = fields.Char(compute="_compute_portal_url", store=False)
@@ -73,7 +76,11 @@ class WhatsappComposeWizard(models.TransientModel):
         """True if wizard is opened from chatter on repair.order."""
         self.ensure_one() if self else None
         ctx = self.env.context
-        res_model = (vals or {}).get("res_model_ctx") or getattr(self, "res_model_ctx", False) or ctx.get("default_res_model")
+        res_model = (
+            (vals or {}).get("res_model_ctx")
+            or getattr(self, "res_model_ctx", False)
+            or ctx.get("default_res_model")
+        )
         return res_model == "repair.order"
 
     def _normalize_and_validate_template(self, vals):
@@ -116,7 +123,7 @@ class WhatsappComposeWizard(models.TransientModel):
 
     def _post_guardrail_note(self, action, details=None):
         """
-        Post a note in the chatter of the originating record (repair/order/invoice),
+        Post a note in the chatter of the originating record (repair/order/invoice/contact),
         when we enforce/deny cross-model template usage.
         """
         self.ensure_one()
@@ -128,7 +135,6 @@ class WhatsappComposeWizard(models.TransientModel):
         if details:
             body += "<br/>" + details
 
-        # Try to post as internal note (comment)
         obj.message_post(
             body=body,
             message_type="comment",
@@ -155,12 +161,13 @@ class WhatsappComposeWizard(models.TransientModel):
             if record:
                 if "partner_id" in record._fields and record.partner_id:
                     vals["partner_id"] = record.partner_id.id
+                elif res_model == "res.partner":
+                    vals["partner_id"] = record.id
+
                 if "company_id" in record._fields and record.company_id:
                     vals["company_id"] = record.company_id.id
 
-        # 7.1 enforce at default_get level
         vals = self._normalize_and_validate_template(vals)
-
         return vals
 
     @api.model_create_multi
@@ -173,17 +180,14 @@ class WhatsappComposeWizard(models.TransientModel):
 
         records = super().create(new_vals_list)
 
-        # If we forced res_model due to repair chatter, log it once
         for w in records:
             ctx_res_model = w.res_model_ctx or w.env.context.get("default_res_model")
             if ctx_res_model == "repair.order" and w.res_model != "repair.order":
-                # Should never happen due to enforcement, but keep for safety.
                 w._post_guardrail_note(
                     action=_("Corrección automática de modelo"),
                     details=_("Se forzó res_model a repair.order por origen en SAT."),
                 )
             elif ctx_res_model == "repair.order":
-                # Log enforcement (optional but requested)
                 w._post_guardrail_note(
                     action=_("Modelo normalizado"),
                     details=_("Origen SAT: el asistente solo permite plantillas de repair.order."),
@@ -192,11 +196,10 @@ class WhatsappComposeWizard(models.TransientModel):
         return records
 
     def write(self, vals):
-        # Before write: capture if this is repair chatter
         for w in self:
             incoming = dict(vals or {})
             merged = dict(incoming)
-            # include current ctx fields so validator can compare
+
             if w.res_model_ctx and "res_model_ctx" not in merged:
                 merged["res_model_ctx"] = w.res_model_ctx
             if w.res_id_ctx and "res_id_ctx" not in merged:
@@ -206,30 +209,28 @@ class WhatsappComposeWizard(models.TransientModel):
 
             merged = w._normalize_and_validate_template(merged)
 
-            # We only want to write the keys user intended + enforcement keys
             enforced_keys = set(merged.keys()) - set(incoming.keys())
             safe_vals = dict(incoming)
-            # apply enforced keys too
             for k in enforced_keys:
                 safe_vals[k] = merged[k]
 
-            # If they tried to change to cross-model template, validator already raised.
-            # If enforcement changed res_model back to repair.order, log it.
             if w._is_from_repair_chatter(safe_vals):
-                # If user tried to switch model away from repair.order
                 if "res_model" in incoming and incoming["res_model"] != "repair.order":
                     w._post_guardrail_note(
                         action=_("Bloqueado cambio de tipo de documento"),
-                        details=_("Se intentó cambiar res_model a %(m)s; se mantuvo repair.order.") % {"m": incoming["res_model"]},
+                        details=_("Se intentó cambiar res_model a %(m)s; se mantuvo repair.order.") % {
+                            "m": incoming["res_model"]
+                        },
                     )
-                # If user tried to apply template from other model (would have raised)
                 if "template_id" in incoming:
                     tpl = w.env["whatsapp.template"].browse(incoming["template_id"]).exists()
                     if tpl and tpl.res_model != "repair.order":
-                        # would not reach here due to raise, but keep belt+suspenders
                         w._post_guardrail_note(
                             action=_("Plantilla cruzada bloqueada"),
-                            details=_("Plantilla %(t)s aplica a %(m)s.") % {"t": tpl.display_name, "m": tpl.res_model},
+                            details=_("Plantilla %(t)s aplica a %(m)s.") % {
+                                "t": tpl.display_name,
+                                "m": tpl.res_model,
+                            },
                         )
 
             super(WhatsappComposeWizard, w).write(safe_vals)
@@ -250,6 +251,9 @@ class WhatsappComposeWizard(models.TransientModel):
 
         if self.res_model == "account.move" and self.account_move_id:
             return self.account_move_id
+
+        if self.res_model == "res.partner" and self.partner_id:
+            return self.partner_id
 
         return self.env[self.res_model].browse()
 
@@ -301,9 +305,6 @@ class WhatsappComposeWizard(models.TransientModel):
 
         return str(value)
 
-    # ---------------------------------------------------------
-    # ${dispositivo}
-    # ---------------------------------------------------------
     def _get_dispositivo(self, obj):
         if not obj or not hasattr(obj, "_fields"):
             return ""
@@ -335,6 +336,58 @@ class WhatsappComposeWizard(models.TransientModel):
 
         parts = [p for p in [dtype, brand, model] if p]
         return " · ".join(parts)
+
+    # ---------------------------------------------------------
+    # Chatter log
+    # ---------------------------------------------------------
+    def _post_whatsapp_open_note(self, normalized_phone, message):
+        """
+        Registra en el chatter que el usuario pulsó 'Abrir WhatsApp' desde Odoo.
+        OJO: esto NO confirma que el usuario haya pulsado 'Enviar' dentro de WhatsApp.
+        """
+        self.ensure_one()
+
+        target = self._get_target_record()
+        if not target or not hasattr(target, "message_post"):
+            return
+
+        template_name = self.template_id.display_name if self.template_id else _("Sin plantilla")
+        partner_name = self.partner_id.display_name if self.partner_id else _("Sin contacto")
+        user_name = self.env.user.display_name or _("Usuario desconocido")
+
+        safe_phone = escape(normalized_phone or "")
+        safe_template = escape(template_name)
+        safe_partner = escape(partner_name)
+        safe_user = escape(user_name)
+        safe_message = escape(message or "").replace("\n", Markup("<br/>"))
+
+        body = Markup(
+            "<div>"
+            "<b>WhatsApp preparado desde Odoo</b><br/>"
+            "<b>Contacto:</b> %(partner)s<br/>"
+            "<b>Teléfono:</b> %(phone)s<br/>"
+            "<b>Plantilla:</b> %(template)s<br/>"
+            "<b>Usuario:</b> %(user)s<br/>"
+            "<br/>"
+            "<b>Mensaje:</b><br/>"
+            "<div style='margin-top:4px; padding:8px 10px; background:#f8f9fa; border-left:3px solid #25D366; white-space:normal;'>%(message)s</div>"
+            "<div style='margin-top:8px; color:#6c757d; font-size:12px;'>"
+            "Nota: este registro indica que se abrió WhatsApp desde Odoo, no confirma el envío final dentro de WhatsApp."
+            "</div>"
+            "</div>"
+        ) % {
+            "partner": safe_partner,
+            "phone": safe_phone,
+            "template": safe_template,
+            "user": safe_user,
+            "message": safe_message,
+        }
+
+        target.message_post(
+            body=body,
+            message_type="comment",
+            subtype_xmlid="mail.mt_note",
+        )
 
     # ---------------------------------------------------------
     # Renderer
@@ -456,10 +509,19 @@ class WhatsappComposeWizard(models.TransientModel):
         if not message:
             raise UserError(_("El mensaje está vacío."))
 
+        # Registrar en chatter antes de abrir WhatsApp
+        self._post_whatsapp_open_note(phone, message)
+
         encoded = quote(message, safe="")
         url = f"https://wa.me/{phone}?text={encoded}"
 
-        return {"type": "ir.actions.act_url", "url": url, "target": "new"}
+        return {
+            "type": "ir.actions.client",
+            "tag": "wex_whatsapp_chatter.open_whatsapp_and_reload",
+            "params": {
+                "url": url,
+            },
+        }
 
     def action_insert_portal_link(self):
         self.ensure_one()
