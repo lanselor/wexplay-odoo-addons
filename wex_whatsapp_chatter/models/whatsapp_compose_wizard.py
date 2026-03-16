@@ -123,7 +123,7 @@ class WhatsappComposeWizard(models.TransientModel):
 
     def _post_guardrail_note(self, action, details=None):
         """
-        Post a note in the chatter of the originating record (repair/order/invoice/contact),
+        Post a note in the chatter of the originating record
         when we enforce/deny cross-model template usage.
         """
         self.ensure_one()
@@ -338,7 +338,7 @@ class WhatsappComposeWizard(models.TransientModel):
         return " · ".join(parts)
 
     # ---------------------------------------------------------
-    # Chatter log
+    # Chatter log (WhatsApp style)
     # ---------------------------------------------------------
     def _post_whatsapp_open_note(self, normalized_phone, message):
         """
@@ -359,23 +359,38 @@ class WhatsappComposeWizard(models.TransientModel):
         safe_template = escape(template_name)
         safe_partner = escape(partner_name)
         safe_user = escape(user_name)
-        safe_message = escape(message or "").replace("\n", Markup("<br/>"))
 
-        body = Markup(
-            "<div>"
-            "<b>WhatsApp preparado desde Odoo</b><br/>"
-            "<b>Contacto:</b> %(partner)s<br/>"
-            "<b>Teléfono:</b> %(phone)s<br/>"
-            "<b>Plantilla:</b> %(template)s<br/>"
-            "<b>Usuario:</b> %(user)s<br/>"
-            "<br/>"
-            "<b>Mensaje:</b><br/>"
-            "<div style='margin-top:4px; padding:8px 10px; background:#f8f9fa; border-left:3px solid #25D366; white-space:normal;'>%(message)s</div>"
-            "<div style='margin-top:8px; color:#6c757d; font-size:12px;'>"
-            "Nota: este registro indica que se abrió WhatsApp desde Odoo, no confirma el envío final dentro de WhatsApp."
-            "</div>"
-            "</div>"
-        ) % {
+        safe_message = escape(message or "")
+        safe_message = safe_message.replace("\n", Markup("<br/>"))
+
+        body = Markup("""
+            <div class="wex-wa-log">
+                <div class="wex-wa-log__header">
+                    <span class="wex-wa-log__title">WhatsApp preparado desde Odoo</span>
+                    <span class="wex-wa-log__meta-note">
+                        No confirma el envío final dentro de WhatsApp
+                    </span>
+                </div>
+
+                <div class="wex-wa-log__chat-bg">
+                    <div class="wex-wa-log__row wex-wa-log__row--out">
+                        <div class="wex-wa-log__bubble">
+                            <div class="wex-wa-log__text">%(message)s</div>
+                            <div class="wex-wa-log__bubble-meta">
+                                <span>Odoo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wex-wa-log__details">
+                    <div><strong>Contacto:</strong> %(partner)s</div>
+                    <div><strong>Teléfono:</strong> %(phone)s</div>
+                    <div><strong>Plantilla:</strong> %(template)s</div>
+                    <div><strong>Usuario:</strong> %(user)s</div>
+                </div>
+            </div>
+        """) % {
             "partner": safe_partner,
             "phone": safe_phone,
             "template": safe_template,
@@ -509,7 +524,6 @@ class WhatsappComposeWizard(models.TransientModel):
         if not message:
             raise UserError(_("El mensaje está vacío."))
 
-        # Registrar en chatter antes de abrir WhatsApp
         self._post_whatsapp_open_note(phone, message)
 
         encoded = quote(message, safe="")
