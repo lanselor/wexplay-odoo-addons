@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_stock_picking_views_inherit_wex_knowledge" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.wex.knowledge</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
+                <button type="object"
+                        name="action_view_knowledge_articles"
+                        class="oe_stat_button"
+                        icon="fa-book"
+                        string="Art&#237;culos">
+                    <field name="knowledge_article_count" widget="statinfo" string="Art&#237;culos"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

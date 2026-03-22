@@ -18,7 +18,7 @@ class RepairOrder(models.Model):
             ("normal", "Normal"),
             ("urgent", "Urgente"),
             ("company", "Empresa"),
-            ("warranty", "Garantía"),
+            ("warranty", "GarantÃ­a"),
         ],
         string="Prioridad SAT",
         default="normal",
@@ -43,29 +43,25 @@ class RepairOrder(models.Model):
     # Campo de Referencia del cliente para empresas.
     x_customer_reference = fields.Char(
         string="Referencia del cliente",
-        help="Referencia de la orden de reparación del cliente empresa para vincularla con nuestra orden SAT.",
+        help="Referencia de la orden de reparaciÃ³n del cliente empresa para vincularla con nuestra orden SAT.",
     )
 
     # Datos del cliente (related)
     x_partner_mobile = fields.Char(
-        string="Móvil",
+        string="MÃ³vil",
         related="partner_id.mobile",
         readonly=True,
         store=False,
     )
 
     x_partner_phone = fields.Char(
-        string="Teléfono",
+        string="TelÃ©fono",
         related="partner_id.phone",
         readonly=True,
         store=False,
     )
 
-    # Acción del botón (tree header)
-    def action_custom_button(self):
-        return True
-
-    # Marca/Modelo normalizados (catálogo)
+    # Marca/Modelo normalizados (catÃ¡logo)
     x_brand_id = fields.Many2one(
         "wex.repair.brand",
         string="Marca",
@@ -102,7 +98,7 @@ class RepairOrder(models.Model):
     x_model = fields.Char(string="Modelo (texto)")
     x_imei = fields.Char(string="IMEI / Nº de serie")
     x_accessories = fields.Text(string="Accesorios entregados")
-    x_reported_issue = fields.Text(string="Avería descrita por el cliente")
+    x_reported_issue = fields.Text(string="Averí­a descrita por el cliente")
     x_internal_notes = fields.Text(string="Observaciones internas (técnico)")
 
     # ---------------------------------------------------------
@@ -149,14 +145,14 @@ class RepairOrder(models.Model):
             rec.x_model_id = False
 
     # ---------------------------------------------------------
-    # Historial por IMEI / Nº de serie
+    # Historial por IMEI / NÂº de serie
     # ---------------------------------------------------------
     def action_view_device_history(self):
         self.ensure_one()
 
         serial = (self.x_imei or "").strip()
         if not serial:
-            raise UserError(_("No hay IMEI / Nº de serie informado en esta orden."))
+            raise UserError(_("No hay IMEI / NÂº de serie informado en esta orden."))
 
         return {
             "type": "ir.actions.act_window",

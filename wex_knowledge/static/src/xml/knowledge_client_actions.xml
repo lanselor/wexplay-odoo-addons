@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_knowledge.KnowledgeDashboard">
+        <div class="wex_kb_app wex_kb_dashboard">
+            <div class="wex_kb_dashboard_shell">
+                <div class="wex_kb_dashboard_main">
+                    <div class="wex_kb_dash_header">
+                        <div>
+                            <div class="wex_kb_eyebrow">Base de conocimiento</div>
+                            <h1>Base de conocimiento</h1>
+                            <p>Documentación interna, procedimientos y artículos técnicos con una navegación clara y una lectura más limpia.</p>
+                        </div>
+                        <div class="wex_kb_app_header_actions">
+                            <button type="button" class="btn btn-primary" t-on-click="openNewArticle">Nuevo artículo</button>
+                            <button type="button" class="btn btn-secondary" t-att-data-action-xmlid="'wex_knowledge.action_knowledge_explorer'" t-on-click="executeActionXmlId">Explorar artÃ­culos</button>
+                        </div>
+                    </div>
+
+                    <t t-if="state.loading">
+                        <div class="wex_kb_empty">Cargando dashboard...</div>
+                    </t>
+                    <t t-else="">
+                        <section class="wex_kb_surface wex_kb_dash_searchband">
+                            <div class="wex_kb_dash_searchbox">
+                                <i class="fa fa-search"/>
+                                <input type="search" class="form-control" placeholder="Busca artículos, documentaciÃ³n, manuales y notas operativas..." t-att-value="state.dashboardSearch" t-on-input="onDashboardSearchInput" t-on-keydown="(ev) =&gt; ev.key === 'Enter' ? this.submitDashboardSearch() : null"/>
+                                <button type="button" class="btn btn-primary" t-on-click="submitDashboardSearch">Buscar</button>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_surface_emphasis">
+                            <div class="wex_kb_section_header">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Navegación</div>
+                                    <h2>Explorar por categorría</h2>
+                                </div>
+                                <button type="button" class="btn btn-link p-0" t-att-data-action-xmlid="'wex_knowledge.action_knowledge_explorer'" t-on-click="executeActionXmlId">Ver todo</button>
+                            </div>
+                            <div class="wex_kb_category_grid">
+                                <t t-foreach="state.data.categories" t-as="category" t-key="category.id">
+                                    <button type="button" class="wex_kb_category_tile" t-att-data-category-id="category.id" t-on-click="openDashboardCategory">
+                                        <div class="wex_kb_tile_icon"><i t-att-class="category.icon"/></div>
+                                        <div class="wex_kb_tile_body">
+                                            <strong><t t-esc="category.name"/></strong>
+                                            <span><t t-esc="category.count"/> artículos</span>
+                                        </div>
+                                    </button>
+                                </t>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_dashboard_article_section">
+                            <div class="wex_kb_section_header wex_kb_section_header_strong">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Actividad</div>
+                                    <h2>Actualizados recientemente</h2>
+                                </div>
+                                <button type="button" class="btn btn-link p-0" t-att-data-action-xmlid="'wex_knowledge.action_knowledge_explorer'" t-on-click="executeActionXmlId">Ver todo</button>
+                            </div>
+                            <div class="wex_kb_cards wex_kb_cards_grid4 wex_kb_cards_dashboard">
+                                <t t-foreach="state.data.updated_articles" t-as="article" t-key="article.id">
+                                    <article class="wex_kb_card wex_kb_card_article" t-att-data-article-id="article.id" t-on-click="openArticle">
+                                        <div class="wex_kb_card_header">
+                                            <span class="wex_kb_badge is-muted"><t t-esc="humanVisibilityLabel(article.visibility)"/></span>
+                                        </div>
+                                        <div class="wex_kb_card_body">
+                                            <h3><t t-esc="article.name"/></h3>
+                                            <p class="wex_kb_card_summary"><t t-esc="article.preview || article.subtitle || 'Sin resumen'"/></p>
+                                        </div>
+                                        <div class="wex_kb_card_taxonomy wex_kb_card_taxonomy_placeholder"></div>
+                                        <div class="wex_kb_meta_line wex_kb_card_footer"><span><t t-esc="article.owner_name"/></span><span><t t-esc="article.company_name"/></span></div>
+                                    </article>
+                                </t>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_dashboard_article_section">
+                            <div class="wex_kb_section_header wex_kb_section_header_strong">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Biblioteca</div>
+                                    <h2>Artículos recientes</h2>
+                                </div>
+                                <button type="button" class="btn btn-link p-0" t-att-data-action-xmlid="'wex_knowledge.action_knowledge_explorer'" t-on-click="executeActionXmlId">Ver todo</button>
+                            </div>
+                            <div class="wex_kb_cards wex_kb_cards_grid4 wex_kb_cards_dashboard">
+                                <t t-foreach="state.data.recent_articles" t-as="article" t-key="article.id">
+                                    <article class="wex_kb_card wex_kb_card_article" t-att-data-article-id="article.id" t-on-click="openArticle">
+                                        <div class="wex_kb_card_header">
+                                            <span class="wex_kb_badge"><t t-esc="humanStateLabel(article.state)"/></span>
+                                        </div>
+                                        <div class="wex_kb_card_body">
+                                            <h3><t t-esc="article.name"/></h3>
+                                            <p class="wex_kb_card_summary"><t t-esc="article.subtitle || article.preview || 'Sin resumen'"/></p>
+                                        </div>
+                                        <div class="wex_kb_card_taxonomy wex_kb_card_taxonomy_placeholder"></div>
+                                        <div class="wex_kb_meta_line wex_kb_card_footer"><span><t t-esc="article.owner_name"/></span><span><t t-esc="article.company_name"/></span></div>
+                                    </article>
+                                </t>
+                            </div>
+                        </section>
+                    </t>
+                </div>
+
+                <aside class="wex_kb_dashboard_aside">
+                    <section class="wex_kb_surface">
+                        <div class="wex_kb_sidebar_title">Para ti</div>
+                        <div class="wex_kb_sidebar_stack">
+                            <t t-foreach="state.data.quick_links" t-as="link" t-key="link.label">
+                                <button type="button" class="wex_kb_quick_link" t-att-data-action-xmlid="link.action_xmlid" t-att-data-favorites-only="link.favorites_only ? '1' : '0'" t-on-click="executeActionXmlId">
+                                    <div class="wex_kb_quick_link_body">
+                                        <strong><t t-esc="link.label"/></strong>
+                                    </div>
+                                    <i class="fa fa-angle-right"/>
+                                </button>
+                            </t>
+                        </div>
+                    </section>
+
+                    <section class="wex_kb_surface">
+                        <div class="wex_kb_sidebar_title">Resumen</div>
+                        <div class="wex_kb_dashboard_stats wex_kb_dashboard_stats_sidebar">
+                            <div class="wex_kb_stat_card"><span>Artículos</span><strong><t t-esc="state.data.counts.articles"/></strong></div>
+                            <div class="wex_kb_stat_card"><span>Favoritos</span><strong><t t-esc="state.data.counts.favorites"/></strong></div>
+                        </div>
+                    </section>
+
+                    <section class="wex_kb_surface">
+                        <div class="wex_kb_sidebar_title">Artículos guardados</div>
+                        <t t-if="state.data.favorite_articles.length">
+                            <div class="wex_kb_cards wex_kb_cards_list">
+                                <t t-foreach="state.data.favorite_articles" t-as="article" t-key="article.id">
+                                    <article class="wex_kb_card wex_kb_card_saved" t-att-data-article-id="article.id" t-on-click="openArticle">
+                                        <div class="wex_kb_card_header">
+                                            <h3><t t-esc="article.name"/></h3>
+                                            <span class="wex_kb_badge is-favorite">Guardado</span>
+                                        </div>
+                                        <p><t t-esc="article.preview || article.subtitle || 'Sin resumen'"/></p>
+                                    </article>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else=""><div class="wex_kb_empty">Todavía no has marcado artículos como favoritos.</div></t>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="wex_knowledge.KnowledgeExplorer">
+        <div class="wex_kb_app wex_kb_explorer">
+            <div class="wex_kb_explorer_sidebar_shell">
+                <div class="wex_kb_explorer_sidebar">
+                    <div class="wex_kb_sidebar_section wex_kb_sidebar_tree_section">
+                        <div class="wex_kb_sidebar_title">Navegación</div>
+                        <button type="button" class="wex_kb_tree_reset" t-if="state.filters.article_branch_id or state.filters.category_id" t-on-click="clearFilters">Ver todo</button>
+                        <div class="wex_kb_category_tree">
+                            <t t-foreach="state.data.sidebar.category_article_tree || []" t-as="categoryNode" t-key="categoryNode.id">
+                                <div class="wex_kb_category_tree_node">
+                                    <div class="wex_kb_category_tree_row" t-att-class="categoryNode.is_selected ? 'wex_kb_category_tree_row is-active' : 'wex_kb_category_tree_row'">
+                                        <button type="button" class="wex_kb_category_tree_toggle" t-if="categoryNode.children.length or categoryNode.articles.length" t-att-data-node-id="categoryNode.id" t-on-click="toggleCategoryNode">
+                                            <i t-att-class="isCategoryExpanded(categoryNode) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                        </button>
+                                        <span t-else="" class="wex_kb_category_tree_toggle is-empty"/>
+                                        <button type="button" class="wex_kb_category_tree_link" t-att-data-category-id="categoryNode.id" t-on-click="filterByCategoryNode">
+                                            <span class="wex_kb_category_tree_label_wrap">
+                                                <i t-att-class="categoryNode.icon or 'fa fa-folder-open'" class="wex_kb_category_tree_icon"/>
+                                                <span><t t-esc="categoryNode.name"/></span>
+                                            </span>
+                                            <small><t t-esc="categoryNode.count"/></small>
+                                        </button>
+                                    </div>
+                                    <div class="wex_kb_category_tree_children" t-if="isCategoryExpanded(categoryNode)">
+                                        <t t-foreach="categoryNode.articles" t-as="articleNode" t-key="'article-' + articleNode.id">
+                                            <div class="wex_kb_article_tree_node">
+                                                <div class="wex_kb_article_tree_row" t-att-class="articleNode.is_selected ? 'wex_kb_article_tree_row is-child is-active' : 'wex_kb_article_tree_row is-child'">
+                                                    <button type="button" class="wex_kb_article_tree_toggle" t-if="articleNode.child_count" t-att-data-node-id="articleNode.id" t-on-click="toggleTreeNode">
+                                                        <i t-att-class="isNodeExpanded(articleNode) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                                    </button>
+                                                    <span t-else="" class="wex_kb_article_tree_toggle is-empty"/>
+                                                    <button type="button" class="wex_kb_article_tree_link is-child" t-att-data-node-id="articleNode.id" t-on-click="filterByBranch">
+                                                        <span class="wex_kb_article_tree_label"><t t-esc="articleNode.name"/></span>
+                                                        <small t-if="articleNode.child_count"><t t-esc="articleNode.child_count"/></small>
+                                                    </button>
+                                                    <button type="button" class="wex_kb_article_tree_open" t-att-data-article-id="articleNode.id" t-on-click="openArticle" title="Abrir artículo">
+                                                        <i class="fa fa-arrow-right"/>
+                                                    </button>
+                                                </div>
+                                                <div class="wex_kb_article_tree_children" t-if="articleNode.children.length and isNodeExpanded(articleNode)">
+                                                    <t t-foreach="articleNode.children" t-as="childArticle" t-key="childArticle.id">
+                                                        <div class="wex_kb_article_tree_row" t-att-class="childArticle.is_selected ? 'wex_kb_article_tree_row is-grandchild is-active' : 'wex_kb_article_tree_row is-grandchild'">
+                                                            <button type="button" class="wex_kb_article_tree_toggle" t-if="childArticle.child_count" t-att-data-node-id="childArticle.id" t-on-click="toggleTreeNode">
+                                                                <i t-att-class="isNodeExpanded(childArticle) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                                            </button>
+                                                            <span t-else="" class="wex_kb_article_tree_toggle is-empty"/>
+                                                            <button type="button" class="wex_kb_article_tree_link is-child" t-att-data-node-id="childArticle.id" t-on-click="filterByBranch">
+                                                                <span class="wex_kb_article_tree_label"><t t-esc="childArticle.name"/></span>
+                                                                <small t-if="childArticle.child_count"><t t-esc="childArticle.child_count"/></small>
+                                                            </button>
+                                                            <button type="button" class="wex_kb_article_tree_open" t-att-data-article-id="childArticle.id" t-on-click="openArticle" title="Abrir artÃ­culo">
+                                                                <i class="fa fa-arrow-right"/>
+                                                            </button>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-foreach="categoryNode.children" t-as="childCategory" t-key="childCategory.id">
+                                            <div class="wex_kb_category_tree_node is-child">
+                                                <div class="wex_kb_category_tree_row" t-att-class="childCategory.is_selected ? 'wex_kb_category_tree_row is-child is-active' : 'wex_kb_category_tree_row is-child'">
+                                                    <button type="button" class="wex_kb_category_tree_toggle" t-if="childCategory.children.length or childCategory.articles.length" t-att-data-node-id="childCategory.id" t-on-click="toggleCategoryNode">
+                                                        <i t-att-class="isCategoryExpanded(childCategory) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                                    </button>
+                                                    <span t-else="" class="wex_kb_category_tree_toggle is-empty"/>
+                                                    <button type="button" class="wex_kb_category_tree_link is-child" t-att-data-category-id="childCategory.id" t-on-click="filterByCategoryNode">
+                                                        <span class="wex_kb_category_tree_label_wrap">
+                                                            <i t-att-class="childCategory.icon or 'fa fa-folder-open'" class="wex_kb_category_tree_icon"/>
+                                                            <span><t t-esc="childCategory.name"/></span>
+                                                        </span>
+                                                        <small><t t-esc="childCategory.count"/></small>
+                                                    </button>
+                                                </div>
+                                                <div class="wex_kb_category_tree_children is-child" t-if="isCategoryExpanded(childCategory)">
+                                                    <t t-foreach="childCategory.articles" t-as="childRootArticle" t-key="'child-article-' + childRootArticle.id">
+                                                        <div class="wex_kb_article_tree_node">
+                                                            <div class="wex_kb_article_tree_row is-grandchild" t-att-class="childRootArticle.is_selected ? 'wex_kb_article_tree_row is-grandchild is-active' : 'wex_kb_article_tree_row is-grandchild'">
+                                                                <button type="button" class="wex_kb_article_tree_toggle" t-if="childRootArticle.child_count" t-att-data-node-id="childRootArticle.id" t-on-click="toggleTreeNode">
+                                                                    <i t-att-class="isNodeExpanded(childRootArticle) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                                                </button>
+                                                                <span t-else="" class="wex_kb_article_tree_toggle is-empty"/>
+                                                                <button type="button" class="wex_kb_article_tree_link is-child" t-att-data-node-id="childRootArticle.id" t-on-click="filterByBranch">
+                                                                    <span class="wex_kb_article_tree_label"><t t-esc="childRootArticle.name"/></span>
+                                                                    <small t-if="childRootArticle.child_count"><t t-esc="childRootArticle.child_count"/></small>
+                                                                </button>
+                                                                <button type="button" class="wex_kb_article_tree_open" t-att-data-article-id="childRootArticle.id" t-on-click="openArticle" title="Abrir artÃ­culo">
+                                                                    <i class="fa fa-arrow-right"/>
+                                                                </button>
+                                                            </div>
+                                                            <div class="wex_kb_article_tree_children" t-if="childRootArticle.children.length and isNodeExpanded(childRootArticle)">
+                                                                <t t-foreach="childRootArticle.children" t-as="nestedChild" t-key="nestedChild.id">
+                                                                    <div class="wex_kb_article_tree_row" t-att-class="nestedChild.is_selected ? 'wex_kb_article_tree_row is-grandchild is-active' : 'wex_kb_article_tree_row is-grandchild'">
+                                                                        <button type="button" class="wex_kb_article_tree_toggle" t-if="nestedChild.child_count" t-att-data-node-id="nestedChild.id" t-on-click="toggleTreeNode">
+                                                                            <i t-att-class="isNodeExpanded(nestedChild) ? 'fa fa-chevron-down' : 'fa fa-chevron-right'"/>
+                                                                        </button>
+                                                                        <span t-else="" class="wex_kb_article_tree_toggle is-empty"/>
+                                                                        <button type="button" class="wex_kb_article_tree_link is-child" t-att-data-node-id="nestedChild.id" t-on-click="filterByBranch">
+                                                                            <span class="wex_kb_article_tree_label"><t t-esc="nestedChild.name"/></span>
+                                                                            <small t-if="nestedChild.child_count"><t t-esc="nestedChild.child_count"/></small>
+                                                                        </button>
+                                                                        <button type="button" class="wex_kb_article_tree_open" t-att-data-article-id="nestedChild.id" t-on-click="openArticle" title="Abrir artÃ­culo">
+                                                                            <i class="fa fa-arrow-right"/>
+                                                                        </button>
+                                                                    </div>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div class="wex_kb_sidebar_section">
+                        <div class="wex_kb_sidebar_title">Filtros rápidos</div>
+                        <button type="button" t-att-class="state.filters.favorites_only ? 'wex_kb_filter_button is-active' : 'wex_kb_filter_button'" t-on-click="toggleFavorites">
+                            <span>Solo favoritos</span>
+                        </button>
+                        <t t-foreach="state.data.sidebar.categories" t-as="category" t-key="category.id">
+                            <button type="button" t-att-class="state.filters.category_id === category.id ? 'wex_kb_filter_button is-active' : 'wex_kb_filter_button'" t-on-click="() =&gt; this.toggleScalarFilter('category_id', category.id)">
+                                <span><t t-esc="category.name"/></span>
+                                <small><t t-esc="category.count"/></small>
+                            </button>
+                        </t>
+                    </div>
+
+                    <div class="wex_kb_sidebar_section">
+                        <div class="wex_kb_sidebar_title">Etiquetas</div>
+                        <t t-foreach="state.data.sidebar.tags" t-as="tag" t-key="tag.id">
+                            <button type="button" t-att-class="state.filters.tag_id === tag.id ? 'wex_kb_filter_button is-active' : 'wex_kb_filter_button'" t-on-click="() =&gt; this.toggleScalarFilter('tag_id', tag.id)">
+                                <span><t t-esc="tag.name"/></span>
+                                <small><t t-esc="tag.count"/></small>
+                            </button>
+                        </t>
+                    </div>
+
+                    <div class="wex_kb_sidebar_section">
+                        <div class="wex_kb_sidebar_title">Autor</div>
+                        <select class="form-select" t-att-value="state.filters.author_id || ''" t-on-change="(ev) =&gt; this.refreshWithFilter('author_id', ev.target.value ? Number(ev.target.value) : null)">
+                            <option value="">Todos</option>
+                            <t t-foreach="state.data.sidebar.authors" t-as="author" t-key="author.id">
+                                <option t-att-value="author.id"><t t-esc="author.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="wex_kb_sidebar_section">
+                        <div class="wex_kb_sidebar_title">Estado</div>
+                        <select class="form-select" t-att-value="state.filters.state || ''" t-on-change="(ev) =&gt; this.refreshWithFilter('state', ev.target.value || '')">
+                            <option value="">Todos</option>
+                            <option value="draft">Borrador</option>
+                            <option value="published">Publicado</option>
+                            <option value="archived">Archivado</option>
+                            <option value="obsolete">Obsoleto</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wex_kb_explorer_main">
+                <div class="wex_kb_surface wex_kb_explorer_toolbar">
+                    <div class="wex_kb_toolbar_primary">
+                        <input type="search" class="form-control" placeholder="Buscar artículos..." t-att-value="state.filters.search" t-on-input="onSearchInput" t-on-keydown="(ev) =&gt; ev.key === 'Enter' ? this.submitSearch() : null"/>
+                        <button type="button" class="btn btn-primary" t-on-click="submitSearch">Buscar</button>
+                        <button type="button" class="btn btn-secondary" t-on-click="clearFilters">Limpiar</button>
+                        <button type="button" class="btn btn-secondary" t-on-click="openNewArticle">Nuevo Artículos</button>
+                    </div>
+                    <div class="wex_kb_toolbar_secondary">
+                        <div class="wex_kb_view_switcher" role="tablist" aria-label="Modos de vista">
+                            <button type="button" class="wex_kb_view_switcher_btn" t-att-class="state.viewMode === 'grid' ? 'wex_kb_view_switcher_btn is-active' : 'wex_kb_view_switcher_btn'" data-view-mode="grid" t-on-click="setViewMode" title="Vista tarjetas">
+                                <i class="fa fa-th-large"/>
+                            </button>
+                            <button type="button" class="wex_kb_view_switcher_btn" t-att-class="state.viewMode === 'list' ? 'wex_kb_view_switcher_btn is-active' : 'wex_kb_view_switcher_btn'" data-view-mode="list" t-on-click="setViewMode" title="Vista lista">
+                                <i class="fa fa-list"/>
+                            </button>
+                        </div>
+                        <div class="wex_kb_toolbar_meta"><span><t t-esc="state.data.total_count"/> artículos</span></div>
+                    </div>
+                </div>
+
+                <div class="wex_kb_active_filters" t-if="activeFilterChips.length">
+                    <t t-foreach="activeFilterChips" t-as="chip" t-key="chip.key">
+                        <button type="button" class="wex_kb_filter_chip" t-att-class="'wex_kb_filter_chip is-' + chip.variant" t-att-data-filter-key="chip.key" t-on-click="clearSingleFilter">
+                            <span class="wex_kb_filter_chip_label"><t t-esc="chip.label"/>:</span>
+                            <strong><t t-esc="chip.value"/></strong>
+                            <i class="fa fa-times"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="wex_kb_surface wex_kb_explorer_results">
+                    <div class="wex_kb_breadcrumbs">Knowledge / Artículos</div>
+                    <div class="wex_kb_active_branch" t-if="selectedBranchNode">
+                        <span class="wex_kb_active_branch_label">Rama activa</span>
+                        <strong><t t-esc="selectedBranchNode.name"/></strong>
+                        <button type="button" class="btn btn-link p-0" t-on-click="clearBranchFilter">Ver todos</button>
+                    </div>
+                    <t t-if="state.loading"><div class="wex_kb_empty">Cargando artículos...</div></t>
+                    <t t-elif="state.data.articles.length">
+                        <div t-if="state.viewMode === 'grid'" class="wex_kb_cards wex_kb_cards_grid4 wex_kb_cards_explorer">
+                            <t t-foreach="state.data.articles" t-as="article" t-key="article.id">
+                                <article class="wex_kb_card wex_kb_card_article" t-att-data-article-id="article.id" t-on-click="openArticle">
+                                    <div class="wex_kb_card_header">
+                                        <span class="wex_kb_badge"><t t-esc="humanStateLabel(article.state)"/></span>
+                                        <span class="wex_kb_badge is-muted"><t t-esc="humanVisibilityLabel(article.visibility)"/></span>
+                                    </div>
+                                    <div class="wex_kb_card_body">
+                                        <h3><t t-esc="article.name"/></h3>
+                                        <p class="wex_kb_path"><t t-esc="article.display_path"/></p>
+                                        <p class="wex_kb_card_summary"><t t-esc="article.subtitle || article.preview || 'Sin resumen'"/></p>
+                                    </div>
+                                    <div class="wex_kb_tag_row wex_kb_card_taxonomy">
+                                        <t t-foreach="article.category_names" t-as="category_name" t-key="category_name"><span class="wex_kb_chip"><t t-esc="category_name"/></span></t>
+                                        <t t-foreach="article.tag_names" t-as="tag_name" t-key="tag_name"><span class="wex_kb_chip is-tag"><t t-esc="tag_name"/></span></t>
+                                    </div>
+                                    <div class="wex_kb_meta_line wex_kb_card_footer"><span><t t-esc="article.owner_name"/></span><span><t t-esc="article.company_name"/></span></div>
+                                </article>
+                            </t>
+                        </div>
+                        <div t-else="" class="wex_kb_article_list">
+                            <div class="wex_kb_article_list_header">
+                                <span>ArtÃ­culo</span>
+                                <span>Estado</span>
+                                <span>Acceso</span>
+                                <span>Ruta</span>
+                                <span>Responsable</span>
+                                <span>Empresa</span>
+                            </div>
+                            <t t-foreach="state.data.articles" t-as="article" t-key="article.id">
+                                <button type="button" class="wex_kb_article_list_row" t-att-data-article-id="article.id" t-on-click="openArticle">
+                                    <span class="wex_kb_article_list_title">
+                                        <strong><t t-esc="article.name"/></strong>
+                                        <small><t t-esc="article.subtitle || article.preview || 'Sin resumen'"/></small>
+                                    </span>
+                                    <span><span class="wex_kb_badge"><t t-esc="humanStateLabel(article.state)"/></span></span>
+                                    <span><span class="wex_kb_badge is-muted"><t t-esc="humanVisibilityLabel(article.visibility)"/></span></span>
+                                    <span class="wex_kb_article_list_path"><t t-esc="article.display_path"/></span>
+                                    <span><t t-esc="article.owner_name"/></span>
+                                    <span><t t-esc="article.company_name"/></span>
+                                </button>
+                            </t>
+                        </div>
+                    </t>
+                    <t t-else=""><div class="wex_kb_empty">No hay artículos con los filtros actuales.</div></t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

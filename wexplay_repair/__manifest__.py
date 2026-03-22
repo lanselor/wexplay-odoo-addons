@@ -1,14 +1,14 @@
 {
     "name": "Wexplay Repair Management",
     "version": "18.0.1.0.0",
-    "summary": "Personalizaciones del módulo de reparaciones para Wexplay",
+    "summary": "Personalizaciones del mÃ³dulo de reparaciones para Wexplay",
     "description": """
 Wexplay Repair Management
 =========================
 
-Personalizaciones y ampliaciones del módulo estándar de reparaciones (mrp_repair)
-para adaptarlo al flujo real de SAT de Wexplay (móviles, portátiles, tablets,
-consolas y otros dispositivos electrónicos).
+Personalizaciones y ampliaciones del mÃ³dulo estÃ¡ndar de reparaciones (mrp_repair)
+para adaptarlo al flujo real de SAT de Wexplay (mÃ³viles, portÃ¡tiles, tablets,
+consolas y otros dispositivos electrÃ³nicos).
 """,
     "category": "Services/Repair",
     "author": "Wexplay",
@@ -18,32 +18,32 @@ consolas y otros dispositivos electrónicos).
         "repair",
         "stock",
         "mail",
-        'hr',
+        "hr",
         "account",
         "sale",
         "stock",
-         "base",
-
+        "base",
     ],
     "data": [
-        'security/ir.model.access.csv',
+        "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",
         "views/repair_order_views.xml",
         "views/repair_order_list.xml",
+        "views/repair_order_card_view.xml",
         "views/repair_order_search.xml",
         "views/account_move_view_inherit.xml",
         "reports/report_invoice_sat.xml",
     ],
     "assets": {
         "web.assets_backend": [
-            "wexplay_repair/static/src/js/repair_order_expand_button.js",
+            "wexplay_repair/static/src/js/repair_order_card_view.js",
             "wexplay_repair/static/src/js/repair_notes_badge.js",
+            "wexplay_repair/static/src/xml/repair_order_card_view.xml",
             "wexplay_repair/static/src/scss/repair_notes_badge.scss",
-            #"wexplay_repair/static/src/xml/repair_order_expand_button.xml",
+            "wexplay_repair/static/src/scss/repair_order_card_view.scss",
         ],
     },
-
-    "post_init_hook": "post_init_hook",  
+    "post_init_hook": "post_init_hook",
     "installable": True,
     "application": True,
     "auto_install": False,

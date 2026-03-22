@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_knowledge.KnowledgeIconPickerField">
+        <div class="wex_kb_icon_picker" t-att-class="state.isOpen ? 'wex_kb_icon_picker is-open' : 'wex_kb_icon_picker'">
+            <button type="button" class="wex_kb_icon_picker_trigger" t-on-click="togglePicker">
+                <span class="wex_kb_icon_picker_preview"><i t-att-class="value"/></span>
+                <span class="wex_kb_icon_picker_meta">
+                    <strong>Icono</strong>
+                    <small><t t-esc="value"/></small>
+                </span>
+                <span class="wex_kb_icon_picker_chevron" t-if="!props.readonly">
+                    <i class="fa fa-angle-down"/>
+                </span>
+            </button>
+            <div class="wex_kb_icon_picker_panel" t-if="state.isOpen and !props.readonly">
+                <div class="wex_kb_icon_picker_grid">
+                    <t t-foreach="options" t-as="option" t-key="option[0]">
+                        <button type="button" class="wex_kb_icon_option" t-att-class="value === option[0] ? 'wex_kb_icon_option is-selected' : 'wex_kb_icon_option'" t-on-click="() => this.selectIcon(option[0])">
+                            <span class="wex_kb_icon_option_preview"><i t-att-class="option[0]"/></span>
+                            <span class="wex_kb_icon_option_label"><t t-esc="option[1]"/></span>
+                        </button>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

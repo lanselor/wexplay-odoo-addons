@@ -4,6 +4,8 @@ from . import repair_order
 from . import device_brand
 from . import device_model
 from . import device_constants
+from . import ir_actions_act_window
+from . import ir_ui_view
 
 # NUEVO/NECESARIO PARA EL DROPDOWN + REPORTE SAT
 from . import account_move

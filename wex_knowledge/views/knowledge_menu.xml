@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_wex_knowledge_root" name="Knowledge" sequence="40" action="wex_knowledge.action_knowledge_dashboard" web_icon="wex_knowledge,static/description/icon.png" groups="wex_knowledge.group_knowledge_user"/>
+    <menuitem id="menu_wex_knowledge_dashboard" name="Dashboard" parent="wex_knowledge.menu_wex_knowledge_root" action="wex_knowledge.action_knowledge_dashboard" sequence="1"/>
+    <menuitem id="menu_wex_knowledge_explorer" name="Artículos" parent="wex_knowledge.menu_wex_knowledge_root" action="wex_knowledge.action_knowledge_explorer" sequence="2"/>
+    <menuitem id="menu_wex_knowledge_configuration" name="Configuración" parent="wex_knowledge.menu_wex_knowledge_root" sequence="20" groups="wex_knowledge.group_knowledge_manager"/>
+    <menuitem id="menu_wex_knowledge_categories" name="Categorías" parent="wex_knowledge.menu_wex_knowledge_configuration" action="wex_knowledge.action_knowledge_categories" sequence="1"/>
+    <menuitem id="menu_wex_knowledge_tags" name="Etiquetas" parent="wex_knowledge.menu_wex_knowledge_configuration" action="wex_knowledge.action_knowledge_tags" sequence="2"/>
+</odoo>

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_knowledge_article_user,wex.knowledge.article user,model_wex_knowledge_article,wex_knowledge.group_knowledge_user,1,1,1,0
+access_wex_knowledge_article_editor,wex.knowledge.article editor,model_wex_knowledge_article,wex_knowledge.group_knowledge_editor,1,1,1,0
+access_wex_knowledge_article_manager,wex.knowledge.article manager,model_wex_knowledge_article,wex_knowledge.group_knowledge_manager,1,1,1,1
+access_wex_knowledge_category_user,wex.knowledge.category user,model_wex_knowledge_category,wex_knowledge.group_knowledge_user,1,0,0,0
+access_wex_knowledge_category_manager,wex.knowledge.category manager,model_wex_knowledge_category,wex_knowledge.group_knowledge_manager,1,1,1,1
+access_wex_knowledge_tag_user,wex.knowledge.tag user,model_wex_knowledge_tag,wex_knowledge.group_knowledge_user,1,1,1,0
+access_wex_knowledge_tag_manager,wex.knowledge.tag manager,model_wex_knowledge_tag,wex_knowledge.group_knowledge_manager,1,1,1,1
+access_wex_knowledge_article_link_user,wex.knowledge.article.link user,model_wex_knowledge_article_link,wex_knowledge.group_knowledge_user,1,0,0,0
+access_wex_knowledge_article_link_editor,wex.knowledge.article.link editor,model_wex_knowledge_article_link,wex_knowledge.group_knowledge_editor,1,1,1,1
+access_wex_knowledge_article_link_manager,wex.knowledge.article.link manager,model_wex_knowledge_article_link,wex_knowledge.group_knowledge_manager,1,1,1,1

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    
+
     <!-- Repair Order: Form view improvements (Wexplay) -->
     <record id="view_repair_order_form_wexplay" model="ir.ui.view">
         <field name="name">repair.order.form.wexplay</field>
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
-            
-            
-            
+
             <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
                 <button name="action_view_sale_order"
                         type="object"
@@ -23,30 +21,28 @@
                     </div>
                 </button>
             </xpath>
-            
-            
+
             <!-- A) Reemplazo de la vista Studio "Wexplay-UbicaciónSAT" -->
             <xpath expr="//field[@name='under_warranty']" position="after">
                 <div class="o_horizontal_separator mt-3 mb-2 text-uppercase fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">
                     <i class="fa fa-map-marker me-1"/> Seguimiento de Ubicación
                 </div>
-                
+
                 <div class="d-flex align-items-center bg-light p-2 rounded border shadow-sm mb-3">
                     <div class="flex-grow-1 ps-2">
-                        <field name="product_location_src_id" 
+                        <field name="product_location_src_id"
                                string="Ubicación"
                                nolabel="1"
                                domain="[('display_name', 'ilike', '/REPARACIONES/')]"
                                class="fw-bold text-primary mb-0"
                                style="font-size: 1rem; border: none !important;"/>
                     </div>
-                    
                 </div>
             </xpath>
-            
+
             <!-- B) Quitar el cliente de su posición original -->
             <xpath expr="(//sheet//field[@name='partner_id'])[1]" position="replace"/>
-            
+
             <!-- C) Panel cliente arriba del todo (antes del group que contiene schedule_date) -->
             <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
                 <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
@@ -55,18 +51,18 @@
                         <i class="fa fa-user-circle me-2"></i>
                         Información del Cliente
                     </div>
-                    
+
                     <group col="1" class="m-0">
                         <field name="partner_id" required="1"/>
-                        
+
                         <field name="x_customer_reference"
                                placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
-                        
+
                         <div class="d-flex align-items-center text-muted mt-2">
                             <i class="fa fa-phone me-2" style="width: 15px;"></i>
                             <field name="x_partner_phone" readonly="1" nolabel="1"/>
                         </div>
-                        
+
                         <div class="d-flex align-items-center text-muted">
                             <i class="fa fa-mobile me-2" style="width: 15px;"></i>
                             <field name="x_partner_mobile" readonly="1" nolabel="1"/>
@@ -77,7 +73,7 @@
                              style="font-size: 0.75rem; letter-spacing: 1px;">
                             <i class="fa fa-exclamation-circle me-1"/> Prioridad SAT
                         </div>
-                        
+
                         <div class="d-flex align-items-center bg-white p-2 rounded border shadow-sm">
                             <div class="flex-grow-1 ps-2">
                                 <field name="x_sat_priority"
@@ -89,63 +85,57 @@
                         </div>
                     </group>
                 </div>
-                
-
-            
             </xpath>
 
             <!-- NUEVO: Recepciona justo encima de Responsable (user_id) -->
             <xpath expr="(//sheet//field[@name='user_id'])[1]" position="before">
                 <div class="d-flex align-items-center mt-2">
                     <i class="fa fa-user me-2 text-muted" style="width: 15px;"/>
-                    
+
                     <span class="me-2 fw-semibold">
                         Recepciona:
                     </span>
-                    
+
                     <field name="x_reception_employee_id"
                            nolabel="1"
                            required="1"/>
                 </div>
             </xpath>
-            
+
             <!-- 1) Quitar product_id de su posición original -->
             <xpath expr="(//sheet//field[@name='product_id'])[1]" position="replace"/>
-            
+
             <!-- 2) Reinsertar product_id + Ubicación SAT antes del notebook estándar -->
             <xpath expr="//sheet//notebook[1]" position="before">
                 <div class="o_group mt-4 mb-4 p-3 border rounded bg-light shadow-sm" style="border-left: 5px solid #714B67 !important;">
                     <div class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem; color: #666; letter-spacing: 1px;">
                         <i class="fa fa-laptop me-1"/> Dispositivo a reparar
                     </div>
-                    
+
                     <div class="d-flex align-items-center">
-                        <field name="product_id" 
-                               required="1" 
+                        <field name="product_id"
+                               required="1"
                                nolabel="1"
                                placeholder="Ej: iPhone 15 Pro Max / Consola PS5..."
-                               class="o_task_user_field o_field_highlight fw-bold" 
+                               class="o_task_user_field o_field_highlight fw-bold"
                                style="font-size: 1.8rem; width: 100%; border: none !important; background: transparent !important;"/>
                     </div>
-                    
+
                     <div class="text-muted mt-1" style="font-size: 0.8rem; font-style: italic;">
                         Seleccione el modelo exacto del equipo para vincular repuestos.
                     </div>
                 </div>
             </xpath>
 
-
             <!-- D) Contenido Wexplay: AHORA va ANTES del notebook estándar para que las pestañas queden debajo -->
-
             <xpath expr="//sheet//notebook[1]" position="before">
 
-                <!-- “💻 Datos del dispositivo” (contenido integrado fuera de pestañas) -->
                 <div class="row">
                     <div class="col-md-6 border-end">
                         <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
                             <i class="fa fa-tablet me-2"/> Especificaciones del terminal
                         </div>
-                        
+
                         <div class="bg-light p-3 rounded-3 mb-3 border border-secondary border-opacity-10">
                             <group col="1" class="mt-0">
                                 <field name="x_device_type" class="fw-bold text-primary mb-2" style="font-size: 1.1rem;"/>
@@ -153,7 +143,7 @@
                                 <field name="x_model_id" placeholder="Ej: Z Flip 3..." class="fw-bold" style="font-size: 1.2rem;"/>
                             </group>
                         </div>
-                        
+
                         <group col="1" class="mt-0">
                             <label for="x_imei" string="IMEI / Nº de serie"/>
                             <div class="d-flex align-items-center gap-2">
@@ -171,37 +161,33 @@
                                         invisible="not x_imei"/>
                             </div>
                         </group>
-                        
-                        
-                        
-  
                     </div>
-                    
+
                     <div class="col-md-6 ps-md-4">
                         <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
                             <i class="fa fa-lock me-2"/> Seguridad y Acceso
                         </div>
                         <group col="1" class="mt-0">
-                            <field name="x_unlock_type" widget="selection_badge"/> 
-                            
-                            <div class="alert alert-info py-2 px-3 mb-2 d-flex align-items-center shadow-sm" 
+                            <field name="x_unlock_type" widget="selection_badge"/>
+
+                            <div class="alert alert-info py-2 px-3 mb-2 d-flex align-items-center shadow-sm"
                                  invisible="x_unlock_type not in ('pin', 'password')">
                                 <i class="fa fa-key me-2 text-primary"/>
                                 <field name="x_unlock_code" class="fw-bold mb-0" nolabel="1" placeholder="Código / Contraseña"/>
                             </div>
-                            
-                            <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center shadow-sm" 
+
+                            <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center shadow-sm"
                                  style="background-color: #fef9e7; border-color: #f9e79f;"
                                  invisible="x_unlock_type != 'pattern'">
                                 <i class="fa fa-random me-2 text-warning"/>
                                 <field name="x_unlock_pattern" class="fw-bold mb-0 text-dark" nolabel="1" placeholder="Describa el patrón (ej: Forma de Z)"/>
                             </div>
-                            
+
                             <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
                         </group>
                     </div>
                 </div>
-                
+
                 <div class="col-12 mt-3 pt-3 border-top">
                     <div class="text-uppercase fw-bold mb-2" style="font-size: 0.75rem; color: #666; letter-spacing: 1px;">
                         <i class="fa fa-plug me-2"/> Accesorios entregados
@@ -209,7 +195,6 @@
                     <field name="x_accessories" widget="text" nolabel="1" placeholder="Cargador, funda, tarjeta SIM..."/>
                 </div>
 
-                <!-- “🛠️ Detalles de Avería” (contenido integrado fuera de pestañas) -->
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <div class="bg-light p-3 border rounded shadow-sm h-100">
@@ -219,7 +204,7 @@
                             <field name="x_reported_issue" widget="text" nolabel="1" placeholder="Describa el fallo detalladamente..."/>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="bg-white p-3 border rounded shadow-sm h-100" style="border-left: 4px solid #714B67 !important;">
                             <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
@@ -235,27 +220,12 @@
             <xpath expr="//sheet" position="inside">
                 <field name="internal_notes" invisible="1"/>
             </xpath>
-            
+
         </field>
     </record>
 
-    <!-- Repair Order: Tree view - header button -->
     <record id="view_repair_order_tree_button_header" model="ir.ui.view">
-        <field name="name">repair.order.tree.header.button</field>
-        <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.view_repair_order_tree"/>
-        <field name="arch" type="xml">
-            
-            <xpath expr="//list" position="inside">
-                <header>
-                    <button name="action_custom_button"
-                            type="object"
-                            string="Expandir SAT"
-                            class="btn-primary"/>
-                </header>
-            </xpath>
-            
-        </field>
+        <field name="active" eval="False"/>
     </record>
-    
+
 </odoo>

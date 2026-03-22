@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="wexplay_repair.RepairOrderCardView.Buttons"
+     t-inherit="web.KanbanView.Buttons"
+     t-inherit-mode="primary"
+     owl="1">
+    <xpath expr="//div[hasclass('o_cp_buttons')]" position="inside">
+      <button t-if="showWexGroupToggle"
+              type="button"
+              class="btn btn-outline-secondary wex_repair_group_toggle"
+              t-on-click="wexToggleGroups">
+        <i t-att-class="'fa me-1 ' + wexGroupToggleIcon"/>
+        <t t-esc="wexGroupToggleLabel"/>
+      </button>
+    </xpath>
+  </t>
+
+  <t t-name="wexplay_repair.RepairOrderCardView.Renderer" owl="1">
+    <div class="o_wex_repair_card_renderer">
+      <t t-if="!hasContent">
+        <div class="o_view_nocontent_smiling_face wex_repair_empty_state">
+          No hay ordenes de reparacion para mostrar.
+        </div>
+      </t>
+
+      <t t-if="props.list.isGrouped">
+        <div class="wex_repair_group_stack">
+          <t t-foreach="groups" t-as="group" t-key="group.id">
+            <section class="wex_repair_group" t-att-class="group.isFolded ? 'is-folded' : ''">
+              <button type="button"
+                      class="wex_repair_group_header"
+                      t-on-click="() => this.toggleGroup(group)">
+                <span class="wex_repair_group_heading">
+                  <i t-att-class="'fa wex_repair_group_caret ' + (group.isFolded ? 'fa-caret-right' : 'fa-caret-down')"/>
+                  <span class="wex_repair_group_identity">
+                    <span class="wex_repair_group_meta">
+                      <t t-esc="this.getGroupMetaLabel()"/>
+                    </span>
+                    <span class="wex_repair_group_title">
+                      <t t-esc="this.getGroupLabel(group)"/>
+                    </span>
+                  </span>
+                </span>
+                <span class="wex_repair_group_count">
+                  <t t-esc="group.count"/>
+                </span>
+              </button>
+
+              <div t-if="!group.isFolded" class="wex_repair_card_stack">
+                <t t-foreach="group.list.records" t-as="record" t-key="record.id">
+                  <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
+                </t>
+                <button t-if="this.hasMore(group)"
+                        type="button"
+                        class="btn btn-link wex_repair_group_more"
+                        t-on-click="() => this.loadMore(group)">
+                  Cargar mas
+                </button>
+              </div>
+            </section>
+          </t>
+        </div>
+      </t>
+
+      <t t-else="">
+        <div class="wex_repair_card_stack">
+          <t t-foreach="records" t-as="record" t-key="record.id">
+            <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
+          </t>
+        </div>
+      </t>
+    </div>
+  </t>
+
+  <t t-name="wexplay_repair.RepairOrderCardView.Card" owl="1">
+    <article class="wex_repair_card"
+             t-att-class="this.getStateClass(record)"
+             tabindex="0"
+             t-on-click="() => this.openRecord(record)">
+      <div class="wex_repair_card_main">
+        <div class="wex_repair_card_header">
+          <div class="wex_repair_card_identity">
+            <div class="wex_repair_card_name">
+              <t t-esc="record.data.name"/>
+            </div>
+            <div t-if="this.getDeviceSubtitle(record)" class="wex_repair_card_subtitle">
+              <t t-esc="this.getDeviceSubtitle(record)"/>
+            </div>
+          </div>
+          <div class="wex_repair_card_badges">
+            <span t-if="record.data.x_sat_priority"
+                  t-att-class="'wex_repair_chip is-priority ' + this.getPriorityClass(record)">
+              <t t-esc="this.getSelectionLabel(record, 'x_sat_priority')"/>
+            </span>
+            <span class="wex_repair_chip is-state">
+              <t t-esc="this.getSelectionLabel(record, 'state')"/>
+            </span>
+          </div>
+        </div>
+
+        <div t-if="record.data.x_reported_issue" class="wex_repair_card_issue">
+          <span class="wex_repair_issue_label">Averia</span>
+          <span class="wex_repair_issue_value">
+            <t t-esc="record.data.x_reported_issue"/>
+          </span>
+        </div>
+
+        <div class="wex_repair_card_grid">
+          <div class="wex_repair_info_block is-device">
+            <span class="wex_repair_info_label">Modelo</span>
+            <span class="wex_repair_info_value">
+              <t t-esc="this.getDeviceTitle(record)"/>
+            </span>
+          </div>
+          <div class="wex_repair_info_block">
+            <span class="wex_repair_info_label">Cliente</span>
+            <span class="wex_repair_info_value">
+              <t t-esc="this.getText(record.data.partner_id)"/>
+            </span>
+          </div>
+          <div class="wex_repair_info_block">
+            <span class="wex_repair_info_label">Creado</span>
+            <span class="wex_repair_info_value">
+              <t t-esc="this.formatServerDate(record.data.create_date)"/>
+            </span>
+          </div>
+          <div class="wex_repair_info_block">
+            <span class="wex_repair_info_label">Workflow</span>
+            <span class="wex_repair_info_value">
+              <t t-esc="this.getText(record.data.product_location_src_id) || 'Sin ubicar'"/>
+            </span>
+          </div>
+        </div>
+
+        <div class="wex_repair_card_meta">
+          <span t-if="record.data.x_customer_reference" class="wex_repair_meta_item">
+            <i class="fa fa-hashtag"/>
+            <span class="wex_repair_meta_text">
+              <t t-esc="record.data.x_customer_reference"/>
+            </span>
+          </span>
+          <span t-if="this.getText(record.data.product_id)" class="wex_repair_meta_item">
+            <i class="fa fa-cube"/>
+            <span class="wex_repair_meta_text">
+              <t t-esc="this.getText(record.data.product_id)"/>
+            </span>
+          </span>
+          <span t-if="this.getUnlockSummary(record)" class="wex_repair_meta_item">
+            <i class="fa fa-lock"/>
+            <span class="wex_repair_meta_text">
+              <t t-esc="this.getUnlockSummary(record)"/>
+            </span>
+          </span>
+          <span t-if="record.data.x_accessories" class="wex_repair_meta_item">
+            <i class="fa fa-plug"/>
+            <span class="wex_repair_meta_text">
+              <t t-esc="record.data.x_accessories"/>
+            </span>
+          </span>
+          <button t-if="record.data.sale_order_id"
+                  type="button"
+                  class="wex_repair_meta_item is-link"
+                  t-on-click.stop="() => this.openSaleOrder(record)">
+            <i class="fa fa-file-text-o"/>
+            <span class="wex_repair_meta_text">
+              <t t-esc="this.getText(record.data.sale_order_id)"/>
+            </span>
+          </button>
+        </div>
+      </div>
+    </article>
+  </t>
+
+</templates>

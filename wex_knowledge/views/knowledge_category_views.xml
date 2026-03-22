@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_knowledge_category_list" model="ir.ui.view">
+        <field name="name">wex.knowledge.category.list</field>
+        <field name="model">wex.knowledge.category</field>
+        <field name="arch" type="xml">
+            <list string="Categorías">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="icon"/>
+                <field name="model_ids" widget="many2many_tags" optional="hide"/>
+                <field name="article_count" string="Art?culos"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="is_global" string="Global"/>
+                <field name="active" widget="boolean_toggle" string="Activo"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_knowledge_category_form" model="ir.ui.view">
+        <field name="name">wex.knowledge.category.form</field>
+        <field name="model">wex.knowledge.category</field>
+        <field name="arch" type="xml">
+            <form string="Categoría">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Documentaci?n"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                            <field name="icon" widget="wex_kb_icon_picker"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="is_global"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="model_ids" widget="many2many_tags" options="{'no_create': True}" placeholder="repair.order, purchase.order, stock.picking..."/>
+                    </group>
+                    <field name="description" placeholder="Descripci?n interna de la categoría"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_knowledge_categories" model="ir.actions.act_window">
+        <field name="name">Categorías</field>
+        <field name="res_model">wex.knowledge.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,401 @@
+.o_action_manager .o_wex_repair_card_renderer,
+.o_action_manager .wex_repair_card_view {
+    --wex-repair-card-bg: linear-gradient(180deg, #ffffff 0%, #fbfbfe 100%);
+    --wex-repair-card-border: #e2e5ef;
+    --wex-repair-card-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+    --wex-repair-ink: #202431;
+    --wex-repair-muted: #667085;
+    --wex-repair-accent: #635b9a;
+    --wex-repair-accent-soft: #f0edfb;
+    --wex-repair-priority-normal: #7468b1;
+    --wex-repair-priority-urgent: #c24b4b;
+    --wex-repair-priority-company: #18779b;
+    --wex-repair-priority-warranty: #398760;
+    --wex-repair-draft: #cfd4df;
+    --wex-repair-confirmed: #69a7ff;
+    --wex-repair-repairing: #e0b04c;
+    --wex-repair-done: #4ead72;
+    --wex-repair-cancel: #de6a6a;
+}
+
+.o_action_manager .o_wex_repair_card_renderer {
+    padding: 8px 12px 14px;
+    background:
+        radial-gradient(circle at top left, rgba(99, 91, 154, 0.08), transparent 26%),
+        linear-gradient(180deg, #f8f8fc 0%, #f2f4f9 100%);
+    min-height: 100%;
+}
+
+.o_action_manager .wex_repair_card_stack,
+.o_action_manager .wex_repair_group_stack {
+    display: grid;
+    gap: 9px;
+}
+
+.o_action_manager .wex_repair_group {
+    display: grid;
+    gap: 6px;
+}
+
+.o_action_manager .wex_repair_group_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 5px 4px 6px 8px;
+    border: 0;
+    border-bottom: 1px solid rgba(214, 220, 232, 0.95);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--wex-repair-ink);
+    text-align: left;
+    position: relative;
+}
+
+.o_action_manager .wex_repair_group_header::before {
+    content: "";
+    position: absolute;
+    inset: 5px auto 6px 0;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--wex-repair-accent);
+}
+
+.o_action_manager .wex_repair_group_heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_group_caret {
+    flex: 0 0 auto;
+    color: #69758a;
+    font-size: 0.74rem;
+}
+
+.o_action_manager .wex_repair_group_identity {
+    display: grid;
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_group_meta {
+    color: var(--wex-repair-muted);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_repair_group_title {
+    overflow: hidden;
+    color: var(--wex-repair-ink);
+    font-size: 0.88rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_group_count {
+    min-width: 32px;
+    padding: 0.1rem 0.44rem;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid var(--wex-repair-card-border);
+    color: var(--wex-repair-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.o_action_manager .wex_repair_group_more,
+.o_action_manager .wex_repair_group_toggle {
+    justify-self: start;
+    border-radius: 12px;
+}
+
+.o_action_manager .wex_repair_card {
+    position: relative;
+    display: block;
+    padding: 11px 13px 11px 15px;
+    border: 1px solid var(--wex-repair-card-border);
+    border-radius: 15px;
+    background: var(--wex-repair-card-bg);
+    box-shadow: var(--wex-repair-card-shadow);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.o_action_manager .wex_repair_card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5.2px;
+    border-radius: 15px 0 0 15px;
+    background: var(--wex-repair-state-color, var(--wex-repair-draft));
+}
+
+.o_action_manager .wex_repair_card:hover,
+.o_action_manager .wex_repair_card:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+    border-color: #cfd6e6;
+    outline: none;
+}
+
+.o_action_manager .wex_repair_card.is-state-draft {
+    --wex-repair-state-color: var(--wex-repair-draft);
+    background: linear-gradient(180deg, #ffffff 0%, #f5f6f9 100%);
+}
+
+.o_action_manager .wex_repair_card.is-state-confirmed {
+    --wex-repair-state-color: var(--wex-repair-confirmed);
+    background: linear-gradient(180deg, #ffffff 0%, #eef5ff 100%);
+}
+
+.o_action_manager .wex_repair_card.is-state-under_repair {
+    --wex-repair-state-color: var(--wex-repair-repairing);
+    background: linear-gradient(180deg, #fffdfa 0%, #fff3db 100%);
+}
+
+.o_action_manager .wex_repair_card.is-state-done {
+    --wex-repair-state-color: var(--wex-repair-done);
+    background: linear-gradient(180deg, #ffffff 0%, #edf9f0 100%);
+}
+
+.o_action_manager .wex_repair_card.is-state-cancel {
+    --wex-repair-state-color: var(--wex-repair-cancel);
+    background: linear-gradient(180deg, #fffdfd 0%, #fff0f0 100%);
+}
+
+.o_action_manager .wex_repair_card_main {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_card_header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.o_action_manager .wex_repair_card_identity {
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_card_name {
+    color: var(--wex-repair-ink);
+    font-size: 1.08rem;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+}
+
+.o_action_manager .wex_repair_card_subtitle {
+    margin-top: 2px;
+    color: #576175;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.o_action_manager .wex_repair_card_badges {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.o_action_manager .wex_repair_chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0.24rem 0.72rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_chip.is-priority {
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.o_action_manager .wex_repair_chip.is-priority-normal {
+    color: var(--wex-repair-priority-normal);
+    border-color: rgba(116, 104, 177, 0.22);
+    background: rgba(116, 104, 177, 0.1);
+}
+
+.o_action_manager .wex_repair_chip.is-priority-urgent {
+    color: var(--wex-repair-priority-urgent);
+    border-color: rgba(194, 75, 75, 0.22);
+    background: rgba(194, 75, 75, 0.1);
+}
+
+.o_action_manager .wex_repair_chip.is-priority-company {
+    color: var(--wex-repair-priority-company);
+    border-color: rgba(24, 119, 155, 0.22);
+    background: rgba(24, 119, 155, 0.1);
+}
+
+.o_action_manager .wex_repair_chip.is-priority-warranty {
+    color: var(--wex-repair-priority-warranty);
+    border-color: rgba(57, 135, 96, 0.22);
+    background: rgba(57, 135, 96, 0.1);
+}
+
+.o_action_manager .wex_repair_chip.is-state {
+    color: var(--wex-repair-ink);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(31, 41, 55, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.o_action_manager .wex_repair_card_issue {
+    display: grid;
+    gap: 2px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(214, 220, 232, 0.9);
+}
+
+.o_action_manager .wex_repair_issue_label {
+    color: var(--wex-repair-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_repair_issue_value {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #2f394b;
+    font-size: 0.83rem;
+    font-weight: 600;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.o_action_manager .wex_repair_card_grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.o_action_manager .wex_repair_info_block {
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_info_label {
+    display: block;
+    margin-bottom: 1px;
+    color: var(--wex-repair-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_repair_info_value {
+    display: block;
+    overflow: hidden;
+    color: var(--wex-repair-ink);
+    font-size: 0.78rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_info_block.is-device .wex_repair_info_value {
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.o_action_manager .wex_repair_card_meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.o_action_manager .wex_repair_meta_item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0.28rem 0.56rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(214, 220, 232, 0.95);
+    color: #526075;
+    font-size: 0.68rem;
+    line-height: 1.2;
+}
+
+.o_action_manager button.wex_repair_meta_item {
+    cursor: pointer;
+}
+
+.o_action_manager .wex_repair_meta_item.is-link {
+    color: var(--wex-repair-accent);
+    border-color: rgba(99, 91, 154, 0.2);
+    background: rgba(240, 237, 251, 0.92);
+}
+
+.o_action_manager .wex_repair_meta_item i {
+    color: var(--wex-repair-accent);
+}
+
+.o_action_manager .wex_repair_meta_text {
+    overflow: hidden;
+    max-width: 18rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_empty_state {
+    padding: 2rem;
+    border: 1px dashed var(--wex-repair-card-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--wex-repair-muted);
+}
+
+@media (max-width: 1200px) {
+    .o_action_manager .wex_repair_card_grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .o_action_manager .o_wex_repair_card_renderer {
+        padding: 8px 10px 12px;
+    }
+
+    .o_action_manager .wex_repair_card {
+        padding: 11px 12px 10px 14px;
+    }
+
+    .o_action_manager .wex_repair_card_header {
+        display: grid;
+    }
+
+    .o_action_manager .wex_repair_card_badges {
+        justify-content: flex-start;
+    }
+
+    .o_action_manager .wex_repair_card_grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

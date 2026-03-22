@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_knowledge_tag_list" model="ir.ui.view">
+        <field name="name">wex.knowledge.tag.list</field>
+        <field name="model">wex.knowledge.tag</field>
+        <field name="arch" type="xml">
+            <list string="Knowledge Tags" editable="bottom">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="color" widget="color_picker"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_knowledge_tag_form" model="ir.ui.view">
+        <field name="name">wex.knowledge.tag.form</field>
+        <field name="model">wex.knowledge.tag</field>
+        <field name="arch" type="xml">
+            <form string="Knowledge Tag">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="normalized_name" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_knowledge_tags" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">wex.knowledge.tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
