@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair.RepairSatPriorityField">
+        <div class="wex_repair_priority_picker">
+            <t t-foreach="options" t-as="option" t-key="option[0]">
+                <button type="button"
+                        class="wex_repair_priority_option"
+                        t-att-class="value === option[0] ? 'wex_repair_priority_option is-selected' : 'wex_repair_priority_option'"
+                        t-on-click="() => this.selectValue(option[0])">
+                    <i t-att-class="iconFor(option[0])"/>
+                    <span><t t-esc="option[1]"/></span>
+                </button>
+            </t>
+        </div>
+    </t>
+</templates>

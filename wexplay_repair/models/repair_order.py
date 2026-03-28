@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
 from .device_constants import DEVICE_TYPE_SELECTION
 
 
@@ -18,7 +19,7 @@ class RepairOrder(models.Model):
             ("normal", "Normal"),
             ("urgent", "Urgente"),
             ("company", "Empresa"),
-            ("warranty", "GarantÃ­a"),
+            ("warranty", "Garantía"),
         ],
         string="Prioridad SAT",
         default="normal",
@@ -26,42 +27,51 @@ class RepairOrder(models.Model):
         index=True,
     )
 
-    # NUEVO: empleado que recepciona el equipo
     x_reception_employee_id = fields.Many2one(
         comodel_name="hr.employee",
         string="Recepciona",
         help="Empleado que recepciona el equipo en mostrador.",
     )
 
-    # Re-declaramos el campo original para hacerlo obligatorio
     partner_id = fields.Many2one(
         "res.partner",
         string="Customer",
         required=True,
     )
 
-    # Campo de Referencia del cliente para empresas.
     x_customer_reference = fields.Char(
         string="Referencia del cliente",
-        help="Referencia de la orden de reparaciÃ³n del cliente empresa para vincularla con nuestra orden SAT.",
+        help="Referencia de la orden de reparación del cliente empresa para vincularla con nuestra orden SAT.",
     )
 
-    # Datos del cliente (related)
     x_partner_mobile = fields.Char(
-        string="MÃ³vil",
+        string="Móvil",
         related="partner_id.mobile",
         readonly=True,
         store=False,
     )
 
     x_partner_phone = fields.Char(
-        string="TelÃ©fono",
+        string="Teléfono",
         related="partner_id.phone",
         readonly=True,
         store=False,
     )
 
-    # Marca/Modelo normalizados (catÃ¡logo)
+    x_partner_email = fields.Char(
+        string="Correo electrónico",
+        related="partner_id.email",
+        readonly=True,
+        store=False,
+    )
+
+    x_partner_address_summary = fields.Char(
+        string="Dirección",
+        compute="_compute_x_partner_address_summary",
+        store=False,
+        readonly=True,
+    )
+
     x_brand_id = fields.Many2one(
         "wex.repair.brand",
         string="Marca",
@@ -77,7 +87,20 @@ class RepairOrder(models.Model):
         domain="[('device_type', '=', x_device_type)]",
     )
 
-    # Desbloqueo
+    x_reception_employee_avatar = fields.Image(
+        string="Avatar recepción",
+        related="x_reception_employee_id.image_128",
+        readonly=True,
+        store=False,
+    )
+
+    x_responsible_avatar = fields.Image(
+        string="Avatar responsable",
+        compute="_compute_x_responsible_avatar",
+        readonly=True,
+        store=False,
+    )
+
     x_unlock_type = fields.Selection(
         [
             ("pin", "PIN"),
@@ -93,18 +116,13 @@ class RepairOrder(models.Model):
     x_unlock_pattern = fields.Char(string="Patrón (descripción)")
     x_unlock_notes = fields.Text(string="Notas de desbloqueo")
 
-    # Campos legacy / compatibilidad
     x_brand = fields.Char(string="Marca (texto)")
     x_model = fields.Char(string="Modelo (texto)")
     x_imei = fields.Char(string="IMEI / Nº de serie")
     x_accessories = fields.Text(string="Accesorios entregados")
-    x_reported_issue = fields.Text(string="Averí­a descrita por el cliente")
+    x_reported_issue = fields.Text(string="Avería descrita por el cliente")
     x_internal_notes = fields.Text(string="Observaciones internas (técnico)")
 
-    # ---------------------------------------------------------
-    # TOTAL SAT (informativo, SIN tocar BD)
-    # Fuente: sale_order_id.amount_total
-    # ---------------------------------------------------------
     x_sat_total_amount = fields.Monetary(
         string="Total SAT",
         currency_field="x_sat_currency_id",
@@ -125,7 +143,33 @@ class RepairOrder(models.Model):
         for rec in self:
             rec.x_sat_currency_id = rec.company_id.currency_id
 
-    @api.depends("sale_order_id", "sale_order_id.amount_total", "sale_order_id.currency_id", "company_id")
+    @api.depends(
+        "partner_id",
+        "partner_id.street",
+        "partner_id.street2",
+        "partner_id.zip",
+        "partner_id.city",
+        "partner_id.state_id",
+        "partner_id.country_id",
+    )
+    def _compute_x_partner_address_summary(self):
+        for rec in self:
+            partner = rec.partner_id
+            parts = [
+                partner.street,
+                partner.street2,
+                " ".join(filter(None, [partner.zip, partner.city])) or False,
+                partner.state_id.name,
+                partner.country_id.name,
+            ]
+            rec.x_partner_address_summary = ", ".join(filter(None, parts))
+
+    @api.depends(
+        "sale_order_id",
+        "sale_order_id.amount_total",
+        "sale_order_id.currency_id",
+        "company_id",
+    )
     def _compute_x_sat_total_amount(self):
         for rec in self:
             if rec.sale_order_id:
@@ -135,24 +179,32 @@ class RepairOrder(models.Model):
                 rec.x_sat_total_amount = 0.0
                 rec.x_sat_currency_id = rec.company_id.currency_id
 
-    # ---------------------------------------------------------
-    # Onchange
-    # ---------------------------------------------------------
+    @api.depends("user_id", "user_id.partner_id.image_128", "user_id.employee_id.image_128")
+    def _compute_x_responsible_avatar(self):
+        for rec in self:
+            user = rec.user_id
+            employee = user.employee_id
+            rec.x_responsible_avatar = employee.image_128 or user.partner_id.image_128
+
     @api.onchange("x_device_type")
     def _onchange_x_device_type_reset_model_brand(self):
-        """Si cambia el tipo, limpiamos modelo/marca para evitar inconsistencias."""
+        """Si cambia el tipo, limpiamos modelo para evitar inconsistencias."""
         for rec in self:
-            rec.x_model_id = False
+            if rec.x_model_id and rec.x_model_id.device_type != rec.x_device_type:
+                rec.x_model_id = False
 
-    # ---------------------------------------------------------
-    # Historial por IMEI / NÂº de serie
-    # ---------------------------------------------------------
+    @api.onchange("x_model_id")
+    def _onchange_x_model_id_sync_device_type(self):
+        for rec in self:
+            if rec.x_model_id and rec.x_device_type != rec.x_model_id.device_type:
+                rec.x_device_type = rec.x_model_id.device_type
+
     def action_view_device_history(self):
         self.ensure_one()
 
         serial = (self.x_imei or "").strip()
         if not serial:
-            raise UserError(_("No hay IMEI / NÂº de serie informado en esta orden."))
+            raise UserError(_("No hay IMEI / Nº de serie informado en esta orden."))
 
         return {
             "type": "ir.actions.act_window",

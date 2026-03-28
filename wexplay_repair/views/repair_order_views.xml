@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- Repair Order: Form view improvements (Wexplay) -->
     <record id="view_repair_order_form_wexplay" model="ir.ui.view">
         <field name="name">repair.order.form.wexplay</field>
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class" add="wex_repair_form_sheet" separator=" "/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
                 <button name="action_view_sale_order"
                         type="object"
                         class="oe_stat_button"
@@ -22,205 +25,287 @@
                 </button>
             </xpath>
 
-            <!-- A) Reemplazo de la vista Studio "Wexplay-UbicaciónSAT" -->
-            <xpath expr="//field[@name='under_warranty']" position="after">
-                <div class="o_horizontal_separator mt-3 mb-2 text-uppercase fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">
-                    <i class="fa fa-map-marker me-1"/> Seguimiento de Ubicación
-                </div>
+            <xpath expr="//sheet/group/group[1]/field[@name='partner_id']" position="replace"/>
+            <xpath expr="//sheet/group/group[1]/field[@name='product_id']" position="replace"/>
+            <xpath expr="//sheet/group/group[1]/label[@for='product_qty']" position="replace"/>
+            <xpath expr="//sheet/group/group[1]/div[field[@name='product_qty'] and field[@name='product_uom']]" position="replace"/>
+            <xpath expr="//sheet/group/group[1]/field[@name='picking_id']" position="replace"/>
+            <xpath expr="//sheet/group/group[2]/field[@name='user_id']" position="replace"/>
+            <xpath expr="//sheet/group/group[2]/field[@name='tag_ids']" position="replace"/>
 
-                <div class="d-flex align-items-center bg-light p-2 rounded border shadow-sm mb-3">
-                    <div class="flex-grow-1 ps-2">
-                        <field name="product_location_src_id"
-                               string="Ubicación"
-                               nolabel="1"
-                               domain="[('display_name', 'ilike', '/REPARACIONES/')]"
-                               class="fw-bold text-primary mb-0"
-                               style="font-size: 1rem; border: none !important;"/>
-                    </div>
-                </div>
-            </xpath>
-
-            <!-- B) Quitar el cliente de su posición original -->
-            <xpath expr="(//sheet//field[@name='partner_id'])[1]" position="replace"/>
-
-            <!-- C) Panel cliente arriba del todo (antes del group que contiene schedule_date) -->
-            <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
-                <div class="o_group p-3 mt-3 border rounded bg-light shadow-sm">
-                    <div class="o_horizontal_separator text-uppercase fw-bold mb-3"
-                         style="font-size: 0.85rem; color: #714B67;">
-                        <i class="fa fa-user-circle me-2"></i>
-                        Información del Cliente
-                    </div>
-
-                    <group col="1" class="m-0">
-                        <field name="partner_id" required="1"/>
-
-                        <field name="x_customer_reference"
-                               placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
-
-                        <div class="d-flex align-items-center text-muted mt-2">
-                            <i class="fa fa-phone me-2" style="width: 15px;"></i>
-                            <field name="x_partner_phone" readonly="1" nolabel="1"/>
+            <xpath expr="(//sheet//field[@name='under_warranty'])[1]" position="after">
+                <div class="wex_repair_form_intro">
+                    <div class="wex_repair_form_card wex_repair_form_card--hero wex_repair_form_card--compact wex_repair_form_card--topmatch">
+                        <div class="wex_repair_form_eyebrow">Recepción SAT</div>
+                        <div class="wex_repair_form_heading">
+                            <i class="fa fa-laptop"/>
+                            <span>Dispositivo a reparar</span>
                         </div>
 
-                        <div class="d-flex align-items-center text-muted">
-                            <i class="fa fa-mobile me-2" style="width: 15px;"></i>
-                            <field name="x_partner_mobile" readonly="1" nolabel="1"/>
-                        </div>
-                    </group>
-                    <group col="1" class="m-0">
-                        <div class="o_horizontal_separator mb-2 text-uppercase fw-bold text-muted"
-                             style="font-size: 0.75rem; letter-spacing: 1px;">
-                            <i class="fa fa-exclamation-circle me-1"/> Prioridad SAT
-                        </div>
-
-                        <div class="d-flex align-items-center bg-white p-2 rounded border shadow-sm">
-                            <div class="flex-grow-1 ps-2">
-                                <field name="x_sat_priority"
-                                       string="Prioridad"
-                                       nolabel="1"
-                                       class="fw-bold text-danger mb-0"
-                                       style="font-size: 1rem; border: none !important;"/>
-                            </div>
-                        </div>
-                    </group>
-                </div>
-            </xpath>
-
-            <!-- NUEVO: Recepciona justo encima de Responsable (user_id) -->
-            <xpath expr="(//sheet//field[@name='user_id'])[1]" position="before">
-                <div class="d-flex align-items-center mt-2">
-                    <i class="fa fa-user me-2 text-muted" style="width: 15px;"/>
-
-                    <span class="me-2 fw-semibold">
-                        Recepciona:
-                    </span>
-
-                    <field name="x_reception_employee_id"
-                           nolabel="1"
-                           required="1"/>
-                </div>
-            </xpath>
-
-            <!-- 1) Quitar product_id de su posición original -->
-            <xpath expr="(//sheet//field[@name='product_id'])[1]" position="replace"/>
-
-            <!-- 2) Reinsertar product_id + Ubicación SAT antes del notebook estándar -->
-            <xpath expr="//sheet//notebook[1]" position="before">
-                <div class="o_group mt-4 mb-4 p-3 border rounded bg-light shadow-sm" style="border-left: 5px solid #714B67 !important;">
-                    <div class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem; color: #666; letter-spacing: 1px;">
-                        <i class="fa fa-laptop me-1"/> Dispositivo a reparar
-                    </div>
-
-                    <div class="d-flex align-items-center">
                         <field name="product_id"
                                required="1"
                                nolabel="1"
                                placeholder="Ej: iPhone 15 Pro Max / Consola PS5..."
-                               class="o_task_user_field o_field_highlight fw-bold"
-                               style="font-size: 1.8rem; width: 100%; border: none !important; background: transparent !important;"/>
-                    </div>
+                               class="wex_repair_form_product"/>
 
-                    <div class="text-muted mt-1" style="font-size: 0.8rem; font-style: italic;">
-                        Seleccione el modelo exacto del equipo para vincular repuestos.
+                        <div class="wex_repair_form_hint">
+                            Selecciona el producto exacto para enlazar correctamente repuestos, historial y operaciones.
+                        </div>
+
+                        <div class="wex_repair_form_stack">
+                            <div class="wex_repair_form_fieldbox">
+                                <div class="wex_repair_form_fieldbox_label">
+                                    <i class="fa fa-map-marker"/>
+                                    <span>Ubicación SAT</span>
+                                </div>
+                                <field name="product_location_src_id"
+                                       string="Ubicación"
+                                       nolabel="1"
+                                       domain="[('display_name', 'ilike', '/REPARACIONES/')]"
+                                       class="wex_repair_form_location"/>
+                            </div>
+
+                            <div class="wex_repair_form_fieldbox">
+                                <div class="wex_repair_form_fieldbox_label">
+                                    <i class="fa fa-exclamation-circle"/>
+                                    <span>Prioridad SAT</span>
+                                </div>
+                                <field name="x_sat_priority"
+                                       nolabel="1"
+                                       widget="wex_repair_sat_priority"
+                                       class="wex_repair_form_priority"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </xpath>
 
-            <!-- D) Contenido Wexplay: AHORA va ANTES del notebook estándar para que las pestañas queden debajo -->
-            <xpath expr="//sheet//notebook[1]" position="before">
-
-                <div class="row">
-                    <div class="col-md-6 border-end">
-                        <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
-                            <i class="fa fa-tablet me-2"/> Especificaciones del terminal
+            <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
+                <div class="wex_repair_form_intro">
+                    <div class="wex_repair_form_card wex_repair_form_card--client wex_repair_form_card--topmatch">
+                        <div class="wex_repair_form_eyebrow">Cliente</div>
+                        <div class="wex_repair_form_heading">
+                            <i class="fa fa-user-circle"/>
+                            <span>Información de cliente</span>
                         </div>
 
-                        <div class="bg-light p-3 rounded-3 mb-3 border border-secondary border-opacity-10">
-                            <group col="1" class="mt-0">
-                                <field name="x_device_type" class="fw-bold text-primary mb-2" style="font-size: 1.1rem;"/>
-                                <field name="x_brand_id" readonly="1" options="{'no_open': True}" class="text-muted mb-1"/>
-                                <field name="x_model_id" placeholder="Ej: Z Flip 3..." class="fw-bold" style="font-size: 1.2rem;"/>
-                            </group>
+                        <group col="1" class="wex_repair_form_group">
+                            <field name="partner_id" required="1"/>
+                            <field name="x_customer_reference"
+                                   placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
+                        </group>
+
+                        <div class="wex_repair_form_contact_list">
+                            <div class="wex_repair_form_contact_line" invisible="not x_partner_phone">
+                                <i class="fa fa-phone"/>
+                                <field name="x_partner_phone" readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="wex_repair_form_contact_line" invisible="not x_partner_mobile">
+                                <i class="fa fa-mobile"/>
+                                <field name="x_partner_mobile" readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="wex_repair_form_contact_line" invisible="not x_partner_email">
+                                <i class="fa fa-envelope-o"/>
+                                <field name="x_partner_email" readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="wex_repair_form_contact_line is-secondary" invisible="not x_partner_address_summary">
+                                <i class="fa fa-map-marker"/>
+                                <field name="x_partner_address_summary" readonly="1" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wex_repair_form_card wex_repair_form_card--meta">
+                        <div class="wex_repair_form_eyebrow">Equipo interno</div>
+                        <div class="wex_repair_form_heading">
+                            <i class="fa fa-users"/>
+                            <span>Recepción y responsable</span>
                         </div>
 
-                        <group col="1" class="mt-0">
-                            <label for="x_imei" string="IMEI / Nº de serie"/>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="flex-grow-1">
-                                    <field name="x_imei"
-                                           nolabel="1"
-                                           placeholder="15 dígitos..."
-                                           class="o_field_highlight"/>
+                        <div class="wex_repair_form_people">
+                            <div class="wex_repair_form_person">
+                                <field name="x_reception_employee_avatar"
+                                       widget="image"
+                                       class="wex_repair_form_person_avatar"
+                                       options="{'size': [56, 56], 'preview_image': 'x_reception_employee_avatar'}"
+                                       nolabel="1"/>
+                                <div class="wex_repair_form_person_body">
+                                    <div class="wex_repair_form_person_role">Recepciona</div>
+                                    <field name="x_reception_employee_id" required="1" nolabel="1"/>
                                 </div>
-                                <button name="action_view_device_history"
-                                        type="object"
-                                        icon="fa-search"
-                                        class="btn btn-outline-secondary"
-                                        title="Ver historial del dispositivo"
-                                        invisible="not x_imei"/>
                             </div>
+
+                            <div class="wex_repair_form_person">
+                                <field name="x_responsible_avatar"
+                                       widget="image"
+                                       class="wex_repair_form_person_avatar"
+                                       options="{'size': [56, 56], 'preview_image': 'x_responsible_avatar'}"
+                                       nolabel="1"/>
+                                <div class="wex_repair_form_person_body">
+                                    <div class="wex_repair_form_person_role">Responsable</div>
+                                    <field name="user_id" nolabel="1" readonly="0"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+
+            <xpath expr="//sheet/group/group[1]/field[@name='under_warranty']" position="replace"/>
+            <xpath expr="//sheet/group/group[2]/field[@name='schedule_date']" position="replace"/>
+
+            <xpath expr="//sheet//notebook[1]" position="before">
+                <div class="wex_repair_form_sections">
+                    <div class="wex_repair_form_section_marker">
+                        <span>Ficha técnica y diagnóstico</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card h-100">
+                                <div class="wex_repair_form_eyebrow">Ficha de equipo</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-tablet"/>
+                                    <span>Especificaciones del terminal</span>
+                                </div>
+
+                                <group col="1" class="wex_repair_form_group">
+                                    <field name="x_device_type" widget="wex_repair_device_type_picker"/>
+                                    <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
+                                    <field name="x_model_id" placeholder="Ej: Z Flip 3..."/>
+                                </group>
+
+                                <div class="wex_repair_form_serial">
+                                    <label for="x_imei" string="IMEI / Nº de serie"/>
+                                    <div class="wex_repair_form_serial_row">
+                                        <field name="x_imei"
+                                               nolabel="1"
+                                               placeholder="15 dígitos..."
+                                               class="o_field_highlight"/>
+                                        <button name="action_view_device_history"
+                                                type="object"
+                                                icon="fa-search"
+                                                class="btn btn-outline-secondary"
+                                                title="Ver historial del dispositivo"
+                                                invisible="not x_imei"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card h-100">
+                                <div class="wex_repair_form_eyebrow">Seguridad</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-lock"/>
+                                    <span>Acceso al dispositivo</span>
+                                </div>
+
+                                <group col="1" class="wex_repair_form_group">
+                                    <field name="x_unlock_type" widget="wex_repair_unlock_type_picker"/>
+                                </group>
+
+                                <div class="wex_repair_form_notice wex_repair_form_notice--info"
+                                     invisible="x_unlock_type not in ('pin', 'password')">
+                                    <i class="fa fa-key"/>
+                                    <field name="x_unlock_code"
+                                           class="fw-bold"
+                                           nolabel="1"
+                                           placeholder="Código / Contraseña"/>
+                                </div>
+
+                                <div class="wex_repair_form_notice wex_repair_form_notice--warning"
+                                     invisible="x_unlock_type != 'pattern'">
+                                    <i class="fa fa-random"/>
+                                    <field name="x_unlock_pattern"
+                                           class="fw-bold"
+                                           nolabel="1"
+                                           placeholder="Describe el patrón (ej: forma de Z)"/>
+                                </div>
+
+                                <field name="x_unlock_notes"
+                                       placeholder="Notas adicionales de acceso..."/>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="wex_repair_form_card">
+                                <div class="wex_repair_form_eyebrow">Recepción</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-plug"/>
+                                    <span>Accesorios entregados</span>
+                                </div>
+                                <field name="x_accessories"
+                                       widget="text"
+                                       nolabel="1"
+                                       placeholder="Cargador, funda, tarjeta SIM..."/>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card wex_repair_form_card--issue h-100">
+                                <div class="wex_repair_form_eyebrow">Diagnóstico de entrada</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-exclamation-triangle"/>
+                                    <span>Problema reportado</span>
+                                </div>
+                                <field name="x_reported_issue"
+                                       widget="text"
+                                       nolabel="1"
+                                       placeholder="Describe el fallo detalladamente..."/>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card wex_repair_form_card--internal h-100">
+                                <div class="wex_repair_form_eyebrow">Uso interno</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-sticky-note-o"/>
+                                    <span>Notas técnicas internas</span>
+                                </div>
+                                <field name="x_internal_notes"
+                                       widget="text"
+                                       nolabel="1"
+                                       placeholder="Observaciones exclusivas para el técnico..."/>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </xpath>
+
+            <xpath expr="//sheet//notebook[1]" position="after">
+                <div class="wex_repair_form_sections wex_repair_form_sections--admin">
+                    <div class="wex_repair_form_section_marker is-secondary">
+                        <span>Datos administrativos</span>
+                    </div>
+
+                    <div class="wex_repair_form_card wex_repair_form_card--admin">
+                        <group col="2" class="wex_repair_form_group wex_repair_form_group--admin">
+                            <field name="product_qty"/>
+                            <field name="product_uom"/>
+                            <field name="picking_id"/>
+                            <field name="under_warranty"/>
+                            <field name="schedule_date"/>
+                            <field name="planned_duration" widget="float_time"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         </group>
                     </div>
-
-                    <div class="col-md-6 ps-md-4">
-                        <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
-                            <i class="fa fa-lock me-2"/> Seguridad y Acceso
-                        </div>
-                        <group col="1" class="mt-0">
-                            <field name="x_unlock_type" widget="selection_badge"/>
-
-                            <div class="alert alert-info py-2 px-3 mb-2 d-flex align-items-center shadow-sm"
-                                 invisible="x_unlock_type not in ('pin', 'password')">
-                                <i class="fa fa-key me-2 text-primary"/>
-                                <field name="x_unlock_code" class="fw-bold mb-0" nolabel="1" placeholder="Código / Contraseña"/>
-                            </div>
-
-                            <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center shadow-sm"
-                                 style="background-color: #fef9e7; border-color: #f9e79f;"
-                                 invisible="x_unlock_type != 'pattern'">
-                                <i class="fa fa-random me-2 text-warning"/>
-                                <field name="x_unlock_pattern" class="fw-bold mb-0 text-dark" nolabel="1" placeholder="Describa el patrón (ej: Forma de Z)"/>
-                            </div>
-
-                            <field name="x_unlock_notes" placeholder="Notas adicionales de acceso..."/>
-                        </group>
-                    </div>
                 </div>
-
-                <div class="col-12 mt-3 pt-3 border-top">
-                    <div class="text-uppercase fw-bold mb-2" style="font-size: 0.75rem; color: #666; letter-spacing: 1px;">
-                        <i class="fa fa-plug me-2"/> Accesorios entregados
-                    </div>
-                    <field name="x_accessories" widget="text" nolabel="1" placeholder="Cargador, funda, tarjeta SIM..."/>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="bg-light p-3 border rounded shadow-sm h-100">
-                            <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #d9534f;">
-                                <i class="fa fa-exclamation-triangle me-2"/> Problema Reportado
-                            </div>
-                            <field name="x_reported_issue" widget="text" nolabel="1" placeholder="Describa el fallo detalladamente..."/>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="bg-white p-3 border rounded shadow-sm h-100" style="border-left: 4px solid #714B67 !important;">
-                            <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: #714B67;">
-                                <i class="fa fa-sticky-note-o me-2"/> Notas Técnicas Internas
-                            </div>
-                            <field name="x_internal_notes" widget="text" nolabel="1" placeholder="Observaciones exclusivas para el técnico..."/>
-                        </div>
-                    </div>
-                </div>
-
             </xpath>
 
             <xpath expr="//sheet" position="inside">
                 <field name="internal_notes" invisible="1"/>
             </xpath>
 
+        </field>
+    </record>
+
+    <record id="view_repair_order_form_wexplay_duration_cleanup" model="ir.ui.view">
+        <field name="name">repair.order.form.wexplay.duration.cleanup</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair_scheduled_date_calendar_view.view_repair_order_form_inherit_duration"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/group[2]/field[@name='planned_duration']" position="replace"/>
         </field>
     </record>
 

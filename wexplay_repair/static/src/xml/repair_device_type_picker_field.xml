@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair.RepairDeviceTypePickerField">
+        <div class="wex_repair_device_picker" t-att-class="state.isOpen ? 'wex_repair_device_picker is-open' : 'wex_repair_device_picker'">
+            <button type="button" class="wex_repair_device_picker_trigger" t-on-click="togglePicker">
+                <span class="wex_repair_device_picker_preview">
+                    <i t-att-class="currentIcon"/>
+                </span>
+                <span class="wex_repair_device_picker_meta">
+                    <strong>Tipo de dispositivo</strong>
+                    <small><t t-esc="currentLabel"/></small>
+                </span>
+                <span class="wex_repair_device_picker_chevron" t-if="!props.readonly">
+                    <i class="fa fa-angle-down"/>
+                </span>
+            </button>
+            <div class="wex_repair_device_picker_panel" t-if="state.isOpen and !props.readonly">
+                <div class="wex_repair_device_picker_grid">
+                    <t t-foreach="options" t-as="option" t-key="option[0]">
+                        <button type="button"
+                                class="wex_repair_device_option"
+                                t-att-class="value === option[0] ? 'wex_repair_device_option is-selected' : 'wex_repair_device_option'"
+                                t-on-click="() => this.selectValue(option[0])">
+                            <span class="wex_repair_device_option_icon">
+                                <i t-att-class="iconFor(option[0])"/>
+                            </span>
+                            <span class="wex_repair_device_option_label">
+                                <t t-esc="option[1]"/>
+                            </span>
+                        </button>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

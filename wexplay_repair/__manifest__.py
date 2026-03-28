@@ -14,8 +14,10 @@ consolas y otros dispositivos electrÃ³nicos).
     "author": "Wexplay",
     "website": "https://www.wexplay.com",
     "license": "LGPL-3",
+    "images": ["static/description/icon.svg"],
     "depends": [
         "repair",
+        "repair_scheduled_date_calendar_view",
         "stock",
         "mail",
         "hr",
@@ -36,10 +38,17 @@ consolas y otros dispositivos electrÃ³nicos).
     ],
     "assets": {
         "web.assets_backend": [
+            "wexplay_repair/static/src/js/repair_device_type_picker_field.js",
+            "wexplay_repair/static/src/js/repair_sat_priority_field.js",
+            "wexplay_repair/static/src/js/repair_unlock_pattern_field.js",
             "wexplay_repair/static/src/js/repair_order_card_view.js",
             "wexplay_repair/static/src/js/repair_notes_badge.js",
+            "wexplay_repair/static/src/xml/repair_device_type_picker_field.xml",
+            "wexplay_repair/static/src/xml/repair_sat_priority_field.xml",
+            "wexplay_repair/static/src/xml/repair_unlock_pattern_field.xml",
             "wexplay_repair/static/src/xml/repair_order_card_view.xml",
             "wexplay_repair/static/src/scss/repair_notes_badge.scss",
+            "wexplay_repair/static/src/scss/repair_order_form.scss",
             "wexplay_repair/static/src/scss/repair_order_card_view.scss",
         ],
     },

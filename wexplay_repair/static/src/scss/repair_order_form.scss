@@ -1,0 +1,761 @@
+.o_form_view .wex_repair_form_sheet {
+    --wex-repair-form-border: #dbe1ef;
+    --wex-repair-form-border-strong: #c6d0e3;
+    --wex-repair-form-surface: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    --wex-repair-form-surface-soft: #f4f6fb;
+    --wex-repair-form-ink: #1f2937;
+    --wex-repair-form-muted: #667085;
+    --wex-repair-form-accent: #635b9a;
+    --wex-repair-form-accent-soft: rgba(99, 91, 154, 0.05);
+    --wex-repair-form-alert: #a55f12;
+    --wex-repair-form-alert-soft: #fff9ea;
+    --wex-repair-form-danger: #c24b4b;
+    --wex-repair-form-danger-soft: rgba(194, 75, 75, 0.05);
+    --wex-repair-form-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.o_form_view .wex_repair_form_intro,
+.o_form_view .wex_repair_form_sections {
+    margin-bottom: 1.25rem;
+}
+
+.o_form_view .wex_repair_form_intro {
+    display: grid;
+    gap: 1rem;
+}
+
+.o_form_view .wex_repair_form_card {
+    height: 100%;
+    padding: 1.1rem 1.15rem 1.15rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at top right, var(--wex-repair-form-accent-soft), transparent 28%),
+        var(--wex-repair-form-surface);
+    box-shadow: var(--wex-repair-form-shadow);
+}
+
+.o_form_view .wex_repair_form_card--hero {
+    border-color: var(--wex-repair-form-border-strong);
+}
+
+.o_form_view .wex_repair_form_card--topmatch {
+    min-height: 350px;
+}
+
+.o_form_view .wex_repair_form_card--compact .wex_repair_form_product .o_input,
+.o_form_view .wex_repair_form_card--compact .wex_repair_form_product input,
+.o_form_view .wex_repair_form_card--compact .wex_repair_form_product .o-autocomplete--input {
+    min-height: 2.6rem;
+    font-size: 1.45rem;
+}
+
+.o_form_view .wex_repair_form_card--meta {
+    background:
+        radial-gradient(circle at top right, rgba(24, 119, 155, 0.05), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.o_form_view .wex_repair_form_card--issue {
+    background:
+        radial-gradient(circle at top right, rgba(194, 75, 75, 0.05), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, #fffbfa 100%);
+}
+
+.o_form_view .wex_repair_form_card--internal {
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.06), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+}
+
+.o_form_view .wex_repair_form_card--admin {
+    background:
+        linear-gradient(180deg, #ffffff 0%, #fcfcfe 100%);
+}
+
+.o_form_view .wex_repair_form_section_marker {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 0.35rem 0 0.95rem;
+    color: var(--wex-repair-form-muted);
+}
+
+.o_form_view .wex_repair_form_section_marker::before,
+.o_form_view .wex_repair_form_section_marker::after {
+    content: "";
+    flex: 1 1 auto;
+    border-top: 1px solid var(--wex-repair-form-border);
+}
+
+.o_form_view .wex_repair_form_section_marker span {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_section_marker.is-secondary {
+    margin-top: 1.15rem;
+}
+
+.o_form_view .wex_repair_form_eyebrow {
+    margin-bottom: 0.4rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.9rem;
+    color: var(--wex-repair-form-ink);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_form_heading .fa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(99, 91, 154, 0.18);
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_form_product {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.o_form_view .wex_repair_form_product .o_input,
+.o_form_view .wex_repair_form_product input,
+.o_form_view .wex_repair_form_product .o-autocomplete--input {
+    min-height: 3.25rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--wex-repair-form-ink);
+    font-size: 1.95rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    box-shadow: none;
+}
+
+.o_form_view .wex_repair_form_hint {
+    margin-bottom: 0.85rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.84rem;
+}
+
+.o_form_view .wex_repair_form_stack {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.o_form_view .wex_repair_form_fieldbox {
+    height: 100%;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.o_form_view .wex_repair_form_fieldbox_label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.45rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_location .o_input,
+.o_form_view .wex_repair_form_location input,
+.o_form_view .wex_repair_form_location .o-autocomplete--input {
+    border: 0;
+    background: transparent;
+    color: var(--wex-repair-form-accent);
+    font-size: 1rem;
+    font-weight: 750;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.o_form_view .wex_repair_form_priority {
+    display: block;
+}
+
+.o_form_view .wex_repair_form_priority .badge,
+.o_form_view .wex_repair_form_group .badge {
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_form_priority .o_selection_badge,
+.o_form_view .wex_repair_form_group .o_selection_badge {
+    gap: 0.45rem;
+}
+
+.o_form_view .wex_repair_priority_picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.o_form_view .wex_repair_priority_option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.48rem 0.78rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: #e6ebf2;
+    color: var(--wex-repair-form-ink);
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_priority_option i {
+    color: var(--wex-repair-form-muted);
+}
+
+.o_form_view .wex_repair_priority_option.is-selected {
+    border-color: rgba(99, 91, 154, 0.85);
+    background: rgba(99, 91, 154, 0.1);
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_priority_option.is-selected i {
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_form_group {
+    margin: 0;
+}
+
+.o_form_view .wex_repair_form_group .o_td_label {
+    width: 34%;
+}
+
+.o_form_view .wex_repair_form_contact_list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+}
+
+.o_form_view .wex_repair_form_contact_line {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--wex-repair-form-muted);
+}
+
+.o_form_view .wex_repair_form_contact_line.is-secondary {
+    align-items: flex-start;
+    grid-column: 1 / -1;
+}
+
+.o_form_view .wex_repair_form_contact_line .fa {
+    width: 1rem;
+    text-align: center;
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_form_contact_line .o_field_widget {
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_form_contact_line.is-secondary .o_field_widget {
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.o_form_view .wex_repair_form_people {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.o_form_view .wex_repair_form_person {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.o_form_view .wex_repair_form_person_avatar {
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.o_form_view .wex_repair_form_person_avatar img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.o_form_view .wex_repair_form_person_avatar .o_form_image_controls {
+    display: none;
+}
+
+.o_form_view .wex_repair_form_person_body {
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_form_person_role {
+    margin-bottom: 0.2rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_person_body .o_field_widget {
+    display: block;
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_form_person_body .o_input,
+.o_form_view .wex_repair_form_person_body input,
+.o_form_view .wex_repair_form_person_body .o-autocomplete--input,
+.o_form_view .wex_repair_form_person_body .o-autocomplete--input.o_input {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    color: var(--wex-repair-form-ink);
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.o_form_view .wex_repair_form_person_body .o-autocomplete {
+    width: 100%;
+}
+
+.o_form_view .wex_repair_form_person_body .o_field_many2one_selection {
+    display: block;
+    color: var(--wex-repair-form-ink);
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.o_form_view .wex_repair_form_serial {
+    margin-top: 0.95rem;
+}
+
+.o_form_view .wex_repair_form_serial > label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_serial_row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.o_form_view .wex_repair_form_serial_row > .o_field_widget {
+    flex: 1 1 auto;
+}
+
+.o_form_view .wex_repair_form_notice {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.85rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.o_form_view .wex_repair_form_notice .fa {
+    color: #2b6cb0;
+}
+
+.o_form_view .wex_repair_form_notice--warning {
+    border-color: #f1d58a;
+    background: var(--wex-repair-form-alert-soft);
+}
+
+.o_form_view .wex_repair_form_notice--warning .fa {
+    color: var(--wex-repair-form-alert);
+}
+
+.o_form_view .wex_repair_form_notice > .o_field_widget {
+    flex: 1 1 auto;
+}
+
+.o_form_view .wex_repair_form_notice .o_input,
+.o_form_view .wex_repair_form_notice input,
+.o_form_view .wex_repair_form_notice textarea {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.o_form_view .wex_repair_device_picker {
+    position: relative;
+}
+
+.o_form_view .wex_repair_device_picker_trigger {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.84);
+    color: inherit;
+    text-align: left;
+}
+
+.o_form_view .wex_repair_device_picker_preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    background: rgba(99, 91, 154, 0.1);
+    color: var(--wex-repair-form-accent);
+    font-size: 1.1rem;
+}
+
+.o_form_view .wex_repair_device_picker_meta {
+    display: grid;
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_device_picker_meta strong {
+    color: var(--wex-repair-form-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_device_picker_meta small {
+    overflow: hidden;
+    color: var(--wex-repair-form-ink);
+    font-size: 1rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_form_view .wex_repair_device_picker_chevron {
+    align-self: center;
+    color: var(--wex-repair-form-muted);
+}
+
+.o_form_view .wex_repair_device_picker_panel {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    right: 0;
+    padding: 0.8rem;
+    border: 1px solid var(--wex-repair-form-border-strong);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+
+.o_form_view .wex_repair_device_picker_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.55rem;
+}
+
+.o_form_view .wex_repair_device_option {
+    display: grid;
+    grid-template-columns: 1.8rem minmax(0, 1fr);
+    gap: 0.55rem;
+    align-items: center;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid var(--wex-repair-form-border);
+    border-radius: 12px;
+    background: #fbfcfe;
+    color: var(--wex-repair-form-ink);
+    text-align: left;
+}
+
+.o_form_view .wex_repair_device_option.is-selected {
+    border-color: rgba(99, 91, 154, 0.55);
+    background: rgba(99, 91, 154, 0.1);
+}
+
+.o_form_view .wex_repair_device_option_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 10px;
+    background: rgba(99, 91, 154, 0.1);
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_device_option_label {
+    overflow: hidden;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_form_view .wex_repair_unlock_type_picker {
+    position: relative;
+    width: 100%;
+}
+
+.o_form_view .wex_repair_unlock_type_badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.o_form_view .wex_repair_unlock_type_badge {
+    padding: 0.45rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #dce3ea;
+    color: var(--wex-repair-form-ink);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.o_form_view .wex_repair_unlock_type_badge.is-selected {
+    border-color: rgba(99, 91, 154, 0.8);
+    background: rgba(99, 91, 154, 0.1);
+}
+
+.o_form_view .wex_repair_pattern_anchor {
+    position: relative;
+}
+
+.o_form_view .wex_repair_pattern_picker_panel {
+    position: absolute;
+    z-index: 20;
+    top: 0.45rem;
+    left: 0;
+    width: 100%;
+    max-width: 420px;
+    padding: 0.95rem;
+    border: 1px solid rgba(165, 95, 18, 0.22);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.o_form_view .wex_repair_pattern_picker_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.o_form_view .wex_repair_pattern_picker_header strong {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--wex-repair-form-ink);
+}
+
+.o_form_view .wex_repair_pattern_picker_actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.o_form_view .wex_repair_pattern_board {
+    position: relative;
+    width: 100%;
+    max-width: 18rem;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    touch-action: none;
+    user-select: none;
+}
+
+.o_form_view .wex_repair_pattern_board_lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.o_form_view .wex_repair_pattern_board_lines line {
+    stroke: rgba(99, 91, 154, 0.9);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+}
+
+.o_form_view .wex_repair_pattern_point {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(31, 41, 55, 0.4);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.o_form_view .wex_repair_pattern_point_inner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    background: rgba(31, 41, 55, 0.85);
+    transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.o_form_view .wex_repair_pattern_point.is-selected {
+    border-color: rgba(99, 91, 154, 0.9);
+    background: rgba(245, 243, 255, 0.96);
+}
+
+.o_form_view .wex_repair_pattern_point.is-selected .wex_repair_pattern_point_inner {
+    transform: scale(1.18);
+    background: rgba(99, 91, 154, 0.95);
+}
+
+.o_form_view .wex_repair_pattern_point_index {
+    position: absolute;
+    right: -0.2rem;
+    bottom: -0.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.3rem;
+    height: 1.3rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: rgba(99, 91, 154, 0.95);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_pattern_picker_footer {
+    margin-top: 0.85rem;
+}
+
+.o_form_view .wex_repair_pattern_picker_sequence {
+    margin-bottom: 0.35rem;
+    color: var(--wex-repair-form-ink);
+    font-size: 0.86rem;
+}
+
+.o_form_view .wex_repair_pattern_picker_help {
+    color: var(--wex-repair-form-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.o_form_view .wex_repair_pattern_picker_help.is-error {
+    color: var(--wex-repair-form-danger);
+}
+
+.o_form_view .wex_repair_form_sections textarea {
+    min-height: 120px;
+    border-radius: 12px;
+    border-color: var(--wex-repair-form-border);
+}
+
+.o_form_view .wex_repair_form_group--admin {
+    margin: 0;
+}
+
+.o_form_view .wex_repair_form_group--admin .o_td_label {
+    width: 22%;
+}
+
+.o_form_view .wex_repair_form_sheet .o_notebook {
+    margin-top: 0.35rem;
+}
+
+.o_form_view .wex_repair_form_sheet .o_notebook .nav-tabs {
+    border-bottom-color: var(--wex-repair-form-border);
+}
+
+.o_form_view .wex_repair_form_sheet .o_notebook .nav-link {
+    border-radius: 12px 12px 0 0;
+    font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+    .o_form_view .wex_repair_form_product .o_input,
+    .o_form_view .wex_repair_form_product input,
+    .o_form_view .wex_repair_form_product .o-autocomplete--input {
+        font-size: 1.5rem;
+    }
+
+    .o_form_view .wex_repair_form_card {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .o_form_view .wex_repair_form_contact_list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .o_form_view .wex_repair_form_card--compact .wex_repair_form_product .o_input,
+    .o_form_view .wex_repair_form_card--compact .wex_repair_form_product input,
+    .o_form_view .wex_repair_form_card--compact .wex_repair_form_product .o-autocomplete--input {
+        font-size: 1.3rem;
+    }
+
+    .o_form_view .wex_repair_device_picker_grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .o_form_view .wex_repair_pattern_point {
+        width: 3.4rem;
+        height: 3.4rem;
+    }
+
+    .o_form_view .wex_repair_pattern_picker_panel {
+        position: static;
+        margin-top: 0.75rem;
+        width: 100%;
+    }
+}

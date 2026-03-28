@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair.RepairUnlockTypePickerField">
+        <div class="wex_repair_unlock_type_picker">
+            <div class="wex_repair_unlock_type_badges">
+                <t t-foreach="options" t-as="option" t-key="option[0]">
+                    <button type="button"
+                            class="wex_repair_unlock_type_badge"
+                            t-att-class="value === option[0] ? 'wex_repair_unlock_type_badge is-selected' : 'wex_repair_unlock_type_badge'"
+                            t-on-click="() => this.selectOption(option[0])">
+                        <t t-esc="option[1]"/>
+                    </button>
+                </t>
+            </div>
+
+            <div class="wex_repair_pattern_anchor" t-if="value === 'pattern'">
+                <div class="wex_repair_pattern_picker_panel" t-if="state.isOpen and !props.readonly">
+                    <div class="wex_repair_pattern_picker_header">
+                        <strong>Dibuja el patron</strong>
+                        <div class="wex_repair_pattern_picker_actions">
+                            <button type="button" class="btn btn-link btn-sm" t-on-click="clearPattern">
+                                Limpiar
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" t-on-click="applyPattern">
+                                Listo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wex_repair_pattern_board" t-ref="board">
+                        <svg class="wex_repair_pattern_board_lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <t t-foreach="segments" t-as="segment" t-key="segment.key">
+                                <line t-att-x1="segment.x1"
+                                      t-att-y1="segment.y1"
+                                      t-att-x2="segment.x2"
+                                      t-att-y2="segment.y2"/>
+                            </t>
+                        </svg>
+
+                        <t t-foreach="points" t-as="point" t-key="point.id">
+                            <button type="button"
+                                    class="wex_repair_pattern_point"
+                                    t-att-class="isSelected(point.id) ? 'wex_repair_pattern_point is-selected' : 'wex_repair_pattern_point'"
+                                    t-att-style="point.style"
+                                    t-on-pointerdown="(ev) => this.startFromPoint(point.id, ev)">
+                                <span class="wex_repair_pattern_point_inner"/>
+                                <span class="wex_repair_pattern_point_index" t-if="isSelected(point.id)">
+                                    <t t-esc="selectedIndex(point.id)"/>
+                                </span>
+                            </button>
+                        </t>
+                    </div>
+
+                    <div class="wex_repair_pattern_picker_footer">
+                        <div class="wex_repair_pattern_picker_sequence">
+                            Secuencia: <strong><t t-esc="currentSequence || '-'"/></strong>
+                        </div>
+                        <div class="wex_repair_pattern_picker_help" t-att-class="state.error ? 'wex_repair_pattern_picker_help is-error' : 'wex_repair_pattern_picker_help'">
+                            <t t-esc="helperText"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
