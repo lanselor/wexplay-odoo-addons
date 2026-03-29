@@ -1,22 +1,16 @@
 /** @odoo-module **/
 
-// wexplay_sat_print/static/src/js/qz_settings_widget.js
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-import { testQzConnection, getAllPrinters } from "@wexplay_product_print/js/qz_print";
-/**
- * AJUSTA ESTA RUTA al path real de tu core:
- * - Si qz_print.js está en este mismo módulo: "wexplay_sat_print/static/src/js/qz_print"
- * - Si está en otro módulo: "wexplay_product_print/static/src/js/qz_print"
- */
+import { getAllPrinters, testQzConnection } from "@wex_print_core/js/qz_print";
 
 
 class WexQzSettingsWidget extends Component {
-    static template = "wexplay_sat_print.WexQzSettingsWidget";
+    static template = "wex_print_core.WexQzSettingsWidget";
 
     setup() {
         this.state = useState({
-            status: "idle", // idle | ok | error | loading
+            status: "idle",
             message: "",
             printers: [],
         });
@@ -24,7 +18,6 @@ class WexQzSettingsWidget extends Component {
         this.onChangeLabel = (ev) => this.setPrinter("wex_qz_label_printer", ev);
         this.onChangeThermal = (ev) => this.setPrinter("wex_qz_thermal_printer", ev);
         this.onChangeA4 = (ev) => this.setPrinter("wex_qz_a4_printer", ev);
-
     }
 
     async onTestConnection() {
@@ -53,9 +46,9 @@ class WexQzSettingsWidget extends Component {
             this.state.printers = printers;
             this.state.status = "ok";
             this.state.message = `Impresoras detectadas: ${printers.length}`;
-        } catch (e) {
+        } catch (error) {
             this.state.status = "error";
-            this.state.message = `No se pudieron cargar impresoras: ${e?.message || e}`;
+            this.state.message = `No se pudieron cargar impresoras: ${error?.message || error}`;
         }
     }
 
@@ -65,21 +58,20 @@ class WexQzSettingsWidget extends Component {
     }
 
     async _writeLastTestSnapshot(ok) {
-        // Persistir snapshot en res.company (campos: wex_qz_last_test_ok, wex_qz_last_test_at, wex_qz_last_test_user_id)
-        // Nota: este write es opcional; si falla no debe romper la UI.
+        // Persistimos el snapshot en compañía sin cambiar el flujo actual.
         try {
             const companyId = this.props.record.data.company_id?.[0];
-            if (!companyId) return;
+            if (!companyId) {
+                return;
+            }
 
-            const orm = this.env.services.orm;
-            await orm.write("res.company", [companyId], {
+            await this.env.services.orm.write("res.company", [companyId], {
                 wex_qz_last_test_ok: ok,
-                // Mejor guardar server-side (fase 2) con método Python; por ahora ISO es suficiente.
                 wex_qz_last_test_at: new Date().toISOString(),
                 wex_qz_last_test_user_id: this.env.services.user.userId,
             });
-        } catch (e) {
-            // silencioso
+        } catch {
+            // Silencioso: no bloqueamos la UI de Ajustes.
         }
     }
 }

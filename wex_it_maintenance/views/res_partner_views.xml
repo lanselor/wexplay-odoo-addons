@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_tree_it_maintenance" model="ir.ui.view">
+        <field name="name">res.partner.tree.it.maintenance</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="visit_frequency"/>
+                <field name="service_level"/>
+                <field name="contract_start_date"/>
+                <field name="contract_end_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_partner_form_it_maintenance_workspace" model="ir.ui.view">
+        <field name="name">res.partner.form.it.maintenance.workspace</field>
+        <field name="model">res.partner</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <form string="Workspace cliente mantenimiento IT" class="o_wex_it_customer_workspace">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_open_it_assets" class="oe_stat_button" icon="fa-desktop">
+                            <field name="it_asset_count" string="Activos" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_visits" class="oe_stat_button" icon="fa-wrench">
+                            <field name="it_open_visit_count" string="Abiertas" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_services" class="oe_stat_button" icon="fa-cloud">
+                            <field name="it_active_service_count" string="Servicios activos" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_reviews" class="oe_stat_button" icon="fa-stethoscope">
+                            <field name="it_review_count" string="Revisiones" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_credentials" class="oe_stat_button" icon="fa-key" groups="wex_it_maintenance.group_it_maintenance_credential_user">
+                            <field name="it_credential_count" string="Credenciales" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                            <div>
+                                <div class="text-muted">Workspace del cliente</div>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+                            <div>
+                                <button type="object" name="action_open_base_contact" string="Abrir ficha base" class="btn btn-secondary"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="phone" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="x_is_it_maintenance_customer" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="visit_frequency"/>
+                            <field name="service_level"/>
+                            <field name="contract_start_date"/>
+                            <field name="contract_end_date"/>
+                        </group>
+                    </group>
+
+                    <group string="Resumen operativo">
+                        <group>
+                            <field name="it_next_visit_date" readonly="1"/>
+                            <field name="it_last_done_visit_date" readonly="1"/>
+                            <field name="it_issue_asset_count" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="it_open_visit_count" readonly="1"/>
+                            <field name="it_active_service_count" readonly="1"/>
+                            <field name="it_review_count" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Notas internas">
+                        <field name="internal_notes" placeholder="Contexto operativo del cliente, acuerdos, advertencias y notas útiles..."/>
+                    </group>
+
+                    <notebook>
+                        <page string="Resumen">
+                            <group string="Accesos rápidos">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="object" name="action_open_it_assets" string="Ver activos" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_visits" string="Ver actividades" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_services" string="Ver servicios" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_reviews" string="Ver revisiones" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_credentials" string="Ver credenciales" class="btn btn-secondary" groups="wex_it_maintenance.group_it_maintenance_credential_user"/>
+                                    <button type="object" name="action_open_it_reports" string="Ver informes" class="btn btn-secondary"/>
+                                </div>
+                            </group>
+                        </page>
+
+                        <page string="Activos">
+                            <group>
+                                <button type="object" name="action_open_it_assets" string="Abrir activos del cliente" class="btn btn-secondary"/>
+                            </group>
+                            <field name="it_asset_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="internal_code"/>
+                                    <field name="name"/>
+                                    <field name="asset_type"/>
+                                    <field name="assigned_user"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Actividades">
+                            <field name="it_visit_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="performed_date"/>
+                                    <field name="technician_id"/>
+                                    <field name="visit_type"/>
+                                    <field name="activity_mode"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Revisiones de activos">
+                            <field name="it_asset_review_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="review_date"/>
+                                    <field name="asset_id"/>
+                                    <field name="technician_id"/>
+                                    <field name="health_status"/>
+                                    <field name="visit_id"/>
+                                </list>
+                            </field>
+                            <group>
+                                <button type="object" name="action_open_it_reviews" string="Abrir revisiones filtradas" class="btn btn-secondary"/>
+                            </group>
+                        </page>
+
+                        <page string="Servicios">
+                            <group>
+                                <button type="object" name="action_open_it_services" string="Abrir servicios del cliente" class="btn btn-secondary"/>
+                            </group>
+                            <field name="it_service_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="service_type"/>
+                                    <field name="status"/>
+                                    <field name="responsible_user_id"/>
+                                    <field name="renewal_date"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Credenciales" groups="wex_it_maintenance.group_it_maintenance_credential_user">
+                            <field name="it_credential_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="asset_id"/>
+                                    <field name="service_id"/>
+                                    <field name="credential_type"/>
+                                    <field name="login"/>
+                                    <field name="rotation_due_date"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Informes">
+                            <group>
+                                <group>
+                                    <field name="it_last_done_visit_date" readonly="1"/>
+                                </group>
+                                <group>
+                                    <button type="object" name="action_open_it_reports" string="Abrir informes del cliente" class="btn btn-secondary"/>
+                                </group>
+                            </group>
+                            <field name="it_visit_ids" domain="[('state', '=', 'done')]" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="performed_date"/>
+                                    <field name="technician_id"/>
+                                    <field name="visit_type"/>
+                                    <field name="activity_mode"/>
+                                    <field name="next_visit_date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_partner_form_it_maintenance" model="ir.ui.view">
+        <field name="name">res.partner.form.it.maintenance</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Mantenimiento IT" groups="wex_it_maintenance.group_it_maintenance_user">
+                    <group>
+                        <group>
+                            <field name="x_is_it_maintenance_customer"/>
+                            <field name="contract_start_date" invisible="not x_is_it_maintenance_customer"/>
+                            <field name="contract_end_date" invisible="not x_is_it_maintenance_customer"/>
+                            <field name="visit_frequency" invisible="not x_is_it_maintenance_customer"/>
+                            <field name="service_level" invisible="not x_is_it_maintenance_customer"/>
+                        </group>
+                        <group>
+                            <field name="it_asset_count" readonly="1"/>
+                            <field name="it_service_count" readonly="1"/>
+                            <field name="it_visit_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group invisible="not x_is_it_maintenance_customer">
+                        <field name="internal_notes" placeholder="Notas operativas internas..."/>
+                    </group>
+                    <div class="oe_button_box" name="button_box" invisible="not x_is_it_maintenance_customer">
+                        <button type="object" name="action_open_it_assets" class="oe_stat_button" icon="fa-desktop">
+                            <field name="it_asset_count" string="Activos" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_services" class="oe_stat_button" icon="fa-cloud">
+                            <field name="it_service_count" string="Servicios" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_visits" class="oe_stat_button" icon="fa-wrench">
+                            <field name="it_visit_count" string="Actividades" widget="statinfo"/>
+                        </button>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_search_it_maintenance" model="ir.ui.view">
+        <field name="name">res.partner.search.it.maintenance</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="it_maintenance_customer" string="Clientes de mantenimiento IT" domain="[('x_is_it_maintenance_customer', '=', True)]"/>
+                <filter name="group_service_level" string="Nivel de servicio" context="{'group_by': 'service_level'}"/>
+                <filter name="group_visit_frequency" string="Frecuencia de visita" context="{'group_by': 'visit_frequency'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_it_maintenance_customers" model="ir.actions.act_window">
+        <field name="name">Clientes</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_partner_tree_it_maintenance"/>
+        <field name="domain">[('x_is_it_maintenance_customer', '=', True)]</field>
+        <field name="context">{'search_default_it_maintenance_customer': 1}</field>
+    </record>
+
+    <record id="action_it_maintenance_customers_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_partner_tree_it_maintenance"/>
+        <field name="act_window_id" ref="action_it_maintenance_customers"/>
+    </record>
+
+    <record id="action_it_maintenance_customers_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_partner_form_it_maintenance_workspace"/>
+        <field name="act_window_id" ref="action_it_maintenance_customers"/>
+    </record>
+</odoo>

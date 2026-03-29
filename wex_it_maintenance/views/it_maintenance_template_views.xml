@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_template_tree" model="ir.ui.view">
+        <field name="name">wex.it.maintenance.template.tree</field>
+        <field name="model">wex.it.maintenance.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_template_form" model="ir.ui.view">
+        <field name="name">wex.it.maintenance.template.form</field>
+        <field name="model">wex.it.maintenance.template</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de mantenimiento">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="description"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_it_templates" model="ir.actions.act_window">
+        <field name="name">Plantillas de lista de comprobación</field>
+        <field name="res_model">wex.it.maintenance.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

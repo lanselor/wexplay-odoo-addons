@@ -6,7 +6,7 @@
     "summary": "Centro de impresión SAT para órdenes de reparación (QZ Tray + QWeb)",
     "description": """
 Wexplay - SAT Print (QZ)
-=======================
+========================
 
 Añade un centro de impresión específico para SAT en órdenes de reparación (repair.order):
 - Botón "Impresiones" en la orden de reparación
@@ -23,15 +23,11 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
         "web",
         "repair",
         "base",
-        "wexplay_product_print",
+        "wex_print_core",
     ],
     "data": [
-        "security/security.xml",
-        "security/ir.model.access.csv",
-
         "views/repair_print_actions.xml",
         "views/repair_order_form_inherit_print.xml",
-        "views/res_config_settings_view.xml",
 
         "reports/paperformat_sat.xml",
         "reports/reports_sat.xml",
@@ -46,8 +42,6 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
             "wexplay_sat_print/static/src/js/repair_print_center_action.js",
             "wexplay_sat_print/static/src/js/repair_print_center_modal.js",
             "wexplay_sat_print/static/src/xml/repair_print_center_modal.xml",
-            "wexplay_sat_print/static/src/js/qz_settings_widget.js",
-            "wexplay_sat_print/static/src/xml/qz_settings_widget.xml",
             "wexplay_sat_print/static/src/js/qz_print_client_action.js",
             "wexplay_sat_print/static/src/js/print_report_qz_action.js",
         ],

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_config_settings_wex_print_core,res.config.settings wex print core,base.model_res_config_settings,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_document_type_admin,wex.print.document.type admin,model_wex_print_document_type,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_document_type_user,wex.print.document.type user,model_wex_print_document_type,base.group_user,1,0,0,0
+access_wex_print_trace_admin,wex.print.trace admin,model_wex_print_trace,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_trace_user,wex.print.trace user,model_wex_print_trace,base.group_user,1,0,1,0

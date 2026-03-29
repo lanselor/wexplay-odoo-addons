@@ -1,0 +1,36 @@
+{
+    "name": "Wex IT Maintenance",
+    "version": "18.0.1.0.0",
+    "summary": "Mantenimiento IT, actividades, activos e informes de servicio para Wexplay",
+    "category": "Services",
+    "author": "Wexplay",
+    "license": "LGPL-3",
+    "depends": [
+        "base",
+        "mail",
+        "web",
+    ],
+    "data": [
+        "security/security.xml",
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/res_partner_views.xml",
+        "views/it_asset_views.xml",
+        "views/it_service_views.xml",
+        "views/it_credential_views.xml",
+        "views/it_maintenance_template_views.xml",
+        "views/it_maintenance_visit_views.xml",
+        "views/dashboard_views.xml",
+        "views/menu_views.xml",
+        "reports/it_maintenance_visit_report.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "wex_it_maintenance/static/src/js/it_maintenance_dashboard.js",
+            "wex_it_maintenance/static/src/xml/it_maintenance_dashboard.xml",
+            "wex_it_maintenance/static/src/scss/it_maintenance.scss",
+        ],
+    },
+    "installable": True,
+    "application": True,
+}

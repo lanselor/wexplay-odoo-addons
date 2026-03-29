@@ -6,7 +6,7 @@ console.log("WEXPLAY_SAT_PRINT: modal JS cargado Versión 13 (qty accesorios)");
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
-import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
+import { printOdooDocument } from "@wex_print_core/js/qz_print";
 
 // NOTA: mantenemos estas constantes por compatibilidad temporal,
 // pero ya no se usan cuando migramos todo a ByKind.
@@ -124,7 +124,14 @@ export class SatPrintCenterModal extends Component {
             return;
         }
         // Etiqueta SAT completa: 1 copia (por ahora)
-        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x90"), { copies: 1 });
+        return this._printDocument(
+            "sat_label_main",
+            this._reportUrl("wexplay_sat_print.report_repair_label_29x90"),
+            {
+                copies: 1,
+                reportName: "wexplay_sat_print.report_repair_label_29x90",
+            }
+        );
     }
 
     async onPrintLabel29x42() {
@@ -137,7 +144,14 @@ export class SatPrintCenterModal extends Component {
         const qty = this._sanitizeQty(this.state.accessoryQty);
 
         // Etiqueta accesorios: aplica cantidad vía QZ copies
-        return this._printByKind("label", this._reportUrl("wexplay_sat_print.report_repair_label_29x42"), { copies: qty });
+        return this._printDocument(
+            "sat_label_accessory",
+            this._reportUrl("wexplay_sat_print.report_repair_label_29x42"),
+            {
+                copies: qty,
+                reportName: "wexplay_sat_print.report_repair_label_29x42",
+            }
+        );
     }
 
     async onPrintTicket80x170() {
@@ -147,17 +161,24 @@ export class SatPrintCenterModal extends Component {
             return;
         }
         // Ticket: thermal (copies=1 por defecto; no exponemos qty aquí)
-        return this._printByKind("thermal", this._reportUrl("wexplay_sat_print.report_repair_ticket_80x170"));
+        return this._printDocument(
+            "sat_ticket",
+            this._reportUrl("wexplay_sat_print.report_repair_ticket_80x170"),
+            {
+                reportName: "wexplay_sat_print.report_repair_ticket_80x170",
+            }
+        );
     }
 
     // API única de impresión en el modal: todo pasa por kind
-    async _printByKind(kind, reportUrl, opts = {}) {
+    async _printDocument(documentCode, reportUrl, opts = {}) {
         try {
-            await printOdooPdfUrlByKind(kind, reportUrl, this.env, opts);
+            await printOdooDocument(documentCode, reportUrl, this.env, opts);
 
             // Mensaje con cantidad si aplica
             const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
-            if (kind === "label" && copies > 1) {
+            const isLabel = documentCode === "sat_label_main" || documentCode === "sat_label_accessory";
+            if (isLabel && copies > 1) {
                 this.notification.add(`Impresión enviada a QZ Tray (${copies} copias).`, { type: "success" });
             } else {
                 this.notification.add("Impresión enviada a QZ Tray.", { type: "success" });

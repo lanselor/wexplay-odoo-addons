@@ -3,7 +3,7 @@
 
 import { registry } from "@web/core/registry";
 import { browser } from "@web/core/browser/browser";
-import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
+import { printOdooDocument, printOdooPdfUrlByKind } from "@wex_print_core/js/qz_print";
 
 function abs(url) {
     return new URL(url, browser.location.origin).toString();
@@ -24,16 +24,20 @@ function buildReportUrl(reportName, resId) {
  */
 registry.category("actions").add("wexplay_sat_print.print_report_qz", async (env, action) => {
     const notification = env.services.notification;
-    const { kind, report_name, res_id } = action.params || {};
+    const { kind, report_name, res_id, document_code } = action.params || {};
 
-    if (!kind || !report_name || !res_id) {
+    if ((!kind && !document_code) || !report_name || !res_id) {
         notification.add("Parámetros de impresión inválidos.", { type: "danger" });
         return;
     }
 
     try {
         const url = buildReportUrl(report_name, res_id);
-        await printOdooPdfUrlByKind(kind, url, env);
+        if (document_code) {
+            await printOdooDocument(document_code, url, env, { reportName: report_name });
+        } else {
+            await printOdooPdfUrlByKind(kind, url, env);
+        }
         notification.add("Impresión enviada a QZ Tray.", { type: "success" });
     } catch (e) {
         notification.add(`Error imprimiendo: ${e?.message || e}`, { type: "danger" });

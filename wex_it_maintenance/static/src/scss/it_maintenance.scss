@@ -1,0 +1,126 @@
+.o_wex_it_dashboard {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    min-height: calc(100vh - 120px);
+}
+
+.o_wex_it_sidebar {
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 16px;
+    padding: 20px 16px;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid #dbe2ea;
+}
+
+.o_wex_it_sidebar .btn-link {
+    text-align: left;
+    color: #1e3a8a;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.o_wex_it_sidebar .btn-link:hover {
+    color: #1e40af;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.o_wex_it_sidebar_title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.o_wex_it_content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.o_wex_it_count_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.o_wex_it_stat_card,
+.o_wex_it_panel {
+    background: #fff;
+    border: 1px solid #dbe2ea;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.o_wex_it_stat_card strong {
+    display: block;
+    font-size: 1.8rem;
+    color: #0f172a;
+}
+
+.o_wex_it_stat_label {
+    display: block;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.o_wex_it_panel_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.o_wex_it_panel h3 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: #0f172a;
+}
+
+.o_wex_it_panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.o_wex_it_panel li + li {
+    margin-top: 10px;
+}
+
+.o_wex_it_loading {
+    padding: 32px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #dbe2ea;
+}
+
+@media (max-width: 1200px) {
+    .o_wex_it_dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
+.o_wex_it_customer_workspace .oe_title {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.o_wex_it_customer_workspace .oe_button_box {
+    margin-bottom: 10px;
+}
+
+.o_wex_it_customer_workspace .oe_button_box .oe_stat_button {
+    border-radius: 12px;
+    border: 1px solid #dbe2ea;
+    background: #ffffff;
+}
+
+.o_wex_it_customer_workspace .o_notebook .nav-link {
+    border-radius: 10px 10px 0 0;
+}

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_wex_it_maintenance_visit" model="ir.actions.report">
+        <field name="name">Informe de actividad IT</field>
+        <field name="model">wex.it.maintenance.visit</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wex_it_maintenance.report_wex_it_maintenance_visit</field>
+        <field name="report_file">wex_it_maintenance.report_wex_it_maintenance_visit</field>
+        <field name="print_report_name">'Actividad IT - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_wex_it_maintenance_visit">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 style="margin-bottom: 4px;">Actividad de mantenimiento IT</h2>
+                        <div style="color: #6b7280; margin-bottom: 18px;">
+                            Informe de actividad del servicio
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top; padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Cliente</strong><br/>
+                                    <span t-field="o.partner_id"/>
+                                </td>
+                                <td style="width: 50%; vertical-align: top; padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Actividad</strong><br/>
+                                    <span t-esc="o.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Fecha programada</strong><br/>
+                                    <span t-field="o.scheduled_date"/>
+                                </td>
+                                <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Fecha realizada</strong><br/>
+                                    <span t-field="o.performed_date"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Técnico</strong><br/>
+                                    <span t-field="o.technician_id"/>
+                                </td>
+                                <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                    <strong>Tipo / modalidad</strong><br/>
+                                    <span t-field="o.visit_type"/> /
+                                    <span t-field="o.activity_mode"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <h3 style="margin: 18px 0 8px 0;">Servicios relacionados</h3>
+                        <div style="padding: 10px; border: 1px solid #d1d5db; min-height: 40px;">
+                            <t t-if="o.service_ids">
+                                <span t-esc="', '.join(o.service_ids.mapped('name'))"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </div>
+                        <h3 style="margin: 18px 0 8px 0;">Trabajo realizado</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Activo / servicio</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Acción</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Resultado</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Incidencia</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <t t-esc="line.asset_id.display_name or line.service_id.display_name or '-'"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="line.action_performed"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-field="line.result"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="line.issue_found or '-'"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="line.observations or '-'"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h3 style="margin: 18px 0 8px 0;">Resumen</h3>
+                        <div style="padding: 10px; border: 1px solid #d1d5db; min-height: 50px;">
+                            <span t-esc="o.summary or '-'"/>
+                        </div>
+                        <h3 style="margin: 18px 0 8px 0;">Lista de comprobación</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Elemento</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Hecho</th>
+                                    <th style="padding: 8px; border: 1px solid #d1d5db; text-align: left;">Notas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.checklist_line_ids" t-as="check">
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="check.name"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="'Sí' if check.is_done else 'No'"/>
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #d1d5db;">
+                                        <span t-esc="check.notes or '-'"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h3 style="margin: 18px 0 8px 0;">Recomendaciones</h3>
+                        <div style="padding: 10px; border: 1px solid #d1d5db; min-height: 50px;">
+                            <span t-esc="o.recommendations or '-'"/>
+                        </div>
+                        <h3 style="margin: 18px 0 8px 0;">Próxima visita</h3>
+                        <div style="padding: 10px; border: 1px solid #d1d5db;">
+                            <span t-field="o.next_visit_date"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Grupo técnico para configuración compartida de impresión -->
+    <record id="group_wex_print_core_admin" model="res.groups">
+        <field name="name">Wex Print Core Admin</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+</odoo>

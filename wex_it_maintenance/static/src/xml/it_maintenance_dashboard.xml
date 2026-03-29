@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_it_maintenance.ItMaintenanceDashboard">
+        <div class="o_wex_it_dashboard">
+            <aside class="o_wex_it_sidebar">
+                <div class="o_wex_it_sidebar_title">Mantenimiento IT</div>
+                <button type="button" class="btn btn-link" t-on-click="() => this.openAction('wex_it_maintenance.action_it_maintenance_customers')">Clientes</button>
+                <button type="button" class="btn btn-link" t-on-click="() => this.openAction('wex_it_maintenance.action_wex_it_assets')">Activos</button>
+                <button type="button" class="btn btn-link" t-on-click="() => this.openAction('wex_it_maintenance.action_wex_it_visits')">Mantenimientos</button>
+                <button type="button" class="btn btn-link" t-on-click="() => this.openAction('wex_it_maintenance.action_wex_it_services')">Servicios</button>
+                <button type="button" class="btn btn-link" t-on-click="() => this.openAction('wex_it_maintenance.action_wex_it_visit_reports')">Informes</button>
+            </aside>
+            <main class="o_wex_it_content">
+                <div t-if="state.loading" class="o_wex_it_loading">Cargando panel...</div>
+                <t t-else="">
+                    <section class="o_wex_it_count_grid">
+                        <div class="o_wex_it_stat_card">
+                            <span class="o_wex_it_stat_label">Clientes</span>
+                            <strong t-esc="state.data.counts.customers || 0"/>
+                        </div>
+                        <div class="o_wex_it_stat_card">
+                            <span class="o_wex_it_stat_label">Activos</span>
+                            <strong t-esc="state.data.counts.assets || 0"/>
+                        </div>
+                        <div class="o_wex_it_stat_card">
+                            <span class="o_wex_it_stat_label">Actividades abiertas</span>
+                            <strong t-esc="state.data.counts.open_activities || 0"/>
+                        </div>
+                        <div class="o_wex_it_stat_card">
+                            <span class="o_wex_it_stat_label">Servicios</span>
+                            <strong t-esc="state.data.counts.services || 0"/>
+                        </div>
+                    </section>
+                    <section class="o_wex_it_panel_grid">
+                        <div class="o_wex_it_panel">
+                            <h3>Próximos mantenimientos</h3>
+                            <ul t-if="state.data.upcoming_visits.length">
+                                <li t-foreach="state.data.upcoming_visits" t-as="visit" t-key="visit.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('wex.it.maintenance.visit', visit.id)">
+                                        <t t-esc="visit.name"/>
+                                    </button>
+                                    <span class="text-muted"> - <t t-esc="visit.partner_id[1]"/> - <t t-esc="visit.scheduled_date"/></span>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">No hay actividades próximas.</div>
+                        </div>
+                        <div class="o_wex_it_panel">
+                            <h3>Actividades atrasadas</h3>
+                            <ul t-if="state.data.overdue_visits.length">
+                                <li t-foreach="state.data.overdue_visits" t-as="visit" t-key="visit.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('wex.it.maintenance.visit', visit.id)">
+                                        <t t-esc="visit.name"/>
+                                    </button>
+                                    <span class="text-muted"> - <t t-esc="visit.partner_id[1]"/></span>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">No hay actividades atrasadas.</div>
+                        </div>
+                        <div class="o_wex_it_panel">
+                            <h3>Clientes sin próxima visita</h3>
+                            <ul t-if="state.data.customers_without_next_visit.length">
+                                <li t-foreach="state.data.customers_without_next_visit" t-as="customer" t-key="customer.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('res.partner', customer.id)">
+                                        <t t-esc="customer.name"/>
+                                    </button>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">Todos los clientes tienen ya una próxima actividad.</div>
+                        </div>
+                        <div class="o_wex_it_panel">
+                            <h3>Activos con incidencias</h3>
+                            <ul t-if="state.data.problematic_assets.length">
+                                <li t-foreach="state.data.problematic_assets" t-as="asset" t-key="asset.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('wex.it.asset', asset.id)">
+                                        <t t-esc="asset.internal_code"/> - <t t-esc="asset.name"/>
+                                    </button>
+                                    <span class="text-muted"> - <t t-esc="asset.partner_id[1]"/></span>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">No hay activos con estado problemático.</div>
+                        </div>
+                        <div class="o_wex_it_panel">
+                            <h3>Servicios próximos a renovación</h3>
+                            <ul t-if="state.data.expiring_services.length">
+                                <li t-foreach="state.data.expiring_services" t-as="service" t-key="service.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('wex.it.service', service.id)">
+                                        <t t-esc="service.name"/>
+                                    </button>
+                                    <span class="text-muted"> - <t t-esc="service.renewal_date"/></span>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">No hay renovaciones próximas.</div>
+                        </div>
+                        <div class="o_wex_it_panel">
+                            <h3>Últimas actividades realizadas</h3>
+                            <ul t-if="state.data.recent_visits.length">
+                                <li t-foreach="state.data.recent_visits" t-as="visit" t-key="visit.id">
+                                    <button type="button" class="btn btn-link p-0" t-on-click="() => this.openRecord('wex.it.maintenance.visit', visit.id)">
+                                        <t t-esc="visit.name"/>
+                                    </button>
+                                    <span class="text-muted"> - <t t-esc="visit.partner_id[1]"/></span>
+                                </li>
+                            </ul>
+                            <div t-else="" class="text-muted">Todavía no hay actividades realizadas.</div>
+                        </div>
+                    </section>
+                </t>
+            </main>
+        </div>
+    </t>
+</templates>

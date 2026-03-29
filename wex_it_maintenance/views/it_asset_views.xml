@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_asset_tree" model="ir.ui.view">
+        <field name="name">wex.it.asset.tree</field>
+        <field name="model">wex.it.asset</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="internal_code"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="asset_type"/>
+                <field name="manufacturer"/>
+                <field name="model"/>
+                <field name="assigned_user"/>
+                <field name="status" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_asset_form" model="ir.ui.view">
+        <field name="name">wex.it.asset.form</field>
+        <field name="model">wex.it.asset</field>
+        <field name="arch" type="xml">
+            <form string="Activo IT">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <div class="text-muted">
+                            <field name="internal_code" readonly="1"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="asset_type"/>
+                            <field name="status"/>
+                            <field name="serial_number"/>
+                            <field name="assigned_user"/>
+                        </group>
+                        <group>
+                            <field name="manufacturer"/>
+                            <field name="model"/>
+                            <field name="location_within_customer"/>
+                            <field name="purchase_date"/>
+                            <field name="warranty_end_date"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Técnico">
+                            <group>
+                                <group>
+                                    <field name="cpu"/>
+                                    <field name="ram"/>
+                                    <field name="storage"/>
+                                    <field name="operating_system"/>
+                                </group>
+                                <group>
+                                    <field name="ip_address"/>
+                                    <field name="mac_address"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="technical_observations" placeholder="Observaciones técnicas..."/>
+                                <field name="notes" placeholder="Notas internas..."/>
+                            </group>
+                        </page>
+                        <page string="Revisiones">
+                            <field name="review_ids">
+                                <list editable="bottom">
+                                    <field name="review_date"/>
+                                    <field name="technician_id"/>
+                                    <field name="health_status"/>
+                                    <field name="next_action"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Credenciales" groups="wex_it_maintenance.group_it_maintenance_credential_user">
+                            <field name="credential_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="credential_type"/>
+                                    <field name="login"/>
+                                    <field name="rotation_due_date"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_it_asset_search" model="ir.ui.view">
+        <field name="name">wex.it.asset.search</field>
+        <field name="model">wex.it.asset</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="internal_code"/>
+                <field name="partner_id"/>
+                <field name="serial_number"/>
+                <filter name="filter_issue" string="Incidencias" domain="[('status', '=', 'issue')]"/>
+                <filter name="filter_maintenance" string="En mantenimiento" domain="[('status', '=', 'maintenance')]"/>
+                <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_type" string="Tipo" context="{'group_by': 'asset_type'}"/>
+                <filter name="group_status" string="Estado" context="{'group_by': 'status'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wex_it_assets" model="ir.actions.act_window">
+        <field name="name">Activos</field>
+        <field name="res_model">wex.it.asset</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_it_asset_search"/>
+        <field name="context">{'default_active': True}</field>
+    </record>
+</odoo>

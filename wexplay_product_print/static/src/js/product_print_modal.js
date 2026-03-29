@@ -6,7 +6,7 @@ import { registry } from "@web/core/registry";
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
-import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
+import { printOdooDocument } from "@wex_print_core/js/qz_print";
 
 class PrintCenterModal extends Component {
     setup() {
@@ -71,7 +71,10 @@ class PrintCenterModal extends Component {
             const reportName = "wexplay_product_print.report_product_label_ql700_62x29";
             const reportUrl = this._reportUrl(reportName);
 
-            await printOdooPdfUrlByKind("label", reportUrl, this.env, { copies: qty });
+            await printOdooDocument("product_label", reportUrl, this.env, {
+                copies: qty,
+                reportName,
+            });
 
             this.notification.add(`Etiqueta enviada (${qty} copias).`, { type: "success" });
         } catch (error) {

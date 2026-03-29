@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="module_category_it_maintenance_wex" model="ir.module.category">
+        <field name="name">Mantenimiento IT</field>
+        <field name="description">Permisos de mantenimiento IT</field>
+        <field name="sequence">38</field>
+    </record>
+
+    <record id="group_it_maintenance_user" model="res.groups">
+        <field name="name">Técnico de mantenimiento IT</field>
+        <field name="category_id" ref="wex_it_maintenance.module_category_it_maintenance_wex"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_it_maintenance_credential_user" model="res.groups">
+        <field name="name">Acceso a credenciales de mantenimiento IT</field>
+        <field name="category_id" ref="wex_it_maintenance.module_category_it_maintenance_wex"/>
+        <field name="implied_ids" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="group_it_maintenance_manager" model="res.groups">
+        <field name="name">Administrador de mantenimiento IT</field>
+        <field name="category_id" ref="wex_it_maintenance.module_category_it_maintenance_wex"/>
+        <field name="implied_ids" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user')), (4, ref('wex_it_maintenance.group_it_maintenance_credential_user'))]"/>
+    </record>
+
+    <record id="wex_it_asset_rule_user" model="ir.rule">
+        <field name="name">Activos IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_asset"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_asset_review_rule_user" model="ir.rule">
+        <field name="name">Revisiones de activos IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_asset_review"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_service_rule_user" model="ir.rule">
+        <field name="name">Servicios IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_service"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_credential_rule_user" model="ir.rule">
+        <field name="name">Credenciales IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_credential"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_credential_user'))]"/>
+    </record>
+
+    <record id="wex_it_template_rule_user" model="ir.rule">
+        <field name="name">Plantillas IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_maintenance_template"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_template_line_rule_user" model="ir.rule">
+        <field name="name">Líneas de plantilla IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_maintenance_template_line"/>
+        <field name="domain_force">[('template_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_visit_rule_user" model="ir.rule">
+        <field name="name">Actividades IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_maintenance_visit"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_visit_line_rule_user" model="ir.rule">
+        <field name="name">Líneas de actividad IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_maintenance_visit_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_visit_checklist_rule_user" model="ir.rule">
+        <field name="name">Checklist de actividad IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_maintenance_visit_checklist_line"/>
+        <field name="domain_force">[('visit_id.company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+</odoo>

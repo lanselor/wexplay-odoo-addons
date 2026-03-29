@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_asset_review_tree" model="ir.ui.view">
+        <field name="name">wex.it.asset.review.tree</field>
+        <field name="model">wex.it.asset.review</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="review_date"/>
+                <field name="asset_id"/>
+                <field name="partner_id"/>
+                <field name="technician_id"/>
+                <field name="health_status" widget="badge"/>
+                <field name="visit_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_asset_review_form" model="ir.ui.view">
+        <field name="name">wex.it.asset.review.form</field>
+        <field name="model">wex.it.asset.review</field>
+        <field name="arch" type="xml">
+            <form string="Revisión de activo">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="visit_id"/>
+                        </group>
+                        <group>
+                            <field name="review_date"/>
+                            <field name="technician_id"/>
+                            <field name="health_status"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="tasks_done"/>
+                        <field name="issues_found"/>
+                        <field name="recommendations"/>
+                        <field name="next_action"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_it_asset_review_search" model="ir.ui.view">
+        <field name="name">wex.it.asset.review.search</field>
+        <field name="model">wex.it.asset.review</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="asset_id"/>
+                <field name="partner_id"/>
+                <field name="technician_id"/>
+                <filter name="filter_attention" string="Requiere atención" domain="[('health_status', '=', 'attention')]"/>
+                <filter name="filter_critical" string="Crítico" domain="[('health_status', '=', 'critical')]"/>
+                <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_status" string="Estado de salud" context="{'group_by': 'health_status'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_wex_it_visit_tree" model="ir.ui.view">
+        <field name="name">wex.it.maintenance.visit.tree</field>
+        <field name="model">wex.it.maintenance.visit</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="scheduled_date"/>
+                <field name="performed_date"/>
+                <field name="technician_id"/>
+                <field name="visit_type"/>
+                <field name="activity_mode"/>
+                <field name="state" widget="badge"/>
+                <field name="next_visit_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_visit_form" model="ir.ui.view">
+        <field name="name">wex.it.maintenance.visit.form</field>
+        <field name="model">wex.it.maintenance.visit</field>
+        <field name="arch" type="xml">
+            <form string="Actividad IT">
+                <header>
+                    <button name="action_set_scheduled" string="Programar" type="object" class="btn-secondary" invisible="state != 'draft'"/>
+                    <button name="action_start" string="Iniciar" type="object" class="btn-secondary" invisible="state not in ('draft', 'scheduled')"/>
+                    <button name="action_done" string="Marcar realizada" type="object" class="btn-primary" invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_cancel" string="Cancelar" type="object" class="btn-secondary" invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_reset_to_draft" string="Volver a borrador" type="object" class="btn-secondary" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,scheduled,in_progress,done,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="technician_id"/>
+                            <field name="template_id"/>
+                            <button name="action_apply_template" string="Cargar lista de comprobación" type="object" class="btn-link" invisible="not template_id"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_date"/>
+                            <field name="performed_date"/>
+                            <field name="visit_type"/>
+                            <field name="activity_mode"/>
+                            <field name="next_visit_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="service_ids" widget="many2many_tags"/>
+                    </group>
+                    <notebook>
+                        <page string="Resumen">
+                            <field name="summary" placeholder="Resumen operativo..."/>
+                            <field name="recommendations" placeholder="Recomendaciones y siguientes acciones..."/>
+                        </page>
+                        <page string="Líneas de trabajo">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="asset_id"/>
+                                    <field name="service_id"/>
+                                    <field name="action_performed"/>
+                                    <field name="result"/>
+                                    <field name="issue_found"/>
+                                    <field name="observations"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Lista de comprobación">
+                            <field name="checklist_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="is_done"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Revisiones de activos">
+                            <field name="review_ids" readonly="1">
+                                <list>
+                                    <field name="asset_id"/>
+                                    <field name="review_date"/>
+                                    <field name="health_status"/>
+                                    <field name="technician_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_it_visit_search" model="ir.ui.view">
+        <field name="name">wex.it.maintenance.visit.search</field>
+        <field name="model">wex.it.maintenance.visit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="technician_id"/>
+                <filter name="filter_open" string="Abiertas" domain="[('state', 'in', ['draft', 'scheduled', 'in_progress'])]"/>
+                <filter name="filter_done" string="Realizadas" domain="[('state', '=', 'done')]"/>
+                <filter name="filter_overdue" string="Atrasadas" domain="[('state', 'in', ['draft', 'scheduled', 'in_progress']), ('scheduled_date', '&lt;', now())]"/>
+                <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_type" string="Tipo de visita" context="{'group_by': 'visit_type'}"/>
+                <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wex_it_visits" model="ir.actions.act_window">
+        <field name="name">Mantenimientos</field>
+        <field name="res_model">wex.it.maintenance.visit</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_it_visit_search"/>
+    </record>
+
+    <record id="action_wex_it_visit_reports" model="ir.actions.act_window">
+        <field name="name">Informes de actividad</field>
+        <field name="res_model">wex.it.maintenance.visit</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'done')]</field>
+    </record>
+
+    <record id="action_wex_it_asset_reviews" model="ir.actions.act_window">
+        <field name="name">Revisiones de activos</field>
+        <field name="res_model">wex.it.asset.review</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_it_asset_review_search"/>
+    </record>
+</odoo>

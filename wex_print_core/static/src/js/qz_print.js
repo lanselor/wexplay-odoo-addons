@@ -1,35 +1,35 @@
 /** @odoo-module **/
-console.log("🔥🔥🔥 QZ_PRINT VERSION 32 (QZ REPORTE SAT) 🔥🔥🔥");
 
 import { browser } from "@web/core/browser/browser";
+import { resolvePrintRoute, tracePrintDecision } from "@wex_print_core/js/print_router";
 
+// El asset backend ya carga la librería local; mantenemos la URL oficial como fallback.
 const QZ_JS_URL = "https://qz.io/api/qz-tray.js";
-
 const WEX_QZ_DEBUG_FORCE_LOG = true;
 const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]";
 
 let _securityConfigured = false;
 
-/* =========================================================
- * QZ BOOTSTRAP
- * ========================================================= */
-
 function loadScriptOnce(src) {
     return new Promise((resolve, reject) => {
-        const existing = [...document.getElementsByTagName("script")].find((s) => s.src === src);
-        if (existing) return resolve();
+        const existing = [...document.getElementsByTagName("script")].find((script) => script.src === src);
+        if (existing) {
+            return resolve();
+        }
 
-        const s = document.createElement("script");
-        s.src = src;
-        s.async = true;
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
-        document.head.appendChild(s);
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+        document.head.appendChild(script);
     });
 }
 
 function configureUnsignedSecurity(qz) {
-    if (_securityConfigured || !qz?.security) return;
+    if (_securityConfigured || !qz?.security) {
+        return;
+    }
     qz.security.setCertificatePromise(() => Promise.resolve(""));
     _securityConfigured = true;
 }
@@ -40,7 +40,9 @@ export async function ensureQz() {
         return window.qz;
     }
     await loadScriptOnce(QZ_JS_URL);
-    if (!window.qz) throw new Error("QZ Tray no disponible");
+    if (!window.qz) {
+        throw new Error("QZ Tray no disponible");
+    }
     configureUnsignedSecurity(window.qz);
     return window.qz;
 }
@@ -68,20 +70,35 @@ export async function disconnectQz() {
 export async function getPrinter(printerName) {
     const qz = await ensureQz();
     const printer = await qz.printers.find(printerName);
-    if (!printer) throw new Error(`Impresora no encontrada: ${printerName}`);
+    if (!printer) {
+        throw new Error(`Impresora no encontrada: ${printerName}`);
+    }
     return printer;
 }
 
-/* =========================================================
- * CONFIG BUILDERS (POR TIPO)
- * ========================================================= */
+export async function getAllPrinters() {
+    await connectQz();
+    const qz = await ensureQz();
+    return qz.printers.find();
+}
 
-/**
- * Etiquetas Brother QL:
- * - ancho fijo por rollo (29mm)
- * - altura variable (no se fija)
- * - copies configurable via opts
- */
+export async function testQzConnection() {
+    try {
+        await connectQz();
+        const qz = await ensureQz();
+        const version = await qz.api.getVersion();
+        return {
+            ok: true,
+            message: `Conexión OK (${version})`,
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            message: error?.message || String(error),
+        };
+    }
+}
+
 export function buildQlLabelConfig(printer, opts = {}) {
     const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
 
@@ -107,7 +124,6 @@ export function buildThermalConfig(printer) {
         scaleContent: false,
         colorType: "grayscale",
         rasterize: false,
-       // rasterize: true,
         interpolation: "nearest",
         forceDetailed: true,
         copies: 1,
@@ -139,10 +155,6 @@ function getConfigBuilderByKind(kind) {
     }
 }
 
-/* =========================================================
- * CORE PRINT HELPER (ÚNICO)
- * ========================================================= */
-
 function arrayBufferToBase64(buffer) {
     return new Promise((resolve, reject) => {
         try {
@@ -160,8 +172,8 @@ function arrayBufferToBase64(buffer) {
             };
 
             reader.readAsDataURL(blob);
-        } catch (e) {
-            reject(e);
+        } catch (error) {
+            reject(error);
         }
     });
 }
@@ -178,26 +190,21 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
     }
 
     const config = buildConfigFn(printer);
-
     const absUrl = new URL(reportUrl, browser.location.origin).toString();
 
-    console.time("[QZ] fetch pdf");
     const resp = await fetch(absUrl, { credentials: "include", cache: "no-store" });
-    console.timeEnd("[QZ] fetch pdf");
-
-    if (!resp.ok) throw new Error(`No se pudo descargar PDF (${resp.status})`);
+    if (!resp.ok) {
+        throw new Error(`No se pudo descargar PDF (${resp.status})`);
+    }
 
     const contentType = resp.headers.get("content-type") || "";
     if (!contentType.includes("application/pdf")) {
         throw new Error("La respuesta no es un PDF");
     }
 
-    console.time("[QZ] to base64");
     const buffer = await resp.arrayBuffer();
     const pdfBase64 = await arrayBufferToBase64(buffer);
-    console.timeEnd("[QZ] to base64");
 
-    console.time("[QZ] qz.print");
     await qz.print(config, [
         {
             type: "pixel",
@@ -206,27 +213,19 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
             data: pdfBase64,
         },
     ]);
-    console.timeEnd("[QZ] qz.print");
 
     return true;
 }
 
-/* =========================================================
- * API LEGACY (LABEL SIEMPRE)
- * ========================================================= */
-
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
-    // Legacy: etiqueta con 1 copia
-    return _printOdooPdfUrlWithConfig(reportUrl, printerName, (printer) => buildQlLabelConfig(printer, { copies: 1 }));
+    return _printOdooPdfUrlWithConfig(reportUrl, printerName, (printer) =>
+        buildQlLabelConfig(printer, { copies: 1 })
+    );
 }
-
-/* =========================================================
- * RESOLUCIÓN POR TIPO + API MODERNA
- * ========================================================= */
 
 export async function resolvePrinterName(kind, env) {
     const orm = env?.services?.orm;
-    const get = (k, d = "") => orm?.call("ir.config_parameter", "get_param", [k, d]);
+    const get = (key, defaultValue = "") => orm?.call("ir.config_parameter", "get_param", [key, defaultValue]);
 
     const printerName = await get(`wexplay_sat_print.wex_qz_${kind}_printer`, "");
     const allowFallback = (await get("wexplay_sat_print.wex_qz_allow_fallback", "true")) !== "false";
@@ -235,14 +234,29 @@ export async function resolvePrinterName(kind, env) {
     return { printerName, allowFallback, debug };
 }
 
+async function _tracePrint(env, payload) {
+    await tracePrintDecision(env, {
+        name: payload.documentCode || payload.reportName || "Print Trace",
+        document_type_id: payload.documentTypeId || false,
+        document_code: payload.documentCode || false,
+        report_name: payload.reportName || false,
+        report_url: payload.reportUrl || false,
+        requested_mode: payload.requestedMode || "legacy",
+        execution_mode: payload.executionMode || payload.requestedMode || "legacy",
+        resolution_source: payload.resolutionSource || "legacy",
+        legacy_kind: payload.kind || false,
+        printer_name: payload.printerName || false,
+        allow_fallback: !!payload.allowFallback,
+        copies: payload.copies || 1,
+        success: !!payload.success,
+        message: payload.message || false,
+    });
+}
+
 export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
     const info = await resolvePrinterName(kind, env);
-
     const copies = kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
-
     const baseBuilder = getConfigBuilderByKind(kind);
-
-    // wrapper para pasar copies solo a label
     const buildConfigFn =
         kind === "label" ? (printer) => baseBuilder(printer, { copies }) : (printer) => baseBuilder(printer);
 
@@ -258,7 +272,6 @@ export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
         throw new Error(`No hay impresora configurada para ${kind}`);
     }
 
-    // Asegurar conexión antes de consultar defaultPrinter
     await connectQz();
     const qz = await ensureQz();
     const defaultPrinter = await qz.printers.getDefault();
@@ -266,14 +279,56 @@ export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
     return _printOdooPdfUrlWithConfig(reportUrl, defaultPrinter, buildConfigFn);
 }
 
-/* =========================================================
- * DEBUG
- * ========================================================= */
+export async function printOdooDocument(documentCode, reportUrl, env, opts = {}) {
+    const route = await resolvePrintRoute(documentCode, env, opts);
+    const info = await resolvePrinterName(route.kind, env);
+    const copies = route.kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+
+    try {
+        await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
+        await _tracePrint(env, {
+            documentTypeId: route.documentType?.id,
+            documentCode: route.documentCode,
+            reportName: route.reportName,
+            reportUrl,
+            requestedMode: route.requestedMode,
+            executionMode: route.executionMode,
+            resolutionSource: route.resolutionSource,
+            kind: route.kind,
+            printerName: info.printerName || false,
+            allowFallback: info.allowFallback,
+            copies,
+            success: true,
+            message: "Printed using legacy-compatible routing.",
+        });
+        return true;
+    } catch (error) {
+        await _tracePrint(env, {
+            documentTypeId: route.documentType?.id,
+            documentCode: route.documentCode,
+            reportName: route.reportName,
+            reportUrl,
+            requestedMode: route.requestedMode,
+            executionMode: route.executionMode,
+            resolutionSource: route.resolutionSource,
+            kind: route.kind,
+            printerName: info.printerName || false,
+            allowFallback: info.allowFallback,
+            copies,
+            success: false,
+            message: error?.message || String(error),
+        });
+        throw error;
+    }
+}
 
 if (browser.location.search.includes("debug")) {
     window.WEXPLAY_QZ = {
+        printOdooDocument,
         printOdooPdfUrl,
         printOdooPdfUrlByKind,
         resolvePrinterName,
+        getAllPrinters,
+        testQzConnection,
     };
 }

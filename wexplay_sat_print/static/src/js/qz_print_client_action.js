@@ -5,7 +5,7 @@ console.log("WEXPLAY_SAT_PRINT: QZ client action (headless) cargado");
 
 import { registry } from "@web/core/registry";
 import { browser } from "@web/core/browser/browser";
-import { printOdooPdfUrlByKind } from "@wexplay_product_print/js/qz_print";
+import { printOdooDocument } from "@wex_print_core/js/qz_print";
 
 /**
  * Convierte /report/pdf/<report>/<id> a URL absoluta
@@ -36,8 +36,13 @@ async function wexQzPrintSat(env, action) {
 
     try {
         // Secuencial = más estable con colas/drivers
-        await printOdooPdfUrlByKind("label", urlLabel29x90, env, { copies: 1 });
-        await printOdooPdfUrlByKind("thermal", urlTicket80x170, env);
+        await printOdooDocument("sat_label_main", urlLabel29x90, env, {
+            copies: 1,
+            reportName: "wexplay_sat_print.report_repair_label_29x90",
+        });
+        await printOdooDocument("sat_ticket", urlTicket80x170, env, {
+            reportName: "wexplay_sat_print.report_repair_ticket_80x170",
+        });
 
         notification.add("Impresión SAT enviada a QZ Tray.", { type: "success" });
     } catch (e) {

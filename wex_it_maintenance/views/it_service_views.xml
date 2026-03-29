@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_service_tree" model="ir.ui.view">
+        <field name="name">wex.it.service.tree</field>
+        <field name="model">wex.it.service</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="service_type"/>
+                <field name="status" widget="badge"/>
+                <field name="responsible_user_id"/>
+                <field name="renewal_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_service_form" model="ir.ui.view">
+        <field name="name">wex.it.service.form</field>
+        <field name="model">wex.it.service</field>
+        <field name="arch" type="xml">
+            <form string="Servicio IT">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="service_type"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="responsible_user_id"/>
+                            <field name="renewal_date"/>
+                            <field name="documentation_url" widget="url"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notas">
+                            <field name="notes" placeholder="Notas operativas..."/>
+                        </page>
+                        <page string="Credenciales" groups="wex_it_maintenance.group_it_maintenance_credential_user">
+                            <field name="credential_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="credential_type"/>
+                                    <field name="login"/>
+                                    <field name="rotation_due_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Actividades">
+                            <field name="visit_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="technician_id"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_it_service_search" model="ir.ui.view">
+        <field name="name">wex.it.service.search</field>
+        <field name="model">wex.it.service</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="filter_active" string="Activos" domain="[('status', '=', 'active')]"/>
+                <filter name="filter_warning" string="Atención" domain="[('status', '=', 'warning')]"/>
+                <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_type" string="Tipo" context="{'group_by': 'service_type'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wex_it_services" model="ir.actions.act_window">
+        <field name="name">Servicios</field>
+        <field name="res_model">wex.it.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_it_service_search"/>
+        <field name="context">{'default_status': 'active'}</field>
+    </record>
+</odoo>
