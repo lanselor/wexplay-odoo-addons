@@ -175,11 +175,11 @@
                                 </group>
 
                                 <div class="wex_repair_form_serial">
-                                    <label for="x_imei" string="IMEI / Nº de serie"/>
+                                    <label for="x_imei" string="IMEI / N?? de serie"/>
                                     <div class="wex_repair_form_serial_row">
                                         <field name="x_imei"
                                                nolabel="1"
-                                               placeholder="15 dígitos..."
+                                               placeholder="15 d??gitos..."
                                                class="o_field_highlight"/>
                                         <button name="action_view_device_history"
                                                 type="object"
@@ -188,6 +188,14 @@
                                                 title="Ver historial del dispositivo"
                                                 invisible="not x_imei"/>
                                     </div>
+                                </div>
+
+                                <div class="wex_repair_form_accessories">
+                                    <label for="x_accessories" string="Accesorios entregados"/>
+                                    <field name="x_accessories"
+                                           widget="text"
+                                           nolabel="1"
+                                           placeholder="Cargador, funda, tarjeta SIM..."/>
                                 </div>
                             </div>
                         </div>
@@ -210,7 +218,7 @@
                                     <field name="x_unlock_code"
                                            class="fw-bold"
                                            nolabel="1"
-                                           placeholder="Código / Contraseña"/>
+                                           placeholder="C??digo / Contrase??a"/>
                                 </div>
 
                                 <div class="wex_repair_form_notice wex_repair_form_notice--warning"
@@ -219,7 +227,7 @@
                                     <field name="x_unlock_pattern"
                                            class="fw-bold"
                                            nolabel="1"
-                                           placeholder="Describe el patrón (ej: forma de Z)"/>
+                                           placeholder="Describe el patr??n (ej: forma de Z)"/>
                                 </div>
 
                                 <field name="x_unlock_notes"
@@ -228,22 +236,8 @@
                         </div>
 
                         <div class="col-12">
-                            <div class="wex_repair_form_card">
-                                <div class="wex_repair_form_eyebrow">Recepción</div>
-                                <div class="wex_repair_form_heading">
-                                    <i class="fa fa-plug"/>
-                                    <span>Accesorios entregados</span>
-                                </div>
-                                <field name="x_accessories"
-                                       widget="text"
-                                       nolabel="1"
-                                       placeholder="Cargador, funda, tarjeta SIM..."/>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6">
                             <div class="wex_repair_form_card wex_repair_form_card--issue h-100">
-                                <div class="wex_repair_form_eyebrow">Diagnóstico de entrada</div>
+                                <div class="wex_repair_form_eyebrow">Diagn??stico de entrada</div>
                                 <div class="wex_repair_form_heading">
                                     <i class="fa fa-exclamation-triangle"/>
                                     <span>Problema reportado</span>
@@ -255,17 +249,17 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-6">
+                        <div class="col-12">
                             <div class="wex_repair_form_card wex_repair_form_card--internal h-100">
                                 <div class="wex_repair_form_eyebrow">Uso interno</div>
                                 <div class="wex_repair_form_heading">
                                     <i class="fa fa-sticky-note-o"/>
-                                    <span>Notas técnicas internas</span>
+                                    <span>Notas t??cnicas internas</span>
                                 </div>
                                 <field name="x_internal_notes"
                                        widget="text"
                                        nolabel="1"
-                                       placeholder="Observaciones exclusivas para el técnico..."/>
+                                       placeholder="Observaciones exclusivas para el t??cnico..."/>
                             </div>
                         </div>
                     </div>

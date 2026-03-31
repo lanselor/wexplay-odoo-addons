@@ -14,6 +14,7 @@
         "security/security.xml",
         "security/ir.model.access.csv",
         "data/print_document_type_data.xml",
+        "views/print_shadow_views.xml",
         "views/res_config_settings_view.xml",
     ],
     "assets": {

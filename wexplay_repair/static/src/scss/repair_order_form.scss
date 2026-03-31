@@ -368,7 +368,21 @@
     margin-top: 0.95rem;
 }
 
+.o_form_view .wex_repair_form_accessories {
+    margin-top: 1rem;
+}
+
 .o_form_view .wex_repair_form_serial > label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view .wex_repair_form_accessories > label {
     display: block;
     margin-bottom: 0.45rem;
     color: var(--wex-repair-form-muted);
@@ -699,6 +713,10 @@
     min-height: 120px;
     border-radius: 12px;
     border-color: var(--wex-repair-form-border);
+}
+
+.o_form_view .wex_repair_form_accessories textarea {
+    min-height: 78px;
 }
 
 .o_form_view .wex_repair_form_group--admin {

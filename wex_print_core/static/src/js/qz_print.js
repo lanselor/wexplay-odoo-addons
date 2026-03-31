@@ -248,6 +248,12 @@ async function _tracePrint(env, payload) {
         printer_name: payload.printerName || false,
         allow_fallback: !!payload.allowFallback,
         copies: payload.copies || 1,
+        next_resolution_found: !!payload.nextResolutionFound,
+        next_profile_id: payload.nextProfileId || false,
+        next_printer_name: payload.nextPrinterName || false,
+        next_allow_fallback: !!payload.nextAllowFallback,
+        shadow_matches_legacy: !!payload.shadowMatchesLegacy,
+        next_message: payload.nextMessage || false,
         success: !!payload.success,
         message: payload.message || false,
     });
@@ -283,6 +289,11 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
     const route = await resolvePrintRoute(documentCode, env, opts);
     const info = await resolvePrinterName(route.kind, env);
     const copies = route.kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+    const nextResolution = route.nextResolution || {};
+    const shadowMatchesLegacy =
+        !!nextResolution.found &&
+        nextResolution.legacy_kind === route.kind &&
+        (!nextResolution.printer_name || nextResolution.printer_name === info.printerName);
 
     try {
         await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
@@ -298,6 +309,12 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
             printerName: info.printerName || false,
             allowFallback: info.allowFallback,
             copies,
+            nextResolutionFound: nextResolution.found,
+            nextProfileId: nextResolution.profile_id,
+            nextPrinterName: nextResolution.printer_name,
+            nextAllowFallback: nextResolution.allow_fallback,
+            shadowMatchesLegacy,
+            nextMessage: nextResolution.message,
             success: true,
             message: "Printed using legacy-compatible routing.",
         });
@@ -315,6 +332,12 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
             printerName: info.printerName || false,
             allowFallback: info.allowFallback,
             copies,
+            nextResolutionFound: nextResolution.found,
+            nextProfileId: nextResolution.profile_id,
+            nextPrinterName: nextResolution.printer_name,
+            nextAllowFallback: nextResolution.allow_fallback,
+            shadowMatchesLegacy,
+            nextMessage: nextResolution.message,
             success: false,
             message: error?.message || String(error),
         });
