@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="kiosk_entry_page" name="Wex Consent Kiosk Entry">
+        <html>
+            <head>
+                <title>Wex Consent Kiosko</title>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <meta http-equiv="refresh" t-att-content="'0;url=%s' % kiosk_src"/>
+                <style>
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: #f4f6fb;
+                        font-family: Arial, sans-serif;
+                    }
+
+                    .wex_consent_kiosk_redirect {
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #635b9a;
+                        font-size: 18px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="wex_consent_kiosk_redirect">
+                    Redirigiendo al modo kiosko...
+                </div>
+            </body>
+        </html>
+    </template>
+</odoo>

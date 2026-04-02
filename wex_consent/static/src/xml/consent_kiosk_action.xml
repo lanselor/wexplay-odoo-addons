@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_consent.ConsentKioskAction">
+        <div class="wex_consent_kiosk">
+            <div class="wex_consent_kiosk_overlay"/>
+            <div class="wex_consent_kiosk_shell">
+                <t t-if="state.loading">
+                    <div class="wex_consent_kiosk_waiting">
+                        <img class="wex_consent_kiosk_logo" src="/wex_consent/static/src/img/wexplay-logo.png" alt="Wexplay"/>
+                        <div class="spinner-border text-primary mb-3"/>
+                        <h2>Preparando kiosko de firmas</h2>
+                    </div>
+                </t>
+                <t t-elif="!state.request">
+                    <div class="wex_consent_kiosk_waiting">
+                        <img class="wex_consent_kiosk_logo" src="/wex_consent/static/src/img/wexplay-logo.png" alt="Wexplay"/>
+                        <div class="wex_consent_kiosk_badge">SAT Wexplay</div>
+                        <h1>Esperando nuevas solicitudes</h1>
+                        <p>El kiosko mostrará automáticamente la siguiente firma pendiente.</p>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="wex_consent_kiosk_form">
+                        <div class="wex_consent_kiosk_header">
+                            <div>
+                                <div class="wex_consent_kiosk_badge">Firma activa</div>
+                                <h1 t-esc="state.document?.name"/>
+                                <p class="wex_consent_kiosk_subtitle">
+                                    Confirma los consentimientos, revisa los datos y firma sobre la pantalla.
+                                </p>
+                            </div>
+                            <img class="wex_consent_kiosk_logo wex_consent_kiosk_logo--header" src="/wex_consent/static/src/img/wexplay-logo.png" alt="Wexplay"/>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <div class="wex_consent_kiosk_panel">
+                                    <div class="wex_consent_kiosk_panel_header">
+                                        <h3>Documento</h3>
+                                        <span class="wex_consent_kiosk_type" t-esc="documentTypeLabel"/>
+                                    </div>
+
+                                    <div class="wex_consent_kiosk_summary">
+                                        <p><strong>Dispositivo:</strong> <span t-esc="state.document?.device_description"/></p>
+                                        <p><strong>Avería:</strong> <span t-esc="state.document?.issue_description"/></p>
+                                        <p t-if="state.document?.repair_notes"><strong>Notas:</strong> <span t-esc="state.document?.repair_notes"/></p>
+                                    </div>
+
+                                    <div t-if="state.document?.document_type === 'reception'" class="wex_consent_kiosk_legal">
+                                        <label class="form-label">Texto legal</label>
+                                        <div class="wex_consent_kiosk_legal_box" t-esc="state.document?.legal_text"/>
+                                        <div class="wex_consent_kiosk_links">
+                                            <a href="https://www.wexplay.com/garantia/" target="_blank" rel="noopener noreferrer">
+                                                Normas de garantía
+                                            </a>
+                                            <a href="https://www.wexplay.com/preguntas-frecuentes/" target="_blank" rel="noopener noreferrer">
+                                                Preguntas frecuentes
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div t-if="state.document?.document_type === 'reception'" class="wex_consent_kiosk_checks">
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" t-model="state.legalDataProtection"/>
+                                            <span class="form-check-label">Acepto el tratamiento de datos del documento</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" t-model="state.allowEmailAll"/>
+                                            <span class="form-check-label">Autorizo comunicaciones por email, comerciales y no comerciales</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" t-model="state.allowWhatsappAll"/>
+                                            <span class="form-check-label">Autorizo comunicaciones por WhatsApp, comerciales y no comerciales</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" t-model="state.warrantyConditionsAccepted"/>
+                                            <span class="form-check-label">Acepto las condiciones de garantía</span>
+                                        </label>
+                                    </div>
+
+                                    <div t-if="state.document?.document_type === 'delivery'" class="form-check mt-3">
+                                        <input id="confirmation_ok"
+                                               class="form-check-input"
+                                               type="checkbox"
+                                               t-model="state.confirmationOk"/>
+                                        <label class="form-check-label" for="confirmation_ok" t-esc="state.document?.customer_review_statement"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="wex_consent_kiosk_panel">
+                                    <h3>Firma del cliente</h3>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nombre del firmante</label>
+                                            <input class="form-control" type="text" t-model="state.signerName"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">DNI / NIF</label>
+                                            <input class="form-control" type="text" t-model="state.signerVat"/>
+                                        </div>
+                                    </div>
+
+                                    <label class="form-label mt-4">Firma</label>
+                                    <canvas t-ref="signatureCanvas"
+                                            width="560"
+                                            height="240"
+                                            class="wex_consent_signature_canvas"
+                                            t-on-mousedown="startDrawing"
+                                            t-on-mousemove="draw"
+                                            t-on-mouseup="stopDrawing"
+                                            t-on-mouseleave="stopDrawing"
+                                            t-on-touchstart="startDrawing"
+                                            t-on-touchmove="draw"
+                                            t-on-touchend="stopDrawing"/>
+
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="button" class="btn btn-outline-secondary" t-on-click="clearSignature">
+                                            Reiniciar formulario
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" t-on-click="cancelRequest">
+                                            Cancelar proceso
+                                        </button>
+                                        <button type="button" class="btn btn-primary" t-on-click="submitSignature">
+                                            Confirmar firma
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

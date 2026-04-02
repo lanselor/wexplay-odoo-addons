@@ -120,3 +120,110 @@ Módulo Odoo 18 Community para gestionar el servicio de mantenimiento preventivo
 - Evitar estilos frágiles, hacks visuales o sobrecarga estética
 - Mantener consistencia entre formularios, listas, dashboards y bloques funcionales
 - Priorizar paneles claros, separación visual limpia y buena legibilidad
+# AGENTS.md
+
+## Objetivo del proyecto
+Desarrollar un sistema propio de consentimientos y firmas para Odoo 18 Community, integrado con `repair.order`, orientado a SAT de mostrador y con almacenamiento documental obligatorio en OCA DMS.
+
+## Contexto funcional
+El sistema debe permitir:
+- firma de recepción del dispositivo
+- firma de entrega del dispositivo
+- recogida de consentimientos RGPD y de comunicaciones
+- generación de PDFs firmados
+- guardado documental en OCA DMS
+- visualización de documentos firmados desde la reparación
+- modo kiosko para tablet o navegador dedicado
+
+## Plataforma y restricciones
+- Odoo 18 Community
+- Sin Odoo Enterprise Sign
+- No usar `sign_oca` como motor principal del flujo
+- Integración obligatoria con OCA DMS
+- Compatibilidad con entornos on-premise
+- Multiusuario
+- No bloquear otras operaciones del sistema
+
+## Principios
+- Priorizar claridad, simplicidad y mantenibilidad
+- No introducir sobreingeniería
+- No añadir funcionalidades no pedidas
+- Pensar la arquitectura con visión de futuro
+- Mantener la integración con `repair.order` limpia y estable
+- Cualquier flujo kiosko debe ser robusto y asíncrono
+- Cualquier guardado documental debe seguir una estrategia DMS coherente
+
+## Arquitectura
+- Separar claramente:
+  - extensión SAT / `repair.order`
+  - dominio de consentimientos y firmas
+  - flujo kiosko
+  - generación PDF
+  - integración documental con OCA DMS
+- Evitar helpers genéricos sin valor
+- Evitar JS innecesario en lógica de negocio
+- Mantener estados persistidos en BD para solicitudes y cola kiosko
+- Diseñar con posibilidad de reutilización futura para imágenes SAT, mantenimiento IT y otros documentos
+
+## Integración con repair.order
+El desarrollo debe incluir:
+- acceso a consentimientos desde `repair.order`
+- nuevo campo `descripción del dispositivo`
+- nuevo notebook entre datos administrativos y el notebook ya existente de piezas/servicios/notas
+- pestañas:
+  - `Imágenes`
+  - `Firmas`
+
+## Documentos a firmar
+### Recepción
+Debe incluir:
+- texto de protección de datos
+- consentimientos email y WhatsApp, comerciales y no comerciales
+- aceptación de condiciones de garantía
+- descripción de la avería
+- descripción del dispositivo
+- firma del cliente
+
+### Entrega
+Debe incluir:
+- descripción inicial de la avería
+- notas de reparación si existen
+- confirmación tipo “he revisado el dispositivo y todo está bien”
+- firma del cliente
+
+## Kiosko
+- pantalla en espera
+- al llegar solicitud, mostrar firma
+- al terminar, volver a espera
+- si llegan varias, cola
+- una firma activa a la vez
+- no bloquear `repair.order`
+- no bloquear trabajo de otros usuarios
+
+## Gestión documental
+- Integración obligatoria con OCA DMS
+- La estrategia de carpetas debe pensarse para futuro:
+  - firmas
+  - imágenes
+  - documentos SAT
+  - mantenimiento IT
+- No guardar archivos de forma improvisada sin seguir la arquitectura decidida
+
+## Dependencias y OCA
+- Usar correctamente modelos y APIs de OCA DMS y repos relacionados
+- Si falta contexto de OCA, pedir explícitamente qué repos se necesitan en local
+- No asumir APIs sin comprobarlas
+
+## Estilo de código
+- Nombres claros y directos
+- Comentarios solo cuando ayuden de verdad
+- Mantener cambios pequeños y revisables
+- No esconder la lógica importante
+- Preferir la opción más simple y mantenible cuando haya duda
+
+## Flujo de trabajo
+- Antes de cambios grandes, explicar el plan
+- Implementar por fases pequeñas
+- Indicar archivos a crear o modificar antes de cada fase
+- Mantener el módulo instalable en cada fase
+- Añadir tests para la lógica crítica

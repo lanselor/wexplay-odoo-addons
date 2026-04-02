@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_wex_consent_user" model="res.groups">
+        <field name="name">Wex Consent User</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+
+    <record id="group_wex_consent_manager" model="res.groups">
+        <field name="name">Wex Consent Manager</field>
+        <field name="category_id" ref="base.module_category_services"/>
+        <field name="implied_ids" eval="[(4, ref('wex_consent.group_wex_consent_user'))]"/>
+    </record>
+
+    <record id="group_wex_consent_kiosk" model="res.groups">
+        <field name="name">Wex Consent Kiosk</field>
+        <field name="category_id" ref="base.module_category_services"/>
+        <field name="implied_ids" eval="[(4, ref('wex_consent.group_wex_consent_user'))]"/>
+    </record>
+</odoo>

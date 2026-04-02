@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_consent_document_tree" model="ir.ui.view">
+        <field name="name">wex.consent.document.tree</field>
+        <field name="model">wex.consent.document</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" string="Nombre"/>
+                <field name="repair_order_id" string="Reparación"/>
+                <field name="document_type" string="Tipo de documento"/>
+                <field name="state" string="Estado"/>
+                <field name="signer_name" string="Firmante"/>
+                <field name="signer_vat" string="DNI / NIF"/>
+                <field name="signed_at" string="Firmado el"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_consent_document_form" model="ir.ui.view">
+        <field name="name">wex.consent.document.form</field>
+        <field name="model">wex.consent.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_request_modal"
+                            type="object"
+                            string="Enviar al kiosko"
+                            class="btn btn-primary"
+                            invisible="state == 'signed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending_signature,signed,cancelled"/>
+                </header>
+                <sheet>
+                    <group col="2">
+                        <group>
+                            <field name="name" string="Nombre"/>
+                            <field name="repair_order_id" string="Reparación"/>
+                            <field name="partner_id" string="Cliente"/>
+                            <field name="document_type" string="Tipo de documento"/>
+                        </group>
+                        <group>
+                            <field name="signer_name" string="Firmante" readonly="1"/>
+                            <field name="signer_vat" string="DNI / NIF" readonly="1"/>
+                            <field name="signed_at" string="Firmado el" readonly="1"/>
+                            <field name="dms_file_id" string="Archivo DMS" readonly="1"/>
+                            <field name="dms_directory_id" string="Directorio DMS" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Contenido">
+                            <group col="2">
+                                <group invisible="document_type != 'reception'">
+                                    <field name="legal_text" string="Texto legal" widget="text"/>
+                                    <field name="legal_data_protection" string="Protección de datos"/>
+                                    <field name="allow_email_non_commercial" string="Email no comercial"/>
+                                    <field name="allow_email_commercial" string="Email comercial"/>
+                                    <field name="allow_whatsapp_non_commercial" string="WhatsApp no comercial"/>
+                                    <field name="allow_whatsapp_commercial" string="WhatsApp comercial"/>
+                                    <field name="warranty_conditions_accepted" string="Condiciones de garantía aceptadas"/>
+                                </group>
+                                <group invisible="document_type != 'delivery'">
+                                    <field name="confirmation_ok" string="Dispositivo revisado"/>
+                                    <field name="customer_review_statement" string="Declaración del cliente"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="device_description" string="Descripción del dispositivo"/>
+                                <field name="issue_description" string="Descripción de la avería"/>
+                                <field name="repair_notes" string="Notas de reparación" invisible="document_type != 'delivery'"/>
+                            </group>
+                        </page>
+                        <page string="Firma">
+                            <group col="2">
+                                <field name="signature_image" string="Firma capturada" widget="image" readonly="1"/>
+                                <field name="pdf_file" string="PDF firmado" filename="pdf_filename" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Instantánea">
+                            <field name="snapshot_json" string="Datos guardados" widget="text" readonly="1"/>
+                        </page>
+                        <page string="Solicitudes">
+                            <field name="request_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="name" string="Nombre"/>
+                                    <field name="state" string="Estado"/>
+                                    <field name="requested_by_id" string="Solicitado por"/>
+                                    <field name="queued_at" string="En cola desde"/>
+                                    <field name="presented_at" string="Mostrada el"/>
+                                    <field name="completed_at" string="Completada el"/>
+                                    <field name="status_message" string="Mensaje"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_consent_document" model="ir.actions.act_window">
+        <field name="name">Consentimientos</field>
+        <field name="res_model">wex.consent.document</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

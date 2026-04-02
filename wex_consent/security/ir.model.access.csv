@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_consent_document_user,wex.consent.document.user,model_wex_consent_document,wex_consent.group_wex_consent_user,1,1,1,0
+access_wex_consent_document_manager,wex.consent.document.manager,model_wex_consent_document,wex_consent.group_wex_consent_manager,1,1,1,1
+access_wex_consent_request_user,wex.consent.request.user,model_wex_consent_request,wex_consent.group_wex_consent_user,1,1,1,0
+access_wex_consent_request_manager,wex.consent.request.manager,model_wex_consent_request,wex_consent.group_wex_consent_manager,1,1,1,1
+access_wex_consent_kiosk_session_user,wex.consent.kiosk.session.user,model_wex_consent_kiosk_session,wex_consent.group_wex_consent_kiosk,1,1,0,0
+access_wex_consent_kiosk_session_manager,wex.consent.kiosk.session.manager,model_wex_consent_kiosk_session,wex_consent.group_wex_consent_manager,1,1,1,1

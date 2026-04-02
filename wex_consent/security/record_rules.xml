@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="wex_consent_document_company_rule" model="ir.rule">
+        <field name="name">Wex Consent Document multi-company</field>
+        <field name="model_id" ref="model_wex_consent_document"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_consent.group_wex_consent_user'))]"/>
+    </record>
+
+    <record id="wex_consent_request_company_rule" model="ir.rule">
+        <field name="name">Wex Consent Request multi-company</field>
+        <field name="model_id" ref="model_wex_consent_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_consent.group_wex_consent_user'))]"/>
+    </record>
+
+    <record id="wex_consent_kiosk_session_company_rule" model="ir.rule">
+        <field name="name">Wex Consent Kiosk Session multi-company</field>
+        <field name="model_id" ref="model_wex_consent_kiosk_session"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_consent.group_wex_consent_kiosk')), (4, ref('wex_consent.group_wex_consent_manager'))]"/>
+    </record>
+</odoo>

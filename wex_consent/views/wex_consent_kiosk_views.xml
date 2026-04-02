@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_consent_kiosk_session_tree" model="ir.ui.view">
+        <field name="name">wex.consent.kiosk.session.tree</field>
+        <field name="model">wex.consent.kiosk.session</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" string="Nombre"/>
+                <field name="company_id" string="Compañía"/>
+                <field name="state" string="Estado"/>
+                <field name="last_seen_at" string="Última conexión"/>
+                <field name="active_request_id" string="Solicitud activa"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_consent_kiosk_session_form" model="ir.ui.view">
+        <field name="name">wex.consent.kiosk.session.form</field>
+        <field name="model">wex.consent.kiosk.session</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_kiosk"
+                            type="object"
+                            string="Abrir kiosko"
+                            class="btn btn-primary"/>
+                </header>
+                <sheet>
+                    <group col="2">
+                        <group>
+                            <field name="name" string="Nombre"/>
+                            <field name="company_id" string="Compañía"/>
+                            <field name="is_active" string="Activo"/>
+                            <field name="state" string="Estado" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="access_token" string="Token de acceso" readonly="1"/>
+                            <field name="last_seen_at" string="Última conexión" readonly="1"/>
+                            <field name="active_request_id" string="Solicitud activa" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reception_legal_text" string="Texto legal de recepción" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_consent_kiosk_session" model="ir.actions.act_window">
+        <field name="name">Configuración kiosko</field>
+        <field name="res_model">wex.consent.kiosk.session</field>
+        <field name="view_mode">form</field>
+    </record>
+
+    <record id="action_wex_consent_kiosk_client" model="ir.actions.client">
+        <field name="name">Kiosko de firmas</field>
+        <field name="tag">wex_consent.open_kiosk</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <record id="action_wex_consent_open_kiosk_url" model="ir.actions.act_url">
+        <field name="name">Abrir kiosko</field>
+        <field name="url">/wex_consent/kiosk</field>
+        <field name="target">self</field>
+    </record>
+
+    <record id="action_wex_consent_open_kiosk_configuration" model="ir.actions.server">
+        <field name="name">Configurar kiosko</field>
+        <field name="model_id" ref="model_wex_consent_kiosk_session"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_default_kiosk_configuration()</field>
+    </record>
+
+    <menuitem id="menu_wex_consent_root"
+              name="Consentimientos"
+              parent="repair.menu_repair_order"
+              sequence="90"
+              groups="wex_consent.group_wex_consent_user"/>
+
+    <menuitem id="menu_wex_consent_documents"
+              name="Registro documental"
+              parent="menu_wex_consent_root"
+              action="action_wex_consent_document"
+              sequence="10"
+              groups="wex_consent.group_wex_consent_user"/>
+
+    <menuitem id="menu_wex_consent_kiosk"
+              name="Kiosko"
+              parent="menu_wex_consent_root"
+              action="action_wex_consent_open_kiosk_url"
+              sequence="20"
+              groups="wex_consent.group_wex_consent_kiosk,wex_consent.group_wex_consent_manager"/>
+
+    <menuitem id="menu_wex_consent_kiosk_configuration"
+              name="Configuración kiosko"
+              parent="menu_wex_consent_root"
+              action="action_wex_consent_open_kiosk_configuration"
+              sequence="30"
+              groups="wex_consent.group_wex_consent_manager"/>
+</odoo>

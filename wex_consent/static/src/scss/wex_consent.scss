@@ -1,0 +1,333 @@
+.wex_consent_kiosk_mode .o_action_manager,
+.wex_consent_kiosk_mode .o_action,
+.wex_consent_kiosk_mode .o_content,
+.wex_consent_kiosk_mode .o_renderer,
+.wex_consent_kiosk_mode .o_control_panel_main {
+    height: auto !important;
+    min-height: 100% !important;
+}
+
+.wex_consent_kiosk_mode .o_action_manager,
+.wex_consent_kiosk_mode .o_action,
+.wex_consent_kiosk_mode .o_content,
+.wex_consent_kiosk_mode .o_renderer {
+    overflow: auto !important;
+}
+
+.wex_consent_notebook {
+    margin-bottom: 1.25rem;
+}
+
+.wex_consent_status_card {
+    border: 1px solid #dbe1ef;
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.wex_consent_status_label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #667085;
+}
+
+.wex_consent_status_value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.wex_consent_kiosk {
+    --wex-consent-border: #dbe1ef;
+    --wex-consent-border-strong: #c6d0e3;
+    --wex-consent-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(247, 249, 252, 0.96) 100%);
+    --wex-consent-surface-soft: rgba(255, 255, 255, 0.9);
+    --wex-consent-ink: #1f2937;
+    --wex-consent-muted: #667085;
+    --wex-consent-accent: #635b9a;
+    --wex-consent-accent-soft: rgba(99, 91, 154, 0.08);
+    --wex-consent-secondary: #76c7a0;
+    --wex-consent-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+    position: relative;
+    min-height: 100vh;
+    overflow-y: auto;
+    padding: 2rem;
+    background:
+        linear-gradient(135deg, rgba(248, 249, 252, 0.9), rgba(241, 244, 250, 0.84)),
+        url("/wex_consent/static/src/img/kiosk-background.jpg") center center / cover no-repeat;
+    color: var(--wex-consent-ink);
+}
+
+.wex_consent_kiosk_overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top left, rgba(118, 199, 160, 0.16), transparent 26%),
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.12), transparent 24%);
+    pointer-events: none;
+}
+
+.wex_consent_kiosk_shell {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 1rem;
+}
+
+.wex_consent_kiosk_waiting {
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.52);
+    box-shadow: var(--wex-consent-shadow);
+    backdrop-filter: blur(5px);
+}
+
+.wex_consent_kiosk_logo {
+    width: 72vw;
+    max-width: 420px;
+    margin-bottom: 1.5rem;
+}
+
+.wex_consent_kiosk_logo--header {
+    width: 180px;
+    margin-bottom: 0;
+}
+
+.wex_consent_kiosk_badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(99, 91, 154, 0.08);
+    border: 1px solid rgba(99, 91, 154, 0.18);
+    color: var(--wex-consent-accent);
+    text-transform: uppercase;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.wex_consent_kiosk_form {
+    max-width: 1380px;
+    margin: 0 auto;
+}
+
+.wex_consent_kiosk_header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.25rem;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+    padding: 1.2rem 1.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: var(--wex-consent-shadow);
+    backdrop-filter: blur(8px);
+}
+
+.wex_consent_kiosk_header h1 {
+    margin: 0.15rem 0 0.35rem;
+    font-size: 2.6rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+}
+
+.wex_consent_kiosk_subtitle {
+    margin: 0;
+    color: var(--wex-consent-muted);
+}
+
+.wex_consent_kiosk_panel {
+    height: 100%;
+    padding: 1.35rem;
+    border: 1px solid var(--wex-consent-border);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right, var(--wex-consent-accent-soft), transparent 30%),
+        var(--wex-consent-surface);
+    box-shadow: var(--wex-consent-shadow);
+}
+
+.wex_consent_kiosk_panel h3 {
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.wex_consent_kiosk_panel_header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+}
+
+.wex_consent_kiosk_type {
+    padding: 0.38rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(118, 199, 160, 0.16);
+    color: #2d7f5f;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+}
+
+.wex_consent_kiosk_summary p {
+    margin-bottom: 0.55rem;
+}
+
+.wex_consent_kiosk_legal {
+    margin-top: 1rem;
+}
+
+.wex_consent_kiosk_legal_box {
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--wex-consent-border);
+    border-radius: 16px;
+    background: var(--wex-consent-surface-soft);
+    color: var(--wex-consent-muted);
+    white-space: pre-wrap;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.wex_consent_kiosk_links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.wex_consent_kiosk_links a {
+    color: var(--wex-consent-accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wex_consent_kiosk_links a:hover,
+.wex_consent_kiosk_links a:focus {
+    text-decoration: underline;
+}
+
+.wex_consent_kiosk_checks {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.wex_consent_kiosk_checks .form-check {
+    display: grid;
+    grid-template-columns: 1rem 1fr;
+    align-items: start;
+    column-gap: 0.7rem;
+    margin: 0;
+    padding: 0.68rem 0.85rem;
+    border: 1px solid var(--wex-consent-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.74);
+}
+
+.wex_consent_kiosk_checks .form-check-input {
+    margin: 0.18rem 0 0;
+    width: 0.92rem;
+    height: 0.92rem;
+}
+
+.wex_consent_kiosk_checks .form-check-label {
+    color: var(--wex-consent-ink);
+    font-weight: 600;
+    font-size: 0.88rem;
+    line-height: 1.28;
+}
+
+.wex_consent_signature_canvas {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 2px dashed var(--wex-consent-border-strong);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    touch-action: none;
+}
+
+@media (max-width: 991px) {
+    .wex_consent_kiosk {
+        padding: 1rem;
+    }
+
+    .wex_consent_kiosk_waiting {
+        min-height: calc(100vh - 2rem);
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    .wex_consent_kiosk_header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .wex_consent_kiosk_header h1 {
+        font-size: 2.1rem;
+    }
+
+    .wex_consent_kiosk_panel {
+        height: auto;
+    }
+}
+
+@media (max-width: 767px) {
+    .wex_consent_kiosk_form {
+        padding-bottom: 1rem;
+    }
+
+    .wex_consent_kiosk_panel {
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .wex_consent_kiosk_checks .form-check {
+        padding: 0.62rem 0.75rem;
+        border-radius: 14px;
+    }
+
+    .wex_consent_kiosk_checks .form-check-label {
+        font-size: 0.82rem;
+        line-height: 1.24;
+    }
+
+    .wex_consent_kiosk_legal_box {
+        font-size: 0.86rem;
+    }
+
+    .wex_consent_signature_canvas {
+        height: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .wex_consent_kiosk_logo {
+        width: 100%;
+    }
+
+    .wex_consent_kiosk_header h1 {
+        font-size: 1.8rem;
+    }
+
+    .wex_consent_kiosk_links {
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+}

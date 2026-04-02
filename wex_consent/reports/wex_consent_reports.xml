@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_wex_consent_reception" model="ir.actions.report">
+        <field name="name">Consentimiento de recepción</field>
+        <field name="model">wex.consent.document</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wex_consent.report_wex_consent_reception</field>
+        <field name="report_file">wex_consent.report_wex_consent_reception</field>
+        <field name="print_report_name">'Consentimiento de recepción - %s' % (object.repair_order_id.name or '')</field>
+    </record>
+
+    <record id="action_report_wex_consent_delivery" model="ir.actions.report">
+        <field name="name">Consentimiento de entrega</field>
+        <field name="model">wex.consent.document</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wex_consent.report_wex_consent_delivery</field>
+        <field name="report_file">wex_consent.report_wex_consent_delivery</field>
+        <field name="print_report_name">'Consentimiento de entrega - %s' % (object.repair_order_id.name or '')</field>
+    </record>
+
+    <template id="report_wex_consent_reception">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Documento de recepción</h2>
+                        <p><strong>Reparación:</strong> <span t-esc="doc.repair_order_id.name"/></p>
+                        <p><strong>Cliente:</strong> <span t-esc="doc.partner_id.name"/></p>
+                        <p><strong>DNI/NIF:</strong> <span t-esc="doc.signer_vat or doc.partner_vat"/></p>
+                        <p><strong>Dispositivo:</strong> <span t-esc="doc.device_description"/></p>
+                        <p><strong>Avería:</strong> <span t-esc="doc.issue_description"/></p>
+                        <p><strong>Texto legal:</strong> <span t-esc="doc.legal_text"/></p>
+                        <ul>
+                            <li>Protección de datos: <span t-esc="'Sí' if doc.legal_data_protection else 'No'"/></li>
+                            <li>Email no comercial: <span t-esc="'Sí' if doc.allow_email_non_commercial else 'No'"/></li>
+                            <li>Email comercial: <span t-esc="'Sí' if doc.allow_email_commercial else 'No'"/></li>
+                            <li>WhatsApp no comercial: <span t-esc="'Sí' if doc.allow_whatsapp_non_commercial else 'No'"/></li>
+                            <li>WhatsApp comercial: <span t-esc="'Sí' if doc.allow_whatsapp_commercial else 'No'"/></li>
+                            <li>Condiciones de garantía: <span t-esc="'Sí' if doc.warranty_conditions_accepted else 'No'"/></li>
+                        </ul>
+                        <div class="mt32">
+                            <p><strong>Firmante:</strong> <span t-esc="doc.signer_name"/></p>
+                            <p><strong>Fecha:</strong> <span t-esc="doc.signed_at"/></p>
+                            <img t-if="doc.signature_image"
+                                 t-att-src="image_data_uri(doc.signature_image)"
+                                 style="max-height: 120px; border: 1px solid #ccc; padding: 8px;"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_wex_consent_delivery">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Documento de entrega</h2>
+                        <p><strong>Reparación:</strong> <span t-esc="doc.repair_order_id.name"/></p>
+                        <p><strong>Cliente:</strong> <span t-esc="doc.partner_id.name"/></p>
+                        <p><strong>DNI/NIF:</strong> <span t-esc="doc.signer_vat or doc.partner_vat"/></p>
+                        <p><strong>Dispositivo:</strong> <span t-esc="doc.device_description"/></p>
+                        <p><strong>Avería inicial:</strong> <span t-esc="doc.issue_description"/></p>
+                        <p><strong>Notas de reparación:</strong> <span t-esc="doc.repair_notes"/></p>
+                        <p><strong>Confirmación cliente:</strong> <span t-esc="'Sí' if doc.confirmation_ok else 'No'"/></p>
+                        <p><strong>Declaración:</strong> <span t-esc="doc.customer_review_statement"/></p>
+                        <div class="mt32">
+                            <p><strong>Firmante:</strong> <span t-esc="doc.signer_name"/></p>
+                            <p><strong>Fecha:</strong> <span t-esc="doc.signed_at"/></p>
+                            <img t-if="doc.signature_image"
+                                 t-att-src="image_data_uri(doc.signature_image)"
+                                 style="max-height: 120px; border: 1px solid #ccc; padding: 8px;"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

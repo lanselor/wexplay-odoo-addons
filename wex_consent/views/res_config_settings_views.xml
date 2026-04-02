@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_wex_consent" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wex.consent</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Wex Consent" name="wex_consent" groups="wex_consent.group_wex_consent_manager">
+                    <block title="Gestión documental SAT">
+                        <setting string="Almacenamiento DMS de consentimientos">
+                            <field name="x_wex_consent_dms_storage_id"/>
+                        </setting>
+                        <setting string="Raíz DMS SAT">
+                            <field name="x_wex_consent_dms_root_directory_id"/>
+                        </setting>
+                        <setting string="Texto legal de recepción">
+                            <field name="x_wex_consent_reception_legal_text"/>
+                        </setting>
+                        <setting string="Modo kiosko">
+                            <div class="mt8">
+                                <a href="/wex_consent/kiosk" target="_blank" class="btn btn-primary">
+                                    Abrir modo kiosko
+                                </a>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

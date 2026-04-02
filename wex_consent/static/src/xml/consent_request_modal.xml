@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_consent.ConsentRequestModal">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title">Solicitud de firma</h5>
+                        <button type="button" class="btn-close btn-close-white" t-on-click="close" aria-label="Close"/>
+                    </div>
+                    <div class="modal-body p-4">
+                        <t t-if="state.loading">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary mb-3"/>
+                                <div>Consultando estado de la solicitud...</div>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="wex_consent_status_card mb-3">
+                                <div class="wex_consent_status_label">Estado actual</div>
+                                <div class="wex_consent_status_value" t-esc="stateLabel"/>
+                                <div class="text-muted" t-esc="state.request?.status_message or 'Esperando turno en el kiosko'"/>
+                            </div>
+                            <div class="d-grid gap-2" t-if="!['signed', 'cancelled', 'failed'].includes(state.request?.state)">
+                                <button type="button"
+                                        class="btn btn-outline-danger"
+                                        t-on-click="cancelRequest">
+                                    Cancelar petición de firma
+                                </button>
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        t-on-click="resendClean">
+                                    Limpiar firma y reenviar
+                                </button>
+                            </div>
+                            <div class="d-grid gap-2" t-if="['signed', 'cancelled', 'failed'].includes(state.request?.state)">
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        t-on-click="done">
+                                    Listo
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"/>
+    </t>
+</templates>
