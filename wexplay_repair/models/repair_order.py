@@ -67,6 +67,13 @@ class RepairOrder(models.Model):
         store=False,
     )
 
+    x_partner_phone_mobile_search = fields.Char(
+        string="Teléfono/Celular",
+        search="_search_x_partner_phone_mobile_search",
+        readonly=True,
+        store=False,
+    )
+
     x_partner_address_summary = fields.Char(
         string="Dirección",
         compute="_compute_x_partner_address_summary",
@@ -176,7 +183,9 @@ class RepairOrder(models.Model):
         for rec in self:
             if rec.sale_order_id:
                 rec.x_sat_total_amount = rec.sale_order_id.amount_total or 0.0
-                rec.x_sat_currency_id = rec.sale_order_id.currency_id or rec.company_id.currency_id
+                rec.x_sat_currency_id = (
+                    rec.sale_order_id.currency_id or rec.company_id.currency_id
+                )
             else:
                 rec.x_sat_total_amount = 0.0
                 rec.x_sat_currency_id = rec.company_id.currency_id
@@ -187,6 +196,36 @@ class RepairOrder(models.Model):
             user = rec.user_id
             employee = user.employee_id
             rec.x_responsible_avatar = employee.image_128 or user.partner_id.image_128
+
+    @api.model
+    def _search_x_partner_phone_mobile_search(self, operator, value):
+        if operator not in ("ilike", "like", "=", "=like", "=ilike"):
+            return [("id", "=", 0)]
+        value = (value or "").strip()
+        if not value:
+            return [("id", "=", 0)]
+
+        normalized_value = re.sub(r"\D+", "", value)
+        partner_domain = ["|", ("phone", operator, value), ("mobile", operator, value)]
+        partners = self.env["res.partner"].search(partner_domain)
+
+        if normalized_value:
+            phone_partners = self.env["res.partner"].search(
+                ["|", ("phone", "!=", False), ("mobile", "!=", False)]
+            )
+            partners |= phone_partners.filtered(
+                lambda partner: self._match_normalized_phone(partner.phone, normalized_value)
+                or self._match_normalized_phone(partner.mobile, normalized_value)
+            )
+
+        return [("partner_id", "in", partners.ids or [0])]
+
+    @api.model
+    def _match_normalized_phone(self, phone_value, normalized_value):
+        normalized_phone = re.sub(r"\D+", "", phone_value or "")
+        if not normalized_phone or not normalized_value:
+            return False
+        return normalized_value in normalized_phone
 
     @api.onchange("x_device_type")
     def _onchange_x_device_type_reset_model_brand(self):
