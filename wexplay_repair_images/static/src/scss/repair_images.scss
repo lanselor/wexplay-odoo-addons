@@ -1,0 +1,171 @@
+.wex_repair_images_panel {
+    padding: 8px 4px 0;
+}
+
+.wex_repair_images_panel__toolbar {
+    align-items: center;
+}
+
+.wex_repair_images_panel__counter {
+    font-size: 0.95rem;
+}
+
+.wex_repair_images_list {
+    thead th {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6d7280;
+        border-bottom-width: 1px;
+    }
+
+    tbody tr > td {
+        vertical-align: middle;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    tbody tr:hover {
+        background: #fafbfc;
+    }
+
+    .o_field_image img {
+        border-radius: 10px;
+        border: 1px solid #d9dee7;
+        box-shadow: 0 6px 16px rgba(26, 42, 67, 0.08);
+    }
+}
+
+.wex_repair_images_inline_form {
+    .o_group {
+        background: #fbfcfe;
+        border: 1px solid #e4e8ef;
+        border-radius: 14px;
+        padding: 16px 18px;
+    }
+}
+
+.wex_repair_images_detail_sheet {
+    .o_group {
+        background: #fbfcfe;
+        border: 1px solid #e4e8ef;
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+    }
+
+    .o_group .o_inner_group {
+        row-gap: 8px;
+    }
+
+    .o_horizontal_separator {
+        color: #5f5aa2;
+        font-size: 0.84rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+.wex_repair_images_trace_group {
+    .o_input[readonly],
+    .o_field_widget.o_readonly_modifier {
+        color: #495264;
+    }
+}
+
+.wex_repair_images_preview_group {
+    .o_field_image {
+        display: block;
+        text-align: center;
+    }
+
+    .o_field_image img {
+        border-radius: 18px;
+        border: 1px solid #d7dde8;
+        box-shadow: 0 14px 34px rgba(22, 35, 61, 0.12);
+        background: white;
+        max-height: 78vh;
+        object-fit: contain;
+    }
+}
+
+.wex_repair_image_chatter {
+    margin: 6px 0 2px;
+    padding: 14px 16px;
+    border: 1px solid #dde4ee;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fcfdff 0%, #f6f8fb 100%);
+    box-shadow: 0 10px 24px rgba(24, 39, 64, 0.08);
+}
+
+.wex_repair_image_chatter__title {
+    margin-bottom: 12px;
+    color: #213047;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.wex_repair_image_chatter__body {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.wex_repair_image_chatter__thumb_wrap {
+    flex: 0 0 92px;
+}
+
+.wex_repair_image_chatter__thumb {
+    width: 92px;
+    height: 92px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #d9dee7;
+    box-shadow: 0 6px 18px rgba(26, 42, 67, 0.10);
+    background: white;
+}
+
+.wex_repair_image_chatter__content {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.wex_repair_image_chatter__meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 14px;
+    align-items: start;
+    color: #324156;
+}
+
+.wex_repair_image_chatter__label {
+    color: #6b7280;
+    font-weight: 700;
+}
+
+.wex_repair_image_chatter__description {
+    margin-top: 10px;
+    color: #4f5b6b;
+}
+
+.wex_repair_image_chatter__tags {
+    margin-top: 12px;
+    color: #4f5b6b;
+}
+
+.wex_repair_image_chatter__tag_list {
+    margin-top: 6px;
+}
+
+.wex_repair_image_chatter__tag {
+    display: inline-block;
+    margin: 0 6px 6px 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #445064;
+    font-size: 12px;
+    font-weight: 700;
+}

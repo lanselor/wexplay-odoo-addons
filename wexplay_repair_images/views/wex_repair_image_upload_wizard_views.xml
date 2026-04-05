@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_repair_image_upload_wizard_form" model="ir.ui.view">
+        <field name="name">wex.repair.image.upload.wizard.form</field>
+        <field name="model">wex.repair.image.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Subir imágenes SAT">
+                <sheet>
+                    <group>
+                        <field name="repair_order_id"/>
+                    </group>
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="image_file" string="Imagen" widget="image" filename="filename" options="{'size': [96, 96]}"/>
+                            <field name="description" string="Descripción"/>
+                            <field name="tag_ids" string="Etiquetas" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_upload_images"
+                            type="object"
+                            string="Subir"
+                            class="btn btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

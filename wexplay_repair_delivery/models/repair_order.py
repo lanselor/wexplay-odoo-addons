@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import logging
 
 from markupsafe import Markup
@@ -29,10 +28,47 @@ class RepairOrder(models.Model):
         store=False,
     )
 
+    x_pending_delivery_filter = fields.Boolean(
+        string="Pendiente de entrega",
+        compute="_compute_x_pending_delivery_filter",
+        search="_search_x_pending_delivery_filter",
+        store=False,
+    )
+
     @api.depends("state")
     def _compute_x_is_delivered(self):
         for rec in self:
             rec.x_is_delivered = rec.state == "delivered"
+
+    @api.depends(
+        "state",
+        "product_location_src_id",
+        "company_id",
+        "company_id.x_repair_state_location_done_id",
+    )
+    def _compute_x_pending_delivery_filter(self):
+        for rec in self:
+            rec.x_pending_delivery_filter = rec._is_pending_delivery_candidate()
+
+    def _is_pending_delivery_candidate(self):
+        self.ensure_one()
+        pending_pickup_location = self.company_id.x_repair_state_location_done_id
+        return bool(
+            pending_pickup_location
+            and self.state not in ("cancel", "delivered")
+            and self.product_location_src_id == pending_pickup_location
+        )
+
+    def _search_x_pending_delivery_filter(self, operator, value):
+        if operator not in ("=", "!=") or value not in (True, False):
+            raise UserError(_("Busqueda no soportada para 'Pendiente de entrega'."))
+
+        repairs = self.env["repair.order"].search([
+            ("state", "not in", ("cancel", "delivered")),
+        ])
+        repair_ids = repairs.filtered(lambda repair: repair._is_pending_delivery_candidate()).ids
+        positive = (operator == "=" and value is True) or (operator == "!=" and value is False)
+        return [("id", "in" if positive else "not in", repair_ids)]
 
     def _get_sat_channel(self):
         self.ensure_one()
@@ -69,10 +105,15 @@ class RepairOrder(models.Model):
             if rec.state == "delivered":
                 continue
 
-            if rec.state != "done":
+            if rec.state == "cancel":
+                raise UserError(
+                    _("No se puede marcar como entregada una reparación cancelada.")
+                )
+
+            if not rec._is_pending_delivery_candidate():
                 raise UserError(
                     _(
-                        "Solo se puede marcar como entregada una reparación que esté finalizada."
+                        "Solo se puede marcar como entregada una reparación que esté en la ubicación 'Pendiente de recogida'."
                     )
                 )
 
@@ -87,6 +128,10 @@ class RepairOrder(models.Model):
             rec.write({"state": "delivered"})
 
         return True
+
+    def action_mark_delivered_multi(self):
+        self.action_mark_delivered()
+        return {"type": "ir.actions.client", "tag": "reload"}
 
     def _post_budget_accepted_to_sat_channel(self):
         for repair in self:

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_wex_image_user" model="res.groups">
+        <field name="name">Wex Image User</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+
+    <record id="group_wex_image_manager" model="res.groups">
+        <field name="name">Wex Image Manager</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="implied_ids" eval="[(4, ref('wexplay_image_core.group_wex_image_user'))]"/>
+    </record>
+</odoo>

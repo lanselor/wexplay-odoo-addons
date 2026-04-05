@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="wex_consent.group_wex_consent_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('wexplay_image_core.group_wex_image_user'))]"/>
+    </record>
+
+    <record id="wex_consent.group_wex_consent_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('wexplay_image_core.group_wex_image_manager'))]"/>
+    </record>
+</odoo>

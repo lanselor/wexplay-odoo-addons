@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <data noupdate="1">
+        <record id="mail_template_wex_consent_reception_signed" model="mail.template">
+            <field name="name">Wex Consent - Reception Signed</field>
+            <field name="model_id" ref="wex_consent.model_wex_consent_document"/>
+            <field name="subject">Recepcion SAT firmada - {{ object.repair_order_id.name or '' }}</field>
+            <field name="email_to">{{ object.partner_id.email or '' }}</field>
+            <field name="description">Correo enviado al cliente cuando se firma la recepcion SAT</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hola <t t-out="object.partner_id.name or ''"/>,
+        <br/><br/>
+        Te enviamos el documento firmado de recepcion de tu ficha SAT.
+        <br/><br/>
+        <strong>Referencia SAT:</strong> <t t-out="object.repair_order_id.name or ''"/>
+        <br/>
+        <strong>Dispositivo:</strong> <t t-out="object.device_description or ''"/>
+        <br/>
+        <strong>Averia indicada:</strong> <t t-out="object.issue_description or ''"/>
+        <br/>
+        <strong>Fecha de firma:</strong> <t t-out="object.signed_at or ''"/>
+        <br/><br/>
+        Adjuntamos el PDF firmado para tu archivo y consulta.
+        <br/><br/>
+        Informacion util:
+        <br/>
+        <a t-att-href="ctx.get('warranty_url') or '#'" target="_blank">Condiciones de garantia</a>
+        <br/>
+        <a t-att-href="ctx.get('faq_url') or '#'" target="_blank">Preguntas frecuentes</a>
+        <br/>
+        <t t-if="ctx.get('privacy_url')">
+            <a t-att-href="ctx.get('privacy_url')" target="_blank">Politica de privacidad ampliada</a>
+            <br/>
+        </t>
+        <br/>
+        Si necesitas cualquier aclaracion, puedes responder a este correo.
+        <br/><br/>
+        Un saludo,
+        <br/>
+        Wexplay SAT
+    </p>
+</div>
+            </field>
+        </record>
+
+        <record id="mail_template_wex_consent_delivery_signed" model="mail.template">
+            <field name="name">Wex Consent - Delivery Signed</field>
+            <field name="model_id" ref="wex_consent.model_wex_consent_document"/>
+            <field name="subject">Entrega SAT firmada - {{ object.repair_order_id.name or '' }}</field>
+            <field name="email_to">{{ object.partner_id.email or '' }}</field>
+            <field name="description">Correo enviado al cliente cuando se firma la entrega SAT</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hola <t t-out="object.partner_id.name or ''"/>,
+        <br/><br/>
+        Te enviamos el documento firmado de entrega de tu ficha SAT.
+        <br/><br/>
+        <strong>Referencia SAT:</strong> <t t-out="object.repair_order_id.name or ''"/>
+        <br/>
+        <strong>Dispositivo:</strong> <t t-out="object.device_description or ''"/>
+        <br/>
+        <strong>Averia inicial:</strong> <t t-out="object.issue_description or ''"/>
+        <br/>
+        <strong>Notas de reparacion:</strong> <t t-out="object.repair_notes or ''"/>
+        <br/>
+        <strong>Fecha de firma:</strong> <t t-out="object.signed_at or ''"/>
+        <br/><br/>
+        Adjuntamos el PDF firmado para tu archivo y consulta.
+        <br/><br/>
+        Informacion util:
+        <br/>
+        <a t-att-href="ctx.get('warranty_url') or '#'" target="_blank">Condiciones de garantia</a>
+        <br/>
+        <a t-att-href="ctx.get('faq_url') or '#'" target="_blank">Preguntas frecuentes</a>
+        <br/>
+        <t t-if="ctx.get('privacy_url')">
+            <a t-att-href="ctx.get('privacy_url')" target="_blank">Politica de privacidad ampliada</a>
+            <br/>
+        </t>
+        <br/>
+        Si necesitas cualquier aclaracion, puedes responder a este correo.
+        <br/><br/>
+        Un saludo,
+        <br/>
+        Wexplay SAT
+    </p>
+</div>
+            </field>
+        </record>
+    </data>
+</odoo>

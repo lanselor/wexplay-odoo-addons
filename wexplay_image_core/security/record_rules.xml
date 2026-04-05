@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="wex_image_record_company_rule" model="ir.rule">
+        <field name="name">Wex Image Record multi-company</field>
+        <field name="model_id" ref="model_wex_image_record"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wexplay_image_core.group_wex_image_user'))]"/>
+    </record>
+</odoo>

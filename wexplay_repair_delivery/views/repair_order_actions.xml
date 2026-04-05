@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_repair_order_mark_delivered_multi" model="ir.actions.server">
+        <field name="name">Marcar como entregadas</field>
+        <field name="model_id" ref="repair.model_repair_order"/>
+        <field name="binding_model_id" ref="repair.model_repair_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_mark_delivered_multi()</field>
+    </record>
+
+</odoo>

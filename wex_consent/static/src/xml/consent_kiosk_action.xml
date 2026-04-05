@@ -16,7 +16,7 @@
                         <img class="wex_consent_kiosk_logo" src="/wex_consent/static/src/img/wexplay-logo.png" alt="Wexplay"/>
                         <div class="wex_consent_kiosk_badge">SAT Wexplay</div>
                         <h1>Esperando nuevas solicitudes</h1>
-                        <p>El kiosko mostrará automáticamente la siguiente firma pendiente.</p>
+                        <p>El kiosko mostrara automaticamente la siguiente firma pendiente.</p>
                     </div>
                 </t>
                 <t t-else="">
@@ -42,7 +42,8 @@
 
                                     <div class="wex_consent_kiosk_summary">
                                         <p><strong>Dispositivo:</strong> <span t-esc="state.document?.device_description"/></p>
-                                        <p><strong>Avería:</strong> <span t-esc="state.document?.issue_description"/></p>
+                                        <p><strong>Averia:</strong> <span t-esc="state.document?.issue_description"/></p>
+                                        <p t-if="documentAccessories"><strong>Accesorios entregados:</strong> <span t-esc="documentAccessories"/></p>
                                         <p t-if="state.document?.repair_notes"><strong>Notas:</strong> <span t-esc="state.document?.repair_notes"/></p>
                                     </div>
 
@@ -51,7 +52,7 @@
                                         <div class="wex_consent_kiosk_legal_box" t-esc="state.document?.legal_text"/>
                                         <div class="wex_consent_kiosk_links">
                                             <a href="https://www.wexplay.com/garantia/" target="_blank" rel="noopener noreferrer">
-                                                Normas de garantía
+                                                Normas de garantia
                                             </a>
                                             <a href="https://www.wexplay.com/preguntas-frecuentes/" target="_blank" rel="noopener noreferrer">
                                                 Preguntas frecuentes
@@ -74,7 +75,7 @@
                                         </label>
                                         <label class="form-check">
                                             <input class="form-check-input" type="checkbox" t-model="state.warrantyConditionsAccepted"/>
-                                            <span class="form-check-label">Acepto las condiciones de garantía</span>
+                                            <span class="form-check-label">Acepto las condiciones de garantia</span>
                                         </label>
                                     </div>
 

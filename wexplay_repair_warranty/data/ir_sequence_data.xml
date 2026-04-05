@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="seq_repair_order_warranty_rma" model="ir.sequence">
+        <field name="name">RMA de garantía SAT</field>
+        <field name="code">repair.order.warranty.rma</field>
+        <field name="prefix">SATRMA/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_wex_repair_warranty_override_expired" model="res.groups">
+        <field name="name">SAT - Forzar garantía caducada</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+</odoo>

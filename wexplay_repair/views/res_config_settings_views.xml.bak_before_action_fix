@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <record id="action_wexplay_repair_settings" model="ir.actions.act_window">
+        <field name="name">Wexplay SAT</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'wexplay_repair'}</field>
+    </record>
+    
+    <menuitem
+        id="menu_wexplay_repair_settings"
+        name="Wexplay SAT"
+        parent="base.menu_administration"
+        action="action_wexplay_repair_settings"
+        sequence="95"
+        groups="base.group_system"
+        />
+    
+    <record id="res_config_settings_view_form_wexplay_repair" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wexplay.repair</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//form" position="inside">
+                <app string="Wexplay SAT" name="wexplay_sat_settings" groups="base.group_system">
+                    
+                    <block title="Workflow de presupuesto" name="wexplay_sat_budget_workflow_settings">
+                        <setting string="Ubicación para Revisión">
+                            <field name="x_repair_budget_location_estimating_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Esperando cliente">
+                            <field name="x_repair_budget_location_waiting_customer_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Aceptado">
+                            <field name="x_repair_budget_location_accepted_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Rechazado">
+                            <field name="x_repair_budget_location_rejected_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                    </block>
+                    
+                    <block title="Flujo estándar de reparación" name="wexplay_sat_repair_state_settings">
+                        <setting string="Ubicación para En reparación">
+                            <field name="x_repair_state_location_under_repair_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Finalizada">
+                            <field name="x_repair_state_location_done_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Entregada">
+                            <field name="x_repair_state_location_delivered_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Mesa Pegado">
+                            <field name="x_repair_state_location_glue_desk_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        
+                        <setting string="Ubicación para Pendiente de repuesto">
+                            <field name="x_repair_state_location_waiting_spare_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                    </block>
+                    
+                </app>
+            </xpath>
+            
+        </field>
+    </record>
+    
+</odoo>

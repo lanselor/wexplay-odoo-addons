@@ -68,3 +68,17 @@ class ResCompany(models.Model):
         domain="[('usage', '=', 'internal')]",
         help="Ubicación SAT a usar cuando una reparación queda pendiente de la llegada de un repuesto.",
     )
+
+    x_wex_consent_dms_storage_id = fields.Many2one(
+        comodel_name="dms.storage",
+        string="Almacenamiento DMS SAT",
+        domain="[('save_type', '!=', 'attachment')]",
+        help="Almacenamiento DMS común para firmas, imágenes y documentos SAT.",
+    )
+
+    x_wex_consent_dms_root_directory_id = fields.Many2one(
+        comodel_name="dms.directory",
+        string="Directorio raíz DMS SAT",
+        domain="[('is_root_directory', '=', True)]",
+        help="Directorio raíz DMS de SAT. Si no existe, podrá crearse automáticamente.",
+    )

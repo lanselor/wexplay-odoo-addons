@@ -1,23 +1,24 @@
 {
     "name": "Wexplay Repair Management",
     "version": "18.0.1.0.0",
-    "summary": "Personalizaciones del mÃ³dulo de reparaciones para Wexplay",
+    "summary": "Personalizaciones del mÃƒÂ³dulo de reparaciones para Wexplay",
     "description": """
 Wexplay Repair Management
 =========================
 
-Personalizaciones y ampliaciones del mÃ³dulo estÃ¡ndar de reparaciones (mrp_repair)
-para adaptarlo al flujo real de SAT de Wexplay (mÃ³viles, portÃ¡tiles, tablets,
-consolas y otros dispositivos electrÃ³nicos).
+Personalizaciones y ampliaciones del mÃƒÂ³dulo estÃƒÂ¡ndar de reparaciones (mrp_repair)
+para adaptarlo al flujo real de SAT de Wexplay (mÃƒÂ³viles, portÃƒÂ¡tiles, tablets,
+consolas y otros dispositivos electrÃƒÂ³nicos).
 """,
     "category": "Services/Repair",
     "author": "Wexplay",
     "website": "https://www.wexplay.com",
     "license": "LGPL-3",
-    "images": ["static/description/icon.svg"],
+    "images": ["static/description/icon.png"],
     "depends": [
         "repair",
         "repair_scheduled_date_calendar_view",
+        "dms",
         "stock",
         "mail",
         "hr",

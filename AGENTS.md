@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Objetivo del proyecto
-Módulo Odoo 18 Community para gestionar el servicio de mantenimiento preventivo, correctivo y soporte IT básico que Wexplay presta a empresas, incluyendo clientes del servicio, activos IT, visitas, revisiones, servicios, credenciales e informes.
+Desarrollar módulos personalizados para Odoo 18 Community dentro del ecosistema Wexplay, con foco en procesos reales de SAT, mantenimiento IT, consentimientos, firmas y flujos internos, priorizando siempre robustez, claridad y mantenibilidad a medio y largo plazo.
 
 ## Plataforma y contexto
 - Odoo 18 Community
@@ -9,41 +9,145 @@ Módulo Odoo 18 Community para gestionar el servicio de mantenimiento preventivo
 - Proyecto Wexplay
 - Sin Studio
 - Multi-company compatible
+- Integración con módulos personalizados Wexplay ya existentes
+- Reutilizar la lógica nativa de Odoo siempre que aporte valor real
 
-## Principios
+## Principios generales
 - Priorizar claridad, simplicidad y mantenibilidad
 - No introducir complejidad innecesaria
 - No añadir funcionalidades no pedidas
-- Mantener código fácil de retocar manualmente después
+- Mantener el código fácil de revisar y retocar manualmente después
 - Evitar hacks y soluciones frágiles
 - Separar bien responsabilidades
 - Mantener coherencia con otros módulos Wexplay
+- Favorecer soluciones sobrias antes que diseños “demasiado listos”
+- Cualquier complejidad nueva debe justificarse por necesidad real de negocio
+
+## Filosofía de arquitectura
+- Reutilizar al máximo la lógica nativa de Odoo y la lógica ya existente en módulos Wexplay
+- No crear modelos paralelos si el modelo nativo ya resuelve bien el flujo operativo
+- Preferir extensión limpia de modelos existentes frente a duplicación funcional
+- Diseñar para crecer, pero sin sobrediseñar la v1
+- Mantener un único punto de verdad para cada decisión de negocio importante
+- La complejidad debe vivir donde realmente aporta valor, no repartida por vistas, JS y condiciones duplicadas
 
 ## Convenciones de código
 - Código en inglés
-- Comentarios en español
-- Nombres claros y directos
-- Evitar helpers genéricos innecesarios
+- Comentarios en español solo cuando realmente ayuden
+- Nombres claros, directos y semánticos
+- Evitar helpers genéricos sin valor real
 - Evitar abstracciones excesivas
 - Mantener cambios pequeños y revisables
+- No esconder la lógica importante
+- Preferir la opción más simple y mantenible cuando haya duda
 
-## Arquitectura
-- Organizar claramente por:
-  - models
-  - security
-  - views
-  - reports
-  - wizard si hace falta
-  - static solo cuando aporte valor real
+## Reglas de diseño del código
+- Evitar cadenas largas de `if` anidados para lógica de negocio
+- Extraer las decisiones de negocio a métodos pequeños con nombre claro
+- Usar helpers tipo:
+  - `_can_*`
+  - `_is_*`
+  - `_has_*`
+  - `_get_*`
+  - `_prepare_*`
+  - `_check_*`
+- Los métodos `action_*` deben ser finos y actuar como orquestadores
 - Separar claramente:
-  - dominio de negocio
-  - ORM
-  - seguridad
-  - configuración
-  - reportes
-  - frontend OWL solo si realmente aporta valor
-- Evitar sobreingeniería
-- Usar abstracciones ligeras solo donde aporten valor real
+  - validación
+  - cálculo
+  - preparación de valores
+  - escritura / creación / actualización
+- Priorizar guard clauses frente a `if` anidados profundos
+- Si una condición se usa más de una vez, extraerla a un método reutilizable
+- Preferir más métodos pequeños y claros antes que pocos métodos grandes
+- Evitar métodos largos salvo necesidad muy justificada
+- No mezclar demasiadas responsabilidades en `create()` y `write()`
+- No duplicar reglas entre botón, wizard, modelo, XML y JS si pueden centralizarse
+- No mover lógica de negocio al frontend salvo necesidad real de interfaz
+
+## Arquitectura por capas
+Organizar claramente por:
+- `models`
+- `security`
+- `views`
+- `reports`
+- `wizard` si hace falta
+- `data` si hace falta
+- `static` solo cuando aporte valor real
+
+Separar claramente:
+- dominio de negocio
+- ORM / persistencia
+- seguridad
+- configuración
+- reportes
+- frontend OWL solo si realmente aporta valor
+
+## Flujo de implementación
+- Antes de cambios grandes, explicar el plan
+- Enumerar archivos a crear o modificar antes de empezar
+- Explicar en una línea la responsabilidad de cada archivo
+- Enumerar métodos nuevos relevantes por modelo/archivo
+- Implementar por fases pequeñas
+- Mantener el módulo instalable en cada fase razonable
+- Añadir tests para lógica crítica cuando proceda
+- No cambiar arquitectura sin explicarlo primero
+
+## Seguridad
+- Crear grupos específicos del módulo cuando tenga sentido
+- Restringir datos sensibles por grupos
+- No mostrar secretos en vistas lista
+- Ocultar secretos por defecto en formulario
+- Preparar la arquitectura para cifrado futuro si aplica
+- No asumir que la ocultación visual equivale a seguridad completa
+- Cualquier excepción funcional sensible debe poder restringirse por permisos o grupos
+
+## Dependencias
+- Evitar dependencias innecesarias
+- Justificar cualquier dependencia no estándar antes de introducirla
+- No usar Studio
+- No asumir APIs de terceros u OCA sin comprobarlas
+
+## UI
+- Mantener vistas limpias y operativas
+- Evitar frontend complejo salvo necesidad real
+- Usar OWL solo si aporta valor claro
+- Priorizar ergonomía real de trabajo diario
+- Mantener la base visual nativa de Odoo 18
+- No reemplazar completamente la estética de Odoo
+- Integrar la identidad visual de los módulos personalizados de Wexplay ya existentes
+- Buscar una estética híbrida:
+  - Odoo reconocible
+  - interfaz más cuidada, jerárquica y profesional
+- Usar SCSS propio solo cuando aporte valor real
+- Evitar estilos frágiles, hacks visuales o sobrecarga estética
+- Mantener consistencia entre formularios, listas, dashboards y bloques funcionales
+- Priorizar paneles claros, separación visual limpia y buena legibilidad
+
+## Reportes
+- Usar QWeb
+- Diseños claros y profesionales
+- Mantener separada la lógica de negocio del render del reporte
+- No mezclar cálculo de negocio dentro del QWeb salvo lo mínimo imprescindible
+
+## Qué evitar
+- lógica de negocio importante dispersa en JS
+- modelos ambiguos que mezclen varias responsabilidades
+- hardcodes innecesarios
+- sobreingeniería
+- helpers genéricos sin semántica clara
+- `if` anidados largos en decisiones de negocio
+- métodos gigantes difíciles de revisar
+- generar toda la v2 dentro de la v1
+- frontend complejo para resolver problemas que deben resolverse en Python
+- introducir campos, flags o modelos sin justificar el caso de negocio real
+
+---
+
+# Contexto específico: mantenimiento IT
+
+## Objetivo del proyecto
+Módulo Odoo 18 Community para gestionar el servicio de mantenimiento preventivo, correctivo y soporte IT básico que Wexplay presta a empresas, incluyendo clientes del servicio, activos IT, visitas, revisiones, servicios, credenciales e informes.
 
 ## Reglas funcionales clave
 - Solo forman parte del sistema los `res.partner` con `x_is_it_maintenance_customer = True`
@@ -71,56 +175,9 @@ Módulo Odoo 18 Community para gestionar el servicio de mantenimiento preventivo
 - seguridad base
 - menús y vistas funcionales
 
-## Seguridad
-- Crear grupos específicos del módulo
-- Restringir credenciales por grupos
-- No mostrar secretos en vistas lista
-- Ocultar secretos por defecto en formulario
-- Preparar la arquitectura para cifrado futuro
-- No asumir que la ocultación visual equivale a seguridad completa
+---
 
-## Dependencias
-- Evitar dependencias innecesarias
-- Justificar cualquier dependencia no estándar antes de introducirla
-- No usar Studio
-
-## UI
-- Mantener vistas limpias y operativas
-- Evitar frontend complejo salvo necesidad real
-- Usar OWL solo si aporta valor claro, por ejemplo dashboard
-- Priorizar ergonomía real de trabajo diario
-
-## Reportes
-- Usar QWeb
-- Diseños claros y profesionales
-- Mantener separada la lógica de negocio del render del reporte
-
-## Flujo de trabajo
-- Antes de cambios grandes, explicar el plan
-- Implementar por fases pequeñas
-- Mantener el módulo instalable en cada fase razonable
-- Añadir tests para lógica crítica cuando proceda
-- No cambiar arquitectura sin explicarlo primero
-
-## Qué evitar
-- lógica de negocio importante dispersa en JS
-- modelos ambiguos que mezclen varias responsabilidades
-- hardcodes innecesarios
-- sobreingeniería
-- generar toda la v2 dentro de la v1
-
-## UI y estilo visual
-- Mantener la base visual nativa de Odoo 18
-- No reemplazar completamente la estética de Odoo
-- Integrar la identidad visual de los módulos personalizados de Wexplay ya existentes
-- Buscar una estética híbrida:
-  - Odoo reconocible
-  - interfaz más cuidada, jerárquica y profesional
-- Usar SCSS propio solo cuando aporte valor real
-- Evitar estilos frágiles, hacks visuales o sobrecarga estética
-- Mantener consistencia entre formularios, listas, dashboards y bloques funcionales
-- Priorizar paneles claros, separación visual limpia y buena legibilidad
-# AGENTS.md
+# Contexto específico: consentimientos y firmas
 
 ## Objetivo del proyecto
 Desarrollar un sistema propio de consentimientos y firmas para Odoo 18 Community, integrado con `repair.order`, orientado a SAT de mostrador y con almacenamiento documental obligatorio en OCA DMS.
@@ -144,24 +201,10 @@ El sistema debe permitir:
 - Multiusuario
 - No bloquear otras operaciones del sistema
 
-## Principios
-- Priorizar claridad, simplicidad y mantenibilidad
-- No introducir sobreingeniería
-- No añadir funcionalidades no pedidas
-- Pensar la arquitectura con visión de futuro
+## Principios específicos
 - Mantener la integración con `repair.order` limpia y estable
 - Cualquier flujo kiosko debe ser robusto y asíncrono
 - Cualquier guardado documental debe seguir una estrategia DMS coherente
-
-## Arquitectura
-- Separar claramente:
-  - extensión SAT / `repair.order`
-  - dominio de consentimientos y firmas
-  - flujo kiosko
-  - generación PDF
-  - integración documental con OCA DMS
-- Evitar helpers genéricos sin valor
-- Evitar JS innecesario en lógica de negocio
 - Mantener estados persistidos en BD para solicitudes y cola kiosko
 - Diseñar con posibilidad de reutilización futura para imágenes SAT, mantenimiento IT y otros documentos
 
@@ -175,6 +218,7 @@ El desarrollo debe incluir:
   - `Firmas`
 
 ## Documentos a firmar
+
 ### Recepción
 Debe incluir:
 - texto de protección de datos
@@ -213,17 +257,3 @@ Debe incluir:
 - Usar correctamente modelos y APIs de OCA DMS y repos relacionados
 - Si falta contexto de OCA, pedir explícitamente qué repos se necesitan en local
 - No asumir APIs sin comprobarlas
-
-## Estilo de código
-- Nombres claros y directos
-- Comentarios solo cuando ayuden de verdad
-- Mantener cambios pequeños y revisables
-- No esconder la lógica importante
-- Preferir la opción más simple y mantenible cuando haya duda
-
-## Flujo de trabajo
-- Antes de cambios grandes, explicar el plan
-- Implementar por fases pequeñas
-- Indicar archivos a crear o modificar antes de cada fase
-- Mantener el módulo instalable en cada fase
-- Añadir tests para la lógica crítica

@@ -68,3 +68,17 @@ class ResConfigSettings(models.TransientModel):
         string="Ubicación SAT para Pendiente de repuesto",
         readonly=False,
     )
+
+    x_wex_consent_dms_storage_id = fields.Many2one(
+        related="company_id.x_wex_consent_dms_storage_id",
+        comodel_name="dms.storage",
+        string="Almacenamiento DMS SAT",
+        readonly=False,
+    )
+
+    x_wex_consent_dms_root_directory_id = fields.Many2one(
+        related="company_id.x_wex_consent_dms_root_directory_id",
+        comodel_name="dms.directory",
+        string="Directorio raíz DMS SAT",
+        readonly=False,
+    )

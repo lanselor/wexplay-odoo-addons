@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_repair_order_form_warranty_inherit" model="ir.ui.view">
+        <field name="name">repair.order.form.warranty.inherit</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="wexplay_repair_delivery.view_repair_order_form_delivery_status_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='x_sat_priority']" position="attributes">
+                <attribute name="readonly">x_is_warranty_case</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_warranty_children"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shield"
+                        invisible="x_warranty_child_count == 0">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Garantías</span>
+                        <span class="o_stat_value">
+                            <field name="x_warranty_child_count"/>
+                        </span>
+                    </div>
+                </button>
+
+                <button name="action_view_warranty_origin"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-reply"
+                        invisible="not x_warranty_origin_repair_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">SAT origen</span>
+                        <span class="o_stat_value">
+                            <field name="x_warranty_origin_repair_name" nolabel="1" readonly="1"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+            <xpath expr="//div[hasclass('wex_repair_form_sections')][1]" position="before">
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-lg-6">
+                        <div class="wex_repair_form_card wex_repair_form_card--hero wex_repair_form_card--compact wex_repair_form_card--topmatch h-100">
+                            <div class="wex_repair_form_eyebrow">Recepción SAT</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-laptop"/>
+                                <span>Dispositivo a reparar</span>
+                            </div>
+
+                            <field name="product_id"
+                                   required="1"
+                                   nolabel="1"
+                                   placeholder="Ej: iPhone 15 Pro Max / Consola PS5..."
+                                   class="wex_repair_form_product"/>
+
+                            <div class="wex_repair_form_hint">
+                                Selecciona el producto exacto para enlazar correctamente repuestos, historial y operaciones.
+                            </div>
+
+                            <div class="wex_repair_form_stack">
+                                <div class="wex_repair_form_fieldbox">
+                                    <div class="wex_repair_form_fieldbox_label">
+                                        <i class="fa fa-map-marker"/>
+                                        <span>Ubicación SAT</span>
+                                    </div>
+                                    <field name="product_location_src_id"
+                                           string="Ubicación"
+                                           nolabel="1"
+                                           domain="[('display_name', 'ilike', '/REPARACIONES/')]"
+                                           class="wex_repair_form_location"/>
+                                </div>
+
+                                <div class="wex_repair_form_fieldbox">
+                                    <div class="wex_repair_form_fieldbox_label">
+                                        <i class="fa fa-exclamation-circle"/>
+                                        <span>Prioridad SAT</span>
+                                    </div>
+                                    <field name="x_sat_priority"
+                                           nolabel="1"
+                                           widget="wex_repair_sat_priority"
+                                           class="wex_repair_form_priority"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="wex_repair_form_card wex_repair_form_card--client wex_repair_form_card--topmatch h-100">
+                            <div class="wex_repair_form_eyebrow">Cliente</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-user-circle"/>
+                                <span>Información de cliente</span>
+                            </div>
+
+                            <group col="1" class="wex_repair_form_group">
+                                <field name="partner_id" required="1"/>
+                                <field name="x_customer_reference"
+                                       placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
+                            </group>
+
+                            <div class="wex_repair_form_contact_list">
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_phone">
+                                    <i class="fa fa-phone"/>
+                                    <field name="x_partner_phone" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_mobile">
+                                    <i class="fa fa-mobile"/>
+                                    <field name="x_partner_mobile" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_email">
+                                    <i class="fa fa-envelope-o"/>
+                                    <field name="x_partner_email" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line is-secondary" invisible="not x_partner_address_summary">
+                                    <i class="fa fa-map-marker"/>
+                                    <field name="x_partner_address_summary" readonly="1" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-lg-6">
+                        <div class="wex_repair_form_card wex_repair_form_card--meta h-100">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                                <div>
+                                    <div class="wex_repair_form_eyebrow">Garantía SAT</div>
+                                    <div class="wex_repair_form_heading">
+                                        <i class="fa fa-shield"/>
+                                        <span>Garantía y RMA</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <field name="x_warranty_status"
+                                           class="wex_repair_warranty_badge"
+                                           widget="badge"
+                                           invisible="not x_show_warranty_status"
+                                           decoration-success="x_warranty_status == 'valid'"
+                                           decoration-danger="x_warranty_status in ('expired', 'forced_no_warranty', 'none')"/>
+                                    <button name="action_open_warranty_claim_wizard"
+                                            type="object"
+                                            string="Tramitar garantía"
+                                            class="btn btn-secondary"
+                                            invisible="x_is_warranty_case or x_force_no_warranty or not x_warranty_source_invoice_id or (x_warranty_parts_months == 0 and x_warranty_labor_months == 0)"/>
+                                </div>
+                            </div>
+
+                            <group col="2" class="wex_repair_form_group">
+                                <group>
+                                    <field name="x_force_no_warranty" string="Forzar sin garantía"/>
+                                    <field name="x_force_warranty_claim"
+                                           string="Tramitar como garantía de todos modos"
+                                           readonly="not x_can_override_expired_warranty"/>
+                                    <field name="x_warranty_parts_months" string="Meses garantía piezas" readonly="1"/>
+                                    <field name="x_warranty_labor_months" string="Meses garantía mano de obra" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="x_warranty_source_invoice_id" string="Factura base" readonly="1"/>
+                                    <field name="x_warranty_source_invoice_date" string="Fecha factura base" readonly="1"/>
+                                    <field name="x_warranty_parts_deadline"
+                                           string="Límite garantía piezas"
+                                           readonly="1"
+                                           class="wex_repair_warranty_deadline wex_repair_warranty_deadline--valid"
+                                           invisible="not x_show_warranty_status or not x_is_parts_under_warranty"/>
+                                    <field name="x_warranty_parts_deadline"
+                                           string="Límite garantía piezas"
+                                           readonly="1"
+                                           class="wex_repair_warranty_deadline wex_repair_warranty_deadline--expired"
+                                           invisible="not x_show_warranty_status or x_is_parts_under_warranty"/>
+                                    <field name="x_warranty_labor_deadline"
+                                           string="Límite garantía mano de obra"
+                                           readonly="1"
+                                           class="wex_repair_warranty_deadline wex_repair_warranty_deadline--valid"
+                                           invisible="not x_show_warranty_status or not x_is_labor_under_warranty"/>
+                                    <field name="x_warranty_labor_deadline"
+                                           string="Límite garantía mano de obra"
+                                           readonly="1"
+                                           class="wex_repair_warranty_deadline wex_repair_warranty_deadline--expired"
+                                           invisible="not x_show_warranty_status or x_is_labor_under_warranty"/>
+                                </group>
+                            </group>
+
+                            <div class="alert alert-warning mt-2 mb-0"
+                                 role="alert"
+                                 invisible="not x_force_no_warranty">
+                                Esta orden se ha marcado manualmente como sin garantía.
+                            </div>
+
+                            <div class="alert alert-info mt-2 mb-0"
+                                 role="alert"
+                                 invisible="not x_force_warranty_claim">
+                                Esta orden se podrá tramitar como garantía aunque esté fuera de plazo.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="wex_repair_form_card wex_repair_form_card--meta h-100">
+                            <div class="wex_repair_form_eyebrow">Equipo interno</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-users"/>
+                                <span>Recepción y responsable</span>
+                            </div>
+
+                            <div class="wex_repair_form_people">
+                                <div class="wex_repair_form_person">
+                                    <field name="x_reception_employee_avatar"
+                                           widget="image"
+                                           class="wex_repair_form_person_avatar"
+                                           options="{'size': [56, 56], 'preview_image': 'x_reception_employee_avatar'}"
+                                           nolabel="1"/>
+                                    <div class="wex_repair_form_person_body">
+                                        <div class="wex_repair_form_person_role">Recepciona</div>
+                                        <field name="x_reception_employee_id" required="1" nolabel="1"/>
+                                    </div>
+                                </div>
+
+                                <div class="wex_repair_form_person">
+                                    <field name="x_responsible_avatar"
+                                           widget="image"
+                                           class="wex_repair_form_person_avatar"
+                                           options="{'size': [56, 56], 'preview_image': 'x_responsible_avatar'}"
+                                           nolabel="1"/>
+                                    <div class="wex_repair_form_person_body">
+                                        <div class="wex_repair_form_person_role">Responsable</div>
+                                        <field name="user_id" nolabel="1" readonly="0"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+
+            <xpath expr="(//div[hasclass('wex_repair_form_intro')])[1]" position="replace"/>
+            <xpath expr="//div[hasclass('wex_repair_form_intro')][.//div[hasclass('wex_repair_form_card--client')]]" position="replace"/>
+
+            <xpath expr="//sheet" position="inside">
+                <field name="x_is_warranty_case" invisible="1"/>
+                <field name="x_warranty_origin_repair_id" invisible="1"/>
+                <field name="x_warranty_child_count" invisible="1"/>
+                <field name="x_show_warranty_status" invisible="1"/>
+                <field name="x_can_override_expired_warranty" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_repair_order_search_warranty_inherit" model="ir.ui.view">
+        <field name="name">repair.order.search.warranty.inherit</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Garantía"
+                        name="warranty_cases"
+                        domain="[('x_is_warranty_case', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

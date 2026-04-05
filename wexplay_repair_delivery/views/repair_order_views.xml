@@ -4,10 +4,20 @@
     <record id="view_repair_order_form_delivery_status_inherit" model="ir.ui.view">
         <field name="name">repair.order.form.delivery.status.inherit</field>
         <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="inherit_id" ref="wexplay_repair_workflow.view_repair_order_form_wexplay_budget_workflow"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="attributes">
                 <attribute name="statusbar_visible">draft,confirmed,under_repair,done,delivered,cancel</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_mark_ready_for_pickup_from_glue']" position="after">
+                <button
+                    name="action_mark_delivered"
+                    type="object"
+                    string="Entregado"
+                    class="btn btn-secondary"
+                    invisible="state not in ('done', 'cancel') or state == 'delivered'"
+                />
             </xpath>
         </field>
     </record>

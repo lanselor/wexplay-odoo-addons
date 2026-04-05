@@ -19,6 +19,26 @@ class ResConfigSettings(models.TransientModel):
     x_wex_consent_reception_legal_text = fields.Text(
         string="Texto legal de recepción",
     )
+    x_wex_consent_auto_send_reception_email = fields.Boolean(
+        string="Enviar correo automático de recepción",
+        config_parameter="wex_consent.auto_send_reception_email",
+    )
+    x_wex_consent_auto_send_delivery_email = fields.Boolean(
+        string="Enviar correo automático de entrega",
+        config_parameter="wex_consent.auto_send_delivery_email",
+    )
+    x_wex_consent_warranty_url = fields.Char(
+        string="URL de garantía",
+        config_parameter="wex_consent.warranty_url",
+    )
+    x_wex_consent_faq_url = fields.Char(
+        string="URL de preguntas frecuentes",
+        config_parameter="wex_consent.faq_url",
+    )
+    x_wex_consent_privacy_url = fields.Char(
+        string="URL de privacidad extendida",
+        config_parameter="wex_consent.privacy_url",
+    )
 
     def get_values(self):
         res = super().get_values()

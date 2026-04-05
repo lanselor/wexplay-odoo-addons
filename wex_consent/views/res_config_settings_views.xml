@@ -25,6 +25,23 @@
                             </div>
                         </setting>
                     </block>
+                    <block title="Correos automáticos">
+                        <setting string="Enviar correo automático al firmar recepción">
+                            <field name="x_wex_consent_auto_send_reception_email"/>
+                        </setting>
+                        <setting string="Enviar correo automático al firmar entrega">
+                            <field name="x_wex_consent_auto_send_delivery_email"/>
+                        </setting>
+                        <setting string="URL de condiciones de garantía">
+                            <field name="x_wex_consent_warranty_url" placeholder="https://www.wexplay.com/garantia/"/>
+                        </setting>
+                        <setting string="URL de preguntas frecuentes">
+                            <field name="x_wex_consent_faq_url" placeholder="https://www.wexplay.com/preguntas-frecuentes/"/>
+                        </setting>
+                        <setting string="URL de privacidad extendida">
+                            <field name="x_wex_consent_privacy_url" placeholder="https://www.wexplay.com/politica-de-privacidad/"/>
+                        </setting>
+                    </block>
                 </app>
             </xpath>
         </field>

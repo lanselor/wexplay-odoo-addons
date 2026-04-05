@@ -1,0 +1,84 @@
+.o_form_view .wex_repair_warranty_badge .badge,
+.o_form_view .wex_repair_warranty_badge .o_selection_badge {
+    min-height: 2rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_warranty_deadline {
+    font-weight: 700;
+}
+
+.o_form_view .wex_repair_warranty_deadline--valid .o_field_widget,
+.o_form_view .wex_repair_warranty_deadline--valid .o_input,
+.o_form_view .wex_repair_warranty_deadline--valid input {
+    color: #1f8b4c;
+    font-weight: 700;
+}
+
+.o_form_view .wex_repair_warranty_deadline--expired .o_field_widget,
+.o_form_view .wex_repair_warranty_deadline--expired .o_input,
+.o_form_view .wex_repair_warranty_deadline--expired input {
+    color: #cf3341;
+    font-weight: 700;
+}
+
+.o_form_view .wex_repair_form_location,
+.o_form_view .wex_repair_form_location .o_field_widget,
+.o_form_view .wex_repair_form_location .o_input_dropdown,
+.o_form_view .wex_repair_form_location .o-autocomplete,
+.o_form_view .wex_repair_form_location input {
+    width: 100%;
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_workflow_panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid #dbe1ef;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.o_form_view .wex_repair_workflow_actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1 1 auto;
+}
+
+.o_form_view .wex_repair_workflow_status {
+    display: flex;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.o_form_view .wex_repair_workflow_status .o_statusbar_status {
+    margin-bottom: 0;
+}
+
+@media (max-width: 991.98px) {
+    .o_form_view .wex_repair_workflow_panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_form_view .wex_repair_workflow_actions {
+        justify-content: flex-start;
+    }
+
+    .o_form_view .wex_repair_workflow_status {
+        justify-content: flex-end;
+        margin-left: 0;
+    }
+}

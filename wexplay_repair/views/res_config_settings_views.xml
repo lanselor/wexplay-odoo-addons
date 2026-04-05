@@ -75,6 +75,18 @@
                                    options="{'no_create': False, 'no_open': False}"/>
                         </setting>
                     </block>
+
+                    <block title="Gestión documental SAT" name="wexplay_sat_dms_settings">
+                        <setting string="Almacenamiento DMS SAT">
+                            <field name="x_wex_consent_dms_storage_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+
+                        <setting string="Raíz DMS SAT">
+                            <field name="x_wex_consent_dms_root_directory_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                    </block>
                     
                 </app>
             </xpath>

@@ -27,6 +27,7 @@ Sistema propio de consentimientos y firma para el flujo SAT de Wexplay.
         "views/wex_consent_kiosk_views.xml",
         "views/wex_consent_templates.xml",
         "reports/wex_consent_reports.xml",
+        "data/mail_template_data.xml",
     ],
     "assets": {
         "web.assets_backend": [

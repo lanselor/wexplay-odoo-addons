@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="wex_image_tag_entry" model="wex.image.tag">
+        <field name="name">Entrada</field>
+        <field name="code">entrada</field>
+        <field name="sequence">10</field>
+        <field name="color">1</field>
+    </record>
+    <record id="wex_image_tag_diagnostic" model="wex.image.tag">
+        <field name="name">Diagnóstico</field>
+        <field name="code">diagnostico</field>
+        <field name="sequence">20</field>
+        <field name="color">2</field>
+    </record>
+    <record id="wex_image_tag_external_damage" model="wex.image.tag">
+        <field name="name">Daño externo</field>
+        <field name="code">dano_externo</field>
+        <field name="sequence">30</field>
+        <field name="color">3</field>
+    </record>
+    <record id="wex_image_tag_interior" model="wex.image.tag">
+        <field name="name">Interior</field>
+        <field name="code">interior</field>
+        <field name="sequence">40</field>
+        <field name="color">4</field>
+    </record>
+    <record id="wex_image_tag_repair" model="wex.image.tag">
+        <field name="name">Reparación</field>
+        <field name="code">reparacion</field>
+        <field name="sequence">50</field>
+        <field name="color">5</field>
+    </record>
+    <record id="wex_image_tag_final_result" model="wex.image.tag">
+        <field name="name">Resultado final</field>
+        <field name="code">resultado_final</field>
+        <field name="sequence">60</field>
+        <field name="color">6</field>
+    </record>
+    <record id="wex_image_tag_accessories" model="wex.image.tag">
+        <field name="name">Accesorios</field>
+        <field name="code">accesorios</field>
+        <field name="sequence">70</field>
+        <field name="color">7</field>
+    </record>
+    <record id="wex_image_tag_humidity" model="wex.image.tag">
+        <field name="name">Humedad</field>
+        <field name="code">humedad</field>
+        <field name="sequence">80</field>
+        <field name="color">8</field>
+    </record>
+</odoo>

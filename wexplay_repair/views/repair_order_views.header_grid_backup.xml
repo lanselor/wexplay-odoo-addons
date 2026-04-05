@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Backup experimental no cargado por el modulo.
+    Intento de convertir la cabecera superior en una reticula 2x2
+    para encajar Garantia SAT junto a Equipo interno.
+-->
+<odoo>
+    <record id="view_repair_order_form_wexplay_header_grid_backup" model="ir.ui.view">
+        <field name="name">repair.order.form.wexplay.header.grid.backup</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="(//sheet//field[@name='under_warranty'])[1]" position="after">
+                <div class="wex_repair_form_grid_row wex_repair_form_grid_row--top">
+                    <div class="wex_repair_form_grid_slot">
+                        <div class="wex_repair_form_card wex_repair_form_card--hero wex_repair_form_card--compact wex_repair_form_card--topmatch h-100">
+                            <div class="wex_repair_form_eyebrow">Recepcion SAT</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-laptop"/>
+                                <span>Dispositivo a reparar</span>
+                            </div>
+
+                            <field name="product_id"
+                                   required="1"
+                                   nolabel="1"
+                                   placeholder="Ej: iPhone 15 Pro Max / Consola PS5..."
+                                   class="wex_repair_form_product"/>
+
+                            <div class="wex_repair_form_hint">
+                                Selecciona el producto exacto para enlazar correctamente repuestos, historial y operaciones.
+                            </div>
+
+                            <div class="wex_repair_form_stack">
+                                <div class="wex_repair_form_fieldbox">
+                                    <div class="wex_repair_form_fieldbox_label">
+                                        <i class="fa fa-map-marker"/>
+                                        <span>Ubicacion SAT</span>
+                                    </div>
+                                    <field name="product_location_src_id"
+                                           string="Ubicacion"
+                                           nolabel="1"
+                                           domain="[('display_name', 'ilike', '/REPARACIONES/')]"
+                                           class="wex_repair_form_location"/>
+                                </div>
+
+                                <div class="wex_repair_form_fieldbox">
+                                    <div class="wex_repair_form_fieldbox_label">
+                                        <i class="fa fa-exclamation-circle"/>
+                                        <span>Prioridad SAT</span>
+                                    </div>
+                                    <field name="x_sat_priority"
+                                           nolabel="1"
+                                           widget="wex_repair_sat_priority"
+                                           class="wex_repair_form_priority"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wex_repair_form_grid_slot">
+                        <div class="wex_repair_form_card wex_repair_form_card--client wex_repair_form_card--topmatch h-100">
+                            <div class="wex_repair_form_eyebrow">Cliente</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-user-circle"/>
+                                <span>Informacion de cliente</span>
+                            </div>
+
+                            <group col="1" class="wex_repair_form_group">
+                                <field name="partner_id" required="1"/>
+                                <field name="x_customer_reference"
+                                       placeholder="Ej.: RMA-45821 / OT-Cliente-1029"/>
+                            </group>
+
+                            <div class="wex_repair_form_contact_list">
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_phone">
+                                    <i class="fa fa-phone"/>
+                                    <field name="x_partner_phone" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_mobile">
+                                    <i class="fa fa-mobile"/>
+                                    <field name="x_partner_mobile" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line" invisible="not x_partner_email">
+                                    <i class="fa fa-envelope-o"/>
+                                    <field name="x_partner_email" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="wex_repair_form_contact_line is-secondary" invisible="not x_partner_address_summary">
+                                    <i class="fa fa-map-marker"/>
+                                    <field name="x_partner_address_summary" readonly="1" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+
+            <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
+                <div class="wex_repair_form_grid_row wex_repair_form_grid_row--secondary">
+                    <div class="wex_repair_form_grid_slot wex_repair_form_grid_slot--warranty-placeholder"/>
+
+                    <div class="wex_repair_form_grid_slot wex_repair_form_grid_slot--internal">
+                        <div class="wex_repair_form_card wex_repair_form_card--meta h-100">
+                            <div class="wex_repair_form_eyebrow">Equipo interno</div>
+                            <div class="wex_repair_form_heading">
+                                <i class="fa fa-users"/>
+                                <span>Recepcion y responsable</span>
+                            </div>
+
+                            <div class="wex_repair_form_people">
+                                <div class="wex_repair_form_person">
+                                    <field name="x_reception_employee_avatar"
+                                           widget="image"
+                                           class="wex_repair_form_person_avatar"
+                                           options="{'size': [56, 56], 'preview_image': 'x_reception_employee_avatar'}"
+                                           nolabel="1"/>
+                                    <div class="wex_repair_form_person_body">
+                                        <div class="wex_repair_form_person_role">Recepciona</div>
+                                        <field name="x_reception_employee_id" required="1" nolabel="1"/>
+                                    </div>
+                                </div>
+
+                                <div class="wex_repair_form_person">
+                                    <field name="x_responsible_avatar"
+                                           widget="image"
+                                           class="wex_repair_form_person_avatar"
+                                           options="{'size': [56, 56], 'preview_image': 'x_responsible_avatar'}"
+                                           nolabel="1"/>
+                                    <div class="wex_repair_form_person_body">
+                                        <div class="wex_repair_form_person_role">Responsable</div>
+                                        <field name="user_id" nolabel="1" readonly="0"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

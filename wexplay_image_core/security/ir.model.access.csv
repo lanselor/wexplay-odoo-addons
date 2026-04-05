@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_image_tag_user,wex.image.tag.user,model_wex_image_tag,wexplay_image_core.group_wex_image_user,1,0,0,0
+access_wex_image_tag_manager,wex.image.tag.manager,model_wex_image_tag,wexplay_image_core.group_wex_image_manager,1,1,1,1
+access_wex_image_record_user,wex.image.record.user,model_wex_image_record,wexplay_image_core.group_wex_image_user,1,1,1,1
+access_wex_image_record_manager,wex.image.record.manager,model_wex_image_record,wexplay_image_core.group_wex_image_manager,1,1,1,1

@@ -47,10 +47,25 @@ export class ConsentKioskAction extends Component {
 
     get documentTypeLabel() {
         const labels = {
-            reception: "Recepción",
+            reception: "Recepcion",
             delivery: "Entrega",
         };
         return labels[this.state.document?.document_type] || this.state.document?.document_type || "";
+    }
+
+    get documentAccessories() {
+        if (this.state.document?.accessories) {
+            return this.state.document.accessories;
+        }
+        if (!this.state.document?.snapshot_json) {
+            return "";
+        }
+        try {
+            const snapshot = JSON.parse(this.state.document.snapshot_json);
+            return snapshot.accessories || "";
+        } catch {
+            return "";
+        }
     }
 
     async pollNextRequest() {
@@ -101,6 +116,8 @@ export class ConsentKioskAction extends Component {
                 "document_type",
                 "issue_description",
                 "device_description",
+                "accessories",
+                "snapshot_json",
                 "repair_notes",
                 "customer_review_statement",
                 "signer_name",
@@ -225,7 +242,7 @@ export class ConsentKioskAction extends Component {
         const canvas = this.canvasRef.el;
         const signatureImage = canvas.toDataURL("image/png").split(",")[1];
         if (!signatureImage) {
-            this.notification.add("La firma está vacía.", { type: "danger" });
+            this.notification.add("La firma esta vacia.", { type: "danger" });
             return;
         }
 
@@ -243,9 +260,7 @@ export class ConsentKioskAction extends Component {
         await this.orm.call(
             "wex.consent.request",
             "action_sign_request",
-            [[
-                this.state.request.id,
-            ], this.state.signerName, signatureImage, this.state.confirmationOk, this.state.signerVat, consentValues]
+            [[this.state.request.id], this.state.signerName, signatureImage, this.state.confirmationOk, this.state.signerVat, consentValues]
         );
         this.notification.add("Firma completada.", { type: "success" });
         this.state.request = null;

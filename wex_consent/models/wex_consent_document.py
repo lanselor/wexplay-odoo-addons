@@ -2,10 +2,13 @@
 
 import base64
 import json
+import logging
 import re
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class WexConsentDocument(models.Model):
@@ -102,6 +105,7 @@ class WexConsentDocument(models.Model):
     warranty_conditions_accepted = fields.Boolean()
     issue_description = fields.Text()
     device_description = fields.Text()
+    accessories = fields.Text()
     repair_notes = fields.Text()
     customer_review_statement = fields.Text(
         default="He revisado el dispositivo y todo está bien.",
@@ -148,6 +152,21 @@ class WexConsentDocument(models.Model):
                 "nisi ut aliquip ex ea commodo consequat."
             )
         )
+
+    @api.model
+    def _get_mail_config(self):
+        config = self.env["ir.config_parameter"].sudo()
+        return {
+            "auto_send_reception_email": config.get_param(
+                "wex_consent.auto_send_reception_email", default="False"
+            ) == "True",
+            "auto_send_delivery_email": config.get_param(
+                "wex_consent.auto_send_delivery_email", default="False"
+            ) == "True",
+            "warranty_url": config.get_param("wex_consent.warranty_url") or "https://www.wexplay.com/garantia/",
+            "faq_url": config.get_param("wex_consent.faq_url") or "https://www.wexplay.com/preguntas-frecuentes/",
+            "privacy_url": config.get_param("wex_consent.privacy_url") or "",
+        }
 
     @api.depends("request_ids.state")
     def _compute_active_request_id(self):
@@ -213,6 +232,7 @@ class WexConsentDocument(models.Model):
             "customer_vat": repair.partner_id.vat,
             "device_description": repair.x_device_description,
             "issue_description": repair.x_reported_issue,
+            "accessories": repair.x_accessories,
             "repair_notes": repair.internal_notes or repair.x_internal_notes,
             "product_name": repair.product_id.display_name,
             "serial_number": repair.x_imei,
@@ -234,6 +254,7 @@ class WexConsentDocument(models.Model):
                 "snapshot_json": json.dumps(snapshot, ensure_ascii=True, indent=2),
                 "issue_description": snapshot.get("issue_description"),
                 "device_description": snapshot.get("device_description"),
+                "accessories": snapshot.get("accessories"),
                 "repair_notes": snapshot.get("repair_notes"),
                 "signer_name": rec.signer_name or rec.partner_id.name,
                 "signer_vat": rec.signer_vat or rec.partner_vat,
@@ -288,6 +309,14 @@ class WexConsentDocument(models.Model):
         }
         return mapping[self.document_type]
 
+    def _get_email_template_xmlid(self):
+        self.ensure_one()
+        mapping = {
+            "reception": "wex_consent.mail_template_wex_consent_reception_signed",
+            "delivery": "wex_consent.mail_template_wex_consent_delivery_signed",
+        }
+        return mapping[self.document_type]
+
     def _get_signed_filename(self):
         self.ensure_one()
         suffix = "reception" if self.document_type == "reception" else "delivery"
@@ -307,70 +336,14 @@ class WexConsentDocument(models.Model):
 
     def _get_dms_safe_repair_name(self):
         self.ensure_one()
-        return self._sanitize_dms_name(
-            self.repair_order_id.name,
-            fallback="REPAIR-%s" % self.repair_order_id.id,
-        )
-
-    def _get_or_create_dms_root_directory(self):
-        self.ensure_one()
-        company = self.company_id
-        root_directory = company.x_wex_consent_dms_root_directory_id
-        if root_directory and root_directory.exists():
-            return root_directory
-
-        storage = company.x_wex_consent_dms_storage_id
-        if not storage:
-            raise UserError(
-                _("Configura primero el almacenamiento DMS para consentimientos en Ajustes.")
-            )
-
-        root_directory = self.env["dms.directory"].search(
-            [
-                ("is_root_directory", "=", True),
-                ("storage_id", "=", storage.id),
-                ("name", "=", "SAT"),
-            ],
-            limit=1,
-        )
-        if not root_directory:
-            root_directory = self.env["dms.directory"].create(
-                {
-                    "name": "SAT",
-                    "is_root_directory": True,
-                    "storage_id": storage.id,
-                }
-            )
-        company.x_wex_consent_dms_root_directory_id = root_directory
-        return root_directory
-
-    def _get_or_create_directory(self, parent_directory, name):
-        self.ensure_one()
-        directory = self.env["dms.directory"].search(
-            [
-                ("parent_id", "=", parent_directory.id),
-                ("name", "=", name),
-            ],
-            limit=1,
-        )
-        if not directory:
-            directory = self.env["dms.directory"].create(
-                {
-                    "name": name,
-                    "parent_id": parent_directory.id,
-                }
-            )
-        return directory
+        return self.repair_order_id._get_sat_dms_safe_name()
 
     def _get_or_create_signature_directory(self):
         self.ensure_one()
-        root = self._get_or_create_dms_root_directory()
-        repair_folder = self._get_or_create_directory(
-            root, self._get_dms_safe_repair_name()
+        return self.repair_order_id._get_or_create_sat_directory(
+            "SIGNATURES",
+            create_defaults=True,
         )
-        self._get_or_create_directory(repair_folder, "IMAGES")
-        self._get_or_create_directory(repair_folder, "DOCUMENTS")
-        return self._get_or_create_directory(repair_folder, "SIGNATURES")
 
     def _store_pdf_in_dms(self):
         self.ensure_one()
@@ -402,6 +375,115 @@ class WexConsentDocument(models.Model):
             }
         )
         return dms_file
+
+    def _create_signed_pdf_attachment(self):
+        self.ensure_one()
+        if not self.pdf_file:
+            return False
+        return self.env["ir.attachment"].create(
+            {
+                "name": self.pdf_filename or self._get_signed_filename(),
+                "type": "binary",
+                "datas": self.pdf_file,
+                "mimetype": "application/pdf",
+                "res_model": self._name,
+                "res_id": self.id,
+            }
+        )
+
+    def _is_auto_email_enabled(self):
+        self.ensure_one()
+        config = self._get_mail_config()
+        if self.document_type == "reception":
+            return config["auto_send_reception_email"]
+        return config["auto_send_delivery_email"]
+
+    def _send_signed_document_email(self):
+        self.ensure_one()
+        if not self.partner_id.email:
+            self._message_repair_order(
+                _(
+                    "No se envió correo automático de %(doc_type)s porque el cliente no tiene email."
+                )
+                % {
+                    "doc_type": self._get_document_type_label(self.document_type),
+                }
+            )
+            return False
+
+        if not self._is_auto_email_enabled():
+            self._message_repair_order(
+                _(
+                    "El correo automático de %(doc_type)s está desactivado en Ajustes."
+                )
+                % {
+                    "doc_type": self._get_document_type_label(self.document_type),
+                }
+            )
+            return False
+
+        if not self.pdf_file:
+            self._message_repair_order(
+                _(
+                    "No se envió correo automático de %(doc_type)s porque no existe PDF firmado."
+                )
+                % {
+                    "doc_type": self._get_document_type_label(self.document_type),
+                }
+            )
+            return False
+
+        template = self.env.ref(self._get_email_template_xmlid(), raise_if_not_found=False)
+        if not template:
+            self._message_repair_order(
+                _(
+                    "No se encontró la plantilla de correo para %(doc_type)s."
+                )
+                % {
+                    "doc_type": self._get_document_type_label(self.document_type),
+                }
+            )
+            return False
+
+        config = self._get_mail_config()
+        attachment = self._create_signed_pdf_attachment()
+        email_values = {}
+        if attachment:
+            email_values["attachment_ids"] = [(4, attachment.id)]
+
+        try:
+            template.with_context(
+                warranty_url=config["warranty_url"],
+                faq_url=config["faq_url"],
+                privacy_url=config["privacy_url"],
+            ).send_mail(
+                self.id,
+                force_send=True,
+                email_values=email_values,
+            )
+        except Exception as error:
+            _logger.exception("Error sending signed consent email for document %s", self.id)
+            self._message_repair_order(
+                _(
+                    "Error al enviar el correo automático de %(doc_type)s: %(error)s"
+                )
+                % {
+                    "doc_type": self._get_document_type_label(self.document_type),
+                    "error": str(error),
+                }
+            )
+            return False
+
+        self._message_repair_order(
+            _(
+                "Correo automático de %(doc_type)s enviado a %(email)s."
+            )
+            % {
+                "doc_type": self._get_document_type_label(self.document_type),
+                "email": self.partner_id.email,
+            }
+        )
+        return True
 
     def action_generate_signed_pdf(self):
         for rec in self:
@@ -439,13 +521,11 @@ class WexConsentDocument(models.Model):
         request=False,
     ):
         for rec in self:
-            signature_image = rec._validate_signature_image(signature_image)
-            if False:
-                raise UserError(_("La firma está vacía."))
+            clean_signature_image = rec._validate_signature_image(signature_image)
             values = {
                 "signer_name": signer_name or rec.partner_id.name,
                 "signer_vat": signer_vat or rec.partner_vat,
-                "signature_image": signature_image,
+                "signature_image": clean_signature_image,
                 "signed_at": fields.Datetime.now(),
                 "confirmation_ok": confirmation_ok,
                 "state": "signed",
@@ -464,6 +544,7 @@ class WexConsentDocument(models.Model):
                     "vat": values.get("signer_vat") or _("Sin DNI"),
                 }
             )
+            rec._send_signed_document_email()
         return True
 
     def _sync_state_from_requests(self):

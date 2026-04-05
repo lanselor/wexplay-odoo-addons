@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_warranty_repairs_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.warranty.repairs.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_warranty_repairs"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shield"
+                        invisible="x_warranty_repair_count == 0">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Garantías</span>
+                        <span class="o_stat_value">
+                            <field name="x_warranty_repair_count"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

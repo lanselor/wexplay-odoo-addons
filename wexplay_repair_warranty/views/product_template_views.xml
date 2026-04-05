@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="product_template_only_form_view_warranty_inherit" model="ir.ui.view">
+        <field name="name">product.template.form.warranty.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="SAT">
+                    <group string="Garantía SAT">
+                        <group>
+                            <field name="x_warranty_parts_months" string="Meses garantía piezas"/>
+                            <field name="x_warranty_labor_months" string="Meses garantía mano de obra"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_product_normal_form_view_warranty_inherit" model="ir.ui.view">
+        <field name="name">product.product.form.warranty.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="SAT">
+                    <group string="Garantía SAT">
+                        <group>
+                            <field name="x_warranty_parts_months" string="Meses garantía piezas"/>
+                            <field name="x_warranty_labor_months" string="Meses garantía mano de obra"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
