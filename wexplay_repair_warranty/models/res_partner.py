@@ -15,9 +15,13 @@ class ResPartner(models.Model):
     def _compute_x_warranty_repair_count(self):
         repair_model = self.env["repair.order"]
         for partner in self:
+            partner_id = partner._origin.id or partner.id
+            if not isinstance(partner_id, int):
+                partner.x_warranty_repair_count = 0
+                continue
             partner.x_warranty_repair_count = repair_model.search_count(
                 [
-                    ("partner_id", "child_of", partner.id),
+                    ("partner_id", "child_of", partner_id),
                     ("x_is_warranty_case", "=", True),
                 ]
             )
