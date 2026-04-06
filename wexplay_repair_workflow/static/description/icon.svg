@@ -30,9 +30,10 @@
     </g>
     <circle cx="256" cy="256" r="104" class="outline"/>
     <circle cx="256" cy="256" r="72" class="outline"/>
-    <path d="M178 332L332 178" class="outline heavy"/>
-    <path d="M300 170L334 136L366 168L350 186L376 212L404 190" class="outline"/>
-    <circle cx="168" cy="344" r="14" class="outline"/>
-    <circle cx="344" cy="168" r="18" fill="#73C799"/>
+    <circle cx="174" cy="200" r="24" class="solid"/>
+    <circle cx="344" cy="170" r="24" fill="#73C799"/>
+    <circle cx="338" cy="336" r="24" fill="#F6F4FB"/>
+    <path d="M202 198L316 176M344 202L338 304M314 326L204 224" class="outline thin"/>
+    <path d="M304 166L316 176L304 186M330 294L338 304L346 294M214 214L204 224L218 226" class="outline thin"/>
     
 </svg>

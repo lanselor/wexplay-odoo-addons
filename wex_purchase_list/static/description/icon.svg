@@ -18,21 +18,12 @@
     .accent.strong { stroke-width: 18; }
   </style>
   
-    <g class="solid">
-      <rect x="226" y="94" width="60" height="58" rx="10"/>
-      <rect x="226" y="360" width="60" height="58" rx="10"/>
-      <rect x="360" y="226" width="58" height="60" rx="10"/>
-      <rect x="94" y="226" width="58" height="60" rx="10"/>
-      <rect x="306" y="126" width="56" height="56" rx="10" transform="rotate(45 334 154)"/>
-      <rect x="306" y="330" width="56" height="56" rx="10" transform="rotate(45 334 358)"/>
-      <rect x="150" y="330" width="56" height="56" rx="10" transform="rotate(45 178 358)"/>
-      <rect x="150" y="126" width="56" height="56" rx="10" transform="rotate(45 178 154)"/>
-    </g>
-    <circle cx="256" cy="256" r="104" class="outline"/>
-    <circle cx="256" cy="256" r="72" class="outline"/>
-    <path d="M178 332L332 178" class="outline heavy"/>
-    <path d="M300 170L334 136L366 168L350 186L376 212L404 190" class="outline"/>
-    <circle cx="168" cy="344" r="14" class="outline"/>
-    <circle cx="344" cy="168" r="18" fill="#73C799"/>
+    <rect x="142" y="126" width="228" height="276" rx="28" class="outline"/>
+    <rect x="198" y="88" width="116" height="60" rx="22" class="solid"/>
+    <circle cx="190" cy="202" r="18" class="outline thin"/>
+    <circle cx="190" cy="264" r="18" class="outline thin"/>
+    <circle cx="190" cy="326" r="18" class="outline thin"/>
+    <path d="M224 202H324M224 264H324M224 326H324" class="outline thin"/>
+    <path d="M176 200L188 212L208 186M176 262L188 274L208 248M176 324L188 336L208 310" class="accent"/>
     
 </svg>

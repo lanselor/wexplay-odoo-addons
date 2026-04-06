@@ -111,7 +111,7 @@
         <field name="view_mode">list</field>
     </record>
 
-    <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin" web_icon="wex_print_core,static/description/icon.png"/>
     <menuitem id="menu_wex_print_profiles" name="Profiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="10" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_assignments" name="Assignments" parent="menu_wex_print_root" action="action_wex_print_assignments" sequence="20" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_traces" name="Traces" parent="menu_wex_print_root" action="action_wex_print_traces" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>

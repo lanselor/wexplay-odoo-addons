@@ -160,79 +160,97 @@
                         <span>Ficha técnica y diagnóstico</span>
                     </div>
                     <div class="row g-3">
-                        <div class="col-lg-6">
-                            <div class="wex_repair_form_card h-100">
-                                <div class="wex_repair_form_eyebrow">Ficha de equipo</div>
-                                <div class="wex_repair_form_heading">
-                                    <i class="fa fa-tablet"/>
-                                    <span>Especificaciones del terminal</span>
-                                </div>
+                        <div class="col-12">
+                            <notebook class="wex_repair_form_technical_notebook">
+                                <page string="Equipo y seguridad">
+                                    <div class="row g-3">
+                                        <div class="col-lg-6">
+                                            <div class="wex_repair_form_card h-100">
+                                                <div class="wex_repair_form_eyebrow">Ficha de equipo</div>
+                                                <div class="wex_repair_form_heading">
+                                                    <i class="fa fa-tablet"/>
+                                                    <span>Especificaciones del terminal</span>
+                                                </div>
 
-                                <group col="1" class="wex_repair_form_group">
-                                    <field name="x_device_type" widget="wex_repair_device_type_picker"/>
-                                    <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
-                                    <field name="x_model_id" placeholder="Ej: Z Flip 3..."/>
-                                </group>
+                                                <group col="1" class="wex_repair_form_group">
+                                                    <field name="x_device_type" widget="wex_repair_device_type_picker"/>
+                                                    <field name="x_brand_id" readonly="1" options="{'no_open': True}"/>
+                                                    <field name="x_model_id" placeholder="Ej: Z Flip 3..."/>
+                                                </group>
 
-                                <div class="wex_repair_form_serial">
-                                    <label for="x_imei" string="IMEI / N?? de serie"/>
-                                    <div class="wex_repair_form_serial_row">
-                                        <field name="x_imei"
-                                               nolabel="1"
-                                               placeholder="15 d??gitos..."
-                                               class="o_field_highlight"/>
-                                        <button name="action_view_device_history"
-                                                type="object"
-                                                icon="fa-search"
-                                                class="btn btn-outline-secondary"
-                                                title="Ver historial del dispositivo"
-                                                invisible="not x_imei"/>
+                                                <div class="wex_repair_form_serial">
+                                                    <label for="x_imei" string="IMEI / N?? de serie"/>
+                                                    <div class="wex_repair_form_serial_row">
+                                                        <field name="x_imei"
+                                                               nolabel="1"
+                                                               placeholder="15 d??gitos..."
+                                                               class="o_field_highlight"/>
+                                                        <button name="action_view_device_history"
+                                                                type="object"
+                                                                icon="fa-search"
+                                                                class="btn btn-outline-secondary"
+                                                                title="Ver historial del dispositivo"
+                                                                invisible="not x_imei"/>
+                                                    </div>
+                                                </div>
+
+                                                <div class="wex_repair_form_accessories">
+                                                    <label for="x_accessories" string="Accesorios entregados"/>
+                                                    <field name="x_accessories"
+                                                           widget="text"
+                                                           nolabel="1"
+                                                           placeholder="Cargador, funda, tarjeta SIM..."/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-6">
+                                            <div class="wex_repair_form_card h-100">
+                                                <div class="wex_repair_form_eyebrow">Seguridad</div>
+                                                <div class="wex_repair_form_heading">
+                                                    <i class="fa fa-lock"/>
+                                                    <span>Acceso al dispositivo</span>
+                                                </div>
+
+                                                <group col="1" class="wex_repair_form_group">
+                                                    <field name="x_unlock_type" widget="wex_repair_unlock_type_picker"/>
+                                                </group>
+
+                                                <div class="wex_repair_form_notice wex_repair_form_notice--info"
+                                                     invisible="x_unlock_type not in ('pin', 'password')">
+                                                    <i class="fa fa-key"/>
+                                                    <field name="x_unlock_code"
+                                                           class="fw-bold"
+                                                           nolabel="1"
+                                                           placeholder="C??digo / Contrase??a"/>
+                                                </div>
+
+                                                <div class="wex_repair_form_notice wex_repair_form_notice--warning"
+                                                     invisible="x_unlock_type != 'pattern'">
+                                                    <i class="fa fa-random"/>
+                                                    <field name="x_unlock_pattern"
+                                                           class="fw-bold"
+                                                           nolabel="1"
+                                                           placeholder="Describe el patr??n (ej: forma de Z)"/>
+                                                </div>
+
+                                                <field name="x_unlock_notes"
+                                                       placeholder="Notas adicionales de acceso..."/>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </page>
 
-                                <div class="wex_repair_form_accessories">
-                                    <label for="x_accessories" string="Accesorios entregados"/>
-                                    <field name="x_accessories"
-                                           widget="text"
-                                           nolabel="1"
-                                           placeholder="Cargador, funda, tarjeta SIM..."/>
-                                </div>
-                            </div>
-                        </div>
+                                <page string="Test">
+                                    <div class="alert alert-light mb-0" role="alert">
+                                        Espacio reservado para futuras pruebas.
+                                    </div>
+                                </page>
 
-                        <div class="col-lg-6">
-                            <div class="wex_repair_form_card h-100">
-                                <div class="wex_repair_form_eyebrow">Seguridad</div>
-                                <div class="wex_repair_form_heading">
-                                    <i class="fa fa-lock"/>
-                                    <span>Acceso al dispositivo</span>
-                                </div>
-
-                                <group col="1" class="wex_repair_form_group">
-                                    <field name="x_unlock_type" widget="wex_repair_unlock_type_picker"/>
-                                </group>
-
-                                <div class="wex_repair_form_notice wex_repair_form_notice--info"
-                                     invisible="x_unlock_type not in ('pin', 'password')">
-                                    <i class="fa fa-key"/>
-                                    <field name="x_unlock_code"
-                                           class="fw-bold"
-                                           nolabel="1"
-                                           placeholder="C??digo / Contrase??a"/>
-                                </div>
-
-                                <div class="wex_repair_form_notice wex_repair_form_notice--warning"
-                                     invisible="x_unlock_type != 'pattern'">
-                                    <i class="fa fa-random"/>
-                                    <field name="x_unlock_pattern"
-                                           class="fw-bold"
-                                           nolabel="1"
-                                           placeholder="Describe el patr??n (ej: forma de Z)"/>
-                                </div>
-
-                                <field name="x_unlock_notes"
-                                       placeholder="Notas adicionales de acceso..."/>
-                            </div>
+                                <page string="Firmas">
+                                    <div class="wex_repair_form_signatures_placeholder"/>
+                                </page>
+                            </notebook>
                         </div>
 
                         <div class="col-12">

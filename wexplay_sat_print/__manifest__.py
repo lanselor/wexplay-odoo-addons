@@ -1,7 +1,7 @@
 # wexplay_sat_print/__manifest__.py
 {
     "name": "Wexplay - SAT Print (QZ)",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Wexplay",
     "summary": "Centro de impresión SAT para órdenes de reparación (QZ Tray + QWeb)",
     "description": """
@@ -19,6 +19,7 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
     "author": "Wexplay",
     "website": "https://www.wexplay.com",
     "license": "LGPL-3",
+    "images": ["static/description/icon.png"],
     "depends": [
         "web",
         "repair",
