@@ -152,6 +152,17 @@ class RepairOrder(models.Model):
         for rec in self:
             rec.x_sat_currency_id = rec.company_id.currency_id
 
+    def _get_partner_address_parts(self):
+        self.ensure_one()
+        partner = self.partner_id
+        return [
+            partner.street,
+            partner.street2,
+            " ".join(filter(None, [partner.zip, partner.city])) or False,
+            partner.state_id.name,
+            partner.country_id.name,
+        ]
+
     @api.depends(
         "partner_id",
         "partner_id.street",
@@ -163,15 +174,13 @@ class RepairOrder(models.Model):
     )
     def _compute_x_partner_address_summary(self):
         for rec in self:
-            partner = rec.partner_id
-            parts = [
-                partner.street,
-                partner.street2,
-                " ".join(filter(None, [partner.zip, partner.city])) or False,
-                partner.state_id.name,
-                partner.country_id.name,
-            ]
-            rec.x_partner_address_summary = ", ".join(filter(None, parts))
+            rec.x_partner_address_summary = ", ".join(
+                filter(None, rec._get_partner_address_parts())
+            )
+
+    def _get_sale_order_currency(self):
+        self.ensure_one()
+        return self.sale_order_id.currency_id or self.company_id.currency_id
 
     @api.depends(
         "sale_order_id",
@@ -183,9 +192,7 @@ class RepairOrder(models.Model):
         for rec in self:
             if rec.sale_order_id:
                 rec.x_sat_total_amount = rec.sale_order_id.amount_total or 0.0
-                rec.x_sat_currency_id = (
-                    rec.sale_order_id.currency_id or rec.company_id.currency_id
-                )
+                rec.x_sat_currency_id = rec._get_sale_order_currency()
             else:
                 rec.x_sat_total_amount = 0.0
                 rec.x_sat_currency_id = rec.company_id.currency_id
@@ -197,27 +204,38 @@ class RepairOrder(models.Model):
             employee = user.employee_id
             rec.x_responsible_avatar = employee.image_128 or user.partner_id.image_128
 
+    def _get_partners_matching_normalized_phone(self, normalized_value):
+        self.ensure_one()
+        if not normalized_value:
+            return self.env["res.partner"]
+
+        phone_partners = self.env["res.partner"].search(
+            ["|", ("phone", "!=", False), ("mobile", "!=", False)]
+        )
+        return phone_partners.filtered(
+            lambda partner: self._match_normalized_phone(partner.phone, normalized_value)
+            or self._match_normalized_phone(partner.mobile, normalized_value)
+        )
+
+    def _get_partners_matching_phone_search(self, operator, value):
+        self.ensure_one()
+        normalized_value = re.sub(r"\D+", "", value)
+        partner_domain = ["|", ("phone", operator, value), ("mobile", operator, value)]
+        partners = self.env["res.partner"].search(partner_domain)
+        if normalized_value:
+            partners |= self._get_partners_matching_normalized_phone(normalized_value)
+        return partners
+
     @api.model
     def _search_x_partner_phone_mobile_search(self, operator, value):
         if operator not in ("ilike", "like", "=", "=like", "=ilike"):
             return [("id", "=", 0)]
+
         value = (value or "").strip()
         if not value:
             return [("id", "=", 0)]
 
-        normalized_value = re.sub(r"\D+", "", value)
-        partner_domain = ["|", ("phone", operator, value), ("mobile", operator, value)]
-        partners = self.env["res.partner"].search(partner_domain)
-
-        if normalized_value:
-            phone_partners = self.env["res.partner"].search(
-                ["|", ("phone", "!=", False), ("mobile", "!=", False)]
-            )
-            partners |= phone_partners.filtered(
-                lambda partner: self._match_normalized_phone(partner.phone, normalized_value)
-                or self._match_normalized_phone(partner.mobile, normalized_value)
-            )
-
+        partners = self._get_partners_matching_phone_search(operator, value)
         return [("partner_id", "in", partners.ids or [0])]
 
     @api.model
@@ -242,7 +260,6 @@ class RepairOrder(models.Model):
 
     def action_view_device_history(self):
         self.ensure_one()
-
         serial = (self.x_imei or "").strip()
         if not serial:
             raise UserError(_("No hay IMEI / Nº de serie informado en esta orden."))
@@ -258,87 +275,3 @@ class RepairOrder(models.Model):
                 "default_x_imei": serial,
             },
         }
-
-    @api.model
-    def _sanitize_sat_dms_name(self, name, fallback="ITEM"):
-        sanitized = (name or "").strip()
-        if not sanitized:
-            sanitized = fallback
-        sanitized = re.sub(r'[<>:"/\\\\|?*]+', "-", sanitized)
-        sanitized = re.sub(r"[\x00-\x1f]", "", sanitized)
-        sanitized = re.sub(r"\s+", " ", sanitized).strip(" .")
-        if not sanitized:
-            sanitized = fallback
-        return sanitized[:120]
-
-    def _get_sat_dms_safe_name(self):
-        self.ensure_one()
-        return self._sanitize_sat_dms_name(
-            self.name,
-            fallback="REPAIR-%s" % self.id,
-        )
-
-    def _get_sat_dms_storage(self):
-        self.ensure_one()
-        storage = self.company_id.x_wex_consent_dms_storage_id
-        if not storage:
-            raise UserError(_("Configura primero el almacenamiento DMS SAT en Ajustes."))
-        return storage
-
-    def _get_or_create_sat_root_directory(self):
-        self.ensure_one()
-        company = self.company_id
-        root_directory = company.x_wex_consent_dms_root_directory_id
-        if root_directory and root_directory.exists():
-            return root_directory
-
-        storage = self._get_sat_dms_storage()
-        root_directory = self.env["dms.directory"].search(
-            [
-                ("is_root_directory", "=", True),
-                ("storage_id", "=", storage.id),
-                ("name", "=", "SAT"),
-            ],
-            limit=1,
-        )
-        if not root_directory:
-            root_directory = self.env["dms.directory"].create(
-                {
-                    "name": "SAT",
-                    "is_root_directory": True,
-                    "storage_id": storage.id,
-                }
-            )
-        company.x_wex_consent_dms_root_directory_id = root_directory
-        return root_directory
-
-    def _get_or_create_sat_child_directory(self, parent_directory, name):
-        self.ensure_one()
-        directory = self.env["dms.directory"].search(
-            [
-                ("parent_id", "=", parent_directory.id),
-                ("name", "=", name),
-            ],
-            limit=1,
-        )
-        if not directory:
-            directory = self.env["dms.directory"].create(
-                {
-                    "name": name,
-                    "parent_id": parent_directory.id,
-                }
-            )
-        return directory
-
-    def _get_or_create_sat_repair_directory(self):
-        self.ensure_one()
-        root = self._get_or_create_sat_root_directory()
-        return self._get_or_create_sat_child_directory(root, self._get_sat_dms_safe_name())
-
-    def _get_or_create_sat_directory(self, folder_name, create_defaults=False):
-        self.ensure_one()
-        repair_directory = self._get_or_create_sat_repair_directory()
-        if create_defaults:
-            for default_name in ("IMAGES", "DOCUMENTS", "SIGNATURES"):
-                self._get_or_create_sat_child_directory(repair_directory, default_name)
-        return self._get_or_create_sat_child_directory(repair_directory, folder_name)

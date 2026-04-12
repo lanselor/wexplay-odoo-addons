@@ -1692,3 +1692,400 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+
+/* Responsive stabilization layer */
+@media (max-width: 1024px) {
+    .wex_kb_dashboard,
+    .wex_kb_explorer {
+        height: auto;
+        max-height: calc(100vh - 48px);
+        min-height: calc(100vh - 48px);
+        padding: 18px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .wex_kb_dashboard_shell,
+    .wex_kb_explorer,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_shell,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_related {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .wex_kb_explorer_sidebar_shell,
+    .wex_kb_explorer_sidebar,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_sidebar {
+        position: static;
+        top: auto;
+        min-height: auto;
+        max-height: none;
+        padding-right: 0;
+        border-right: 0;
+    }
+
+    .wex_kb_sidebar_tree_section,
+    .wex_kb_sidebar_tree_section .wex_kb_category_tree {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .wex_kb_category_grid,
+    .wex_kb_cards_grid4,
+    .wex_kb_dashboard_stats_sidebar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wex_kb_dash_header,
+    .wex_kb_toolbar_primary,
+    .wex_kb_toolbar_secondary,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_topbar,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .wex_kb_explorer_toolbar {
+        align-items: stretch;
+    }
+
+    .wex_kb_toolbar_primary,
+    .wex_kb_toolbar_secondary,
+    .wex_kb_app_header_actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .wex_kb_toolbar_primary input,
+    .wex_kb_dash_searchbox input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .o_form_view.wex_kb_article_form .o_form_sheet_bg {
+        padding: 14px;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_heading h1 {
+        font-size: 1.8rem;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor .note-editor,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor .note-editable {
+        min-height: 520px;
+    }
+}
+
+@media (max-width: 768px) {
+    .wex_kb_dashboard,
+    .wex_kb_explorer {
+        min-height: auto;
+        max-height: calc(100vh - 48px);
+        padding: 14px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .wex_kb_surface,
+    .wex_kb_sidebar_section,
+    .wex_kb_workspace_card,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_sidebar,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_topbar,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_header,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_meta_strip,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor {
+        border-radius: 12px;
+    }
+
+    .wex_kb_dashboard_article_section,
+    .wex_kb_explorer_results,
+    .wex_kb_surface,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_sidebar {
+        padding: 14px;
+    }
+
+    .wex_kb_category_grid,
+    .wex_kb_cards_grid4,
+    .wex_kb_dashboard_stats,
+    .wex_kb_dashboard_stats_sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .wex_kb_section_header,
+    .wex_kb_section_header_strong,
+    .wex_kb_active_branch,
+    .wex_kb_meta_line,
+    .wex_kb_card_header,
+    .wex_kb_tag_row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .wex_kb_dash_searchbox {
+        flex-wrap: wrap;
+        align-items: stretch;
+        padding: 10px 12px;
+    }
+
+    .wex_kb_dash_searchbox .btn,
+    .wex_kb_toolbar_primary .btn,
+    .wex_kb_toolbar_secondary .btn,
+    .wex_kb_app_header_actions .btn {
+        width: 100%;
+    }
+
+    .wex_kb_toolbar_secondary {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .wex_kb_view_switcher {
+        width: auto;
+        display: grid;
+        grid-template-columns: repeat(2, 44px);
+        justify-content: start;
+    }
+
+    .wex_kb_view_switcher_btn {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+    }
+
+    .wex_kb_toolbar_meta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--wex-kb-border);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .wex_kb_active_filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .wex_kb_filter_chip {
+        max-width: 100%;
+    }
+
+    .wex_kb_article_list_header {
+        display: none;
+    }
+
+    .wex_kb_article_list_row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .wex_kb_article_list_row > span {
+        display: grid;
+        gap: 4px;
+    }
+
+    .wex_kb_article_list_row > span::before {
+        color: var(--wex-kb-muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .wex_kb_article_list_row > span:nth-child(1)::before { content: "Art?culo"; }
+    .wex_kb_article_list_row > span:nth-child(2)::before { content: "Estado"; }
+    .wex_kb_article_list_row > span:nth-child(3)::before { content: "Acceso"; }
+    .wex_kb_article_list_row > span:nth-child(4)::before { content: "Ruta"; }
+    .wex_kb_article_list_row > span:nth-child(5)::before { content: "Responsable"; }
+    .wex_kb_article_list_row > span:nth-child(6)::before { content: "Empresa"; }
+
+    .wex_kb_article_list_path {
+        word-break: break-word;
+    }
+
+    .wex_kb_category_tree_link,
+    .wex_kb_article_tree_link,
+    .wex_kb_filter_button,
+    .wex_kb_quick_link,
+    .wex_kb_category_tile {
+        min-height: 44px;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_breadcrumbs {
+        flex-wrap: wrap;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_tools .oe_button_box {
+        width: 100%;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_tools .oe_stat_button {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_meta_strip {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_heading h1 {
+        font-size: 1.45rem;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor .note-editor,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor .note-editable {
+        min-height: 360px;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor table,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_editor .note-editable table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 640px) {
+    .wex_kb_explorer_toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .wex_kb_toolbar_secondary {
+        grid-template-columns: 1fr;
+    }
+
+    .wex_kb_view_switcher {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wex_kb_view_switcher_btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .wex_kb_dashboard,
+    .wex_kb_explorer {
+        padding: 10px;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .wex_kb_dash_header h1,
+    .wex_kb_section_header_strong h2,
+    .wex_kb_section_header h2 {
+        font-size: 1.45rem;
+        line-height: 1.1;
+    }
+
+    .wex_kb_stat_card strong {
+        font-size: 1.25rem;
+    }
+
+    .wex_kb_card_article,
+    .wex_kb_card_saved,
+    .wex_kb_cards_dashboard .wex_kb_card_article,
+    .wex_kb_cards_explorer .wex_kb_card_article {
+        min-height: 0;
+    }
+
+    .wex_kb_card_body,
+    .wex_kb_cards_dashboard .wex_kb_card_body,
+    .wex_kb_cards_explorer .wex_kb_card_body {
+        min-height: 0;
+    }
+
+    .wex_kb_tile_icon,
+    .wex_kb_workspace_icon,
+    .wex_kb_workspace_page_icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+    }
+
+    .wex_kb_category_tree_label_wrap > span,
+    .wex_kb_article_tree_label,
+    .wex_kb_quick_link_body strong {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: initial;
+    }
+
+    .wex_kb_category_tree_link,
+    .wex_kb_article_tree_link {
+        align-items: flex-start;
+    }
+
+    .o_form_view.wex_kb_article_form .o_form_sheet_bg {
+        padding: 8px;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_header {
+        padding: 14px;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_heading h1 {
+        font-size: 1.3rem;
+    }
+}
+
+
+/* Final responsive hotfixes */
+@media (max-width: 768px) {
+    .wex_kb_dashboard,
+    .wex_kb_explorer {
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .wex_kb_explorer_toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .wex_kb_toolbar_primary,
+    .wex_kb_toolbar_secondary {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .wex_kb_toolbar_primary > *,
+    .wex_kb_toolbar_secondary > * {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .wex_kb_view_switcher {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: stretch;
+    }
+
+    .wex_kb_view_switcher_btn {
+        width: 100%;
+        height: 44px;
+    }
+
+    .wex_kb_toolbar_meta {
+        justify-content: flex-start;
+    }
+}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from uuid import uuid4
 
 from odoo import _, fields, models
 
@@ -36,11 +37,12 @@ class RepairOrder(models.Model):
         self.ensure_one()
         return _("Imagen %03d") % image_index
 
-    def _build_sat_image_filename(self, image_index, original_filename=False):
+    def _build_sat_image_filename(self, original_filename=False):
         self.ensure_one()
         _root, extension = os.path.splitext(original_filename or "")
         extension = extension.lower() or ".jpg"
-        return "imagen-%03d%s" % (image_index, extension)
+        unique_token = uuid4().hex
+        return "imagen-%s%s" % (unique_token, extension)
 
     def action_open_image_upload_wizard(self):
         self.ensure_one()

@@ -10,14 +10,19 @@
                 <attribute name="statusbar_visible">draft,confirmed,under_repair,done,delivered,cancel</attribute>
             </xpath>
 
-            <xpath expr="//button[@name='action_mark_ready_for_pickup_from_glue']" position="after">
+            <xpath expr="//div[hasclass('d-flex') and hasclass('flex-wrap') and hasclass('gap-2')][button[@name='action_start_budget']]" position="inside">
                 <button
                     name="action_mark_delivered"
                     type="object"
                     string="Entregado"
                     class="btn btn-secondary"
-                    invisible="state not in ('done', 'cancel') or state == 'delivered'"
+                    invisible="not x_can_mark_delivered"
                 />
+            </xpath>
+
+            <xpath expr="//sheet" position="inside">
+                <field name="x_pending_delivery_filter" invisible="1"/>
+                <field name="x_can_mark_delivered" invisible="1"/>
             </xpath>
         </field>
     </record>

@@ -47,6 +47,12 @@
                                 string="Pendiente de recogida"
                                 class="btn btn-info"
                                 invisible="state != 'done' or not x_is_in_glue_desk"/>
+
+                        <button name="action_mark_delivered"
+                                type="object"
+                                string="Entregado"
+                                class="btn btn-secondary"
+                                invisible="state not in ('done', 'cancel')"/>
                     </div>
 
                     <div class="wex_repair_workflow_status">
@@ -93,6 +99,12 @@
                                 string="Pendiente de recogida"
                                 class="btn btn-info"
                                 invisible="state != 'done' or not x_is_in_glue_desk"/>
+
+                        <button name="action_mark_delivered"
+                                type="object"
+                                string="Entregado"
+                                class="btn btn-secondary"
+                                invisible="state not in ('done', 'cancel')"/>
                     </div>
 
                     <div class="wex_repair_workflow_status">

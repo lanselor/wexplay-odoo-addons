@@ -2,7 +2,7 @@
     "name": "Wex IT Maintenance",
     "version": "18.0.1.0.0",
     "summary": "Mantenimiento IT, actividades, activos e informes de servicio para Wexplay",
-    "category": "Services",
+    "category": "Wexplay",
     "author": "Wexplay",
     "license": "LGPL-3",
     "depends": [

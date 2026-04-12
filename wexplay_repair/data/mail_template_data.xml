@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="email_template_edi_invoice_sat_v2" model="mail.template">
+            <field name="name">Factura SAT - Completa</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="email_from">{{ (object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">{{ object.company_id.name }} Factura SAT {{ object.name or 's/n' }}{{ ' | %s' % object._get_sat_mail_subject_suffix() if object._get_sat_mail_subject_suffix() else '' }}</field>
+            <field name="description">Sent to customers with their SAT invoice in attachment</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <t t-set="repair" t-value="object._get_primary_sat_repair()"/>
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hola
+        <t t-if="object.partner_id.parent_id">
+            <t t-out="object.partner_id.name or ''"/> (<t t-out="object.partner_id.parent_id.name or ''"/>),
+        </t>
+        <t t-else="">
+            <t t-out="object.partner_id.name or ''"/>,
+        </t>
+        <br/><br/>
+        Te enviamos tu
+        <strong>factura SAT <t t-out="object.name or 's/n'"/></strong>
+        de <t t-out="object.company_id.name or ''"/>.
+        <t t-if="repair">
+            <br/><br/>
+            <strong>Referencia SAT:</strong> <t t-out="repair.name or '-'"/><br/>
+            <strong>Dispositivo:</strong> <t t-out="repair.product_id.display_name or '-'"/><br/>
+            <t t-if="'x_model_id' in repair._fields and repair.x_model_id">
+                <strong>Modelo:</strong> <t t-out="repair.x_model_id.display_name or '-'"/><br/>
+            </t>
+            <t t-if="'x_imei' in repair._fields and repair.x_imei">
+                <strong>IMEI / Serie:</strong> <t t-out="repair.x_imei"/><br/>
+            </t>
+            <t t-if="'x_reported_issue' in repair._fields and repair.x_reported_issue">
+                <strong>Avería indicada:</strong> <t t-out="repair.x_reported_issue"/><br/>
+            </t>
+        </t>
+        <br/>
+        <strong>Importe:</strong> <t t-out="format_amount(object.amount_total, object.currency_id) or ''"/>
+        <t t-if="object.payment_state in ('paid', 'in_payment')">
+            <br/><br/>
+            Esta factura consta como pagada.
+        </t>
+        <t t-else="">
+            <br/><br/>
+            Si queda pendiente de pago, por favor utiliza como referencia
+            <strong t-out="object.payment_reference or object.name or ''"/>.
+            <t t-if="object.partner_bank_id">
+                <br/>
+                Cuenta bancaria: <strong t-out="object.partner_bank_id.acc_number"/>
+            </t>
+        </t>
+        <br/><br/>
+        Este correo incluye datos de tu reparación para que puedas identificarlo con claridad.
+        Si necesitas cualquier aclaración, puedes responder a este mensaje o contactar con nosotros.
+        <t t-if="not is_html_empty(object.invoice_user_id.signature)">
+            <br/><br/>
+            <t t-out="object.invoice_user_id.signature or ''"/>
+        </t>
+    </p>
+</div>
+            </field>
+            <field name="report_template_ids" eval="[]"/>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+    <function model="mail.template" name="_wexplay_cleanup_sat_mail_templates"/>
+</odoo>

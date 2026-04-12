@@ -1,0 +1,263 @@
+.wex_portal_filterbar {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.wex_portal_panel {
+    border: 2px solid #d7e0e8;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(250, 252, 253, 0.98) 0%, rgba(244, 248, 251, 0.98) 100%);
+    box-shadow: 0 12px 28px -24px rgba(49, 78, 102, 0.45);
+}
+
+.wex_portal_panel .card-body {
+    padding: 1.35rem 1.45rem;
+}
+
+.wex_portal_card_icon {
+    margin-right: 0.45rem;
+    color: #58748d;
+}
+
+.wex_portal_repair_title {
+    font-size: clamp(2.15rem, 3vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #1f2f3d;
+}
+
+.wex_portal_customer_reference {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+    padding: 0.45rem 0.7rem;
+    border: 2px solid #d7e1ea;
+    border-radius: 999px;
+    background: #f6fafc;
+}
+
+.wex_portal_customer_reference_label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6a7b8b;
+}
+
+.wex_portal_customer_reference_value {
+    font-weight: 700;
+    color: #274257;
+}
+
+.wex_portal_inline_reference {
+    display: inline-block;
+    padding: 0.26rem 0.62rem;
+    border: 1px solid #d7e3ec;
+    border-radius: 999px;
+    background: #eef5f9;
+    color: #32506a;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.wex_portal_status_badge {
+    padding: 0.7rem 1.15rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #476276;
+    background: #f4f8fb;
+    border-width: 2px !important;
+}
+
+.wex_portal_list_status_badge {
+    min-width: 104px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-width: 2px !important;
+}
+
+.wex_portal_panel--table {
+    background: #fbfcfd;
+}
+
+.wex_portal_panel--warranty {
+    border-color: #d8dce8;
+    background:
+        linear-gradient(180deg, rgba(250, 249, 255, 0.98) 0%, rgba(244, 243, 251, 0.98) 100%);
+}
+
+.wex_portal_filtergroup {
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 2px rgba(74, 105, 136, 0.18);
+}
+
+.wex_portal_filtergroup .btn {
+    min-width: 110px;
+    border-radius: 0;
+    font-weight: 600;
+}
+
+.wex_portal_filtergroup .btn-outline-primary {
+    border-color: #c9d6e2;
+    color: #496177;
+    background: #f8fbfd;
+}
+
+.wex_portal_filtergroup .btn-primary {
+    border-color: #5f7690;
+    background: #5f7690;
+    color: #fff;
+}
+
+.wex_portal_repair_table {
+    background: transparent;
+}
+
+.wex_portal_repair_table thead th {
+    border-bottom: 2px solid #d8e1e8;
+    background: rgba(234, 240, 245, 0.55);
+    color: #22313f;
+    font-size: 0.95rem;
+}
+
+.wex_portal_repair_table td {
+    vertical-align: middle;
+    border-color: #e1e8ee;
+}
+
+.wex_portal_section_title {
+    margin-bottom: 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.wex_portal_stepper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.wex_portal_step {
+    position: relative;
+    padding: 0.7rem 1rem;
+    border: 2px solid #d9e0e7;
+    border-radius: 999px;
+    background: #f6f9fb;
+    color: #5b6470;
+    line-height: 1;
+}
+
+.wex_portal_step.is-completed {
+    border-color: #c7d7e5;
+    background: #edf4f9;
+    color: #33546d;
+}
+
+.wex_portal_step.is-current {
+    border-color: #7b8da3;
+    background: #eaf0f6;
+    color: #263847;
+    font-weight: 700;
+}
+
+.wex_portal_step_label {
+    white-space: nowrap;
+}
+
+.wex_portal_warranty_badge {
+    padding: 0.62rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+}
+
+.wex_portal_warranty_badge.is-valid {
+    color: #165b2a;
+    background: #e9f7ee;
+    border-color: #a9d7b5;
+}
+
+.wex_portal_warranty_badge.is-invalid {
+    color: #8a2332;
+    background: #fdecef;
+    border-color: #efb8c1;
+}
+
+.wex_portal_gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1rem;
+}
+
+.wex_portal_gallery_item {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 100%;
+    border: 2px solid #d8e2ea;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 24px -24px rgba(49, 78, 102, 0.55);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.wex_portal_gallery_item:hover,
+.wex_portal_gallery_item:focus {
+    transform: translateY(-2px);
+    border-color: #b8c8d6;
+    box-shadow: 0 16px 28px -24px rgba(49, 78, 102, 0.55);
+    color: inherit;
+    text-decoration: none;
+}
+
+.wex_portal_gallery_item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #eef4f8;
+}
+
+.wex_portal_gallery_caption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.9rem 1rem 1rem;
+}
+
+.wex_portal_gallery_caption strong {
+    color: #243746;
+}
+
+.wex_portal_gallery_caption span {
+    color: #607284;
+    font-size: 0.92rem;
+}
+
+@media (max-width: 767.98px) {
+    .wex_portal_filtergroup {
+        width: 100%;
+    }
+
+    .wex_portal_filtergroup .btn {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .wex_portal_status_badge {
+        margin-left: 1rem;
+    }
+
+    .wex_portal_step {
+        width: 100%;
+        border-radius: 14px;
+    }
+}

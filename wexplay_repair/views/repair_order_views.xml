@@ -179,11 +179,11 @@
                                                 </group>
 
                                                 <div class="wex_repair_form_serial">
-                                                    <label for="x_imei" string="IMEI / N?? de serie"/>
+                                                    <label for="x_imei" string="IMEI / N.º de serie"/>
                                                     <div class="wex_repair_form_serial_row">
                                                         <field name="x_imei"
                                                                nolabel="1"
-                                                               placeholder="15 d??gitos..."
+                                                               placeholder="15 dígitos..."
                                                                class="o_field_highlight"/>
                                                         <button name="action_view_device_history"
                                                                 type="object"
@@ -222,7 +222,7 @@
                                                     <field name="x_unlock_code"
                                                            class="fw-bold"
                                                            nolabel="1"
-                                                           placeholder="C??digo / Contrase??a"/>
+                                                           placeholder="Código / Contraseña"/>
                                                 </div>
 
                                                 <div class="wex_repair_form_notice wex_repair_form_notice--warning"
@@ -231,7 +231,7 @@
                                                     <field name="x_unlock_pattern"
                                                            class="fw-bold"
                                                            nolabel="1"
-                                                           placeholder="Describe el patr??n (ej: forma de Z)"/>
+                                                           placeholder="Describe el patrón (ej: forma de Z)"/>
                                                 </div>
 
                                                 <field name="x_unlock_notes"
@@ -250,12 +250,19 @@
                                 <page string="Firmas">
                                     <div class="wex_repair_form_signatures_placeholder"/>
                                 </page>
+
+                                <page name="wex_sat_documents_page" string="Documentos">
+                                    <div class="alert alert-light mb-0" role="alert">
+                                        Espacio reservado para documentos SAT relacionados con la reparación.
+                                    </div>
+                                </page>
                             </notebook>
                         </div>
-
+                    </div>
+                    <div class="row g-3 mt-1">
                         <div class="col-12">
                             <div class="wex_repair_form_card wex_repair_form_card--issue h-100">
-                                <div class="wex_repair_form_eyebrow">Diagn??stico de entrada</div>
+                                <div class="wex_repair_form_eyebrow">Diagnóstico de entrada</div>
                                 <div class="wex_repair_form_heading">
                                     <i class="fa fa-exclamation-triangle"/>
                                     <span>Problema reportado</span>
@@ -266,18 +273,17 @@
                                        placeholder="Describe el fallo detalladamente..."/>
                             </div>
                         </div>
-
                         <div class="col-12">
                             <div class="wex_repair_form_card wex_repair_form_card--internal h-100">
                                 <div class="wex_repair_form_eyebrow">Uso interno</div>
                                 <div class="wex_repair_form_heading">
                                     <i class="fa fa-sticky-note-o"/>
-                                    <span>Notas t??cnicas internas</span>
+                                    <span>Notas técnicas internas</span>
                                 </div>
                                 <field name="x_internal_notes"
                                        widget="text"
                                        nolabel="1"
-                                       placeholder="Observaciones exclusivas para el t??cnico..."/>
+                                       placeholder="Observaciones exclusivas para el técnico..."/>
                             </div>
                         </div>
                     </div>
@@ -319,10 +325,6 @@
         <field name="arch" type="xml">
             <xpath expr="//sheet/group/group[2]/field[@name='planned_duration']" position="replace"/>
         </field>
-    </record>
-
-    <record id="view_repair_order_tree_button_header" model="ir.ui.view">
-        <field name="active" eval="False"/>
     </record>
 
 </odoo>

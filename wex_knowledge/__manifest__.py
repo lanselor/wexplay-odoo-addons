@@ -2,11 +2,10 @@
     "name": "Wex Knowledge",
     "version": "18.0.1.0.0",
     "summary": "Base de conocimiento interna moderna para Odoo 18 Community",
-    "category": "Knowledge",
+    "category": "Wexplay",
     "author": "Wexplay",
     "license": "LGPL-3",
     "depends": [
-        "base",
         "mail",
         "web",
         "web_editor",

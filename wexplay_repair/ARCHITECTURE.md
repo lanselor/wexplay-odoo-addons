@@ -1,43 +1,79 @@
-# Arquitectura del módulo Wexplay Repair Management
+﻿# Wexplay Repair Architecture
 
-## 1. Propósito
+## Purpose
 
-Este módulo extiende el módulo estándar `repair` de Odoo para adaptarlo a los flujos de trabajo específicos de servicio y reparación de Wexplay para dispositivos electrónicos como móviles, portátiles, tablets y consolas. Proporciona una interfaz más estructurada y fácil de usar para gestionar las órdenes de reparación, centrándose particularmente en los tipos de dispositivos, marcas y modelos.
+`wexplay_repair` is the SAT base module for the current Wexplay repair stack.
 
-## 2. Flujos de negocio principales
+It extends `repair.order` with:
+- device identification data
+- customer reception data
+- SAT-oriented search helpers
+- SAT settings on company/configuration
+- DMS helper methods for SAT folders
+- invoice/report integrations used by the SAT workflow
+- a custom operational card view for repair orders
 
-El flujo de negocio principal implica la creación y gestión de órdenes de reparación para dispositivos electrónicos. El módulo mejora este flujo al:
+This module is currently both:
+- the functional base for SAT repair operations
+- the technical base consumed by `wexplay_repair_workflow` and `wexplay_repair_delivery`
 
-*   **Identificación del dispositivo:** Proporcionar una forma estandarizada de especificar el tipo, la marca y el modelo del dispositivo que se está reparando.
-*   **Información de desbloqueo:** Capturar detalles sobre el método de desbloqueo del dispositivo (PIN, patrón, contraseña) para los técnicos.
-*   **Comunicación con el cliente:** Mostrar la información de contacto del cliente (móvil, teléfono) directamente en la orden de reparación.
-*   **Informes:** Generar informes y etiquetas adaptados a las necesidades de Wexplay.
+## Current Responsibilities
 
-## 3. Modelos y responsabilidades
+### `models/repair_order.py`
+- Adds SAT fields to `repair.order`
+- Computes customer summary and SAT totals
+- Adds phone/mobile search helper
+- Handles basic device-history navigation
 
-*   **`repair.order` (Heredado):** El modelo central para gestionar las órdenes de reparación. Este módulo lo extiende con los siguientes campos:
-    *   `x_device_type`: El tipo de dispositivo que se está reparando (móvil, tablet, etc.).
-    *   `x_partner_mobile`, `x_partner_phone`: Información de contacto del cliente.
-    *   `x_brand_id`: La marca del dispositivo (hace referencia a `wex.repair.brand`).
-    *   `x_model_id`: El modelo del dispositivo (hace referencia a `wex.repair.device_model`).
-    *   Campos relacionados con el desbloqueo (`x_unlock_type`, `x_unlock_code`, `x_unlock_pattern`, `x_unlock_notes`).
-    *   `x_accessories`, `x_reported_issue`, `x_internal_notes`: Campos de información adicional.
-*   **`wex.repair.brand`:** Almacena las marcas de dispositivos. Tiene un `name` y un indicador `active`.
-*   **`wex.repair.device_model`:** Almacena los modelos de dispositivos, vinculados a una marca y un tipo de dispositivo. Tiene un `name`, `device_type`, `brand_id` y un indicador `active`.
+### `models/repair_order_dms.py`
+- Provides DMS directory helper methods for SAT
+- Centralizes SAT folder naming and DMS path resolution
 
-## 4. Extensiones sobre el estándar de Odoo 18
+### `models/res_company.py`
+- Stores SAT workflow locations per company
+- Stores SAT DMS storage and root directory configuration
 
-Este módulo extiende la funcionalidad estándar de Odoo de las siguientes maneras:
+### `models/res_config_settings.py`
+- Exposes SAT company settings in the UI
 
-*   **Nuevos modelos:** Introduce `wex.repair.brand` y `wex.repair.device_model` para normalizar la información de la marca y el modelo del dispositivo.
-*   **Extensiones de campo:** Agrega varios campos nuevos al modelo `repair.order` para capturar información específica del dispositivo.
-*   **Mejoras de la interfaz de usuario:** Modifica las vistas de la orden de reparación para mostrar los nuevos campos y mejorar la experiencia del usuario.
-*   **Informes:** Agrega informes y etiquetas personalizadas para las órdenes de reparación.
+### `models/account_move.py`
+- Resolves SAT repairs linked to an invoice
+- Exposes SAT invoice print actions
 
-## 5. Decisiones de diseño relevantes
+### `models/ir_ui_view.py` and `models/ir_actions_act_window.py`
+- Registers the custom `repair_card` view type
+- Makes the repair card view the default entry view for repair orders
 
-*   **Normalización de la marca y el modelo:** La decisión de crear modelos separados `wex.repair.brand` y `wex.repair.device_model` fue impulsada por la necesidad de estandarizar la información del dispositivo y evitar la duplicación de datos. Esto permite una mejor generación de informes y filtrado de las órdenes de reparación.
-*   **Campos de compatibilidad:** Los campos `x_brand`, `x_model` y `x_imei` se conservan por compatibilidad con datos anteriores. La intención es migrar los datos existentes a los campos normalizados `x_brand_id` y `x_model_id` y, finalmente, eliminar estos campos de compatibilidad.
-*   **`ondelete="restrict"` en `x_model_id`:** Esto evita la eliminación de un modelo de dispositivo si se está utilizando actualmente en alguna orden de reparación, lo que garantiza la integridad de los datos.
-*   **`store=True` en `x_brand_id`:** Esto almacena la marca en el registro `repair.order`, lo cual es necesario para una búsqueda y agrupación eficientes por marca. Se completa automáticamente a través del campo `related` de `x_model_id`.
-*   **Post-init hook:** El manifiesto incluye un `post_init_hook`, lo que sugiere que puede haber una lógica de migración o inicialización de datos que se ejecuta después de instalar el módulo. Se necesita una mayor investigación del archivo `hooks.py`.
+### `views/repair_order_views.xml`
+- Applies the main SAT form customization
+
+## Boundaries
+
+This module should remain the base SAT layer.
+
+It should contain:
+- stable SAT fields
+- shared helpers reused by other repair modules
+- company settings needed by the SAT stack
+- base UI customizations that are truly common
+
+It should not keep growing with:
+- budget-state orchestration
+- delivery-specific rules
+- payment-triggered behavior
+- channel notification rules
+
+Those belong in extender modules.
+
+## Known Architectural Debt
+
+- QZ printing actions reference `wexplay_sat_print` client actions directly.
+- The main repair form inheritance is large and therefore more sensitive to upstream view changes.
+- There are historical backup files in the module tree that should not be treated as live source.
+- The SAT invoice report still resolves repairs directly in QWeb instead of receiving fully prepared values.
+
+## Notes For Next Phases
+
+- Decide whether QZ printing is a hard dependency or an optional integration.
+- Revisit the SAT invoice report so repair resolution is prepared in Python.
+- Reduce fragility in the large form inheritance only when there is a concrete business reason to touch it.

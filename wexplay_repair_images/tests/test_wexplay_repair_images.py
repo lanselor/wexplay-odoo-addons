@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import base64
+
 from odoo.tests.common import SavepointCase
 
 
@@ -56,3 +58,103 @@ class TestWexplayRepairImages(SavepointCase):
         self.assertEqual(image.dms_file_id.directory_id.name, "IMAGES")
         self.assertEqual(image.dms_file_id.directory_id.parent_id.name, self.repair.name)
         self.assertEqual(image.dms_file_id.directory_id.parent_id.parent_id.name, "SAT")
+
+    def test_upload_images_after_signed_document_reuses_sat_tree_without_blocking(self):
+        document = self.env["wex.consent.document"].get_or_create_from_repair(
+            self.repair, "reception"
+        )
+        document.write(
+            {
+                "pdf_file": base64.b64encode(b"%PDF-1.4 signed test"),
+                "pdf_filename": "reception-signed-test.pdf",
+            }
+        )
+        signed_file = document._store_pdf_in_dms()
+
+        tag = self.env["wex.image.tag"].search([("code", "=", "entrada")], limit=1)
+        wizard = self.env["wex.repair.image.upload.wizard"].create(
+            {
+                "repair_order_id": self.repair.id,
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "filename": "entrada-despues-firma.png",
+                            "description": "Foto tras generar documento firmado",
+                            "tag_ids": [(6, 0, tag.ids)],
+                            "image_file": "ZmFrZV9pbWFnZQ==",
+                        },
+                    )
+                ],
+            }
+        )
+
+        wizard.action_upload_images()
+
+        image = self.env["wex.image.record"].search(
+            [("repair_order_id", "=", self.repair.id)],
+            limit=1,
+        )
+        self.assertTrue(signed_file)
+        self.assertTrue(image)
+        self.assertEqual(signed_file.directory_id.name, "SIGNATURES")
+        self.assertEqual(image.dms_file_id.directory_id.name, "IMAGES")
+        self.assertEqual(image.dms_file_id.directory_id.parent_id.id, signed_file.directory_id.parent_id.id)
+        self.assertEqual(image.dms_file_id.directory_id.parent_id.parent_id.name, "SAT")
+
+    def test_reupload_after_deleting_image_record_uses_new_unique_dms_filename(self):
+        tag = self.env["wex.image.tag"].search([("code", "=", "entrada")], limit=1)
+
+        wizard_first = self.env["wex.repair.image.upload.wizard"].create(
+            {
+                "repair_order_id": self.repair.id,
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "filename": "entrada-1.png",
+                            "description": "Primera foto",
+                            "tag_ids": [(6, 0, tag.ids)],
+                            "image_file": "ZmFrZV9pbWFnZQ==",
+                        },
+                    )
+                ],
+            }
+        )
+        wizard_first.action_upload_images()
+
+        first_image = self.env["wex.image.record"].search(
+            [("repair_order_id", "=", self.repair.id)],
+            limit=1,
+        )
+        first_dms_file_name = first_image.dms_file_name
+        first_image.unlink()
+
+        wizard_second = self.env["wex.repair.image.upload.wizard"].create(
+            {
+                "repair_order_id": self.repair.id,
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "filename": "entrada-2.png",
+                            "description": "Segunda foto",
+                            "tag_ids": [(6, 0, tag.ids)],
+                            "image_file": "ZmFrZV9pbWFnZQ==",
+                        },
+                    )
+                ],
+            }
+        )
+        wizard_second.action_upload_images()
+
+        second_image = self.env["wex.image.record"].search(
+            [("repair_order_id", "=", self.repair.id)],
+            limit=1,
+        )
+        self.assertTrue(first_dms_file_name)
+        self.assertTrue(second_image)
+        self.assertNotEqual(second_image.dms_file_name, first_dms_file_name)

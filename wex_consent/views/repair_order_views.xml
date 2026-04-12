@@ -98,14 +98,12 @@
                 </div>
             </xpath>
 
-            <xpath expr="//div[hasclass('wex_repair_form_sections--admin')]" position="before">
-                <notebook class="wex_consent_notebook">
-                    <page string="Imágenes">
-                        <div class="alert alert-info mb-0">
-                            Espacio reservado para imágenes SAT relacionadas con la reparación.
-                        </div>
-                    </page>
-                </notebook>
+            <xpath expr="//notebook[hasclass('wex_repair_form_technical_notebook')]/page[div[hasclass('wex_repair_form_signatures_placeholder')]]" position="after">
+                <page name="wex_sat_images_page" string="Imágenes" class="wex_consent_notebook_page">
+                    <div class="alert alert-info mb-0">
+                        Espacio reservado para imágenes SAT relacionadas con la reparación.
+                    </div>
+                </page>
             </xpath>
         </field>
     </record>

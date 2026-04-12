@@ -34,7 +34,6 @@ class WexRepairImageUploadWizard(models.TransientModel):
             sequence = next_sequence + (offset * 10)
             display_name = self.repair_order_id._build_sat_image_display_name(image_index)
             filename = self.repair_order_id._build_sat_image_filename(
-                image_index,
                 original_filename=line.filename,
             )
             image_model.create_image_from_binary(

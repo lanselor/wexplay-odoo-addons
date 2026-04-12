@@ -10,6 +10,7 @@
         "repair",
         "account",
         "stock",
+        "mail",
         "wexplay_repair",
         "wexplay_repair_workflow",
     ],

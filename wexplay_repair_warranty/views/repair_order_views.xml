@@ -236,6 +236,7 @@
 
             <xpath expr="(//div[hasclass('wex_repair_form_intro')])[1]" position="replace"/>
             <xpath expr="//div[hasclass('wex_repair_form_intro')][.//div[hasclass('wex_repair_form_card--client')]]" position="replace"/>
+            <xpath expr="//div[hasclass('wex_repair_form_sections--admin')]" position="replace"/>
 
             <xpath expr="//sheet" position="inside">
                 <field name="x_is_warranty_case" invisible="1"/>
@@ -243,6 +244,26 @@
                 <field name="x_warranty_child_count" invisible="1"/>
                 <field name="x_show_warranty_status" invisible="1"/>
                 <field name="x_can_override_expired_warranty" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='x_can_override_expired_warranty']" position="after">
+                <div class="wex_repair_form_sections wex_repair_form_sections--admin">
+                    <div class="wex_repair_form_section_marker is-secondary">
+                        <span>Datos administrativos</span>
+                    </div>
+
+                    <div class="wex_repair_form_card wex_repair_form_card--admin">
+                        <group col="2" class="wex_repair_form_group wex_repair_form_group--admin">
+                            <field name="product_qty"/>
+                            <field name="product_uom"/>
+                            <field name="picking_id"/>
+                            <field name="under_warranty"/>
+                            <field name="schedule_date"/>
+                            <field name="planned_duration" widget="float_time"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                        </group>
+                    </div>
+                </div>
             </xpath>
         </field>
     </record>

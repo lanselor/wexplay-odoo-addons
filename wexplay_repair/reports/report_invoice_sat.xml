@@ -5,7 +5,6 @@
         <field name="name">Factura SAT</field>
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
-        
         <field name="report_name">wexplay_repair.report_invoice_sat</field>
         <field name="report_file">wexplay_repair.report_invoice_sat</field>
         
@@ -26,388 +25,324 @@
     <template id="report_invoice_sat_document">
         <t t-call="web.external_layout">
             <style>
-                /* Roboto: wkhtmltopdf no siempre carga @import remotos.
-                Si no tienes Roboto embebida en el motor PDF, caerá en sans-serif. */
-                
-                
-                :root {
-                --wex-purple: #714B67;
-                --wex-green: #97d1a2;
-                --wex-bg: #fdfafc;
-                
-                --ink: #111;
-                --muted: #6b7280;
-                --line: #e5e7eb;
-                --line-strong: #111;
-                --card: #fff;
-                --shadow: 0 2px 10px rgba(0,0,0,0.06);
-                }
-                
                 .page {
-                font-family: 'Roboto', sans-serif;
-                color: #333;
-                width: 100%;
-                position: relative;
+                    position: relative;
+                    width: 100%;
+                    color: #1f2937;
+                    font-family: 'Roboto', sans-serif;
+                    font-size: 9.4pt;
+                    line-height: 1.42;
+                    padding-top: 8px;
+                    border-top: 4px solid #7b68b5;
                 }
-                
-                /* Filete lateral “industrial” */
-                .wex_page_rail {
-                position: absolute;
-                left: -2mm;
-                top: 0;
-                bottom: 0;
-                width: 2mm;
-                background: linear-gradient(to bottom, var(--wex-purple), var(--wex-green));
-                border-radius: 2mm;
-                }
-                
-                /* Estructura tabla para cards superiores */
-                .wex_container_full {
-                width: 100%;
-                display: table;
-                table-layout: fixed;
-                border-collapse: separate;
-                border-spacing: 0;
-                }
-                .wex_col_half { width: 50%; display: table-cell; vertical-align: top; }
-                
-                /* Header */
-                .wex_header {
-                width: 100%;
-                border-bottom: 2px solid var(--line-strong);
-                padding-bottom: 8px;
-                margin-bottom: 14px;
-                }
-                .wex_title {
-                color: var(--wex-purple);
-                font-weight: 800;
-                letter-spacing: 0.5px;
-                margin: 0;
-                font-size: 18pt;
-                text-transform: uppercase;
-                }
-                
-                /* INV a la derecha (mantengo monospace para efecto “técnico/industrial”) */
-                .wex_invnum {
-                display: block;
-                width: 100%;
-                text-align: right;
-                font-family: monospace;
-                font-weight: 800;
-                color: var(--ink);
-                font-size: 14pt;
-                line-height: 1.1;
-                }
-                
-                /* Chips a la derecha (mantengo monospace para meta-datos) */
-                .wex_header_meta {
-                
-                margin-top: 6px;
-                font-size: 8.5pt;
-                color: var(--muted);
-                text-align: right;      /* 🔹 Fuerza alineación derecha */
-                white-space: nowrap;    /* 🔹 Evita que se rompa en varias líneas */
 
+                .wex_page_rail {
+                    display: none;
                 }
+
+                .wex_container_full {
+                    width: 100%;
+                    display: table;
+                    table-layout: fixed;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                }
+
+                .wex_col_half {
+                    display: table-cell;
+                    width: 50%;
+                    vertical-align: top;
+                }
+
+                .wex_header {
+                    width: 100%;
+                    border-bottom: 1px solid #c2cddd;
+                    padding-bottom: 10px;
+                    margin-bottom: 14px;
+                }
+
+                .wex_title {
+                    margin: 0;
+                    color: #7b68b5;
+                    font-size: 18pt;
+                    font-weight: 900;
+                    letter-spacing: 0.2px;
+                    text-transform: uppercase;
+                }
+
+                .wex_invnum {
+                    display: block;
+                    width: 100%;
+                    text-align: right;
+                    color: #1f2937;
+                    font-family: monospace;
+                    font-size: 14pt;
+                    font-weight: 800;
+                    line-height: 1.1;
+                }
+
+                .wex_header_meta {
+                    margin-top: 6px;
+                    text-align: right;
+                    white-space: nowrap;
+                    font-size: 8pt;
+                    color: #667085;
+                }
+
                 .wex_chip {
-                display: inline-block;
-                margin-left: 18px;   /* separación entre bloques */
+                    display: inline-block;
+                    margin-left: 8px;
+                    padding: 4px 8px;
+                    border: 1px solid #c2cddd;
+                    background: #f5f7fb;
+                    color: #1f2937;
+                    font-family: monospace;
+                    white-space: nowrap;
                 }
-                
+
                 .wex_chip:first-child {
-                margin-left: 0;
+                    margin-left: 0;
                 }
-                .wex_chip {
-                display: inline-block;
-                border: 1px solid var(--line);
-                border-left: 3px solid var(--wex-green);
-                background: #fff;
-                padding: 3px 8px;
-                border-radius: 999px;
-                font-family: monospace;
-                color: #111;
-                white-space: nowrap;
-                }
+
                 .wex_chip strong {
-                font-family: 'Roboto', sans-serif;
-                color: var(--muted);
-                font-weight: 700;
-                margin-right: 4px;
+                    margin-right: 4px;
+                    color: #667085;
+                    font-family: 'Roboto', sans-serif;
+                    font-weight: 700;
                 }
-                
-                /* Cards (NO USADO actualmente: se mantiene comentado para no interferir)
-                .wex_card {
-                border: 1px solid #ddd;
-                border-top: 3px solid var(--wex-purple);
-                padding: 15px;
-                border-radius: 10px;
-                background: var(--card);
-                box-sizing: border-box;
-                min-height: 120px;
-                box-shadow: var(--shadow);
-                }
-                */
-                
-                .wex_card_title {
-                font-size: 8pt;
-                font-weight: 800;
-                text-transform: uppercase;
-                color: var(--wex-purple);
-                margin-bottom: 8px;
-                display: block;
-                border-bottom: 1px solid var(--wex-green);
-                padding-bottom: 4px;
-                letter-spacing: 0.3px;
-                }
-                
-                .wex_mono { font-family: monospace; font-weight: 800; color: #000; }
-                .wex_row { width: 100%; display: block; clear: both; margin-bottom: 16px; }
-                
-                /* Tablas */
-                .wex_table {
-                /* padding: 20px; */
-                border: 1px solid #e0e0e0;
-                border-radius: 15px;
-                background-color: #fff;
-                box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.15);
-                border-collapse: separate;
-                margin-top: 12px;
-                table-layout: fixed;
-                border: 1px solid var(--line-strong);
-                border-top: 3.5px solid #714B67;
-                width: 100%;
-                border-left: 4px solid var(--wex-purple);
-                }
-                
-                .wex_table thead th {
-                background-color: #fff;
-                color: #111;
-                text-transform: uppercase;
-                font-size: 8pt;
-                padding: 10px;
-                border-bottom: 2px solid var(--line-strong);
-                letter-spacing: 0.35px;
-                font-family: 'Roboto', sans-serif; /* asegura Roboto en cabeceras */
-                }
-                .wex_table tbody td {
-                padding: 9px 10px;
-                border-bottom: 1px solid var(--line);
-                font-size: 10pt;
-                word-wrap: break-word;
-                font-family: 'Roboto', sans-serif; /* asegura Roboto en celdas */
-                }
-                .wex_table tbody tr:last-child td { border-bottom: 0; }
-                
-                /* .wex_main_table (NO USADO actualmente: se mantiene comentado para no interferir)
-                .wex_main_table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 12px;
-                table-layout: fixed;
-                border: 1px solid var(--line-strong);
-                border-left: 4px solid var(--wex-green);
-                }
-                .wex_main_table thead th {
-                background-color: #fff;
-                color: #111;
-                text-transform: uppercase;
-                font-size: 8pt;
-                padding: 10px;
-                border-bottom: 2px solid var(--line-strong);
-                letter-spacing: 0.35px;
-                }
-                .wex_main_table tbody td {
-                padding: 9px 10px;
-                border-bottom: 1px solid var(--line);
-                font-size: 10pt;
-                word-wrap: break-word;
-                }
-                .wex_main_table tbody tr:last-child td { border-bottom: 0; }
-                */
-                
-                /* .wex_kv_table (NO USADO actualmente: se mantiene comentado para no interferir)
-                .wex_kv_table,
-                .wex_kv_table tr,
-                .wex_kv_table td {
-                border: 0 !important;
-                }
-                .wex_kv_table { border-collapse: collapse; }
-                .wex_kv_table td { padding: 2px 0; }
-                */
-                
-                /* Bloque totales “barra” (NO USADO actualmente: se mantiene comentado para no interferir)
-                .wex_totals_block {
-                margin-top: 14px;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                }
-                .wex_totals_bar {
-                width: 100%;
-                border: 2px solid var(--line-strong);
-                border-radius: 12px;
-                background: var(--wex-bg);
-                padding: 10px 12px;
-                display: table;
-                table-layout: fixed;
-                }
-                .wex_totals_cell {
-                display: table-cell;
-                vertical-align: middle;
-                padding: 2px 8px;
-                }
-                */
-                
-                /* Contenedor general de totales */
-                .wex_totals_wrapper {
-                page-break-inside: avoid;
-                margin-top: 30px;
-                }
-                
-                /* Layout en dos columnas */
-                .wex_totals_layout {
-                width: 100%;
-                display: table;
-                table-layout: fixed;
-                }
-                
-                .wex_totals_left {
-                display: table-cell;
-                width: 55%;
-                }
-                
-                .wex_totals_right {
-                display: table-cell;
-                width: 45%;
-                vertical-align: top;
-                }
-                
-                /* Recuadro principal (tarjeta) */
-                .wex_totals_box {
-                padding: 20px;
-                border: 1px solid #e0e0e0;
-                border-radius: 12px 12px 0 0;
-                background-color: #fff;
-                box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.15);
-                border-top: 3.5px solid #714B67;
-                border-top-color: var(--wex-green); 
-                min-height: 120px;
-                font-family: 'Roboto', sans-serif; /* asegura Roboto dentro de las “cards” */
-                }
-                
-                /* Filas base/impuestos */
-                .wex_totals_row {
-                display: table;
-                width: 100%;
-                margin-bottom: 8px;
-                }
-                
-                /* Fusion: .wex_totals_label absorbe también lo que antes era .wex_totals_value */
-                .wex_totals_label {
-                display: table-cell;
-                font-size: 8pt;
-                font-weight: 700;
-                color: #666;
-                text-transform: uppercase;
-                font-family: 'Roboto', sans-serif;
-                }
-                /* segunda celda de la fila (importe) */
-                .wex_totals_row .wex_totals_label:last-child {
-                text-align: right;
-                font-family: monospace; /* mantengo monospace para importes */
-                font-weight: 700;
-                color: #111;
-                }
-                
-                /* Línea total */
-                .wex_totals_total {
-                border-top: 2px solid #97d1a2;
-                margin-top: 10px;
-                padding-top: 10px;
-                display: table;
-                width: 100%;
-                }
-                
-                .wex_totals_total_label {
-                display: table-cell;
-                font-size: 11pt;
-                font-weight: 800;
-                color: #000;
-                text-transform: uppercase;
-                vertical-align: middle;
-                font-family: 'Roboto', sans-serif;
-                }
-                
+
                 .wex_divider {
-                height: 5px;
-                background: var(--line);
-                margin: 14px 0 10px 0;
+                    height: 0;
+                    margin: 12px 0 14px 0;
+                    border-top: 1px solid #c2cddd;
+                }
+
+                .wex_mono {
+                    color: #1f2937;
+                    font-family: monospace;
+                    font-weight: 800;
+                }
+
+                .wex_row {
+                    display: block;
+                    clear: both;
+                    width: 100%;
+                    margin-bottom: 14px;
+                }
+
+                .wex_row h3 {
+                    margin: 0 !important;
+                    color: #1f2937;
+                    font-size: 11pt !important;
+                    font-weight: 900 !important;
+                    letter-spacing: -0.1px;
+                }
+
+                .wex_row > div > div:last-child {
+                    color: #667085 !important;
+                    font-size: 8pt !important;
+                }
+
+                .wex_totals_box {
+                    min-height: 120px;
+                    padding: 15px 16px 16px;
+                    border: 1px solid #c2cddd;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                    box-sizing: border-box;
+                }
+
+                .wex_totals_box--hero {
+                    min-height: 152px;
+                }
+
+                .wex_card_title {
+                    display: block;
+                    margin-bottom: 10px;
+                    padding-bottom: 5px;
+                    border-bottom: 1px solid #b9c6d8;
+                    color: #4d5b72;
+                    font-size: 8.4pt;
+                    font-weight: 800;
+                    letter-spacing: 0.9px;
+                    text-transform: uppercase;
+                }
+
+                .wex_card_data {
+                    color: #1f2937;
+                    font-size: 10pt;
+                    font-weight: 600;
+                    line-height: 1.3;
+                }
+
+                .wex_table {
+                    width: 100%;
+                    margin-top: 13px;
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    border: 1px solid #c2cddd;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                }
+
+                .wex_table thead th {
+                    padding: 9px 10px;
+                    border-bottom: 1px solid #b9c6d8;
+                    background: #f3f1fa;
+                    color: #4d5b72;
+                    font-size: 7.8pt;
+                    font-weight: 800;
+                    letter-spacing: 0.7px;
+                    text-transform: uppercase;
+                    font-family: 'Roboto', sans-serif;
+                }
+
+                .wex_table tbody td {
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #dde4ef;
+                    color: #1f2937;
+                    word-wrap: break-word;
+                    font-family: 'Roboto', sans-serif;
+                    text-align: left;
+                }
+
+                .wex_table tbody tr:nth-child(even) td {
+                    background: #fafbfd;
+                }
+
+                .wex_table tbody tr:last-child td {
+                    border-bottom: 0;
+                }
+
+                .wex_totals_wrapper {
+                    margin-top: 26px;
+                    page-break-inside: avoid;
+                }
+
+                .wex_totals_layout {
+                    width: 100%;
+                    display: table;
+                    table-layout: fixed;
+                }
+
+                .wex_totals_left {
+                    display: table-cell;
+                    width: 55%;
+                }
+
+                .wex_totals_right {
+                    display: table-cell;
+                    width: 45%;
+                    vertical-align: top;
+                }
+
+                .wex_totals_row {
+                    display: table;
+                    width: 100%;
+                    margin-bottom: 7px;
+                }
+
+                .wex_totals_label {
+                    display: table-cell;
+                    color: #667085;
+                    font-size: 8pt;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-family: 'Roboto', sans-serif;
+                    letter-spacing: 0.45px;
+                }
+
+                .wex_totals_row .wex_totals_label:last-child {
+                    color: #1f2937;
+                    text-align: right;
+                    font-family: monospace;
+                    font-weight: 800;
+                }
+
+                .wex_totals_total {
+                    display: table;
+                    width: 100%;
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    border-top: 1px solid #b9c6d8;
+                }
+
+                .wex_totals_total_label {
+                    display: table-cell;
+                    color: #1f2937;
+                    font-size: 10pt;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    font-family: 'Roboto', sans-serif;
                 }
 
                 .wex_totals_total_value {
-                display: table-cell;
-                text-align: right;
-                font-size: 16pt;
-                font-weight: 900;
-                color: #714B67;
-                vertical-align: middle;
-                font-family: monospace; /* mantengo monospace para el total */
-                }
-                
-                /* Ajuste de jerarquía en Tarjetas */
-                .wex_card_title {
-                font-size: 7.5pt; /* Más pequeño para que no compita con el dato */
-                font-weight: 700;
-                text-transform: uppercase;
-                color: var(--muted); /* Color más suave para el título */
-                margin-bottom: 4px;
-                display: block;
-                border-bottom: 1px solid var(--wex-green);
-                padding-bottom: 2px;
-                letter-spacing: 0.8px; /* Más aire entre letras para estilo Apple */
-                }
-                
-                /* Ajuste de los datos dentro de las cards */
-                .wex_card_data {
-                font-size: 10pt; /* Tamaño equilibrado */
-                font-weight: 500;
-                color: var(--ink);
-                line-height: 1.2;
-                }
-                
-                /* Unificación de Tablas (estilo tarjeta) */
-                .wex_table {
-                border: 1px solid #e0e0e0;
-                border-radius: 12px 12px 0 0;
-                background-color: #fff;
-                box-shadow: var(--shadow);
-                border-collapse: separate; /* Obligatorio para border-radius */
-                margin-top: 15px;
-                table-layout: fixed;
-                width: 100%;
-                border-top: 3px solid var(--wex-purple);
-                overflow: hidden;
-                }
-                
-                .wex_table thead th {
-                background-color: #f9fafb;
-                font-size: 7.5pt;
-                padding: 8px 10px;
-                border-bottom: 1px solid var(--line-strong);
-                color: var(--muted);
+                    display: table-cell;
+                    color: #7b68b5;
+                    text-align: right;
+                    font-size: 16pt;
+                    font-weight: 900;
+                    font-family: monospace;
                 }
 
-                .wex_table tbody td {
-                text-align: left; 
-                padding: 8px 10px;
-                font-size: 9pt;
-                border-bottom: 1px solid #f3f4f6;
+                .wex_sub_label {
+                    color: #667085;
+                    font-size: 7.2pt;
+                    font-weight: 800;
+                    letter-spacing: 0.55px;
+                    text-transform: uppercase;
                 }
 
-                
+                .wex_text_soft {
+                    color: #1f2937;
+                }
+
+                .wex_text_emphasis {
+                    color: #1f2937;
+                    font-style: italic;
+                }
+
+                .wex_meta_section {
+                    margin-top: 18px;
+                    page-break-inside: avoid;
+                }
+
+                .wex_meta_box {
+                    margin-top: 10px;
+                    padding: 14px 16px;
+                    border: 1px solid #c2cddd;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                }
+
+                .wex_meta_item {
+                    margin-bottom: 8px;
+                }
+
+                .wex_meta_item:last-child {
+                    margin-bottom: 0;
+                }
+
+                .wex_meta_label {
+                    display: block;
+                    margin-bottom: 2px;
+                    color: #667085;
+                    font-size: 7.6pt;
+                    font-weight: 800;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                }
+
+                .wex_meta_value {
+                    color: #1f2937;
+                    font-size: 9.2pt;
+                }
+
                 .wex_th_left  { text-align: left; }
-                .wex_th_right { text-align: right;  padding-right: 14px; }
+                .wex_th_right { text-align: right; padding-right: 14px; }
                 .wex_th_center { text-align: center; }
             </style>
+
                 
                 <t t-set="sale_orders" t-value="o.invoice_line_ids.sale_line_ids.order_id"/>
                 <t t-set="repairs" t-value="env['repair.order'].sudo().search([('sale_order_id', 'in', sale_orders.ids)])"/>
@@ -456,36 +391,42 @@
                     <!-- SUPERIOR: Cliente / Equipo -->
                     <div class="wex_container_full">
                         <div class="wex_col_half" style="padding-right: 7.5px;">
-                            <div class="wex_totals_box">
+                            <div class="wex_totals_box wex_totals_box--hero">
                                 <span class="wex_card_title">Datos del Cliente</span>
-                                <div style="font-size: 11pt; font-weight: bold;" t-esc="o.partner_id.name"/>
+                                <div style="font-size: 12pt; font-weight: 800; color: #1f2937;" t-esc="o.partner_id.name"/>
                                 <div t-if="o.partner_id.vat" class="wex_mono">NIF: <span t-field="o.partner_id.vat"/></div>
                                 <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "phone"], "no_marker": True}'/>
                             </div>
                         </div>
                         
                         <div class="wex_col_half" style="padding-left: 7.5px;">
-                            <div class="wex_totals_box">
-                                <span class="wex_card_title">Información del Equipo</span>
+                            <div class="wex_totals_box wex_totals_box--hero">
+                                <span class="wex_card_title">Información del equipo</span>
                                 
                                 <t t-if="r">
                                     <div class="row">
                                         <div class="col-4">
-                                            <span style="font-size: 7pt; color: #6b7280; font-weight: bold;">DISPOSITIVO</span><br/>
+                                            <span class="wex_sub_label">Dispositivo</span><br/>
                                             <span class="wex_card_data" t-field="r.product_id.display_name"/>
                                         </div>
                                         <div class="col-4">
-                                            <span style="font-size: 7pt; color: #6b7280; font-weight: bold;">MODELO</span><br/>
+                                            <span class="wex_sub_label">Modelo</span><br/>
                                             <span class="wex_card_data" t-field="r.x_model_id.name" t-if="'x_model_id' in r._fields"/>
                                         </div>
                                         <div class="col-4 text-right">
-                                            <span style="font-size: 7pt; color: #6b7280; font-weight: bold;">IMEI / SN</span><br/>
+                                            <span class="wex_sub_label">IMEI / SN</span><br/>
                                             <span class="wex_mono" style="font-size: 10pt;" t-field="r.x_imei" t-if="'x_imei' in r._fields"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top: 10px;">
+                                        <div class="col-12">
+                                            <span class="wex_sub_label">Referencia del cliente</span><br/>
+                                            <span class="wex_card_data" t-esc="r.x_customer_reference or '-'"/>
                                         </div>
                                     </div>
                                 </t>
                                 <t t-else="">
-                                    <div style="color: #999; font-size: 9pt;">No hay reparación SAT vinculada.</div>
+                                    <div class="wex_text_soft">No hay reparación SAT vinculada.</div>
                                 </t>
                             </div>
                         </div>
@@ -500,16 +441,16 @@
                         <div class="wex_container_full" style="margin-top: 14px;">
                             <div class="wex_col_half" style="padding-right: 7.5px;" t-if="r.x_reported_issue">
                                 <div class="wex_totals_box">
-                                    <span class="wex_card_title">Avería Reportada</span>
-                                    <div style="font-style: italic; font-size: 9pt;">
+                                    <span class="wex_card_title">Avería reportada</span>
+                                    <div class="wex_text_emphasis">
                                         <span t-esc="r.x_reported_issue"/>
                                     </div>
                                 </div>
                             </div>
                             <div class="wex_col_half" style="padding-left: 7.5px;" t-if="r.internal_notes">
                                 <div class="wex_totals_box">
-                                    <span class="wex_card_title">Informe Técnico</span>
-                                    <div style="font-size: 9pt;">
+                                    <span class="wex_card_title">Informe técnico</span>
+                                    <div class="wex_text_soft">
                                         <div t-field="r.internal_notes"/>
                                     </div>
                                 </div>
@@ -523,8 +464,8 @@
                     <t t-if="r and r.move_ids">
                         <div class="wex_row" style="margin-top: 16px;">
                             <div style="display:flex; align-items:flex-end; justify-content:space-between;">
-                                <h3 style="font-size: 11pt; font-weight: 800; margin: 0;">Repuestos Usados</h3>
-                                <div style="font-size:8pt; color: var(--muted);">SAT / stock moves</div>
+                                <h3 style="font-size: 11pt; font-weight: 800; margin: 0;">Repuestos usados</h3>
+                                <div style="font-size:8pt; color: #667085;">SAT / stock moves</div>
                             </div>
                             <table class="wex_table">
                                 <thead>
@@ -558,15 +499,15 @@
                     <!-- Detalle Factura -->
                     <div class="wex_row" style="margin-top: 12px;">
                         <div style="display:flex; align-items:flex-end; justify-content:space-between;">
-                            <h3 style="font-size: 11pt; font-weight: 800; margin: 0;">Servicios/Mano de Obra</h3>
-                            <div style="font-size:8pt; color: var(--muted);">Trabajos realizados</div>
+                            <h3 style="font-size: 11pt; font-weight: 800; margin: 0;">Servicios y mano de obra</h3>
+                            <div style="font-size:8pt; color: #667085;">Trabajos realizados</div>
                         </div>
                         <table class="wex_table">
                             <thead>
                                 <tr>
                                     <th class="wex_th_left" style="width: 50%;">Descripción</th>
                                     <th class="wex_th_right" style="width: 10%;">Cantidad</th>
-                                    <th class="wex_th_right" style="width: 20%;">Precio Unitario</th>
+                                    <th class="wex_th_right" style="width: 20%;">Precio unitario</th>
                                     <th class="wex_th_right" style="width: 20%;">Precio sin IVA</th>
                                 </tr>
                             </thead>
@@ -613,9 +554,43 @@
                             </div>
                         </div>
                     </div>
+
+                    <t t-if="o.invoice_payment_term_id.note or (o.move_type in ('out_invoice', 'in_refund') and (o.payment_reference or o.partner_bank_id)) or not is_html_empty(o.narration)">
+                        <div class="wex_meta_section">
+                            <div class="wex_row">
+                                <div style="display:flex; align-items:flex-end; justify-content:space-between;">
+                                    <h3 style="font-size: 11pt; font-weight: 800; margin: 0;">Pago y condiciones</h3>
+                                    <div style="font-size:8pt; color: #667085;">Configuración documental de la factura</div>
+                                </div>
+                                <div class="wex_meta_box">
+                                    <div class="wex_meta_item" t-if="o.invoice_payment_term_id.note">
+                                        <span class="wex_meta_label">Condiciones de pago</span>
+                                        <div class="wex_meta_value" t-field="o.invoice_payment_term_id.note"/>
+                                    </div>
+                                    <div class="wex_meta_item" t-if="o.move_type in ('out_invoice', 'in_refund') and o.payment_reference">
+                                        <span class="wex_meta_label">Referencia de pago</span>
+                                        <div class="wex_meta_value">
+                                            <span t-field="o.payment_reference"/>
+                                        </div>
+                                    </div>
+                                    <div class="wex_meta_item" t-if="o.move_type in ('out_invoice', 'in_refund') and o.partner_bank_id">
+                                        <span class="wex_meta_label">Cuenta bancaria</span>
+                                        <div class="wex_meta_value">
+                                            <span t-field="o.partner_bank_id"/>
+                                        </div>
+                                    </div>
+                                    <div class="wex_meta_item" t-if="not is_html_empty(o.narration)">
+                                        <span class="wex_meta_label">Condiciones generales</span>
+                                        <div class="wex_meta_value" t-field="o.narration"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
                     
                 </div>
             </t>
         </template>
         
     </odoo>
+

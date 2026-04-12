@@ -257,3 +257,62 @@ Debe incluir:
 - Usar correctamente modelos y APIs de OCA DMS y repos relacionados
 - Si falta contexto de OCA, pedir explícitamente qué repos se necesitan en local
 - No asumir APIs sin comprobarlas
+---
+
+# Contexto específico: SAT reparación actual
+
+## Arquitectura SAT consolidada
+- `wexplay_repair` es la base SAT compartida
+- `wexplay_repair_workflow` extiende presupuesto, transiciones internas y sincronización de ubicaciones
+- `wexplay_repair_delivery` extiende entrega, cobro-entrega y notificación SAT
+- Evitar meter reglas de workflow o entrega dentro de `wexplay_repair` salvo que sean infraestructura base compartida
+
+## Límites funcionales SAT
+- `wexplay_repair` debe concentrar:
+  - campos SAT estables
+  - helpers compartidos
+  - configuración SAT por compañía
+  - integración DMS base
+  - integración factura/reportes SAT
+- `wexplay_repair_workflow` debe concentrar:
+  - estados de presupuesto
+  - validación de transiciones
+  - reglas de ubicación SAT ligadas al workflow
+- `wexplay_repair_delivery` debe concentrar:
+  - estado `delivered`
+  - reglas de entrega
+  - flujo pago -> entrega
+  - filtros y UX de entrega
+
+## Reglas SAT ya decididas
+- La lógica fuerte de SAT debe vivir en Python; XML debe limitarse a visibilidad y acceso a acciones
+- Si una factura SAT necesita una versión documental más completa que la estándar, debe resolverse como variante del mismo `account.move`, no como factura paralela
+- Las facturas SAT deben poder convivir con la factura estándar de Odoo y ambas deben ser seleccionables desde el flujo nativo de `Send & Print`
+- Los correos SAT al cliente pueden incluir datos operativos que aporten credibilidad y contexto:
+  - referencia SAT
+  - dispositivo
+  - modelo
+  - IMEI o número de serie
+  - avería descrita por el cliente
+- Los correos al cliente no deben incluir notas internas del técnico salvo decisión funcional explícita
+- La acción `Entregado` debe estar alineada con validación Python y no depender solo de condiciones en XML
+
+## Dependencias y acoplamientos SAT a vigilar
+- OCA DMS es dependencia funcional real para la estrategia documental SAT
+- `wexplay_sat_print` forma parte del ecosistema `Wexplay Print Core`; la integración SAT con ese stack es real, pero no debe tratarse como dependencia obligatoria del SAT
+- Las reglas de notificación SAT basadas en canal o discuss deben tratarse como integración explícita y no como detalle invisible repartido por el sistema
+
+## Reglas globales para integraciones configurables
+- Si una integración, elección funcional o referencia externa puede quedar frágil por ir hardcodeada en código, debe moverse a ajustes del módulo correspondiente
+- Los hardcodes temporales solo son aceptables en fases iniciales o pruebas; si una elección puede romper el sistema o volverlo ambiguo, debe pasar a configuración explícita
+- En SAT, cualquier referencia al canal de discuss debe poder seleccionarse desde Ajustes SAT si su ausencia o cambio puede afectar al funcionamiento
+- Cuando una integración con otro stack Wexplay sea opcional de verdad, el módulo debe degradar con comportamiento claro y predecible en lugar de asumir su presencia silenciosamente
+
+## Reglas globales para variantes documentales y correo
+- Si un mismo documento necesita varias representaciones coherentes, crear las variantes necesarias sobre el mismo registro funcional en lugar de duplicar flujos
+- Si una factura SAT requiere plantilla de correo específica, crear las variantes necesarias para mantener coherencia documental, incluyendo casos como facturas, abonos u otros documentos equivalentes cuando proceda
+
+## Criterio para siguientes iteraciones SAT
+- Priorizar refactorizaciones que hagan más honestas las dependencias y más claro el reparto de responsabilidades
+- No adelantar una reorganización masiva del ecosistema SAT si antes no está saneada la base actual
+- Si una deuda afecta a instalación, envío de documentos o trazabilidad, priorizarla por encima de mejoras estéticas o estructurales menores

@@ -3,17 +3,15 @@ from odoo import api, SUPERUSER_ID
 
 def post_init_hook(cr, registry):
     env = api.Environment(cr, SUPERUSER_ID, {})
+    repair_picking_types = env["stock.picking.type"].sudo().search([
+        ("code", "=", "repair_operation"),
+    ])
+    sequences = repair_picking_types.mapped("sequence_id").exists()
 
-    # Buscamos la secuencia RO por nombre (tu caso: sin "code")
-    seq = env["ir.sequence"].sudo().search([
-        ("name", "ilike", "Secuencia RO"),
-    ], limit=1)
-
-    if not seq:
+    if not sequences:
         return
 
-    # No tocamos number_next (contador). Solo formato.
-    seq.write({
+    sequences.write({
         "prefix": "SAT/%(y)s",
         "padding": 6,
         "suffix": False,

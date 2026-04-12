@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import logging
 
-from odoo import models, _
+from odoo import _, models
 
 _logger = logging.getLogger(__name__)
 
@@ -9,151 +9,67 @@ _logger = logging.getLogger(__name__)
 class AccountPaymentRegister(models.TransientModel):
     _inherit = "account.payment.register"
 
-    def _wex_get_invoices_from_context(self):
-        """Obtener facturas origen desde el contexto del wizard de pago."""
+    def _get_active_invoices_from_context(self):
+        """Return source invoices from the payment wizard context."""
         active_model = self.env.context.get("active_model")
         active_ids = self.env.context.get("active_ids", [])
-
-        _logger.warning(
-            "WEX DELIVERY DEBUG | _wex_get_invoices_from_context | active_model=%s active_ids=%s",
-            active_model, active_ids
-        )
 
         if not active_ids:
             return self.env["account.move"]
 
-        # Caso 1: el wizard viene desde la propia factura
         if active_model == "account.move":
-            invoices = self.env["account.move"].browse(active_ids).exists()
-            _logger.warning(
-                "WEX DELIVERY DEBUG | invoices from account.move ids=%s",
-                invoices.ids
-            )
-            return invoices
+            return self.env["account.move"].browse(active_ids).exists()
 
-        # Caso 2: el wizard viene desde líneas contables
         if active_model == "account.move.line":
             lines = self.env["account.move.line"].browse(active_ids).exists()
-            invoices = lines.mapped("move_id").exists()
-            _logger.warning(
-                "WEX DELIVERY DEBUG | invoices from account.move.line ids=%s names=%s",
-                invoices.ids,
-                invoices.mapped("name"),
-            )
-            return invoices
+            return lines.mapped("move_id").exists()
 
-        _logger.warning(
-            "WEX DELIVERY DEBUG | unsupported active_model=%s",
-            active_model
+        _logger.debug(
+            "Skipping delivery check for unsupported payment wizard model: %s",
+            active_model,
         )
         return self.env["account.move"]
 
-    def action_create_payments(self):
-        _logger.warning("WEX DELIVERY DEBUG | START action_create_payments")
-
-        # 1) Guardamos referencia a facturas antes del pago
-        invoices_before = self._wex_get_invoices_from_context()
-
-        _logger.warning(
-            "WEX DELIVERY DEBUG | invoices_before ids=%s move_types=%s payment_states=%s",
-            invoices_before.ids,
-            invoices_before.mapped("move_type"),
-            invoices_before.mapped("payment_state"),
-        )
-
-        # 2) Ejecutar lógica estándar de Odoo
-        result = super().action_create_payments()
-
-        _logger.warning("WEX DELIVERY DEBUG | super() finished | result=%s", result)
-
-        # 3) Filtrar solo facturas de cliente
-        invoices_before = invoices_before.filtered(lambda m: m.move_type == "out_invoice")
-
-        _logger.warning(
-            "WEX DELIVERY DEBUG | customer invoices filtered ids=%s names=%s",
-            invoices_before.ids,
-            invoices_before.mapped("name"),
-        )
-
-        if len(invoices_before) != 1:
-            _logger.warning(
-                "WEX DELIVERY DEBUG | EXIT len(invoices_before) != 1 | len=%s",
-                len(invoices_before)
+    def _get_single_customer_invoice(self, invoices):
+        customer_invoices = invoices.filtered(lambda move: move.move_type == "out_invoice")
+        if len(customer_invoices) != 1:
+            _logger.debug(
+                "Skipping delivery wizard because %s customer invoices were found.",
+                len(customer_invoices),
             )
-            return result
+            return self.env["account.move"]
+        return customer_invoices[:1]
 
-        # 4) Recargar factura DESPUÉS del pago
-        invoice = self.env["account.move"].browse(invoices_before.id).exists()
+    def _reload_invoice_after_payment(self, invoice):
+        return self.env["account.move"].browse(invoice.id).exists()
 
-        _logger.warning(
-            "WEX DELIVERY DEBUG | invoice reloaded id=%s exists=%s payment_state=%s state=%s name=%s",
-            invoice.id if invoice else False,
-            bool(invoice),
-            invoice.payment_state if invoice else False,
-            invoice.state if invoice else False,
-            invoice.name if invoice else False,
-        )
-
-        if not invoice:
-            _logger.warning("WEX DELIVERY DEBUG | EXIT invoice not found after reload")
-            return result
-
-        # 5) Comprobar después del pago
-        if invoice.payment_state != "paid":
-            _logger.warning(
-                "WEX DELIVERY DEBUG | EXIT invoice not paid | payment_state=%s",
-                invoice.payment_state
-            )
-            return result
-
-        # 6) Buscar SAT relacionado
+    def _get_delivery_repair_from_invoice(self, invoice):
         repairs = invoice.wex_get_sat_repairs()
-
-        _logger.warning(
-            "WEX DELIVERY DEBUG | repairs found ids=%s names=%s states=%s",
-            repairs.ids,
-            repairs.mapped("name"),
-            repairs.mapped("state"),
-        )
-
         if not repairs:
-            _logger.warning("WEX DELIVERY DEBUG | EXIT no SAT repairs linked to invoice")
-            return result
-
-        repair = repairs[:1]
-
-        _logger.warning(
-            "WEX DELIVERY DEBUG | selected repair id=%s name=%s state=%s",
-            repair.id,
-            repair.name,
-            repair.state,
-        )
-
-        # 7) Si ya estaba entregada
-        if repair.state == "delivered":
-            _logger.warning(
-                "WEX DELIVERY DEBUG | repair already delivered | repair=%s",
-                repair.name
+            _logger.debug(
+                "Skipping delivery wizard because invoice %s has no SAT repairs.",
+                invoice.display_name,
             )
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Orden ya entregada"),
-                    "message": _(
-                        "La orden de trabajo %s ya estaba marcada como entregada."
-                    ) % (repair.name or ""),
-                    "type": "success",
-                    "sticky": False,
-                },
-            }
+            return self.env["repair.order"]
 
-        # 8) Abrir wizard
-        _logger.warning(
-            "WEX DELIVERY DEBUG | OPEN wizard for invoice=%s repair=%s",
-            invoice.name, repair.name
-        )
+        return repairs[:1]
 
+    def _build_already_delivered_notification(self, repair):
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Orden ya entregada"),
+                "message": _(
+                    "La orden de trabajo %s ya estaba marcada como entregada."
+                )
+                % (repair.name or ""),
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
+    def _prepare_delivery_wizard_action(self, invoice, repair):
         return {
             "type": "ir.actions.act_window",
             "res_model": "wex.repair.delivery.wizard",
@@ -164,3 +80,36 @@ class AccountPaymentRegister(models.TransientModel):
                 "default_invoice_id": invoice.id,
             },
         }
+
+    def action_create_payments(self):
+        invoices_before = self._get_active_invoices_from_context()
+        result = super().action_create_payments()
+
+        invoice_before = self._get_single_customer_invoice(invoices_before)
+        if not invoice_before:
+            return result
+
+        invoice = self._reload_invoice_after_payment(invoice_before)
+        if not invoice:
+            _logger.debug(
+                "Skipping delivery wizard because invoice %s was not found after payment.",
+                invoice_before.id,
+            )
+            return result
+
+        if invoice.payment_state != "paid":
+            _logger.debug(
+                "Skipping delivery wizard because invoice %s is still in payment_state=%s.",
+                invoice.display_name,
+                invoice.payment_state,
+            )
+            return result
+
+        repair = self._get_delivery_repair_from_invoice(invoice)
+        if not repair:
+            return result
+
+        if repair.state == "delivered":
+            return self._build_already_delivered_notification(repair)
+
+        return self._prepare_delivery_wizard_action(invoice, repair)
