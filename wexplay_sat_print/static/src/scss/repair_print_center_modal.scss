@@ -1,0 +1,353 @@
+.wex_sat_print_modal {
+    --wex-sat-modal-border: #bcc7d8;
+    --wex-sat-modal-border-strong: #98a8c0;
+    --wex-sat-modal-surface: linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
+    --wex-sat-modal-surface-soft: #f4f6fb;
+    --wex-sat-modal-ink: #1f2937;
+    --wex-sat-modal-muted: #667085;
+    --wex-sat-modal-accent: #635b9a;
+    --wex-sat-modal-accent-soft: rgba(99, 91, 154, 0.08);
+    --wex-sat-modal-cyan: #18779b;
+    --wex-sat-modal-cyan-soft: rgba(24, 119, 155, 0.08);
+    --wex-sat-modal-success: #2c7a5d;
+    --wex-sat-modal-success-soft: linear-gradient(135deg, #2f8f6a 0%, #24684f 100%);
+    --wex-sat-modal-info-soft: linear-gradient(135deg, #2f9cc0 0%, #1e728d 100%);
+    --wex-sat-modal-shadow: 0 18px 48px rgba(15, 23, 42, 0.16);
+}
+
+.wex_sat_print_modal .modal-dialog {
+    max-width: 920px;
+}
+
+.wex_sat_print_modal__content {
+    overflow: hidden;
+    border: 1px solid var(--wex-sat-modal-border);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.1), transparent 24%),
+        var(--wex-sat-modal-surface);
+    box-shadow: var(--wex-sat-modal-shadow);
+}
+
+.wex_sat_print_modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.4rem 1.5rem 1.2rem;
+    border-bottom: 1px solid rgba(152, 168, 192, 0.35);
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.16), transparent 28%),
+        linear-gradient(135deg, #f8f8fe 0%, #f2f6fb 100%);
+}
+
+.wex_sat_print_modal__eyebrow {
+    margin-bottom: 0.35rem;
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wex_sat_print_modal__title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    color: var(--wex-sat-modal-ink);
+    font-size: 1.28rem;
+    font-weight: 800;
+}
+
+.wex_sat_print_modal__title .fa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(99, 91, 154, 0.28);
+    color: var(--wex-sat-modal-accent);
+}
+
+.wex_sat_print_modal__subtitle {
+    margin-top: 0.35rem;
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.wex_sat_print_modal__close {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.55rem;
+    border: 1px solid rgba(152, 168, 192, 0.5);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: none;
+    opacity: 1;
+}
+
+.wex_sat_print_modal__body {
+    padding: 1.5rem;
+}
+
+.wex_sat_print_modal__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.wex_sat_print_modal__section {
+    height: 100%;
+    padding: 1.1rem;
+    border: 1px solid var(--wex-sat-modal-border);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.05), transparent 24%),
+        #fff;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045);
+}
+
+.wex_sat_print_modal__section--ticket {
+    background:
+        radial-gradient(circle at top right, rgba(24, 119, 155, 0.07), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.wex_sat_print_modal__section_eyebrow {
+    margin-bottom: 0.45rem;
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wex_sat_print_modal__section_title {
+    margin: 0 0 0.35rem;
+    color: var(--wex-sat-modal-ink);
+    font-size: 1.04rem;
+    font-weight: 800;
+}
+
+.wex_sat_print_modal__section_text {
+    margin: 0 0 1rem;
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.wex_sat_print_modal__action_stack {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.wex_sat_print_modal__action_btn {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: 0.8rem;
+    align-items: center;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--wex-sat-modal-border-strong);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--wex-sat-modal-ink);
+    text-align: left;
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.wex_sat_print_modal__action_btn:hover,
+.wex_sat_print_modal__action_btn:focus {
+    transform: translateY(-1px);
+    border-color: rgba(99, 91, 154, 0.5);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+    color: var(--wex-sat-modal-ink);
+}
+
+.wex_sat_print_modal__action_btn--primary {
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.08), transparent 28%),
+        #fff;
+}
+
+.wex_sat_print_modal__action_btn--secondary {
+    min-width: 0;
+    background:
+        radial-gradient(circle at top right, rgba(24, 119, 155, 0.07), transparent 28%),
+        #fff;
+}
+
+.wex_sat_print_modal__action_btn--dark {
+    background:
+        radial-gradient(circle at top right, rgba(31, 41, 55, 0.05), transparent 30%),
+        #fff;
+}
+
+.wex_sat_print_modal__action_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 14px;
+    background: var(--wex-sat-modal-accent-soft);
+    color: var(--wex-sat-modal-accent);
+    font-size: 1.05rem;
+}
+
+.wex_sat_print_modal__action_btn--secondary .wex_sat_print_modal__action_icon {
+    background: var(--wex-sat-modal-cyan-soft);
+    color: var(--wex-sat-modal-cyan);
+}
+
+.wex_sat_print_modal__action_btn--dark .wex_sat_print_modal__action_icon {
+    background: rgba(31, 41, 55, 0.08);
+    color: var(--wex-sat-modal-ink);
+}
+
+.wex_sat_print_modal__action_copy {
+    display: grid;
+    min-width: 0;
+}
+
+.wex_sat_print_modal__action_copy strong {
+    color: var(--wex-sat-modal-ink);
+    font-size: 0.96rem;
+    font-weight: 800;
+}
+
+.wex_sat_print_modal__action_copy small {
+    margin-top: 0.12rem;
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.wex_sat_print_modal__qty_card {
+    padding: 0.95rem 1rem 1rem;
+    border: 1px solid var(--wex-sat-modal-border);
+    border-radius: 18px;
+    background: var(--wex-sat-modal-surface-soft);
+}
+
+.wex_sat_print_modal__qty_meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.wex_sat_print_modal__qty_label {
+    color: var(--wex-sat-modal-ink);
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.wex_sat_print_modal__qty_hint {
+    color: var(--wex-sat-modal-muted);
+    font-size: 0.77rem;
+}
+
+.wex_sat_print_modal__qty_row {
+    display: grid;
+    grid-template-columns: minmax(140px, 170px) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: stretch;
+}
+
+.wex_sat_print_modal__qty_group {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--wex-sat-modal-border-strong);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.wex_sat_print_modal__qty_btn {
+    min-width: 3rem;
+    border: 0;
+    background: rgba(99, 91, 154, 0.08);
+    color: var(--wex-sat-modal-accent);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.wex_sat_print_modal__qty_input {
+    border: 0;
+    background: transparent;
+    color: var(--wex-sat-modal-ink);
+    font-size: 1rem;
+    font-weight: 800;
+    text-align: center;
+    box-shadow: none;
+}
+
+.wex_sat_print_modal__bulk_actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.wex_sat_print_modal__bulk_btn {
+    min-height: 3.6rem;
+    border: 0;
+    border-radius: 18px;
+    color: #fff;
+    font-size: 0.94rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.wex_sat_print_modal__bulk_btn--success {
+    background: var(--wex-sat-modal-success-soft);
+}
+
+.wex_sat_print_modal__bulk_btn--info {
+    background: var(--wex-sat-modal-info-soft);
+}
+
+.wex_sat_print_modal__footer {
+    justify-content: center;
+    padding: 0 1.5rem 1.25rem;
+    border-top: 0;
+}
+
+.wex_sat_print_modal__cancel {
+    color: var(--wex-sat-modal-muted);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wex_sat_print_modal__backdrop {
+    background: rgba(15, 23, 42, 0.38);
+}
+
+@media (max-width: 991.98px) {
+    .wex_sat_print_modal .modal-dialog {
+        max-width: calc(100vw - 1.25rem);
+        margin: 0.625rem;
+    }
+
+    .wex_sat_print_modal__grid,
+    .wex_sat_print_modal__bulk_actions,
+    .wex_sat_print_modal__qty_row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wex_sat_print_modal__header,
+    .wex_sat_print_modal__body {
+        padding: 1rem;
+    }
+
+    .wex_sat_print_modal__content {
+        border-radius: 20px;
+    }
+}

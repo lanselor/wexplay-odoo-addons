@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_knowledge_article_image_user,wex.knowledge.article.image user,model_wex_knowledge_article_image,wex_knowledge.group_knowledge_user,1,1,1,0
+access_wex_knowledge_article_image_editor,wex.knowledge.article.image editor,model_wex_knowledge_article_image,wex_knowledge.group_knowledge_editor,1,1,1,0
+access_wex_knowledge_article_image_manager,wex.knowledge.article.image manager,model_wex_knowledge_article_image,wex_knowledge.group_knowledge_manager,1,1,1,1
+access_wex_knowledge_article_image_upload_wizard_user,wex.knowledge.article.image.upload.wizard user,model_wex_knowledge_article_image_upload_wizard,wex_knowledge.group_knowledge_user,1,1,1,1

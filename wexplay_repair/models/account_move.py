@@ -95,7 +95,7 @@ class AccountMove(models.Model):
             "params": params,
         }
 
-    def _prepare_qz_report_action(self, report_name, kind="a4"):
+    def _prepare_qz_report_action(self, report_name, kind="a4", document_code=False):
         self.ensure_one()
         return self._prepare_qz_print_action(
             "wexplay_sat_print.print_report_qz",
@@ -103,6 +103,7 @@ class AccountMove(models.Model):
                 "kind": kind,
                 "report_name": report_name,
                 "res_id": self.id,
+                "document_code": document_code or False,
             },
         )
 
@@ -124,7 +125,7 @@ class AccountMove(models.Model):
     def action_qz_print_invoice_sat(self):
         """Print the SAT invoice via QZ."""
         self.ensure_one()
-        return self._prepare_qz_report_action("wexplay_repair.report_invoice_sat")
+        return self._prepare_qz_report_action("wexplay_repair.report_invoice_sat", document_code="sat_a4")
 
     def action_qz_print_invoice_standard(self):
         """Print the standard invoice via QZ."""

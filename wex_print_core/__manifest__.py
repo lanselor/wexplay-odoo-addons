@@ -23,6 +23,7 @@
             "wex_print_core/static/lib/qz-tray.js",
             "wex_print_core/static/src/js/print_router.js",
             "wex_print_core/static/src/js/qz_print.js",
+            "wex_print_core/static/src/js/printer_diagnostics_action.js",
             "wex_print_core/static/src/js/qz_settings_widget.js",
             "wex_print_core/static/src/xml/qz_settings_widget.xml",
         ],

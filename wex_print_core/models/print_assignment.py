@@ -10,6 +10,11 @@ class WexPrintAssignment(models.Model):
     name = fields.Char(required=True)
     active = fields.Boolean(default=True)
     priority = fields.Integer(default=100)
+    pilot_use_new_resolution = fields.Boolean(
+        string="Pilot new resolution",
+        default=False,
+        help="Permite que esta asignacion active el camino nuevo en modo hibrido.",
+    )
 
     document_type_id = fields.Many2one("wex.print.document.type", required=True, ondelete="cascade")
     profile_id = fields.Many2one("wex.print.profile", required=True, ondelete="restrict")
@@ -72,10 +77,12 @@ class WexPrintAssignment(models.Model):
             "document_code": document_code,
             "document_type_id": document_type.id,
             "assignment_id": best.id,
+            "pilot_use_new_resolution": best.pilot_use_new_resolution,
             "profile_id": profile.id,
             "profile_name": profile.name,
             "printer_name": profile.printer_name,
             "allow_fallback": profile.allow_fallback,
             "legacy_kind": profile.legacy_kind or document_type.legacy_kind,
+            "duplex_mode": profile.duplex_mode or "default",
             "message": "Shadow assignment resolved.",
         }

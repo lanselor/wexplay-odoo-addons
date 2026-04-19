@@ -55,7 +55,17 @@ class WexPrintTrace(models.Model):
     next_profile_id = fields.Many2one("wex.print.profile", readonly=True)
     next_printer_name = fields.Char(readonly=True)
     next_allow_fallback = fields.Boolean(readonly=True)
+    next_duplex_mode = fields.Selection(
+        [
+            ("default", "Default"),
+            ("long-edge", "Double-sided (long edge)"),
+            ("short-edge", "Double-sided (short edge)"),
+            ("one-sided", "Single-sided"),
+        ],
+        readonly=True,
+    )
     shadow_matches_legacy = fields.Boolean(readonly=True)
+    pilot_use_new_resolution = fields.Boolean(readonly=True)
     next_message = fields.Text(readonly=True)
     success = fields.Boolean(readonly=True)
     message = fields.Text(readonly=True)

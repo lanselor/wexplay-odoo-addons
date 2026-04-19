@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_wexplay_knowledge_images_settings" model="ir.actions.act_window">
+        <field name="name">Wexplay Knowledge Images</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'wexplay_knowledge_images'}</field>
+    </record>
+
+    <menuitem
+        id="menu_wexplay_knowledge_images_settings"
+        name="Wexplay Knowledge Images"
+        parent="base.menu_administration"
+        action="action_wexplay_knowledge_images_settings"
+        sequence="96"
+        groups="base.group_system"
+    />
+
+    <record id="res_config_settings_view_form_wexplay_knowledge_images" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wexplay.knowledge.images</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Wexplay Knowledge Images" name="wexplay_knowledge_images_settings" groups="base.group_system">
+                    <block title="Gestion documental Knowledge" name="wexplay_knowledge_images_dms_settings">
+                        <setting string="Almacenamiento DMS Knowledge">
+                            <field name="x_wex_knowledge_images_dms_storage_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                        <setting string="Raiz DMS Knowledge">
+                            <field name="x_wex_knowledge_images_dms_root_directory_id"
+                                   options="{'no_create': False, 'no_open': False}"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

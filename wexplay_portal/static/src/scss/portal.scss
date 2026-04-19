@@ -1,13 +1,91 @@
+:root {
+    --wex-portal-primary: #a68fcd;
+    --wex-portal-primary-dark: #8c75b6;
+    --wex-portal-primary-soft: #f3eef9;
+    --wex-portal-primary-border: #d9cdea;
+    --wex-portal-secondary: #73c799;
+    --wex-portal-secondary-dark: #56ab7d;
+    --wex-portal-secondary-soft: #edf8f1;
+    --wex-portal-secondary-border: #c3e6d1;
+    --wex-portal-ink: #20313f;
+}
+
 .wex_portal_filterbar {
     display: flex;
     justify-content: flex-start;
 }
 
+.wex_portal_repair_toolbar {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.wex_portal_searchbar {
+    width: 100%;
+    max-width: 760px;
+}
+
+.wex_portal_searchbar .input-group {
+    border: 2px solid var(--wex-portal-primary-border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.wex_portal_searchbar .input-group-text {
+    border: 0;
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
+}
+
+.wex_portal_search_select {
+    max-width: 240px;
+    border: 0;
+    border-right: 1px solid #dce8ee;
+    box-shadow: none;
+    background-color: #fff;
+    font-weight: 600;
+}
+
+.wex_portal_searchbar .form-control {
+    border: 0;
+    box-shadow: none;
+    min-height: 50px;
+}
+
+.wex_portal_searchbar .btn {
+    border-radius: 0;
+}
+
+.wex_portal_searchbar .btn-primary {
+    border-color: var(--wex-portal-primary);
+    background: var(--wex-portal-primary);
+}
+
+.wex_portal_searchbar .btn-primary:hover,
+.wex_portal_searchbar .btn-primary:focus {
+    border-color: var(--wex-portal-primary-dark);
+    background: var(--wex-portal-primary-dark);
+}
+
+.wex_portal_search_clear {
+    border-color: #d5e0e7;
+    color: #5b7183;
+    background: #f8fbfc;
+}
+
+.wex_portal_search_clear:hover,
+.wex_portal_search_clear:focus {
+    border-color: var(--wex-portal-primary-border);
+    color: #324a5f;
+    background: var(--wex-portal-primary-soft);
+}
+
 .wex_portal_panel {
-    border: 2px solid #d7e0e8;
+    border: 2px solid #ddd7e8;
     border-radius: 18px;
     background:
-        linear-gradient(180deg, rgba(250, 252, 253, 0.98) 0%, rgba(244, 248, 251, 0.98) 100%);
+        linear-gradient(180deg, rgba(252, 250, 254, 0.98) 0%, rgba(247, 244, 251, 0.98) 100%);
     box-shadow: 0 12px 28px -24px rgba(49, 78, 102, 0.45);
 }
 
@@ -17,14 +95,14 @@
 
 .wex_portal_card_icon {
     margin-right: 0.45rem;
-    color: #58748d;
+    color: var(--wex-portal-primary-dark);
 }
 
 .wex_portal_repair_title {
     font-size: clamp(2.15rem, 3vw, 3rem);
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: #1f2f3d;
+    color: var(--wex-portal-ink);
 }
 
 .wex_portal_customer_reference {
@@ -33,9 +111,9 @@
     gap: 0.45rem;
     align-items: center;
     padding: 0.45rem 0.7rem;
-    border: 2px solid #d7e1ea;
+    border: 2px solid var(--wex-portal-primary-border);
     border-radius: 999px;
-    background: #f6fafc;
+    background: var(--wex-portal-primary-soft);
 }
 
 .wex_portal_customer_reference_label {
@@ -48,16 +126,16 @@
 
 .wex_portal_customer_reference_value {
     font-weight: 700;
-    color: #274257;
+    color: #5f4f81;
 }
 
 .wex_portal_inline_reference {
     display: inline-block;
     padding: 0.26rem 0.62rem;
-    border: 1px solid #d7e3ec;
+    border: 1px solid var(--wex-portal-primary-border);
     border-radius: 999px;
-    background: #eef5f9;
-    color: #32506a;
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
     font-weight: 700;
     line-height: 1.25;
 }
@@ -66,8 +144,8 @@
     padding: 0.7rem 1.15rem;
     font-size: 1rem;
     font-weight: 700;
-    color: #476276;
-    background: #f4f8fb;
+    color: var(--wex-portal-primary-dark);
+    background: var(--wex-portal-primary-soft);
     border-width: 2px !important;
 }
 
@@ -77,6 +155,60 @@
     font-size: 0.95rem;
     font-weight: 700;
     border-width: 2px !important;
+    background: #faf9fc;
+}
+
+.wex_portal_list_status_badge--draft,
+.wex_portal_list_status_badge--confirmed {
+    color: var(--wex-portal-primary-dark);
+    background: var(--wex-portal-primary-soft);
+    border-color: var(--wex-portal-primary-border) !important;
+}
+
+.wex_portal_list_status_badge--under_repair {
+    color: #7a5a14;
+    background: #fff8e7;
+    border-color: #ead6a4 !important;
+}
+
+.wex_portal_list_status_badge--done,
+.wex_portal_list_status_badge--delivered {
+    color: var(--wex-portal-secondary-dark);
+    background: var(--wex-portal-secondary-soft);
+    border-color: var(--wex-portal-secondary-border) !important;
+}
+
+.wex_portal_list_status_badge--cancel {
+    color: #8a5d67;
+    background: #f9eef1;
+    border-color: #ebcfd7 !important;
+}
+
+.wex_portal_budget_badge {
+    padding: 0.35rem 0.72rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: #faf9fc;
+}
+
+.wex_portal_budget_badge--none,
+.wex_portal_budget_badge--estimating,
+.wex_portal_budget_badge--waiting_customer {
+    color: var(--wex-portal-primary-dark);
+    background: var(--wex-portal-primary-soft);
+    border-color: var(--wex-portal-primary-border) !important;
+}
+
+.wex_portal_budget_badge--accepted {
+    color: var(--wex-portal-secondary-dark);
+    background: var(--wex-portal-secondary-soft);
+    border-color: var(--wex-portal-secondary-border) !important;
+}
+
+.wex_portal_budget_badge--rejected {
+    color: #8a5d67;
+    background: #f9eef1;
+    border-color: #ebcfd7 !important;
 }
 
 .wex_portal_panel--table {
@@ -84,33 +216,51 @@
 }
 
 .wex_portal_panel--warranty {
-    border-color: #d8dce8;
+    border-color: var(--wex-portal-primary-border);
     background:
-        linear-gradient(180deg, rgba(250, 249, 255, 0.98) 0%, rgba(244, 243, 251, 0.98) 100%);
+        linear-gradient(180deg, rgba(250, 247, 255, 0.98) 0%, rgba(245, 242, 250, 0.98) 100%);
 }
 
-.wex_portal_filtergroup {
-    border-radius: 999px;
-    overflow: hidden;
-    box-shadow: inset 0 0 0 2px rgba(74, 105, 136, 0.18);
+.wex_portal_panel--diagnosis {
+    border-color: var(--wex-portal-primary-border);
+    background:
+        linear-gradient(180deg, rgba(250, 246, 255, 0.98) 0%, rgba(244, 238, 251, 0.98) 100%);
 }
 
-.wex_portal_filtergroup .btn {
-    min-width: 110px;
-    border-radius: 0;
-    font-weight: 600;
+.wex_portal_filtertabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem 0;
+    background: linear-gradient(180deg, #faf7fd 0%, #f5f0fb 100%);
 }
 
-.wex_portal_filtergroup .btn-outline-primary {
-    border-color: #c9d6e2;
-    color: #496177;
-    background: #f8fbfd;
+.wex_portal_filtertab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 138px;
+    min-height: 46px;
+    padding: 0.7rem 1rem;
+    border: 2px solid var(--wex-portal-primary-border);
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    background: #f3eef8;
+    color: #66577f;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-.wex_portal_filtergroup .btn-primary {
-    border-color: #5f7690;
-    background: #5f7690;
-    color: #fff;
+.wex_portal_filtertab:hover,
+.wex_portal_filtertab:focus {
+    color: var(--wex-portal-primary-dark);
+    text-decoration: none;
+}
+
+.wex_portal_filtertab.is-active {
+    border-color: var(--wex-portal-primary-border);
+    background: #fff;
+    color: var(--wex-portal-primary-dark);
 }
 
 .wex_portal_repair_table {
@@ -118,9 +268,9 @@
 }
 
 .wex_portal_repair_table thead th {
-    border-bottom: 2px solid #d8e1e8;
-    background: rgba(234, 240, 245, 0.55);
-    color: #22313f;
+    border-bottom: 2px solid #ddd5ea;
+    background: rgba(243, 238, 248, 0.75);
+    color: var(--wex-portal-ink);
     font-size: 0.95rem;
 }
 
@@ -142,33 +292,90 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
+    padding: 0.15rem 0 0.1rem;
 }
 
 .wex_portal_step {
     position: relative;
-    padding: 0.7rem 1rem;
-    border: 2px solid #d9e0e7;
+    padding: 0.55rem 0.92rem;
+    border: 2px solid #ddd6ea;
     border-radius: 999px;
-    background: #f6f9fb;
-    color: #5b6470;
+    background: #faf8fc;
+    color: #645c73;
     line-height: 1;
 }
 
 .wex_portal_step.is-completed {
-    border-color: #c7d7e5;
-    background: #edf4f9;
-    color: #33546d;
+    border-color: var(--wex-portal-secondary-border);
+    background: var(--wex-portal-secondary-soft);
+    color: var(--wex-portal-secondary-dark);
 }
 
 .wex_portal_step.is-current {
-    border-color: #7b8da3;
-    background: #eaf0f6;
-    color: #263847;
+    border-color: var(--wex-portal-primary-dark);
+    background: var(--wex-portal-primary-soft);
+    color: #4f4366;
     font-weight: 700;
 }
 
 .wex_portal_step_label {
     white-space: nowrap;
+}
+
+.wex_portal_focus_badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.8rem;
+    border: 2px solid var(--wex-portal-primary-border);
+    border-radius: 999px;
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.wex_portal_focus_block {
+    height: 100%;
+    min-height: 220px;
+    padding: 1.15rem 1.2rem;
+    border: 2px solid #e0d8ec;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.wex_portal_focus_block--diagnosis {
+    border-color: var(--wex-portal-primary-border);
+    min-height: 295px;
+    background: linear-gradient(180deg, #ffffff 0%, #faf6ff 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(166, 143, 205, 0.06),
+        0 16px 30px -30px rgba(166, 143, 205, 0.42);
+}
+
+.wex_portal_focus_label {
+    margin-bottom: 0.55rem;
+    color: #5f7486;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wex_portal_focus_value {
+    color: var(--wex-portal-ink);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.wex_portal_focus_value--rich {
+    font-size: 1.08rem;
+    line-height: 1.75;
+}
+
+.wex_portal_focus_value--rich p:last-child {
+    margin-bottom: 0;
 }
 
 .wex_portal_warranty_badge {
@@ -192,8 +399,62 @@
 
 .wex_portal_gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
+}
+
+.wex_portal_image_filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.3rem 0 0;
+    border-bottom: 2px solid #e0d8ec;
+}
+
+.wex_portal_image_filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.7rem 1rem;
+    border: 2px solid var(--wex-portal-primary-border);
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    background: #f5f0fb;
+    color: #62557a;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.wex_portal_image_filter:hover,
+.wex_portal_image_filter:focus {
+    color: var(--wex-portal-primary-dark);
+    border-color: var(--wex-portal-primary-border);
+    text-decoration: none;
+}
+
+.wex_portal_image_filter.is-active {
+    color: var(--wex-portal-primary-dark);
+    background: #fff;
+    border-color: var(--wex-portal-primary-border);
+}
+
+.wex_portal_image_filter_count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    min-height: 1.55rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: rgba(166, 143, 205, 0.14);
+    color: #6f5d91;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.wex_portal_image_filter.is-active .wex_portal_image_filter_count {
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
 }
 
 .wex_portal_gallery_item {
@@ -201,6 +462,8 @@
     flex-direction: column;
     overflow: hidden;
     min-height: 100%;
+    width: 100%;
+    padding: 0;
     border: 2px solid #d8e2ea;
     border-radius: 18px;
     background: #fff;
@@ -208,6 +471,24 @@
     color: inherit;
     text-decoration: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.wex_portal_invoice_cta {
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border-width: 2px;
+    border-color: var(--wex-portal-primary-border);
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.wex_portal_invoice_cta:hover,
+.wex_portal_invoice_cta:focus {
+    border-color: var(--wex-portal-primary-dark);
+    background: #ede6f7;
+    color: #5a4b76;
 }
 
 .wex_portal_gallery_item:hover,
@@ -221,7 +502,7 @@
 
 .wex_portal_gallery_item img {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 220px;
     object-fit: cover;
     background: #eef4f8;
 }
@@ -229,27 +510,108 @@
 .wex_portal_gallery_caption {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    align-items: flex-start;
+    gap: 0.45rem;
     padding: 0.9rem 1rem 1rem;
+    text-align: left;
 }
 
 .wex_portal_gallery_caption strong {
     color: #243746;
 }
 
-.wex_portal_gallery_caption span {
+.wex_portal_gallery_description {
     color: #607284;
     font-size: 0.92rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.wex_portal_gallery_tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.wex_portal_gallery_tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.55rem;
+    border: 1px solid #d7e3eb;
+    border-radius: 999px;
+    background: #f4f8fb;
+    color: #4f677a;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.wex_portal_image_modal {
+    border: 2px solid #d9e3eb;
+    border-radius: 22px;
+    overflow: hidden;
+}
+
+.wex_portal_image_modal .modal-header {
+    padding: 1.2rem 1.35rem 1rem;
+    border-bottom: 1px solid #e5ecf1;
+}
+
+.wex_portal_image_modal .modal-body {
+    padding: 1.35rem;
+}
+
+.wex_portal_image_modal_preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 420px;
+    padding: 1rem;
+    border: 2px solid #dce5ec;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #f8fbfd 0%, #f1f6fa 100%);
+}
+
+.wex_portal_image_modal_preview img {
+    max-height: 70vh;
+    width: auto;
+    border-radius: 14px;
+}
+
+.wex_portal_image_modal_meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.wex_portal_image_modal_block {
+    padding: 0.95rem 1rem;
+    border: 2px solid #dce5ec;
+    border-radius: 16px;
+    background: #f9fbfc;
+}
+
+.wex_portal_image_modal_label {
+    margin-bottom: 0.35rem;
+    color: #6b7e8f;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wex_portal_image_modal_value {
+    color: #243746;
 }
 
 @media (max-width: 767.98px) {
-    .wex_portal_filtergroup {
-        width: 100%;
+    .wex_portal_filtertabs {
+        padding: 0.8rem 0.8rem 0;
     }
 
-    .wex_portal_filtergroup .btn {
-        min-width: 0;
-        flex: 1 1 auto;
+    .wex_portal_filtertab {
+        min-width: calc(50% - 0.2rem);
     }
 
     .wex_portal_status_badge {
@@ -259,5 +621,29 @@
     .wex_portal_step {
         width: 100%;
         border-radius: 14px;
+    }
+
+    .wex_portal_searchbar .btn {
+        min-width: 110px;
+    }
+
+    .wex_portal_gallery_item img {
+        height: 190px;
+    }
+
+    .wex_portal_image_modal_preview {
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .wex_portal_gallery {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991.98px) {
+    .wex_portal_gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

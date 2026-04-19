@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_knowledge_article_form_inherit_images" model="ir.ui.view">
+        <field name="name">wex.knowledge.article.form.inherit.images</field>
+        <field name="model">wex.knowledge.article</field>
+        <field name="inherit_id" ref="wex_knowledge.view_wex_knowledge_article_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='wex_kb_workspace_editor']" position="after">
+                <div class="wex_kb_workspace_card">
+                    <div class="wex_kb_workspace_card_header">
+                        <div class="wex_kb_workspace_card_title">Imagenes embebidas</div>
+                        <button type="object"
+                                name="action_open_image_upload_wizard"
+                                class="btn btn-secondary wex_kb_insert_dms_image"
+                                invisible="not id or not can_edit">
+                            <i class="fa fa-upload"/>
+                            <span>Insertar imagen</span>
+                        </button>
+                    </div>
+                    <div class="wex_kb_embedded_dropzone" invisible="not id or not can_edit">
+                        <i class="fa fa-picture-o"/>
+                        <strong>Arrastra una imagen aqui</strong>
+                        <span>o haz clic en esta zona para subirla a DMS e insertarla en el articulo.</span>
+                    </div>
+                    <div class="text-muted wex_kb_embedded_images_empty" invisible="image_count">
+                        Este articulo aun no tiene imagenes embebidas gestionadas por DMS.
+                    </div>
+                    <div class="wex_kb_embedded_images_panel">
+                        <div class="wex_kb_embedded_images_table" style="display: none;">
+                            <div class="wex_kb_embedded_images_head">
+                                <span>Imagen</span>
+                                <span>Nombre</span>
+                                <span>Subida por</span>
+                                <span>Fecha</span>
+                                <span>Archivo DMS</span>
+                                <span>Acciones</span>
+                            </div>
+                            <div class="wex_kb_embedded_images_body"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

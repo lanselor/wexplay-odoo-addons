@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="knowledge_article_image_rule_user_read" model="ir.rule">
+        <field name="name">Knowledge Article Image User Read</field>
+        <field name="model_id" ref="model_wex_knowledge_article_image"/>
+        <field name="domain_force">
+            ['&amp;',
+                '|', ('article_id.is_global', '=', True), ('article_id.company_id', 'in', company_ids),
+                '|',
+                    ('article_id.visibility', '=', 'internal'),
+                    '|',
+                        '&amp;', ('article_id.visibility', '=', 'private'),
+                            '|', ('article_id.author_id', '=', user.id),
+                                '|', ('article_id.owner_id', '=', user.id), ('article_id.collaborator_ids', 'in', user.id),
+                        '&amp;', ('article_id.visibility', '=', 'by_group'), ('article_id.allowed_group_ids', 'in', user.groups_id.ids)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_user'))]"/>
+    </record>
+
+    <record id="knowledge_article_image_rule_user_write" model="ir.rule">
+        <field name="name">Knowledge Article Image User Write</field>
+        <field name="model_id" ref="model_wex_knowledge_article_image"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">
+            ['&amp;',
+                '&amp;',
+                    '|', ('article_id.is_global', '=', True), ('article_id.company_id', 'in', company_ids),
+                    ('article_id.is_locked', '=', False),
+                '|', ('article_id.author_id', '=', user.id),
+                    '|', ('article_id.owner_id', '=', user.id), ('article_id.collaborator_ids', 'in', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_user'))]"/>
+    </record>
+
+    <record id="knowledge_article_image_rule_editor_write" model="ir.rule">
+        <field name="name">Knowledge Article Image Editor Write</field>
+        <field name="model_id" ref="model_wex_knowledge_article_image"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">
+            ['&amp;',
+                '&amp;',
+                    '|', ('article_id.is_global', '=', True), ('article_id.company_id', 'in', company_ids),
+                    ('article_id.is_locked', '=', False),
+                '|',
+                    ('article_id.visibility', '=', 'internal'),
+                    '|',
+                        '&amp;', ('article_id.visibility', '=', 'private'),
+                            '|', ('article_id.author_id', '=', user.id),
+                                '|', ('article_id.owner_id', '=', user.id), ('article_id.collaborator_ids', 'in', user.id),
+                        '&amp;', ('article_id.visibility', '=', 'by_group'), ('article_id.allowed_group_ids', 'in', user.groups_id.ids)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_editor'))]"/>
+    </record>
+
+    <record id="knowledge_article_image_rule_manager_all" model="ir.rule">
+        <field name="name">Knowledge Article Image Manager All</field>
+        <field name="model_id" ref="model_wex_knowledge_article_image"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_manager'))]"/>
+    </record>
+</odoo>

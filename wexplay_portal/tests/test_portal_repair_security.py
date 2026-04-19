@@ -92,3 +92,6 @@ class TestPortalRepairSecurity(SavepointCase):
 
         with self.assertRaises(AccessError):
             foreign_repair._get_portal_image_values()
+
+        with self.assertRaises(AccessError):
+            foreign_repair._get_portal_invoice_values()

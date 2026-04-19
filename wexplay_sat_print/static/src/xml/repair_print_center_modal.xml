@@ -2,75 +2,178 @@
 <!-- wexplay_sat_print/static/src/xml/repair_print_center_modal.xml -->
 <templates xml:space="preserve">
     <t t-name="wexplay_sat_print.SatPrintCenterModal">
-        <div class="modal fade show d-block" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content border-0 shadow-lg">
-                    
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">
-                            <i class="fa fa-print me-2"></i>Centro de Impresión SAT
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" t-on-click="close" aria-label="Close"/>
-                    </div>
+        <div class="modal fade show d-block wex_sat_print_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content wex_sat_print_modal__content border-0"
+                     style="overflow:hidden; border:1px solid #bcc7d8; border-radius:24px; background:radial-gradient(circle at top right, rgba(99, 91, 154, 0.10), transparent 24%), linear-gradient(180deg, #ffffff 0%, #fafbfd 100%); box-shadow:0 18px 48px rgba(15, 23, 42, 0.16);">
 
-                    <div class="modal-body p-4">
-                        <div class="section-container mb-4 p-3 border rounded bg-light">
-                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
-                                <i class="fa fa-tag me-2"></i>Etiquetas Brother QL
-                            </h6>
-                            
-                            <div class="d-grid gap-3">
-                                <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center" t-on-click="onPrintLabel29x90">
-                                    <i class="fa fa-file-text-o me-2"></i> Etiqueta SAT Completa
-                                </button>
-
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="input-group">
-                                        <button class="btn btn-secondary px-3" t-on-click="decrementAccessoryQty">-</button>
-                                        <input type="number" class="form-control text-center fw-bold" 
-                                               t-att-value="state.accessoryQty" t-on-input="onAccessoryQtyInput"/>
-                                        <button class="btn btn-secondary px-3" t-on-click="incrementAccessoryQty">+</button>
-                                    </div>
-                                    <button type="button" class="btn btn-secondary w-100 py-2" t-on-click="onPrintLabel29x42">
-                                        <i class="fa fa-tags me-2"></i> Accesorios
-                                    </button>
-                                </div>
+                    <div class="modal-header wex_sat_print_modal__header"
+                         style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.4rem 1.5rem 1.2rem; border-bottom:1px solid rgba(152, 168, 192, 0.35); background:radial-gradient(circle at top right, rgba(99, 91, 154, 0.16), transparent 28%), linear-gradient(135deg, #f8f8fe 0%, #f2f6fb 100%);">
+                        <div class="wex_sat_print_modal__header_copy">
+                            <div class="wex_sat_print_modal__eyebrow"
+                                 style="margin-bottom:0.35rem; color:#667085; font-size:0.74rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">Repair Order</div>
+                            <h5 class="modal-title wex_sat_print_modal__title"
+                                style="display:flex; align-items:center; gap:0.4rem; margin:0; color:#1f2937; font-size:1.28rem; font-weight:800;">
+                                <i class="fa fa-print me-2"></i>Centro de Impresión SAT
+                            </h5>
+                            <div class="wex_sat_print_modal__subtitle"
+                                 style="margin-top:0.35rem; color:#667085; font-size:0.9rem; line-height:1.5;">
+                                Accesos directos para etiquetas y resguardos con la estética actual del SAT.
                             </div>
                         </div>
+                        <button type="button"
+                                class="btn-close wex_sat_print_modal__close"
+                                t-on-click="close"
+                                style="flex:0 0 auto; margin:0; padding:0.55rem; border:1px solid rgba(152, 168, 192, 0.5); border-radius:14px; background-color:rgba(255, 255, 255, 0.85); opacity:1;"
+                                aria-label="Close"/>
+                    </div>
 
-                        <div class="section-container mb-4 p-3 border rounded bg-light">
-                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
-                                <i class="fa fa-user me-2"></i>Documentación Cliente
-                            </h6>
-                            <button type="button" class="btn btn-outline-dark w-100" t-on-click="onPrintTicket80x170">
-                                <i class="fa fa-ticket me-2"></i> Resguardo (Tamaño Ticket)
-                            </button>
+                    <div class="modal-body wex_sat_print_modal__body" style="padding:1.5rem;">
+                        <div class="wex_sat_print_modal__grid"
+                             style="display:flex; align-items:stretch; gap:1.25rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <section class="wex_sat_print_modal__section wex_sat_print_modal__section--labels"
+                                     style="flex:1 1 0; min-width:0; max-width:calc(100% - 300px); padding:1.1rem; border:1px solid #bcc7d8; border-radius:20px; background:radial-gradient(circle at top right, rgba(99, 91, 154, 0.05), transparent 24%), #fff; box-shadow:0 8px 18px rgba(15, 23, 42, 0.045);">
+                                <div class="wex_sat_print_modal__section_intro">
+                                    <div class="wex_sat_print_modal__section_eyebrow"
+                                         style="margin-bottom:0.45rem; color:#667085; font-size:0.72rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">
+                                        <i class="fa fa-tag me-2"></i>Documentación SAT
+                                    </div>
+                                    <h6 class="wex_sat_print_modal__section_title"
+                                        style="margin:0 0 0.35rem; color:#1f2937; font-size:1.04rem; font-weight:800;">Impresión rápida de mostrador</h6>
+                                    <p class="wex_sat_print_modal__section_text"
+                                       style="margin:0 0 1rem; color:#667085; font-size:0.9rem; line-height:1.45;">
+                                        Etiquetas principales y accesorios con acceso directo y control de copias.
+                                    </p>
+                                </div>
+
+                                <div class="wex_sat_print_modal__action_stack d-grid gap-3">
+                                    <button type="button"
+                                            class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--primary"
+                                            style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(99, 91, 154, 0.08), transparent 28%), #fff; color:#1f2937; text-align:left;"
+                                            t-on-click="onPrintLabel29x90">
+                                        <span class="wex_sat_print_modal__action_icon"
+                                              style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.05rem;">
+                                            <i class="fa fa-file-text-o"></i>
+                                        </span>
+                                        <span class="wex_sat_print_modal__action_copy" style="display:grid; min-width:0;">
+                                            <strong style="color:#1f2937; font-size:0.96rem; font-weight:800;">Etiqueta SAT Completa</strong>
+                                            <small style="margin-top:0.12rem; color:#667085; font-size:0.8rem; line-height:1.4;">Formato 29x90 para identificación principal.</small>
+                                        </span>
+                                    </button>
+
+                                    <div class="wex_sat_print_modal__qty_card"
+                                         style="padding:0.95rem 1rem 1rem; border:1px solid #bcc7d8; border-radius:18px; background:#f4f6fb;">
+                                        <div class="wex_sat_print_modal__qty_meta d-flex justify-content-between align-items-baseline gap-3 mb-3">
+                                            <div class="wex_sat_print_modal__qty_label"
+                                                 style="color:#1f2937; font-size:0.84rem; font-weight:800; letter-spacing:0.03em;">Copias de accesorios</div>
+                                            <div class="wex_sat_print_modal__qty_hint"
+                                                 style="color:#667085; font-size:0.77rem;">Cantidad mínima 1</div>
+                                        </div>
+
+                                        <div class="wex_sat_print_modal__qty_row"
+                                             style="display:flex; align-items:stretch; gap:0.85rem; flex-wrap:wrap;">
+                                            <div style="flex:0 0 136px;">
+                                                <div class="input-group wex_sat_print_modal__qty_group"
+                                                     style="height:100%; overflow:hidden; border:1px solid #98a8c0; border-radius:16px; background:#fff;">
+                                                <button class="btn wex_sat_print_modal__qty_btn"
+                                                        type="button"
+                                                        style="min-width:3rem; border:0; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.15rem; font-weight:800;"
+                                                        t-on-click="decrementAccessoryQty">-</button>
+                                                <input type="number"
+                                                       class="form-control wex_sat_print_modal__qty_input"
+                                                       style="border:0; background:transparent; color:#1f2937; font-size:1rem; font-weight:800; text-align:center; box-shadow:none;"
+                                                       t-att-value="state.accessoryQty"
+                                                       t-on-input="onAccessoryQtyInput"/>
+                                                <button class="btn wex_sat_print_modal__qty_btn"
+                                                        type="button"
+                                                        style="min-width:3rem; border:0; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.15rem; font-weight:800;"
+                                                        t-on-click="incrementAccessoryQty">+</button>
+                                                </div>
+                                            </div>
+                                            <div style="flex:1 1 240px;">
+                                            <button type="button"
+                                                    class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--secondary"
+                                                    style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(24, 119, 155, 0.07), transparent 28%), #fff; color:#1f2937; text-align:left;"
+                                                    t-on-click="onPrintLabel29x42">
+                                                <span class="wex_sat_print_modal__action_icon"
+                                                      style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(24, 119, 155, 0.08); color:#18779b; font-size:1.05rem;">
+                                                    <i class="fa fa-tags"></i>
+                                                </span>
+                                                <span class="wex_sat_print_modal__action_copy" style="display:grid; min-width:0;">
+                                                    <strong style="color:#1f2937; font-size:0.96rem; font-weight:800;">Accesorios</strong>
+                                                    <small style="margin-top:0.12rem; color:#667085; font-size:0.8rem; line-height:1.4;">Formato 29x42 para piezas o complementos.</small>
+                                                </span>
+                                            </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="wex_sat_print_modal__section wex_sat_print_modal__section--ticket"
+                                     style="flex:0 0 280px; width:280px; min-width:280px; padding:1.1rem; border:1px solid #bcc7d8; border-radius:20px; background:radial-gradient(circle at top right, rgba(24, 119, 155, 0.07), transparent 28%), linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); box-shadow:0 8px 18px rgba(15, 23, 42, 0.045);">
+                                <div class="wex_sat_print_modal__section_intro">
+                                    <div class="wex_sat_print_modal__section_eyebrow"
+                                         style="margin-bottom:0.45rem; color:#667085; font-size:0.72rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">
+                                        <i class="fa fa-user me-2"></i>Documentación Cliente
+                                    </div>
+                                    <h6 class="wex_sat_print_modal__section_title"
+                                        style="margin:0 0 0.35rem; color:#1f2937; font-size:1.04rem; font-weight:800;">Entrega de resguardo</h6>
+                                    <p class="wex_sat_print_modal__section_text"
+                                       style="margin:0 0 1rem; color:#667085; font-size:0.9rem; line-height:1.45;">
+                                        Genera el comprobante para cliente en formato ticket térmico.
+                                    </p>
+                                </div>
+
+                                <button type="button"
+                                        class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--dark"
+                                        style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(31, 41, 55, 0.05), transparent 30%), #fff; color:#1f2937; text-align:left;"
+                                        t-on-click="onPrintTicket80x170">
+                                    <span class="wex_sat_print_modal__action_icon"
+                                          style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(31, 41, 55, 0.08); color:#1f2937; font-size:1.05rem;">
+                                        <i class="fa fa-ticket"></i>
+                                    </span>
+                                    <span class="wex_sat_print_modal__action_copy" style="display:grid; min-width:0;">
+                                        <strong style="color:#1f2937; font-size:0.96rem; font-weight:800;">Resguardo</strong>
+                                        <small style="margin-top:0.12rem; color:#667085; font-size:0.8rem; line-height:1.4;">Tamaño ticket 80x170 listo para entrega.</small>
+                                    </span>
+                                </button>
+                            </section>
                         </div>
 
-                        <div class="d-grid gap-3">
+                        <div class="wex_sat_print_modal__bulk_actions"
+                             style="display:flex; gap:1rem; flex-wrap:wrap;">
+                            <div style="flex:1 1 280px;">
                             <button type="button"
-                                    class="btn btn-success btn-sm w-70 shadow-sm py-3 fw-bold"
+                                    class="btn wex_sat_print_modal__bulk_btn wex_sat_print_modal__bulk_btn--success"
+                                    style="width:100%; min-height:3.6rem; border:0; border-radius:18px; background:linear-gradient(135deg, #2f8f6a 0%, #24684f 100%); color:#fff; font-size:0.94rem; font-weight:800; letter-spacing:0.01em; box-shadow:0 14px 30px rgba(15, 23, 42, 0.12);"
                                     t-on-click="onPrintAll">
-                                <i class="fa fa-check-circle me-2"></i> IMPRIMIR TODO
+                                <i class="fa fa-check-circle me-2"></i>Imprimir todo
                             </button>
+                            </div>
 
+                            <div style="flex:1 1 280px;">
                             <button type="button"
-                                    class="btn btn-info btn-sm w-70 shadow-sm py-3 fw-bold"
+                                    class="btn wex_sat_print_modal__bulk_btn wex_sat_print_modal__bulk_btn--info"
+                                    style="width:100%; min-height:3.6rem; border:0; border-radius:18px; background:linear-gradient(135deg, #2f9cc0 0%, #1e728d 100%); color:#fff; font-size:0.94rem; font-weight:800; letter-spacing:0.01em; box-shadow:0 14px 30px rgba(15, 23, 42, 0.12);"
                                     t-on-click="onPrintSat">
-                                <i class="fa fa-check-circle me-2"></i> IMPRIMIR DOCUMENTOS RECOGIDA
+                                <i class="fa fa-files-o me-2"></i>Imprimir documentos recogida
                             </button>
+                            </div>
                         </div>
                     </div>
 
-
-
-                    <div class="modal-footer border-top-0 justify-content-center">
-                        <button type="button" class="btn btn-link text-muted" t-on-click="close">Cancelar y Salir</button>
+                    <div class="modal-footer wex_sat_print_modal__footer"
+                         style="justify-content:center; padding:0 1.5rem 1.25rem; border-top:0;">
+                        <button type="button"
+                                class="btn btn-link wex_sat_print_modal__cancel"
+                                style="color:#667085; font-weight:700; text-decoration:none;"
+                                t-on-click="close">Cancelar y Salir</button>
                     </div>
 
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show"></div>
+        <div class="modal-backdrop fade show wex_sat_print_modal__backdrop"></div>
     </t>
 </templates>

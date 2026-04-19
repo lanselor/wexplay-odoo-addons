@@ -4,6 +4,8 @@ access_wex_print_profile_admin,wex.print.profile admin,model_wex_print_profile,w
 access_wex_print_profile_user,wex.print.profile user,model_wex_print_profile,base.group_user,1,0,0,0
 access_wex_print_assignment_admin,wex.print.assignment admin,model_wex_print_assignment,wex_print_core.group_wex_print_core_admin,1,1,1,1
 access_wex_print_assignment_user,wex.print.assignment user,model_wex_print_assignment,base.group_user,1,0,0,0
+access_wex_print_device_snapshot_admin,wex.print.device.snapshot admin,model_wex_print_device_snapshot,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_device_snapshot_user,wex.print.device.snapshot user,model_wex_print_device_snapshot,base.group_user,1,0,1,0
 access_wex_print_document_type_admin,wex.print.document.type admin,model_wex_print_document_type,wex_print_core.group_wex_print_core_admin,1,1,1,1
 access_wex_print_document_type_user,wex.print.document.type user,model_wex_print_document_type,base.group_user,1,0,0,0
 access_wex_print_trace_admin,wex.print.trace admin,model_wex_print_trace,wex_print_core.group_wex_print_core_admin,1,1,1,1

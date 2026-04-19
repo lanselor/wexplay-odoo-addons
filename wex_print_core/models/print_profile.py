@@ -23,6 +23,16 @@ class WexPrintProfile(models.Model):
     printer_name = fields.Char(required=True)
     allow_fallback = fields.Boolean(default=True)
     copies_override = fields.Integer(default=0)
+    duplex_mode = fields.Selection(
+        [
+            ("default", "Default"),
+            ("long-edge", "Double-sided (long edge)"),
+            ("short-edge", "Double-sided (short edge)"),
+            ("one-sided", "Single-sided"),
+        ],
+        default="default",
+        required=True,
+    )
     company_id = fields.Many2one("res.company")
     notes = fields.Text()
 

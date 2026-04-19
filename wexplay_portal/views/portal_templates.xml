@@ -48,25 +48,53 @@
                     </div>
                 </div>
 
-                <div class="wex_portal_filterbar mb-4">
-                    <div class="btn-group wex_portal_filtergroup" role="group" aria-label="Repair filters">
-                        <a t-foreach="searchbar_filters.items()" t-as="searchbar_filter"
-                           t-att-href="'/my/repairs?filterby=%s' % searchbar_filter[0]"
-                           t-att-class="'btn btn-sm %s' % ('btn-primary' if filterby == searchbar_filter[0] else 'btn-outline-primary')">
-                            <t t-if="searchbar_filter[0] == 'all'">Todos</t>
-                            <t t-if="searchbar_filter[0] == 'active'">Activos</t>
-                            <t t-if="searchbar_filter[0] == 'done'">Finalizados</t>
-                        </a>
-                    </div>
+                <div class="wex_portal_repair_toolbar mb-4">
+                    <form action="/my/repairs" method="get" class="wex_portal_searchbar">
+                        <input type="hidden" name="filterby" t-att-value="filterby"/>
+                        <div class="input-group">
+                            <select name="search_in" class="form-select wex_portal_search_select">
+                                <option t-foreach="searchbar_inputs.items()"
+                                        t-as="searchbar_input"
+                                        t-att-value="searchbar_input[0]"
+                                        t-att-selected="search_in == searchbar_input[0]">
+                                    <t t-out="searchbar_input[1]['label']"/>
+                                </option>
+                            </select>
+                            <span class="input-group-text">
+                                <i class="fa fa-search" aria-hidden="true"/>
+                            </span>
+                            <input type="text"
+                                   name="search"
+                                   t-att-value="search"
+                                   class="form-control"
+                                   placeholder="Escribe el valor a buscar"/>
+                            <button type="submit" class="btn btn-primary">Buscar</button>
+                            <a t-if="search"
+                               t-att-href="clear_search_url"
+                               class="btn btn-outline-secondary wex_portal_search_clear">
+                                Limpiar
+                            </a>
+                        </div>
+                    </form>
                 </div>
 
                 <t t-if="repairs">
-                    <div class="table-responsive border rounded-3 overflow-hidden wex_portal_panel wex_portal_panel--table">
+                    <div class="wex_portal_panel wex_portal_panel--table overflow-hidden">
+                        <div class="wex_portal_filtertabs" role="tablist" aria-label="Repair filters">
+                            <a t-foreach="searchbar_filters.items()" t-as="searchbar_filter"
+                               t-att-href="searchbar_filter[1]['url']"
+                               t-att-class="'wex_portal_filtertab %s' % ('is-active' if filterby == searchbar_filter[0] else '')">
+                                <t t-if="searchbar_filter[0] == 'active'">Activos</t>
+                                <t t-if="searchbar_filter[0] == 'done'">Finalizados</t>
+                                <t t-if="searchbar_filter[0] == 'all'">Todos</t>
+                            </a>
+                        </div>
+                        <div class="table-responsive border-top overflow-hidden">
                         <table class="table table-hover o_portal_my_doc_table mb-0 wex_portal_repair_table">
                             <thead>
                                 <tr>
                                     <th>Referencia</th>
-                                    <th>Cliente / Fecha</th>
+                                    <th>Fecha alta</th>
                                     <th>Equipo</th>
                                     <th>IMEI / Serie</th>
                                     <th>Incidencia</th>
@@ -85,12 +113,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="fw-semibold">
-                                            <t t-out="repair.partner_id.display_name or '-'"/>
-                                        </div>
-                                        <div class="small text-muted">
-                                            <span t-field="repair.create_date" t-options="{'widget': 'datetime'}"/>
-                                        </div>
+                                        <span t-field="repair.create_date" t-options="{'widget': 'datetime'}"/>
                                     </td>
                                     <td>
                                         <div class="fw-semibold">
@@ -107,17 +130,20 @@
                                     <td><t t-out="repair.x_imei or '-'"/></td>
                                     <td class="text-break"><t t-out="repair.x_reported_issue or '-'"/></td>
                                     <td class="text-end">
-                                        <span class="badge rounded-pill text-bg-light border wex_portal_list_status_badge">
+                                        <span t-att-class="'badge rounded-pill border wex_portal_list_status_badge wex_portal_list_status_badge--%s' % (repair.state or 'default')">
                                             <t t-out="repair.x_portal_state_label"/>
                                         </span>
                                         <div t-if="'x_budget_stage' in repair._fields and repair.x_budget_stage"
-                                             class="small text-muted mt-1">
-                                            <t t-out="dict(repair._fields['x_budget_stage'].selection).get(repair.x_budget_stage, repair.x_budget_stage)"/>
+                                             class="mt-2">
+                                            <span t-att-class="'badge rounded-pill border wex_portal_budget_badge wex_portal_budget_badge--%s' % repair.x_budget_stage">
+                                                <t t-out="dict(repair._fields['x_budget_stage'].selection).get(repair.x_budget_stage, repair.x_budget_stage)"/>
+                                            </span>
                                         </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                     <div class="o_portal_pager d-flex justify-content-center my-3">
                         <t t-call="portal.pager"/>
@@ -125,7 +151,8 @@
                 </t>
                 <t t-else="">
                     <div class="alert alert-info" role="status">
-                        No hay reparaciones SAT para este filtro.
+                        <t t-if="search">No hay reparaciones SAT que coincidan con esta búsqueda.</t>
+                        <t t-else="">No hay reparaciones SAT para este filtro.</t>
                     </div>
                 </t>
             </div>
@@ -138,8 +165,9 @@
             <t t-set="budget_steps" t-value="repair._get_portal_budget_steps()"/>
             <t t-set="part_lines" t-value="repair._get_portal_part_line_values()"/>
             <t t-set="service_lines" t-value="repair._get_portal_service_line_values()"/>
+            <t t-set="invoice_values" t-value="repair._get_portal_invoice_values()"/>
             <t t-set="warranty_data" t-value="repair._get_portal_warranty_values()"/>
-            <t t-set="image_values" t-value="repair._get_portal_image_values() if 'x_image_ids' in repair._fields else []"/>
+            <t t-set="image_values" t-value="repair._get_portal_image_values(tag_code=image_tag) if 'x_image_ids' in repair._fields else []"/>
 
             <div class="o_portal_wrap">
                 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -241,24 +269,102 @@
 
                 <div class="row g-3 mt-1">
                     <div class="col-12">
-                        <div class="card h-100 wex_portal_panel">
+                        <div class="card h-100 wex_portal_panel wex_portal_panel--diagnosis">
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fa fa-stethoscope wex_portal_card_icon" aria-hidden="true"/>
-                                    Diagnóstico y notas visibles
-                                </h5>
-                                <dl class="row mb-0">
-                                    <dt class="col-sm-3">Descripción de la avería</dt>
-                                    <dd class="col-sm-9 text-break"><t t-out="repair.x_reported_issue or '-'"/></dd>
-                                    <dt class="col-sm-3">Diagnóstico</dt>
-                                    <dd class="col-sm-9 text-break"><t t-out="repair.repair_request or '-'"/></dd>
-                                </dl>
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fa fa-stethoscope wex_portal_card_icon" aria-hidden="true"/>
+                                        Diagnóstico y notas visibles
+                                    </h5>
+                                    <span class="wex_portal_focus_badge">Información clave del SAT</span>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-4">
+                                        <div class="wex_portal_focus_block">
+                                            <div class="wex_portal_focus_label">Descripción de la avería</div>
+                                            <div class="wex_portal_focus_value text-break">
+                                                <t t-out="repair.x_reported_issue or '-'"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-8">
+                                        <div class="wex_portal_focus_block wex_portal_focus_block--diagnosis">
+                                            <div class="wex_portal_focus_label">Diagnóstico</div>
+                                            <div class="wex_portal_focus_value wex_portal_focus_value--rich">
+                                                <t t-if="repair.internal_notes">
+                                                    <div t-field="repair.internal_notes"/>
+                                                </t>
+                                                <t t-else="">-</t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <div class="card h-100 wex_portal_panel">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fa fa-file-text-o wex_portal_card_icon" aria-hidden="true"/>
+                                        Facturación relacionada
+                                    </h5>
+                                    <a href="/my/invoices" class="btn btn-outline-secondary wex_portal_invoice_cta">
+                                        Ver todas mis facturas
+                                    </a>
+                                </div>
+                                <t t-if="invoice_values">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Factura</th>
+                                                    <th>Fecha</th>
+                                                    <th>Tipo</th>
+                                                    <th>Estado pago</th>
+                                                    <th class="text-end">Importe</th>
+                                                    <th class="text-end">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="invoice_values" t-as="invoice_item">
+                                                    <td class="fw-semibold">
+                                                        <t t-out="invoice_item['name']"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="invoice_item['date']">
+                                                            <span t-out="invoice_item['date']" t-options="{'widget': 'date'}"/>
+                                                        </t>
+                                                        <t t-else="">-</t>
+                                                    </td>
+                                                    <td><t t-out="invoice_item['move_type_label'] or '-'"/></td>
+                                                    <td><t t-out="invoice_item['payment_state_label'] or '-'"/></td>
+                                                    <td class="text-end">
+                                                        <span t-out="invoice_item['amount_total']" t-options="{'widget': 'monetary', 'display_currency': invoice_item['currency']}"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <a t-att-href="invoice_item['portal_url']" class="btn btn-outline-secondary btn-sm">
+                                                            Ver factura
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-light mb-0">
+                                        No hay facturas relacionadas visibles desde este SAT.
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-12 col-lg-6">
                         <div class="card h-100 wex_portal_panel">
                             <div class="card-body">
@@ -431,24 +537,119 @@
                                     <p class="text-muted small mb-3">
                                         Estas fotografías se sirven desde una ruta segura del portal vinculada a esta reparación, sin acceso directo al DMS.
                                     </p>
-                                    <t t-if="image_values">
-                                        <div class="wex_portal_gallery">
-                                            <a t-foreach="image_values" t-as="image"
-                                               t-att-href="image['image_url']"
-                                               t-att-title="image['name']"
-                                               class="wex_portal_gallery_item">
-                                                <img t-att-src="image['image_url']" t-att-alt="image['name']"/>
-                                                <span class="wex_portal_gallery_caption">
-                                                    <strong><t t-out="image['name']"/></strong>
-                                                    <t t-if="image['description']">
-                                                        <span><t t-out="image['description']"/></span>
-                                                    </t>
+                                    <t t-if="image_filter_values and len(image_filter_values) &gt; 1">
+                                        <div class="wex_portal_image_filters mb-3" role="tablist" aria-label="Filtros de fotografías">
+                                            <a t-foreach="image_filter_values" t-as="image_filter"
+                                               t-att-href="image_filter['url']"
+                                               t-att-class="'text-decoration-none wex_portal_image_filter %s' % ('is-active' if image_filter['is_selected'] else '')">
+                                                <t t-out="image_filter['name']"/>
+                                                <span class="wex_portal_image_filter_count">
+                                                    <t t-out="image_filter['count']"/>
                                                 </span>
                                             </a>
                                         </div>
                                     </t>
+                                    <t t-if="image_values">
+                                        <div class="wex_portal_gallery">
+                                            <button t-foreach="image_values" t-as="image"
+                                                    type="button"
+                                                    class="wex_portal_gallery_item"
+                                                    t-att-title="image['name']"
+                                                    data-bs-toggle="modal"
+                                                    t-att-data-bs-target="'#%s' % image['modal_id']">
+                                                <img t-att-src="image['thumbnail_url']" t-att-alt="image['name']" loading="lazy"/>
+                                                <span class="wex_portal_gallery_caption">
+                                                    <strong><t t-out="image['name']"/></strong>
+                                                    <t t-if="image['description']">
+                                                        <span class="wex_portal_gallery_description"><t t-out="image['description']"/></span>
+                                                    </t>
+                                                    <t t-if="image['tags']">
+                                                        <span class="wex_portal_gallery_tags">
+                                                            <span t-foreach="image['tags']" t-as="tag_name" class="wex_portal_gallery_tag">
+                                                                <t t-out="tag_name"/>
+                                                            </span>
+                                                        </span>
+                                                    </t>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <t t-foreach="image_values" t-as="image">
+                                            <div t-att-id="image['modal_id']"
+                                                 class="modal fade"
+                                                 tabindex="-1"
+                                                 t-att-aria-labelledby="image['modal_label_id']"
+                                                 aria-hidden="true">
+                                                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                                    <div class="modal-content wex_portal_image_modal">
+                                                        <div class="modal-header">
+                                                            <div>
+                                                                <h5 class="modal-title" t-att-id="image['modal_label_id']">
+                                                                    <t t-out="image['name']"/>
+                                                                </h5>
+                                                                <p class="text-muted mb-0">
+                                                                    <t t-out="image['filename']"/>
+                                                                </p>
+                                                            </div>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row g-4">
+                                                                <div class="col-12 col-lg-8">
+                                                                    <div class="wex_portal_image_modal_preview">
+                                                                        <img t-att-src="image['preview_url']"
+                                                                             t-att-alt="image['name']"
+                                                                             class="img-fluid"
+                                                                             loading="lazy"/>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-12 col-lg-4">
+                                                                    <div class="wex_portal_image_modal_meta">
+                                                                        <div class="wex_portal_image_modal_block">
+                                                                            <div class="wex_portal_image_modal_label">Descripción</div>
+                                                                            <div class="wex_portal_image_modal_value text-break">
+                                                                                <t t-out="image['description'] or '-'"/>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="wex_portal_image_modal_block">
+                                                                            <div class="wex_portal_image_modal_label">Etiquetas</div>
+                                                                            <div class="wex_portal_image_modal_value">
+                                                                                <t t-if="image['tags']">
+                                                                                    <div class="wex_portal_gallery_tags">
+                                                                                        <span t-foreach="image['tags']" t-as="tag_name" class="wex_portal_gallery_tag">
+                                                                                            <t t-out="tag_name"/>
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </t>
+                                                                                <t t-else="">-</t>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="wex_portal_image_modal_block">
+                                                                            <div class="wex_portal_image_modal_label">Subida el</div>
+                                                                            <div class="wex_portal_image_modal_value">
+                                                                                <t t-if="image['uploaded_at']">
+                                                                                    <span t-out="image['uploaded_at']" t-options="{'widget': 'datetime'}"/>
+                                                                                </t>
+                                                                                <t t-else="">-</t>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <a t-att-href="image['download_url']"
+                                                                       class="btn btn-primary w-100 mt-3">
+                                                                        Descargar imagen
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
                                     <t t-else="">
-                                        <div class="alert alert-light mb-0">No hay fotografías asociadas a esta reparación.</div>
+                                        <div class="alert alert-light mb-0">
+                                            <t t-if="image_tag">No hay fotografías asociadas a esta etiqueta.</t>
+                                            <t t-else="">No hay fotografías asociadas a esta reparación.</t>
+                                        </div>
                                     </t>
                                 </div>
                             </div>

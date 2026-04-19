@@ -82,6 +82,16 @@ export async function getAllPrinters() {
     return qz.printers.find();
 }
 
+export async function getPrinterDetailsSnapshot() {
+    await connectQz();
+    const qz = await ensureQz();
+    const details = await qz.printers.details();
+    if (Array.isArray(details)) {
+        return details;
+    }
+    return details ? [details] : [];
+}
+
 export async function testQzConnection() {
     try {
         await connectQz();
@@ -130,8 +140,8 @@ export function buildThermalConfig(printer) {
     });
 }
 
-export function buildA4Config(printer) {
-    return window.qz.configs.create(printer, {
+export function buildA4Config(printer, opts = {}) {
+    const configOptions = {
         units: "mm",
         size: { width: 210, height: 297 },
         orientation: "portrait",
@@ -139,17 +149,23 @@ export function buildA4Config(printer) {
         colorType: "color",
         rasterize: true,
         copies: 1,
-    });
+    };
+
+    if (opts.duplexMode && opts.duplexMode !== "default") {
+        configOptions.duplex = opts.duplexMode;
+    }
+
+    return window.qz.configs.create(printer, configOptions);
 }
 
-function getConfigBuilderByKind(kind) {
+function getConfigBuilderByKind(kind, opts = {}) {
     switch (kind) {
         case "label":
             return buildQlLabelConfig;
         case "thermal":
             return buildThermalConfig;
         case "a4":
-            return buildA4Config;
+            return (printer) => buildA4Config(printer, opts);
         default:
             return buildQlLabelConfig;
     }
@@ -252,6 +268,8 @@ async function _tracePrint(env, payload) {
         next_profile_id: payload.nextProfileId || false,
         next_printer_name: payload.nextPrinterName || false,
         next_allow_fallback: !!payload.nextAllowFallback,
+        next_duplex_mode: payload.nextDuplexMode || false,
+        pilot_use_new_resolution: !!payload.pilotUseNewResolution,
         shadow_matches_legacy: !!payload.shadowMatchesLegacy,
         next_message: payload.nextMessage || false,
         success: !!payload.success,
@@ -262,7 +280,7 @@ async function _tracePrint(env, payload) {
 export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
     const info = await resolvePrinterName(kind, env);
     const copies = kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
-    const baseBuilder = getConfigBuilderByKind(kind);
+    const baseBuilder = getConfigBuilderByKind(kind, opts);
     const buildConfigFn =
         kind === "label" ? (printer) => baseBuilder(printer, { copies }) : (printer) => baseBuilder(printer);
 
@@ -290,13 +308,39 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
     const info = await resolvePrinterName(route.kind, env);
     const copies = route.kind === "label" && Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
     const nextResolution = route.nextResolution || {};
+    const effectiveOpts = { ...opts };
+    const useNewResolution = route.resolutionSource === "new" && nextResolution.found;
+
+    if (useNewResolution) {
+        effectiveOpts.printerName = nextResolution.printer_name || "";
+        effectiveOpts.allowFallback = nextResolution.allow_fallback;
+        effectiveOpts.duplexMode = nextResolution.duplex_mode || "default";
+    }
     const shadowMatchesLegacy =
         !!nextResolution.found &&
         nextResolution.legacy_kind === route.kind &&
         (!nextResolution.printer_name || nextResolution.printer_name === info.printerName);
 
     try {
-        await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
+        if (useNewResolution) {
+            const buildConfigFn = (printer) => {
+                if (route.kind === "label") {
+                    return buildQlLabelConfig(printer, { copies });
+                }
+                if (route.kind === "thermal") {
+                    return buildThermalConfig(printer);
+                }
+                return buildA4Config(printer, { duplexMode: effectiveOpts.duplexMode });
+            };
+
+            await _printOdooPdfUrlWithConfig(
+                reportUrl,
+                nextResolution.printer_name || info.printerName,
+                buildConfigFn
+            );
+        } else {
+            await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
+        }
         await _tracePrint(env, {
             documentTypeId: route.documentType?.id,
             documentCode: route.documentCode,
@@ -313,6 +357,8 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
             nextProfileId: nextResolution.profile_id,
             nextPrinterName: nextResolution.printer_name,
             nextAllowFallback: nextResolution.allow_fallback,
+            nextDuplexMode: nextResolution.duplex_mode,
+            pilotUseNewResolution: nextResolution.pilot_use_new_resolution,
             shadowMatchesLegacy,
             nextMessage: nextResolution.message,
             success: true,
@@ -320,6 +366,38 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
         });
         return true;
     } catch (error) {
+        if (useNewResolution && route.requestedMode === "hybrid") {
+            try {
+                await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
+                await _tracePrint(env, {
+                    documentTypeId: route.documentType?.id,
+                    documentCode: route.documentCode,
+                    reportName: route.reportName,
+                    reportUrl,
+                    requestedMode: route.requestedMode,
+                    executionMode: "legacy",
+                    resolutionSource: "fallback_legacy",
+                    kind: route.kind,
+                    printerName: info.printerName || false,
+                    allowFallback: info.allowFallback,
+                    copies,
+                    nextResolutionFound: nextResolution.found,
+                    nextProfileId: nextResolution.profile_id,
+                    nextPrinterName: nextResolution.printer_name,
+                    nextAllowFallback: nextResolution.allow_fallback,
+                    nextDuplexMode: nextResolution.duplex_mode,
+                    pilotUseNewResolution: nextResolution.pilot_use_new_resolution,
+                    shadowMatchesLegacy,
+                    nextMessage: `New path failed and fell back to legacy: ${error?.message || error}`,
+                    success: true,
+                    message: "Printed using legacy fallback after new path failure.",
+                });
+                return true;
+            } catch {
+                // Si también falla legacy, seguimos con la traza de error final.
+            }
+        }
+
         await _tracePrint(env, {
             documentTypeId: route.documentType?.id,
             documentCode: route.documentCode,
@@ -336,6 +414,8 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
             nextProfileId: nextResolution.profile_id,
             nextPrinterName: nextResolution.printer_name,
             nextAllowFallback: nextResolution.allow_fallback,
+            nextDuplexMode: nextResolution.duplex_mode,
+            pilotUseNewResolution: nextResolution.pilot_use_new_resolution,
             shadowMatchesLegacy,
             nextMessage: nextResolution.message,
             success: false,
@@ -352,6 +432,7 @@ if (browser.location.search.includes("debug")) {
         printOdooPdfUrlByKind,
         resolvePrinterName,
         getAllPrinters,
+        getPrinterDetailsSnapshot,
         testQzConnection,
     };
 }

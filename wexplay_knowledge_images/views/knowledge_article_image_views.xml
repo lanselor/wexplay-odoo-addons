@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_knowledge_article_image_list" model="ir.ui.view">
+        <field name="name">wex.knowledge.article.image.list</field>
+        <field name="model">wex.knowledge.article.image</field>
+        <field name="arch" type="xml">
+            <list string="Knowledge Images">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="article_id"/>
+                <field name="uploaded_by_id"/>
+                <field name="uploaded_at"/>
+                <field name="dms_file_name"/>
+                <button name="action_open_dms_file" type="object" string="DMS" class="btn btn-link"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_knowledge_article_image_form" model="ir.ui.view">
+        <field name="name">wex.knowledge.article.image.form</field>
+        <field name="model">wex.knowledge.article.image</field>
+        <field name="arch" type="xml">
+            <form string="Knowledge Image">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="article_id"/>
+                            <field name="sequence"/>
+                            <field name="uploaded_by_id" readonly="1"/>
+                            <field name="uploaded_at" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="dms_file_name" readonly="1"/>
+                            <field name="dms_file_id" readonly="1"/>
+                            <field name="dms_directory_id" readonly="1"/>
+                            <field name="mimetype" readonly="1"/>
+                            <field name="file_size" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                    <group>
+                        <field name="preview_image" widget="image" readonly="1" class="oe_avatar"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

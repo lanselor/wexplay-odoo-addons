@@ -38,11 +38,23 @@ export async function resolvePrintRoute(documentCode, env, opts = {}) {
         };
     }
 
-    // Fase 2.1: incluso en hybrid/new_only seguimos por legacy para no romper.
+    const pilotEnabled = !!nextResolution?.pilot_use_new_resolution;
+    const canUseNewResolution = !!nextResolution?.found && pilotEnabled;
+    let executionMode = "legacy";
+    let resolutionSource = "legacy";
+
+    if (requestedMode === "new_only" && canUseNewResolution) {
+        executionMode = "new_only";
+        resolutionSource = "new";
+    } else if (requestedMode === "hybrid" && canUseNewResolution) {
+        executionMode = "hybrid";
+        resolutionSource = "new";
+    }
+
     return {
         requestedMode,
-        executionMode: requestedMode,
-        resolutionSource: "legacy",
+        executionMode,
+        resolutionSource,
         documentType,
         documentCode: documentCode || "",
         kind: legacyKind,

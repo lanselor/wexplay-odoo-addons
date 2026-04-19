@@ -9,6 +9,7 @@
                 <field name="code"/>
                 <field name="legacy_kind"/>
                 <field name="printer_name"/>
+                <field name="duplex_mode"/>
                 <field name="company_id"/>
                 <field name="allow_fallback"/>
                 <field name="active"/>
@@ -25,6 +26,7 @@
                     <group>
                         <field name="name"/>
                         <field name="code"/>
+                        <field name="duplex_mode" invisible="legacy_kind != 'a4'"/>
                         <field name="legacy_kind"/>
                         <field name="printer_name"/>
                         <field name="company_id"/>
@@ -45,6 +47,7 @@
             <list>
                 <field name="name"/>
                 <field name="priority"/>
+                <field name="pilot_use_new_resolution"/>
                 <field name="document_type_id"/>
                 <field name="profile_id"/>
                 <field name="user_id"/>
@@ -63,6 +66,7 @@
                     <group>
                         <field name="name"/>
                         <field name="priority"/>
+                        <field name="pilot_use_new_resolution"/>
                         <field name="document_type_id"/>
                         <field name="profile_id"/>
                         <field name="user_id"/>
@@ -86,6 +90,8 @@
                 <field name="printer_name"/>
                 <field name="next_resolution_found"/>
                 <field name="next_printer_name"/>
+                <field name="next_duplex_mode"/>
+                <field name="pilot_use_new_resolution"/>
                 <field name="shadow_matches_legacy"/>
                 <field name="success"/>
                 <field name="user_id"/>
@@ -111,8 +117,65 @@
         <field name="view_mode">list</field>
     </record>
 
+    <record id="view_wex_print_device_snapshot_tree" model="ir.ui.view">
+        <field name="name">wex.print.device.snapshot.tree</field>
+        <field name="model">wex.print.device.snapshot</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="snapshot_at"/>
+                <field name="printer_name"/>
+                <field name="driver"/>
+                <field name="density"/>
+                <field name="trays_text"/>
+                <field name="is_default"/>
+                <field name="is_physical"/>
+                <field name="printer_type"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_print_device_snapshot_form" model="ir.ui.view">
+        <field name="name">wex.print.device.snapshot.form</field>
+        <field name="model">wex.print.device.snapshot</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <group>
+                        <field name="snapshot_at"/>
+                        <field name="printer_name"/>
+                        <field name="driver"/>
+                        <field name="density"/>
+                        <field name="trays_text"/>
+                        <field name="is_default"/>
+                        <field name="is_physical"/>
+                        <field name="printer_type"/>
+                        <field name="company_id"/>
+                        <field name="user_id"/>
+                    </group>
+                    <group>
+                        <field name="raw_details_json" widget="text" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_print_device_snapshots" model="ir.actions.act_window">
+        <field name="name">Printer Diagnostics</field>
+        <field name="res_model">wex.print.device.snapshot</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_wex_print_load_printer_diagnostics" model="ir.actions.client">
+        <field name="name">Load Printer Diagnostics</field>
+        <field name="tag">wex_print_core.load_printer_diagnostics</field>
+    </record>
+
     <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin" web_icon="wex_print_core,static/description/icon.png"/>
     <menuitem id="menu_wex_print_profiles" name="Profiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="10" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_assignments" name="Assignments" parent="menu_wex_print_root" action="action_wex_print_assignments" sequence="20" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_traces" name="Traces" parent="menu_wex_print_root" action="action_wex_print_traces" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_device_snapshots" name="Printer Diagnostics" parent="menu_wex_print_root" action="action_wex_print_device_snapshots" sequence="40" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_load_printer_diagnostics" name="Load Diagnostics from QZ" parent="menu_wex_print_root" action="action_wex_print_load_printer_diagnostics" sequence="50" groups="wex_print_core.group_wex_print_core_admin"/>
 </odoo>
