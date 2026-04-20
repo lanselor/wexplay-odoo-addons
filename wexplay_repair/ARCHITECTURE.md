@@ -39,6 +39,8 @@ This module is currently both:
 ### `models/account_move.py`
 - Resolves SAT repairs linked to an invoice
 - Exposes SAT invoice print actions
+- Routes SAT A4 invoice printing through the shared print stack
+- Sends `document_code = sat_a4` for SAT A4 QZ printing
 
 ### `models/ir_ui_view.py` and `models/ir_actions_act_window.py`
 - Registers the custom `repair_card` view type
@@ -72,8 +74,19 @@ Those belong in extender modules.
 - There are historical backup files in the module tree that should not be treated as live source.
 - The SAT invoice report still resolves repairs directly in QWeb instead of receiving fully prepared values.
 
+## Printing Notes
+
+- The SAT invoice QWeb report remains correctly located in `wexplay_repair`
+- The report itself should not be moved just because QZ execution is shared
+- A4 SAT printing now participates in the print stack using `document_code = sat_a4`
+- Production validation confirms SAT A4 duplex printing works with:
+  - profile `A4 Prod`
+  - assignment `SAT A4 Default`
+  - duplex mode `Double-sided (long edge)`
+
 ## Notes For Next Phases
 
 - Decide whether QZ printing is a hard dependency or an optional integration.
 - Revisit the SAT invoice report so repair resolution is prepared in Python.
 - Reduce fragility in the large form inheritance only when there is a concrete business reason to touch it.
+- Do not start the print-variant refactor until hybrid behavior is considered stable enough.

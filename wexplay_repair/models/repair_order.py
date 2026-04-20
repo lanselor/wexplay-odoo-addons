@@ -204,8 +204,8 @@ class RepairOrder(models.Model):
             employee = user.employee_id
             rec.x_responsible_avatar = employee.image_128 or user.partner_id.image_128
 
+    @api.model
     def _get_partners_matching_normalized_phone(self, normalized_value):
-        self.ensure_one()
         if not normalized_value:
             return self.env["res.partner"]
 
@@ -217,8 +217,8 @@ class RepairOrder(models.Model):
             or self._match_normalized_phone(partner.mobile, normalized_value)
         )
 
+    @api.model
     def _get_partners_matching_phone_search(self, operator, value):
-        self.ensure_one()
         normalized_value = re.sub(r"\D+", "", value)
         partner_domain = ["|", ("phone", operator, value), ("mobile", operator, value)]
         partners = self.env["res.partner"].search(partner_domain)

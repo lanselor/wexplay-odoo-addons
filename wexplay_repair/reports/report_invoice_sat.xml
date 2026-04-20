@@ -4,6 +4,7 @@
     <record id="action_report_invoice_sat" model="ir.actions.report">
         <field name="name">Factura SAT</field>
         <field name="model">account.move</field>
+        <field name="is_invoice_report" eval="True"/>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">wexplay_repair.report_invoice_sat</field>
         <field name="report_file">wexplay_repair.report_invoice_sat</field>
