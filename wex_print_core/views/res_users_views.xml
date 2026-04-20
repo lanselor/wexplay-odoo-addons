@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_wex_print_core" model="ir.ui.view">
+        <field name="name">res.users.form.wex.print.core</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='preferences']/group[@name='messaging']" position="before">
+                <group string="Wex Print" groups="base.group_user">
+                    <div class="text-muted" colspan="2">
+                        Si se define una impresora aquí, tendrá prioridad sobre la configuración general por empresa.
+                    </div>
+                    <group>
+                        <field name="wex_qz_label_printer" placeholder="Ej: Brother QL-710W"/>
+                        <field name="wex_qz_thermal_printer" placeholder="Ej: PRP-300 (Copiar 1)"/>
+                        <field name="wex_qz_a4_printer" placeholder="Ej: Brother MFC-L2800DW Printer"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_form_simple_modif_wex_print_core" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.wex.print.core</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='preferences_page']/group[@name='signature']" position="before">
+                <group string="Wex Print">
+                    <div class="text-muted" colspan="2">
+                        Estas impresoras personales tienen prioridad sobre la configuración general por empresa.
+                    </div>
+                    <group>
+                        <field name="wex_qz_label_printer" readonly="0" placeholder="Ej: Brother QL-710W"/>
+                        <field name="wex_qz_thermal_printer" readonly="0" placeholder="Ej: PRP-300 (Copiar 1)"/>
+                        <field name="wex_qz_a4_printer" readonly="0" placeholder="Ej: Brother MFC-L2800DW Printer"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

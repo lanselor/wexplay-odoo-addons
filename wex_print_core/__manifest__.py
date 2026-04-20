@@ -17,6 +17,7 @@
         "data/print_document_type_data.xml",
         "views/print_shadow_views.xml",
         "views/res_config_settings_view.xml",
+        "views/res_users_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

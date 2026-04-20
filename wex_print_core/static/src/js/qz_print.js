@@ -242,12 +242,20 @@ export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W"
 export async function resolvePrinterName(kind, env) {
     const orm = env?.services?.orm;
     const get = (key, defaultValue = "") => orm?.call("ir.config_parameter", "get_param", [key, defaultValue]);
+    const userOverrides = (await orm?.call("res.users", "get_wex_qz_printer_overrides", [])) || {};
+    const userPrinterName = userOverrides[kind] || "";
 
-    const printerName = await get(`wexplay_sat_print.wex_qz_${kind}_printer`, "");
+    const companyPrinterName = await get(`wexplay_sat_print.wex_qz_${kind}_printer`, "");
     const allowFallback = (await get("wexplay_sat_print.wex_qz_allow_fallback", "true")) !== "false";
     const debug = (await get("wexplay_sat_print.wex_qz_debug", "false")) === "true";
 
-    return { printerName, allowFallback, debug };
+    return {
+        printerName: userPrinterName || companyPrinterName,
+        userPrinterName,
+        companyPrinterName,
+        allowFallback,
+        debug,
+    };
 }
 
 async function _tracePrint(env, payload) {
