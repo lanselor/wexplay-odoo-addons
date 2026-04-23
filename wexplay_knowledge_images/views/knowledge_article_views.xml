@@ -23,7 +23,7 @@
                         <span>o haz clic en esta zona para subirla a DMS e insertarla en el articulo.</span>
                     </div>
                     <div class="text-muted wex_kb_embedded_images_empty" invisible="image_count">
-                        Este articulo aun no tiene imagenes embebidas gestionadas por DMS.
+                        Este articulo o sub-articulo aun no tiene imagenes embebidas gestionadas por DMS.
                     </div>
                     <div class="wex_kb_embedded_images_panel">
                         <div class="wex_kb_embedded_images_table" style="display: none;">

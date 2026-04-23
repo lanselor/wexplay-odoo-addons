@@ -1,5 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="website_homepage" name="Wexplay Website Homepage">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure wex_portal_homepage_wrap">
+                <section class="wex_portal_home_hero">
+                    <div class="container">
+                        <div class="row align-items-center g-4 g-lg-5">
+                            <div class="col-lg-6">
+                                <div class="wex_portal_home_copy">
+                                    <span class="wex_portal_home_eyebrow">Portal cliente Wexplay</span>
+                                    <h1 class="wex_portal_home_title">
+                                        Servicio técnico y facturación en un entorno claro y profesional.
+                                    </h1>
+                                    <p class="wex_portal_home_text">
+                                        Accede a tus reparaciones SAT, consulta el estado de cada equipo y revisa
+                                        tus facturas desde el portal corporativo de Wexplay.
+                                    </p>
+                                    <div class="wex_portal_home_actions">
+                                        <a t-if="is_portal_user" href="/my" class="btn btn-primary btn-lg">
+                                            Ir a mi cuenta
+                                        </a>
+                                        <a t-if="not is_portal_user" href="/web/login" class="btn btn-primary btn-lg">
+                                            Acceder al portal
+                                        </a>
+                                        <a href="/contactus" class="btn btn-outline-secondary btn-lg">
+                                            Contactar con Wexplay
+                                        </a>
+                                    </div>
+                                    <div class="wex_portal_home_highlights">
+                                        <div class="wex_portal_home_highlight">
+                                            <i class="fa fa-wrench" aria-hidden="true"/>
+                                            <span>Seguimiento de SAT</span>
+                                        </div>
+                                        <div class="wex_portal_home_highlight">
+                                            <i class="fa fa-file-text-o" aria-hidden="true"/>
+                                            <span>Facturación centralizada</span>
+                                        </div>
+                                        <div class="wex_portal_home_highlight">
+                                            <i class="fa fa-shield" aria-hidden="true"/>
+                                            <span>Acceso B2B seguro</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="wex_portal_home_visual">
+                                    <div class="wex_portal_home_visual_panel">
+                                        <div class="wex_portal_home_visual_header">
+                                            <span class="wex_portal_home_dot"/>
+                                            <span class="wex_portal_home_dot"/>
+                                            <span class="wex_portal_home_dot"/>
+                                        </div>
+                                        <div class="wex_portal_home_visual_body">
+                                            <div class="wex_portal_home_metric_card">
+                                                <span class="wex_portal_home_metric_label">Servicio técnico</span>
+                                                <strong>Consulta el estado de cada SAT</strong>
+                                                <small>Activos, finalizados y detalle completo del equipo.</small>
+                                            </div>
+                                            <div class="wex_portal_home_metric_row">
+                                                <div class="wex_portal_home_metric_mini">
+                                                    <span>Portal B2B</span>
+                                                    <strong>Clientes empresa</strong>
+                                                </div>
+                                                <div class="wex_portal_home_metric_mini">
+                                                    <span>Facturas</span>
+                                                    <strong>Acceso online</strong>
+                                                </div>
+                                            </div>
+                                            <div class="wex_portal_home_device_card">
+                                                <div class="wex_portal_home_device_line wex_portal_home_device_line--main"/>
+                                                <div class="wex_portal_home_device_line"/>
+                                                <div class="wex_portal_home_device_line"/>
+                                                <div class="wex_portal_home_device_footer">
+                                                    <span>Diagnóstico, fotos y garantía</span>
+                                                    <i class="fa fa-arrow-right" aria-hidden="true"/>
+                                                </div>
+                                            </div>
+                                            <div class="wex_portal_home_image_card">
+                                                <div class="wex_portal_home_image_frame">
+                                                    <img src="/wexplay_portal/static/src/img/wexplay-store.jpg"
+                                                         alt="Recepción de Wexplay"
+                                                         class="wex_portal_home_image"/>
+                                                </div>
+                                                <div class="wex_portal_home_image_copy">
+                                                    <span>Wexplay SAT</span>
+                                                    <strong>Recepción y atención técnica profesional</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="wex_portal_home_float_card">
+                                        <span class="wex_portal_home_float_title">Acceso rápido</span>
+                                        <ul class="list-unstyled mb-0">
+                                            <li>
+                                                <a href="/my/repairs">Servicio técnico</a>
+                                            </li>
+                                            <li>
+                                                <a href="/my/invoices">Mis facturas</a>
+                                            </li>
+                                            <li t-if="show_it_maintenance_entry">
+                                                <a href="/my/it-maintenance">Mantenimiento IT</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
     <template id="portal_my_home_wexplay" inherit_id="portal.portal_my_home" priority="30">
         <xpath expr="//div[@id='portal_common_category']" position="inside">
             <t t-call="portal.portal_docs_entry">

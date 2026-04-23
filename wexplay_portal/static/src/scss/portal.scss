@@ -99,7 +99,7 @@
 }
 
 .wex_portal_repair_title {
-    font-size: clamp(2.15rem, 3vw, 3rem);
+    font-size: 2.7rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     color: var(--wex-portal-ink);
@@ -645,5 +645,323 @@
 @media (max-width: 991.98px) {
     .wex_portal_gallery {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.wex_portal_homepage_wrap {
+    min-height: calc(100vh - 76px);
+    background:
+        radial-gradient(circle at top left, rgba(166, 143, 205, 0.18), transparent 34%),
+        radial-gradient(circle at right 20%, rgba(115, 199, 153, 0.2), transparent 28%),
+        linear-gradient(180deg, #fcfbff 0%, #f7faf9 100%);
+}
+
+.wex_portal_home_hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 76px);
+    padding: 4.5rem 0 5.5rem;
+}
+
+.wex_portal_home_copy {
+    position: relative;
+    z-index: 1;
+    max-width: 38rem;
+}
+
+.wex_portal_home_eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.85rem;
+    border: 1px solid rgba(166, 143, 205, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #6e5a96;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wex_portal_home_title {
+    margin: 1.25rem 0 1rem;
+    color: #2d2940;
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.04;
+}
+
+.wex_portal_home_text {
+    margin: 0;
+    color: #625d74;
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+
+.wex_portal_home_actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.75rem;
+}
+
+.wex_portal_home_actions .btn-primary {
+    padding: 0.9rem 1.45rem;
+    border-color: transparent;
+    background: linear-gradient(135deg, #a68fcd 0%, #8f7db6 100%);
+    box-shadow: 0 18px 34px rgba(166, 143, 205, 0.24);
+}
+
+.wex_portal_home_actions .btn-outline-secondary {
+    padding: 0.9rem 1.45rem;
+    border: 1px solid rgba(166, 143, 205, 0.24);
+    color: #5d507e;
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.wex_portal_home_highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.75rem;
+}
+
+.wex_portal_home_highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.78rem 1rem;
+    border: 1px solid rgba(166, 143, 205, 0.16);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.88);
+    color: #4d4960;
+    font-weight: 600;
+}
+
+.wex_portal_home_highlight i {
+    color: #73c799;
+}
+
+.wex_portal_home_visual {
+    position: relative;
+    min-height: 32rem;
+}
+
+.wex_portal_home_visual_panel {
+    position: relative;
+    padding: 1.15rem;
+    border: 1px solid rgba(166, 143, 205, 0.18);
+    border-radius: 1.8rem;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 30px 60px rgba(82, 71, 112, 0.12);
+}
+
+.wex_portal_home_visual_header {
+    display: flex;
+    gap: 0.42rem;
+    margin-bottom: 1rem;
+}
+
+.wex_portal_home_dot {
+    width: 0.72rem;
+    height: 0.72rem;
+    border-radius: 50%;
+    background: rgba(166, 143, 205, 0.25);
+}
+
+.wex_portal_home_visual_body {
+    display: grid;
+    gap: 1rem;
+}
+
+.wex_portal_home_metric_card,
+.wex_portal_home_metric_mini,
+.wex_portal_home_device_card,
+.wex_portal_home_image_card,
+.wex_portal_home_float_card {
+    border: 1px solid rgba(166, 143, 205, 0.16);
+    border-radius: 1.35rem;
+    background: #fff;
+}
+
+.wex_portal_home_metric_card {
+    padding: 1.35rem;
+}
+
+.wex_portal_home_metric_card span,
+.wex_portal_home_metric_mini span,
+.wex_portal_home_image_copy span,
+.wex_portal_home_float_title {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #7a7390;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wex_portal_home_metric_card strong,
+.wex_portal_home_metric_mini strong,
+.wex_portal_home_image_copy strong {
+    display: block;
+    color: #302c43;
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+.wex_portal_home_metric_card small {
+    display: block;
+    margin-top: 0.45rem;
+    color: #716b85;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.wex_portal_home_metric_row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.wex_portal_home_metric_mini {
+    padding: 1.1rem 1.15rem;
+}
+
+.wex_portal_home_device_card {
+    padding: 1.3rem;
+}
+
+.wex_portal_home_device_line {
+    height: 0.92rem;
+    margin-bottom: 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(166, 143, 205, 0.18), rgba(115, 199, 153, 0.12));
+}
+
+.wex_portal_home_device_line--main {
+    width: 72%;
+    height: 1.18rem;
+}
+
+.wex_portal_home_device_line:nth-child(2) {
+    width: 88%;
+}
+
+.wex_portal_home_device_line:nth-child(3) {
+    width: 64%;
+    margin-bottom: 0;
+}
+
+.wex_portal_home_device_footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    color: #4e4964;
+    font-weight: 700;
+}
+
+.wex_portal_home_device_footer i {
+    color: #73c799;
+}
+
+.wex_portal_home_image_card {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem;
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.wex_portal_home_image_frame {
+    overflow: hidden;
+    border-radius: 1rem;
+    box-shadow: 0 14px 28px rgba(82, 71, 112, 0.1);
+}
+
+.wex_portal_home_image {
+    display: block;
+    width: 100%;
+    height: 7.5rem;
+    object-fit: cover;
+    object-position: center center;
+}
+
+.wex_portal_home_image_copy strong {
+    font-size: 1.02rem;
+}
+
+.wex_portal_home_float_card {
+    position: absolute;
+    right: -1rem;
+    bottom: -1.25rem;
+    width: 18rem;
+    max-width: 78%;
+    padding: 1.2rem 1.25rem;
+    box-shadow: 0 18px 36px rgba(64, 57, 90, 0.12);
+}
+
+.wex_portal_home_float_card ul li + li {
+    margin-top: 0.55rem;
+}
+
+.wex_portal_home_float_card a {
+    color: #4f4770;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wex_portal_home_float_card a:hover {
+    color: #a68fcd;
+}
+
+@media (max-width: 991.98px) {
+    .wex_portal_homepage_wrap,
+    .wex_portal_home_hero {
+        min-height: auto;
+        padding: 3.5rem 0 4.5rem;
+    }
+
+    .wex_portal_home_title {
+        font-size: 2.9rem;
+    }
+
+    .wex_portal_home_visual {
+        min-height: auto;
+    }
+
+    .wex_portal_home_float_card {
+        position: static;
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wex_portal_home_title {
+        font-size: 2.3rem;
+    }
+
+    .wex_portal_home_metric_row,
+    .wex_portal_home_image_card {
+        grid-template-columns: 1fr;
+    }
+
+    .wex_portal_home_actions,
+    .wex_portal_home_highlights {
+        flex-direction: column;
+    }
+
+    .wex_portal_home_actions .btn {
+        width: 100%;
+    }
+
+    .wex_portal_home_image {
+        height: 10rem;
     }
 }

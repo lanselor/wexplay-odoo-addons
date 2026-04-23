@@ -7,8 +7,37 @@ from werkzeug.exceptions import NotFound
 
 from odoo import http, _
 from odoo.addons.portal.controllers.portal import CustomerPortal, pager as portal_pager
+from odoo.addons.website.controllers.main import Website as WebsiteController
 from odoo.http import request
 from odoo.osv import expression
+
+
+class WexplayWebsite(WebsiteController):
+    def _prepare_website_home_values(self):
+        user = request.env.user
+        is_logged = not user._is_public()
+        is_portal = is_logged and not user._is_internal() and user.has_group("base.group_portal")
+        partner = user.partner_id.commercial_partner_id if is_logged else request.env["res.partner"]
+        show_it_maintenance = bool(
+            is_portal
+            and "x_is_it_maintenance_customer" in partner._fields
+            and partner.x_is_it_maintenance_customer
+        )
+        return {
+            "is_logged": is_logged,
+            "is_portal_user": is_portal,
+            "show_it_maintenance_entry": show_it_maintenance,
+        }
+
+    @http.route("/", auth="public", website=True, sitemap=True)
+    def index(self, **kw):
+        user = request.env.user
+        if not user._is_public() and not user._is_internal() and user.has_group("base.group_portal"):
+            return request.redirect("/my")
+        return request.render(
+            "wexplay_portal.website_homepage",
+            self._prepare_website_home_values(),
+        )
 
 
 class WexplayCustomerPortal(CustomerPortal):

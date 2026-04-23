@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_knowledge_article_form_portal" model="ir.ui.view">
+        <field name="name">wex.knowledge.article.form.portal</field>
+        <field name="model">wex.knowledge.article</field>
+        <field name="inherit_id" ref="wex_knowledge.view_wex_knowledge_article_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='wex_kb_workspace_brand']//div[@class='wex_kb_workspace_label']" position="replace">
+                <div class="wex_kb_workspace_label">Base de conocimiento</div>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_breadcrumbs']/span[1]" position="replace">
+                <span>Base de conocimiento</span>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][1]//div[@class='wex_kb_sidebar_heading']" position="replace">
+                <div class="wex_kb_sidebar_heading">Articulo principal</div>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][1]//field[@name='parent_id']" position="attributes">
+                <attribute name="string">Articulo principal</attribute>
+                <attribute name="placeholder">Selecciona un articulo principal</attribute>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][1]//div[@class='wex_kb_sidebar_meta_row']/span" position="replace">
+                <span>Sub-articulos</span>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][1]//button[@name='action_open_children']" position="replace">
+                <button type="object" name="action_open_children" class="btn btn-link p-0">Ver sub-articulos</button>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][1]//button[@name='action_create_child_article']" position="replace">
+                <button type="object" name="action_create_child_article" class="btn btn-link p-0" invisible="not can_edit">Nuevo sub-articulo</button>
+            </xpath>
+            <xpath expr="//button[@name='action_open_children']//span[@class='o_stat_text']" position="replace">
+                <span class="o_stat_text">Sub-articulos</span>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_nav'][.//div[text()='Estado y acceso']]" position="after">
+                <div class="wex_kb_workspace_nav">
+                    <div class="wex_kb_sidebar_heading">Portal</div>
+                    <field name="portal_visible" readonly="id and not can_edit"/>
+                    <field name="portal_contact_ids"
+                           widget="many2many_tags"
+                           readonly="id and not can_edit"
+                           options="{'no_create': True}"/>
+                    <field name="public_link_enabled" readonly="id and not can_edit"/>
+                    <field name="public_access_expires_at" readonly="id and not can_edit" invisible="not public_link_enabled"/>
+                    <div class="wex_kb_portal_public_link" invisible="not public_link_enabled or not public_access_token">
+                        <field name="public_link_url" widget="url" readonly="1"/>
+                    </div>
+                    <button name="action_regenerate_public_access_token"
+                            type="object"
+                            string="Regenerar enlace público"
+                            class="btn btn-link p-0"
+                            invisible="not public_link_enabled or not can_edit"/>
+                    <div class="wex_kb_sidebar_meta_row" invisible="not id">
+                        <span>Vistas portal</span>
+                        <strong><field name="portal_view_count" readonly="1" nolabel="1"/></strong>
+                    </div>
+                    <div class="wex_kb_sidebar_meta_row" invisible="not id">
+                        <span>Vistas públicas</span>
+                        <strong><field name="public_view_count" readonly="1" nolabel="1"/></strong>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_card_title' and text()='Artículos hijos']" position="replace">
+                <div class="wex_kb_workspace_card_title">Sub-articulos</div>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_card']//button[@name='action_create_child_article']" position="replace">
+                <button type="object" name="action_create_child_article" class="btn btn-link p-0" invisible="not can_edit">Nuevo sub-articulo</button>
+            </xpath>
+            <xpath expr="//field[@name='child_ids']" position="attributes">
+                <attribute name="string">Sub-articulos</attribute>
+            </xpath>
+            <xpath expr="//div[@class='wex_kb_workspace_main']" position="inside">
+                <div class="wex_kb_workspace_floating_bar" invisible="not name">
+                    <div class="wex_kb_workspace_floating_bar_inner">
+                        <div class="wex_kb_workspace_floating_context">
+                            <span class="wex_kb_workspace_floating_label">Base de conocimiento</span>
+                            <strong><field name="name" readonly="1" nolabel="1"/></strong>
+                        </div>
+                        <div class="wex_kb_workspace_floating_actions">
+                            <button name="action_publish"
+                                    type="object"
+                                    string="Publicar"
+                                    class="btn btn-primary"
+                                    invisible="state == 'published' or not can_edit"
+                                    groups="wex_knowledge.group_knowledge_editor,wex_knowledge.group_knowledge_manager"/>
+                            <div class="wex_kb_workspace_floating_state">
+                                <span>Estado actual</span>
+                                <field name="state" widget="badge" readonly="1" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

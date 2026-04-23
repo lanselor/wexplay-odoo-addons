@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_knowledge" inherit_id="portal.portal_my_home" priority="35">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/web/static/img/icons/folder.svg'"/>
+                <t t-set="title">Base de conocimiento</t>
+                <t t-set="url" t-value="'/my/knowledge'"/>
+                <t t-set="text">Manuales, protocolos y artículos disponibles para tu empresa.</t>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_breadcrumbs_knowledge" inherit_id="portal.portal_breadcrumbs" priority="35">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'knowledge'" class="breadcrumb-item active">Base de conocimiento</li>
+            <li t-if="page_name == 'knowledge_detail'" class="breadcrumb-item">
+                <a href="/my/knowledge">Base de conocimiento</a>
+            </li>
+            <li t-if="page_name == 'knowledge_detail'" class="breadcrumb-item active">
+                <t t-out="article.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_knowledge" name="My Knowledge">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="mb-1">Base de conocimiento</h3>
+                        <p class="text-muted mb-0">Manuales, protocolos y artículos publicados para tu portal.</p>
+                    </div>
+                </div>
+                <form action="/my/knowledge" method="get" class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fa fa-search" aria-hidden="true"/>
+                        </span>
+                        <input type="text"
+                               name="search"
+                               t-att-value="search"
+                               class="form-control"
+                               placeholder="Buscar manual o protocolo"/>
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                    </div>
+                </form>
+
+                <t t-if="articles">
+                    <div class="row g-3">
+                        <div t-foreach="articles" t-as="article_item" class="col-12 col-lg-6">
+                            <a t-att-href="'/my/knowledge/%s' % article_item.id"
+                               class="card h-100 text-decoration-none shadow-sm border-0">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0 text-dark">
+                                            <t t-out="article_item.name"/>
+                                        </h5>
+                                        <span class="badge rounded-pill text-bg-light border">
+                                            <t t-out="article_item.category_ids[:1].name or 'Base de conocimiento'"/>
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-3">
+                                        <t t-out="article_item.subtitle or (article_item.body_plaintext or '')[:180] or 'Artículo sin resumen.'"/>
+                                    </p>
+                                    <div class="small text-muted">
+                                        <span t-if="article_item.write_date">
+                                            Actualizado:
+                                            <span t-field="article_item.write_date" t-options="{'widget': 'datetime'}"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="o_portal_pager d-flex justify-content-center my-3">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-info mb-0">
+                        <t t-if="search">No hay artículos publicados que coincidan con esta búsqueda.</t>
+                        <t t-else="">Todavía no hay artículos publicados para este portal.</t>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_knowledge_page" name="Portal Knowledge Detail">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap">
+                <div class="row g-3 mb-4" t-if="parent_article or sub_articles">
+                    <div class="col-12 col-lg-6" t-if="parent_article">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="small text-muted text-uppercase fw-semibold mb-2">Articulo principal</div>
+                                <a t-att-href="'/my/knowledge/%s' % parent_article.id" class="text-decoration-none">
+                                    <strong class="d-block text-dark mb-1"><t t-out="parent_article.name"/></strong>
+                                    <span class="text-muted">
+                                        <t t-out="parent_article.subtitle or (parent_article.body_plaintext or '')[:140]"/>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6" t-if="sub_articles">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="small text-muted text-uppercase fw-semibold mb-3">Sub-articulos</div>
+                                <div class="d-grid gap-2">
+                                    <a t-foreach="sub_articles" t-as="sub_article"
+                                       t-att-href="'/my/knowledge/%s' % sub_article.id"
+                                       class="text-decoration-none border rounded-3 p-3">
+                                        <strong class="d-block text-dark mb-1"><t t-out="sub_article.name"/></strong>
+                                        <span class="text-muted">
+                                            <t t-out="sub_article.subtitle or (sub_article.body_plaintext or '')[:120]"/>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <span t-foreach="article.category_ids" t-as="category" class="badge rounded-pill text-bg-light border">
+                                    <t t-out="category.name"/>
+                                </span>
+                            </div>
+                            <h1 class="mb-2"><t t-out="article.name"/></h1>
+                            <p class="text-muted mb-0"><t t-out="article.subtitle or ''"/></p>
+                        </div>
+                        <div class="small text-muted mb-4">
+                            <span t-if="article.write_date">
+                                Actualizado:
+                                <span t-field="article.write_date" t-options="{'widget': 'datetime'}"/>
+                            </span>
+                        </div>
+                        <div t-field="article.body_html"/>
+                    </div>
+                </div>
+
+                <t t-if="related_articles">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">Artículos relacionados</h4>
+                            <div class="row g-3">
+                                <div t-foreach="related_articles" t-as="related_article" class="col-12 col-lg-6">
+                                    <a t-att-href="'/my/knowledge/%s' % related_article.id"
+                                       class="text-decoration-none border rounded-3 d-block h-100 p-3">
+                                        <strong class="d-block text-dark mb-2"><t t-out="related_article.name"/></strong>
+                                        <span class="text-muted">
+                                            <t t-out="related_article.subtitle or (related_article.body_plaintext or '')[:140]"/>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="public_knowledge_page" name="Public Knowledge Detail">
+        <t t-call="website.layout">
+            <t t-set="additional_title"><t t-out="article.name"/></t>
+            <t t-set="meta_description" t-value="article.subtitle or article.name"/>
+            <div id="wrap" class="oe_structure">
+                <section class="py-5">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-xl-10">
+                                <div class="row g-3 mb-4" t-if="parent_article or sub_articles">
+                                    <div class="col-12 col-lg-6" t-if="parent_article">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div class="small text-muted text-uppercase fw-semibold mb-2">Articulo principal</div>
+                                                <a t-att-href="'/knowledge/public/%s' % parent_article.public_access_token" class="text-decoration-none">
+                                                    <strong class="d-block text-dark mb-1"><t t-out="parent_article.name"/></strong>
+                                                    <span class="text-muted">
+                                                        <t t-out="parent_article.subtitle or (parent_article.body_plaintext or '')[:140]"/>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6" t-if="sub_articles">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-body p-4">
+                                                <div class="small text-muted text-uppercase fw-semibold mb-3">Sub-articulos</div>
+                                                <div class="d-grid gap-2">
+                                                    <a t-foreach="sub_articles" t-as="sub_article"
+                                                       t-att-href="'/knowledge/public/%s' % sub_article.public_access_token"
+                                                       class="text-decoration-none border rounded-3 p-3">
+                                                        <strong class="d-block text-dark mb-1"><t t-out="sub_article.name"/></strong>
+                                                        <span class="text-muted">
+                                                            <t t-out="sub_article.subtitle or (sub_article.body_plaintext or '')[:120]"/>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-4 p-lg-5">
+                                        <div class="d-flex gap-2 flex-wrap mb-3">
+                                            <span t-foreach="article.category_ids" t-as="category" class="badge rounded-pill text-bg-light border">
+                                                <t t-out="category.name"/>
+                                            </span>
+                                        </div>
+                                        <h1 class="mb-2"><t t-out="article.name"/></h1>
+                                        <p class="text-muted mb-4"><t t-out="article.subtitle or ''"/></p>
+                                        <div t-field="article.body_html"/>
+                                    </div>
+                                </div>
+
+                                <t t-if="related_articles">
+                                    <div class="card border-0 shadow-sm mt-4">
+                                        <div class="card-body p-4">
+                                            <h4 class="mb-3">Artículos relacionados</h4>
+                                            <div class="row g-3">
+                                                <div t-foreach="related_articles" t-as="related_article" class="col-12 col-lg-6">
+                                                    <a t-att-href="'/knowledge/public/%s' % related_article.public_access_token"
+                                                       class="text-decoration-none border rounded-3 d-block h-100 p-3">
+                                                        <strong class="d-block text-dark mb-2"><t t-out="related_article.name"/></strong>
+                                                        <span class="text-muted">
+                                                            <t t-out="related_article.subtitle or (related_article.body_plaintext or '')[:140]"/>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,126 @@
+.o_form_view.wex_kb_article_form .wex_kb_portal_public_link {
+    min-width: 0;
+    margin-top: 8px;
+    padding: 10px 12px;
+    border: 1px solid #ececf3;
+    border-radius: 12px;
+    background: #fafafe;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_portal_public_link .o_field_widget,
+.o_form_view.wex_kb_article_form .wex_kb_portal_public_link .o_field_url,
+.o_form_view.wex_kb_article_form .wex_kb_portal_public_link a {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_portal_public_link a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.45;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_bar {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    z-index: 45;
+    width: calc(100vw - 48px);
+    max-width: 1120px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(18px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_bar.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_bar_inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 16px;
+    border: 1px solid rgba(216, 217, 226, 0.95);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 42px rgba(17, 24, 39, 0.14);
+    backdrop-filter: blur(14px);
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_context {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_label {
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_context strong {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #202124;
+    font-size: 1rem;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_state {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #ececf3;
+    border-radius: 999px;
+    background: #f8f8fb;
+    color: #6b7280;
+}
+
+.o_form_view.wex_kb_article_form .wex_kb_workspace_floating_state > span {
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_floating_bar {
+        width: calc(100vw - 28px);
+        bottom: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_floating_bar_inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_floating_actions {
+        justify-content: stretch;
+    }
+
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_floating_actions .btn,
+    .o_form_view.wex_kb_article_form .wex_kb_workspace_floating_state {
+        width: 100%;
+        justify-content: center;
+    }
+}
