@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from odoo import fields
+from odoo.exceptions import ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -81,3 +82,44 @@ class TestKnowledgePortal(TransactionCase):
         self.assertTrue(article._can_read_public_article(article.public_access_token))
         article.public_access_expires_at = fields.Datetime.now() - timedelta(minutes=1)
         self.assertFalse(article._can_read_public_article(article.public_access_token))
+
+    def test_external_publication_requires_published_state(self):
+        article = self.article_model.create(
+            {
+                "name": "Draft External",
+                "body_html": "<p>Draft</p>",
+                "state": "draft",
+                "owner_id": self.env.user.id,
+            }
+        )
+        with self.assertRaises(ValidationError):
+            article.write({"portal_visible": True})
+
+    def test_action_publish_to_portal_publishes_article(self):
+        article = self.article_model.create(
+            {
+                "name": "Portal Guided",
+                "body_html": "<p>Portal content</p>",
+                "state": "draft",
+                "owner_id": self.env.user.id,
+            }
+        )
+        article.action_publish_to_portal()
+        self.assertEqual(article.state, "published")
+        self.assertTrue(article.portal_visible)
+        self.assertTrue(article.history_ids.filtered(lambda entry: entry.event_type == "publication"))
+
+    def test_action_generate_public_link_publishes_article(self):
+        article = self.article_model.create(
+            {
+                "name": "Public Guided",
+                "body_html": "<p>Public content</p>",
+                "state": "draft",
+                "owner_id": self.env.user.id,
+            }
+        )
+        article.action_generate_public_link()
+        self.assertEqual(article.state, "published")
+        self.assertTrue(article.public_link_enabled)
+        self.assertTrue(article.public_access_token)
+        self.assertTrue(article.history_ids.filtered(lambda entry: entry.event_type == "publication"))

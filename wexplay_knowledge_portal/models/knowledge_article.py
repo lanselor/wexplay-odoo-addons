@@ -37,6 +37,7 @@ class KnowledgeArticle(models.Model):
     public_view_count = fields.Integer(readonly=True)
     last_portal_view_at = fields.Datetime(readonly=True)
     last_public_view_at = fields.Datetime(readonly=True)
+    can_manage_external_publication = fields.Boolean(compute="_compute_can_manage_external_publication")
 
     def _compute_public_link_url(self):
         base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
@@ -45,6 +46,37 @@ class KnowledgeArticle(models.Model):
                 article.public_link_url = "%s/knowledge/public/%s" % (base_url.rstrip("/"), article.public_access_token)
             else:
                 article.public_link_url = False
+
+    @api.depends("can_edit")
+    def _compute_can_manage_external_publication(self):
+        current_user = self.env.user
+        for article in self:
+            article.can_manage_external_publication = (
+                article._user_is_editor(current_user) or article._user_is_manager(current_user)
+            ) and article._user_can_edit_record(current_user)
+
+    @api.model
+    def _article_card_data(self, article):
+        data = super()._article_card_data(article)
+        data.update(
+            {
+                "portal_visible": article.portal_visible,
+                "public_link_enabled": article.public_link_enabled,
+            }
+        )
+        return data
+
+    def _get_history_tracked_fields(self):
+        tracked_fields = super()._get_history_tracked_fields()
+        tracked_fields.update(
+            {
+                "portal_visible": {"label": _("Visible en portal")},
+                "portal_contact_ids": {"label": _("Contactos del portal")},
+                "public_link_enabled": {"label": _("Enlace público")},
+                "public_access_expires_at": {"label": _("Caducidad del enlace público")},
+            }
+        )
+        return tracked_fields
 
     @api.constrains("portal_contact_ids")
     def _check_portal_contacts_are_portal_users(self):
@@ -71,6 +103,16 @@ class KnowledgeArticle(models.Model):
         if not (self._user_is_editor(current_user) or self._user_is_manager(current_user)):
             raise AccessError(_("Only knowledge editors can manage portal publication settings."))
 
+    def _check_external_publication_state(self, vals):
+        if not self._PORTAL_PUBLICATION_FIELDS.intersection(vals):
+            return
+        external_flags_enabled = vals.get("portal_visible") or vals.get("portal_contact_ids") or vals.get("public_link_enabled")
+        state = vals.get("state")
+        for article in self:
+            target_state = state or article.state or "draft"
+            if external_flags_enabled and target_state != "published":
+                raise ValidationError(_("External publication is only available for published articles."))
+
     def _prepare_external_publication_vals(self, vals):
         prepared_vals = dict(vals)
         if prepared_vals.get("public_link_enabled") and not prepared_vals.get("public_access_token"):
@@ -86,6 +128,7 @@ class KnowledgeArticle(models.Model):
         for vals in vals_list:
             self._check_portal_publication_permissions(vals, current_user)
             prepared_vals = self._prepare_external_publication_vals(vals)
+            self.with_context(active_test=False)._check_external_publication_state(prepared_vals)
             vals.update(prepared_vals)
 
     def _prepare_write_vals(self, vals, current_user):
@@ -93,24 +136,45 @@ class KnowledgeArticle(models.Model):
         self._check_portal_publication_permissions(prepared_vals, current_user)
         if self._PORTAL_PUBLICATION_FIELDS.intersection(prepared_vals):
             self._check_user_can_edit_records(current_user)
-        return self._prepare_external_publication_vals(prepared_vals)
+        prepared_vals = self._prepare_external_publication_vals(prepared_vals)
+        self._check_external_publication_state(prepared_vals)
+        return prepared_vals
 
     def action_regenerate_public_access_token(self):
         self.ensure_one()
         if not self._user_can_edit_record(self.env.user):
             raise AccessError(_("You do not have permission to manage the selected article."))
+        self._check_can_publish()
+        if self.state != "published":
+            raise ValidationError(_("Only published articles can have a public link."))
         self.write({"public_access_token": self._generate_public_access_token()})
+        self._create_history_entry(_("Token del enlace público regenerado."), event_type="publication", user=self.env.user)
         return True
 
-    def action_open_children(self):
-        action = super().action_open_children()
-        action["name"] = _("Sub-articulos")
-        return action
+    def action_publish_to_portal(self):
+        for article in self:
+            if not article.can_manage_external_publication:
+                raise AccessError(_("You do not have permission to publish this article in portal."))
+            article._check_can_publish()
+            if article.state != "published":
+                article.action_publish()
+            article.write({"portal_visible": True})
+        return True
 
-    def action_create_child_article(self):
-        action = super().action_create_child_article()
-        action["name"] = _("Nuevo sub-articulo")
-        return action
+    def action_generate_public_link(self):
+        for article in self:
+            if not article.can_manage_external_publication:
+                raise AccessError(_("You do not have permission to generate a public link for this article."))
+            article._check_can_publish()
+            if article.state != "published":
+                article.action_publish()
+            article.write(
+                {
+                    "public_link_enabled": True,
+                    "public_access_token": article.public_access_token or article._generate_public_access_token(),
+                }
+            )
+        return True
 
     def _is_externally_published(self):
         self.ensure_one()
