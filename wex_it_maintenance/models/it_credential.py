@@ -25,6 +25,9 @@ class WexItCredential(models.Model):
     )
     asset_id = fields.Many2one("wex.it.asset", string="Activo", ondelete="set null")
     service_id = fields.Many2one("wex.it.service", string="Servicio", ondelete="set null")
+    software_id = fields.Many2one("wex.it.software", string="Software/licencia", ondelete="set null")
+    network_id = fields.Many2one("wex.it.network", string="Red", ondelete="set null")
+    coverage_id = fields.Many2one("wex.it.coverage", string="Cobertura", ondelete="set null")
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -59,13 +62,20 @@ class WexItCredential(models.Model):
         for credential in self:
             credential.secret_preview = credential.secret_value if has_group and show_secret else False
 
-    @api.constrains("partner_id", "asset_id", "service_id")
+    @api.constrains("partner_id", "asset_id", "service_id", "software_id", "network_id", "coverage_id")
     def _check_customer_links(self):
         for credential in self:
             customer = credential.partner_id
             asset_customer = credential.asset_id.partner_id
             service_customer = credential.service_id.partner_id
-            linked_customers = [partner for partner in [customer, asset_customer, service_customer] if partner]
+            software_customer = credential.software_id.partner_id
+            network_customer = credential.network_id.partner_id
+            coverage_customer = credential.coverage_id.partner_id
+            linked_customers = [
+                partner
+                for partner in [customer, asset_customer, service_customer, software_customer, network_customer, coverage_customer]
+                if partner
+            ]
             if not linked_customers:
                 raise ValidationError("La credencial debe estar vinculada al menos a un cliente, activo o servicio.")
             commercial_partners = {partner.commercial_partner_id.id for partner in linked_customers}
@@ -88,12 +98,24 @@ class WexItCredential(models.Model):
     def _sync_customer_and_company(self, vals):
         asset = self.env["wex.it.asset"].browse(vals.get("asset_id")) if vals.get("asset_id") else False
         service = self.env["wex.it.service"].browse(vals.get("service_id")) if vals.get("service_id") else False
+        software = self.env["wex.it.software"].browse(vals.get("software_id")) if vals.get("software_id") else False
+        network = self.env["wex.it.network"].browse(vals.get("network_id")) if vals.get("network_id") else False
+        coverage = self.env["wex.it.coverage"].browse(vals.get("coverage_id")) if vals.get("coverage_id") else False
         if asset:
             vals.setdefault("partner_id", asset.partner_id.id)
             vals.setdefault("company_id", asset.company_id.id)
         elif service:
             vals.setdefault("partner_id", service.partner_id.id)
             vals.setdefault("company_id", service.company_id.id)
+        elif software:
+            vals.setdefault("partner_id", software.partner_id.id)
+            vals.setdefault("company_id", software.company_id.id)
+        elif network:
+            vals.setdefault("partner_id", network.partner_id.id)
+            vals.setdefault("company_id", network.company_id.id)
+        elif coverage:
+            vals.setdefault("partner_id", coverage.partner_id.id)
+            vals.setdefault("company_id", coverage.company_id.id)
         elif vals.get("partner_id") and not vals.get("company_id"):
             partner = self.env["res.partner"].browse(vals["partner_id"])
             vals["company_id"] = partner.company_id.id or self.env.company.id

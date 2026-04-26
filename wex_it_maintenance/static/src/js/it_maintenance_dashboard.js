@@ -11,7 +11,15 @@ class ItMaintenanceDashboard extends Component {
         this.state = useState({
             loading: true,
             data: {
-                counts: {},
+                counts: {
+                    customers: 0,
+                    coverages: 0,
+                    assets: 0,
+                    open_activities: 0,
+                    services: 0,
+                    software: 0,
+                    networks: 0,
+                },
                 upcoming_visits: [],
                 overdue_visits: [],
                 customers_without_next_visit: [],

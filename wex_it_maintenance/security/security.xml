@@ -31,6 +31,34 @@
         <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
     </record>
 
+    <record id="wex_it_service_type_rule_user" model="ir.rule">
+        <field name="name">Tipos de servicio IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_service_type"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_software_type_rule_user" model="ir.rule">
+        <field name="name">Tipos de software IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_software_type"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_network_type_rule_user" model="ir.rule">
+        <field name="name">Tipos de red IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_network_type"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_coverage_rule_user" model="ir.rule">
+        <field name="name">Coberturas IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_coverage"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
     <record id="wex_it_asset_review_rule_user" model="ir.rule">
         <field name="name">Revisiones de activos IT por compañía</field>
         <field name="model_id" ref="model_wex_it_asset_review"/>
@@ -41,6 +69,20 @@
     <record id="wex_it_service_rule_user" model="ir.rule">
         <field name="name">Servicios IT por compañía</field>
         <field name="model_id" ref="model_wex_it_service"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_software_rule_user" model="ir.rule">
+        <field name="name">Software IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_software"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
+    </record>
+
+    <record id="wex_it_network_rule_user" model="ir.rule">
+        <field name="name">Redes IT por compañía</field>
+        <field name="model_id" ref="model_wex_it_network"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
         <field name="groups" eval="[(4, ref('wex_it_maintenance.group_it_maintenance_user'))]"/>
     </record>

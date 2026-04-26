@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_wex_it_service_tree" model="ir.ui.view">
-        <field name="name">wex.it.service.tree</field>
-        <field name="model">wex.it.service</field>
+    <record id="view_wex_it_software_tree" model="ir.ui.view">
+        <field name="name">wex.it.software.tree</field>
+        <field name="model">wex.it.software</field>
         <field name="arch" type="xml">
             <list>
                 <field name="name"/>
                 <field name="partner_id"/>
-                <field name="service_type_id"/>
+                <field name="software_type_id"/>
                 <field name="status" widget="badge"/>
-                <field name="responsible_user_id"/>
-                <field name="coverage_id"/>
+                <field name="managed_by_wex"/>
+                <field name="renewal_date"/>
             </list>
         </field>
     </record>
 
-    <record id="view_wex_it_service_form" model="ir.ui.view">
-        <field name="name">wex.it.service.form</field>
-        <field name="model">wex.it.service</field>
+    <record id="view_wex_it_software_form" model="ir.ui.view">
+        <field name="name">wex.it.software.form</field>
+        <field name="model">wex.it.software</field>
         <field name="arch" type="xml">
-            <form string="Servicio IT">
+            <form string="Software/licencia IT">
                 <sheet>
                     <div class="oe_title">
                         <label for="name"/>
@@ -29,22 +29,25 @@
                         <group>
                             <field name="partner_id"/>
                             <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="service_type_id"/>
-                            <field name="service_type" invisible="1"/>
+                            <field name="software_type_id"/>
                             <field name="coverage_id" domain="[('partner_id', '=', partner_id)]"/>
                             <field name="status"/>
                         </group>
                         <group>
                             <field name="responsible_user_id"/>
+                            <field name="vendor"/>
+                            <field name="managed_by_wex"/>
+                            <field name="renewal_required"/>
+                            <field name="renewal_date"/>
                             <field name="documentation_url" widget="url"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Notas">
-                            <field name="notes" placeholder="Notas operativas..."/>
+                        <page string="Activos">
+                            <field name="asset_ids" domain="[('partner_id', '=', partner_id)]"/>
                         </page>
                         <page string="Credenciales" groups="wex_it_maintenance.group_it_maintenance_credential_user">
-                            <field name="credential_ids">
+                            <field name="credential_ids" readonly="1">
                                 <list>
                                     <field name="name"/>
                                     <field name="credential_type"/>
@@ -63,6 +66,9 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Notas">
+                            <field name="notes"/>
+                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>
@@ -70,27 +76,27 @@
         </field>
     </record>
 
-    <record id="view_wex_it_service_search" model="ir.ui.view">
-        <field name="name">wex.it.service.search</field>
-        <field name="model">wex.it.service</field>
+    <record id="view_wex_it_software_search" model="ir.ui.view">
+        <field name="name">wex.it.software.search</field>
+        <field name="model">wex.it.software</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
                 <field name="partner_id"/>
-                <field name="service_type_id"/>
+                <field name="software_type_id"/>
                 <filter name="filter_active" string="Activos" domain="[('status', '=', 'active')]"/>
-                <filter name="filter_warning" string="Atención" domain="[('status', '=', 'warning')]"/>
+                <filter name="filter_renewal" string="Con renovación" domain="[('renewal_required', '=', True)]"/>
                 <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
-                <filter name="group_type" string="Tipo" context="{'group_by': 'service_type_id'}"/>
+                <filter name="group_type" string="Tipo" context="{'group_by': 'software_type_id'}"/>
             </search>
         </field>
     </record>
 
-    <record id="action_wex_it_services" model="ir.actions.act_window">
-        <field name="name">Servicios</field>
-        <field name="res_model">wex.it.service</field>
+    <record id="action_wex_it_software" model="ir.actions.act_window">
+        <field name="name">Software/licencias</field>
+        <field name="res_model">wex.it.software</field>
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_wex_it_service_search"/>
+        <field name="search_view_id" ref="view_wex_it_software_search"/>
         <field name="context">{'default_status': 'active'}</field>
     </record>
 </odoo>

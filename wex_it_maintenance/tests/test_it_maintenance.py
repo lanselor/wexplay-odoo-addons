@@ -113,3 +113,50 @@ class TestWexItMaintenance(SavepointCase):
 
         self.assertEqual(credential.partner_id, self.partner)
         self.assertEqual(credential.company_id, asset.company_id)
+
+    def test_coverage_software_network_and_credential_links(self):
+        software_type = self.env["wex.it.software.type"].create({
+            "name": "Managed Platform",
+            "code": "managed_platform",
+        })
+        network_type = self.env["wex.it.network.type"].create({
+            "name": "Managed Network",
+            "code": "managed_network",
+        })
+        coverage = self.env["wex.it.coverage"].create({
+            "name": "ACME Maintenance 2026",
+            "partner_id": self.partner.id,
+            "state": "active",
+            "covered_asset_limit": 3,
+        })
+        software = self.env["wex.it.software"].create({
+            "name": "Microsoft 365",
+            "partner_id": self.partner.id,
+            "software_type_id": software_type.id,
+            "coverage_id": coverage.id,
+        })
+        network = self.env["wex.it.network"].create({
+            "name": "Main VPN",
+            "partner_id": self.partner.id,
+            "network_type_id": network_type.id,
+            "coverage_id": coverage.id,
+        })
+
+        credential = self.env["wex.it.credential"].create({
+            "name": "M365 Admin",
+            "software_id": software.id,
+            "credential_type": "password",
+            "secret_value": "secret",
+        })
+        visit = self.env["wex.it.maintenance.visit"].create({
+            "partner_id": self.partner.id,
+            "coverage_id": coverage.id,
+            "software_ids": [(4, software.id)],
+            "network_ids": [(4, network.id)],
+        })
+
+        self.assertEqual(credential.partner_id, self.partner)
+        self.assertEqual(credential.company_id, software.company_id)
+        self.assertEqual(visit.coverage_id, coverage)
+        self.assertIn(software, visit.software_ids)
+        self.assertIn(network, visit.network_ids)

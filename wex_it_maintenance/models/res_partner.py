@@ -35,11 +35,17 @@ class ResPartner(models.Model):
     internal_notes = fields.Text(string="Notas internas")
     it_asset_ids = fields.One2many("wex.it.asset", "partner_id", string="Activos IT")
     it_asset_review_ids = fields.One2many("wex.it.asset.review", "partner_id", string="Revisiones de activos")
+    it_coverage_ids = fields.One2many("wex.it.coverage", "partner_id", string="Coberturas IT")
     it_service_ids = fields.One2many("wex.it.service", "partner_id", string="Servicios IT")
+    it_software_ids = fields.One2many("wex.it.software", "partner_id", string="Software/licencias")
+    it_network_ids = fields.One2many("wex.it.network", "partner_id", string="Redes")
     it_visit_ids = fields.One2many("wex.it.maintenance.visit", "partner_id", string="Actividades")
     it_credential_ids = fields.One2many("wex.it.credential", "partner_id", string="Credenciales")
     it_asset_count = fields.Integer(compute="_compute_it_counts", string="Nº activos")
     it_service_count = fields.Integer(compute="_compute_it_counts", string="Nº servicios")
+    it_software_count = fields.Integer(compute="_compute_it_counts", string="Nº software/licencias")
+    it_network_count = fields.Integer(compute="_compute_it_counts", string="Nº redes")
+    it_coverage_count = fields.Integer(compute="_compute_it_counts", string="Nº coberturas")
     it_visit_count = fields.Integer(compute="_compute_it_counts", string="Nº actividades")
     it_credential_count = fields.Integer(compute="_compute_it_counts", string="Nº credenciales")
     it_open_visit_count = fields.Integer(compute="_compute_it_workspace_metrics", string="Actividades abiertas")
@@ -49,13 +55,40 @@ class ResPartner(models.Model):
     it_next_visit_date = fields.Datetime(compute="_compute_it_workspace_metrics", string="Próxima actividad")
     it_last_done_visit_date = fields.Datetime(compute="_compute_it_workspace_metrics", string="Última actividad realizada")
 
-    @api.depends("it_asset_ids", "it_service_ids", "it_visit_ids", "it_credential_ids")
+    @api.depends("it_asset_ids", "it_service_ids", "it_software_ids", "it_network_ids", "it_coverage_ids", "it_visit_ids", "it_credential_ids")
     def _compute_it_counts(self):
         for partner in self:
             partner.it_asset_count = len(partner.it_asset_ids)
             partner.it_service_count = len(partner.it_service_ids)
+            partner.it_software_count = len(partner.it_software_ids)
+            partner.it_network_count = len(partner.it_network_ids)
+            partner.it_coverage_count = len(partner.it_coverage_ids)
             partner.it_visit_count = len(partner.it_visit_ids)
             partner.it_credential_count = len(partner.it_credential_ids)
+
+    def _get_open_it_visits(self):
+        self.ensure_one()
+        return self.it_visit_ids.filtered(lambda visit: visit.state in ("draft", "scheduled", "in_progress"))
+
+    def _get_done_it_visits(self):
+        self.ensure_one()
+        return self.it_visit_ids.filtered(lambda visit: visit.state == "done" and visit.performed_date)
+
+    def _get_next_it_visit(self):
+        self.ensure_one()
+        return self._get_open_it_visits().sorted(lambda visit: visit.scheduled_date or fields.Datetime.now())[:1]
+
+    def _get_last_done_it_visit(self):
+        self.ensure_one()
+        return self._get_done_it_visits().sorted(lambda visit: visit.performed_date, reverse=True)[:1]
+
+    def _get_issue_it_assets(self):
+        self.ensure_one()
+        return self.it_asset_ids.filtered(lambda asset: asset.status in ("maintenance", "issue"))
+
+    def _get_active_it_services(self):
+        self.ensure_one()
+        return self.it_service_ids.filtered(lambda service: service.status == "active")
 
     @api.depends(
         "it_asset_ids.status",
@@ -68,13 +101,12 @@ class ResPartner(models.Model):
     )
     def _compute_it_workspace_metrics(self):
         for partner in self:
-            open_visits = partner.it_visit_ids.filtered(lambda visit: visit.state in ("draft", "scheduled", "in_progress"))
-            done_visits = partner.it_visit_ids.filtered(lambda visit: visit.state == "done" and visit.performed_date)
-            next_visit = open_visits.sorted(lambda visit: visit.scheduled_date or fields.Datetime.now())[:1]
-            last_done_visit = done_visits.sorted(lambda visit: visit.performed_date, reverse=True)[:1]
+            open_visits = partner._get_open_it_visits()
+            next_visit = partner._get_next_it_visit()
+            last_done_visit = partner._get_last_done_it_visit()
             partner.it_open_visit_count = len(open_visits)
-            partner.it_issue_asset_count = len(partner.it_asset_ids.filtered(lambda asset: asset.status in ("maintenance", "issue")))
-            partner.it_active_service_count = len(partner.it_service_ids.filtered(lambda service: service.status == "active"))
+            partner.it_issue_asset_count = len(partner._get_issue_it_assets())
+            partner.it_active_service_count = len(partner._get_active_it_services())
             partner.it_review_count = len(partner.it_asset_review_ids)
             partner.it_next_visit_date = next_visit.scheduled_date if next_visit else False
             partner.it_last_done_visit_date = last_done_visit.performed_date if last_done_visit else False
@@ -98,93 +130,107 @@ class ResPartner(models.Model):
         prefix = (prefix or "CLIENT")[:6]
         return prefix
 
-    def action_open_it_assets(self):
+    def _get_default_it_context(self):
+        self.ensure_one()
+        return {"default_partner_id": self.id}
+
+    def _get_it_partner_domain(self):
+        self.ensure_one()
+        return [("partner_id", "=", self.id)]
+
+    def _prepare_it_related_action(self, *, name, res_model, domain=None, context=None):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": "Activos IT",
-            "res_model": "wex.it.asset",
+            "name": name,
+            "res_model": res_model,
             "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id)],
-            "context": {"default_partner_id": self.id},
+            "domain": domain if domain is not None else self._get_it_partner_domain(),
+            "context": context if context is not None else self._get_default_it_context(),
         }
+
+    def _prepare_single_form_action(self, *, name, res_model, view_ref):
+        self.ensure_one()
+        view = self.env.ref(view_ref)
+        return {
+            "type": "ir.actions.act_window",
+            "name": name,
+            "res_model": res_model,
+            "res_id": self.id,
+            "view_mode": "form",
+            "views": [(view.id, "form")],
+            "target": "current",
+        }
+
+    def action_open_it_assets(self):
+        return self._prepare_it_related_action(
+            name="Activos IT",
+            res_model="wex.it.asset",
+        )
 
     def action_open_it_workspace(self):
         self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Workspace cliente",
-            "res_model": "res.partner",
-            "res_id": self.id,
-            "view_mode": "form",
-            "views": [(self.env.ref("wex_it_maintenance.view_partner_form_it_maintenance_workspace").id, "form")],
-            "target": "current",
-            "context": {"form_view_ref": "wex_it_maintenance.view_partner_form_it_maintenance_workspace"},
-        }
+        action = self._prepare_single_form_action(
+            name="Workspace cliente",
+            res_model="res.partner",
+            view_ref="wex_it_maintenance.view_partner_form_it_maintenance_workspace",
+        )
+        action["context"] = {"form_view_ref": "wex_it_maintenance.view_partner_form_it_maintenance_workspace"}
+        return action
 
     def action_open_it_services(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Servicios IT",
-            "res_model": "wex.it.service",
-            "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id)],
-            "context": {"default_partner_id": self.id},
-        }
+        return self._prepare_it_related_action(
+            name="Servicios IT",
+            res_model="wex.it.service",
+        )
+
+    def action_open_it_coverages(self):
+        return self._prepare_it_related_action(
+            name="Coberturas IT",
+            res_model="wex.it.coverage",
+        )
+
+    def action_open_it_software(self):
+        return self._prepare_it_related_action(
+            name="Software y licencias",
+            res_model="wex.it.software",
+        )
+
+    def action_open_it_networks(self):
+        return self._prepare_it_related_action(
+            name="Redes",
+            res_model="wex.it.network",
+        )
 
     def action_open_it_visits(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Actividades IT",
-            "res_model": "wex.it.maintenance.visit",
-            "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id)],
-            "context": {"default_partner_id": self.id},
-        }
+        return self._prepare_it_related_action(
+            name="Actividades IT",
+            res_model="wex.it.maintenance.visit",
+        )
 
     def action_open_it_reviews(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Revisiones de activos",
-            "res_model": "wex.it.asset.review",
-            "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id)],
-            "context": {"search_default_group_customer": 1},
-        }
+        return self._prepare_it_related_action(
+            name="Revisiones de activos",
+            res_model="wex.it.asset.review",
+            context={"search_default_group_customer": 1},
+        )
 
     def action_open_it_credentials(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Credenciales",
-            "res_model": "wex.it.credential",
-            "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id)],
-            "context": {"default_partner_id": self.id},
-        }
+        return self._prepare_it_related_action(
+            name="Credenciales",
+            res_model="wex.it.credential",
+        )
 
     def action_open_it_reports(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Informes de actividad",
-            "res_model": "wex.it.maintenance.visit",
-            "view_mode": "list,form",
-            "domain": [("partner_id", "=", self.id), ("state", "=", "done")],
-            "context": {"default_partner_id": self.id},
-        }
+        return self._prepare_it_related_action(
+            name="Informes de actividad",
+            res_model="wex.it.maintenance.visit",
+            domain=[("partner_id", "=", self.id), ("state", "=", "done")],
+        )
 
     def action_open_base_contact(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Ficha de contacto",
-            "res_model": "res.partner",
-            "res_id": self.id,
-            "view_mode": "form",
-            "views": [(self.env.ref("base.view_partner_form").id, "form")],
-            "target": "current",
-        }
+        return self._prepare_single_form_action(
+            name="Ficha de contacto",
+            res_model="res.partner",
+            view_ref="base.view_partner_form",
+        )

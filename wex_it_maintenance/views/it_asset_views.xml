@@ -70,8 +70,8 @@
                             </group>
                         </page>
                         <page string="Revisiones">
-                            <field name="review_ids">
-                                <list editable="bottom">
+                            <field name="review_ids" readonly="1">
+                                <list>
                                     <field name="review_date"/>
                                     <field name="technician_id"/>
                                     <field name="health_status"/>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="it_service_type_preventive" model="wex.it.service.type">
+        <field name="name">Mantenimiento preventivo</field>
+        <field name="code">preventive</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="it_service_type_corrective" model="wex.it.service.type">
+        <field name="name">Mantenimiento correctivo</field>
+        <field name="code">corrective</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="it_service_type_remote_support" model="wex.it.service.type">
+        <field name="name">Soporte remoto</field>
+        <field name="code">remote_support</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="it_service_type_backup_review" model="wex.it.service.type">
+        <field name="name">Revisión de copias de seguridad</field>
+        <field name="code">backup</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="it_service_type_domain_review" model="wex.it.service.type">
+        <field name="name">Revisión de dominios</field>
+        <field name="code">domain</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="it_service_type_android_review" model="wex.it.service.type">
+        <field name="name">Revisión de dispositivos Android</field>
+        <field name="code">android_review</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="it_software_type_m365" model="wex.it.software.type">
+        <field name="name">Microsoft 365</field>
+        <field name="code">m365</field>
+        <field name="sequence">10</field>
+        <field name="default_renewal_required">1</field>
+        <field name="default_managed_by_wex">1</field>
+    </record>
+    <record id="it_software_type_antivirus" model="wex.it.software.type">
+        <field name="name">Antivirus</field>
+        <field name="code">antivirus</field>
+        <field name="sequence">20</field>
+        <field name="default_renewal_required">1</field>
+    </record>
+    <record id="it_software_type_domain" model="wex.it.software.type">
+        <field name="name">Dominio</field>
+        <field name="code">domain</field>
+        <field name="sequence">30</field>
+        <field name="default_renewal_required">1</field>
+    </record>
+    <record id="it_software_type_hosting" model="wex.it.software.type">
+        <field name="name">Hosting</field>
+        <field name="code">hosting</field>
+        <field name="sequence">40</field>
+        <field name="default_renewal_required">1</field>
+    </record>
+    <record id="it_software_type_business_app" model="wex.it.software.type">
+        <field name="name">Software de gestión</field>
+        <field name="code">business_app</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="it_software_type_backup_license" model="wex.it.software.type">
+        <field name="name">Licencia de backup</field>
+        <field name="code">backup_license</field>
+        <field name="sequence">60</field>
+        <field name="default_renewal_required">1</field>
+    </record>
+
+    <record id="it_network_type_vpn" model="wex.it.network.type">
+        <field name="name">VPN</field>
+        <field name="code">vpn</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="it_network_type_firewall" model="wex.it.network.type">
+        <field name="name">Firewall</field>
+        <field name="code">firewall</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="it_network_type_router" model="wex.it.network.type">
+        <field name="name">Router</field>
+        <field name="code">router</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="it_network_type_wifi" model="wex.it.network.type">
+        <field name="name">WiFi</field>
+        <field name="code">wifi</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="it_network_type_vlan" model="wex.it.network.type">
+        <field name="name">VLAN</field>
+        <field name="code">vlan</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="it_network_type_nat_ports" model="wex.it.network.type">
+        <field name="name">NAT / puertos</field>
+        <field name="code">nat_ports</field>
+        <field name="sequence">60</field>
+    </record>
+</odoo>

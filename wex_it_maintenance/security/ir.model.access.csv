@@ -1,10 +1,22 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wex_it_asset_user,wex.it.asset user,model_wex_it_asset,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
 access_wex_it_asset_manager,wex.it.asset manager,model_wex_it_asset,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_service_type_user,wex.it.service.type user,model_wex_it_service_type,wex_it_maintenance.group_it_maintenance_user,1,0,0,0
+access_wex_it_service_type_manager,wex.it.service.type manager,model_wex_it_service_type,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_software_type_user,wex.it.software.type user,model_wex_it_software_type,wex_it_maintenance.group_it_maintenance_user,1,0,0,0
+access_wex_it_software_type_manager,wex.it.software.type manager,model_wex_it_software_type,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_network_type_user,wex.it.network.type user,model_wex_it_network_type,wex_it_maintenance.group_it_maintenance_user,1,0,0,0
+access_wex_it_network_type_manager,wex.it.network.type manager,model_wex_it_network_type,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_coverage_user,wex.it.coverage user,model_wex_it_coverage,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
+access_wex_it_coverage_manager,wex.it.coverage manager,model_wex_it_coverage,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
 access_wex_it_asset_review_user,wex.it.asset.review user,model_wex_it_asset_review,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
 access_wex_it_asset_review_manager,wex.it.asset.review manager,model_wex_it_asset_review,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
 access_wex_it_service_user,wex.it.service user,model_wex_it_service,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
 access_wex_it_service_manager,wex.it.service manager,model_wex_it_service,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_software_user,wex.it.software user,model_wex_it_software,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
+access_wex_it_software_manager,wex.it.software manager,model_wex_it_software,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
+access_wex_it_network_user,wex.it.network user,model_wex_it_network,wex_it_maintenance.group_it_maintenance_user,1,1,1,0
+access_wex_it_network_manager,wex.it.network manager,model_wex_it_network,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
 access_wex_it_credential_user,wex.it.credential user,model_wex_it_credential,wex_it_maintenance.group_it_maintenance_credential_user,1,1,1,0
 access_wex_it_credential_manager,wex.it.credential manager,model_wex_it_credential,wex_it_maintenance.group_it_maintenance_manager,1,1,1,1
 access_wex_it_template_user,wex.it.maintenance.template user,model_wex_it_maintenance_template,wex_it_maintenance.group_it_maintenance_user,1,1,1,0

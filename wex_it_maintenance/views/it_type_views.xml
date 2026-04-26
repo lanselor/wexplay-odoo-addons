@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_service_type_tree" model="ir.ui.view">
+        <field name="name">wex.it.service.type.tree</field>
+        <field name="model">wex.it.service.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="default_template_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_wex_it_service_types" model="ir.actions.act_window">
+        <field name="name">Tipos de servicio IT</field>
+        <field name="res_model">wex.it.service.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_wex_it_software_type_tree" model="ir.ui.view">
+        <field name="name">wex.it.software.type.tree</field>
+        <field name="model">wex.it.software.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="default_renewal_required"/>
+                <field name="default_managed_by_wex"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_wex_it_software_types" model="ir.actions.act_window">
+        <field name="name">Tipos de software/licencia</field>
+        <field name="res_model">wex.it.software.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_wex_it_network_type_tree" model="ir.ui.view">
+        <field name="name">wex.it.network.type.tree</field>
+        <field name="model">wex.it.network.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_wex_it_network_types" model="ir.actions.act_window">
+        <field name="name">Tipos de red</field>
+        <field name="res_model">wex.it.network.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

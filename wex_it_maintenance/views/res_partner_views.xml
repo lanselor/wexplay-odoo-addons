@@ -34,6 +34,9 @@
                         <button type="object" name="action_open_it_services" class="oe_stat_button" icon="fa-cloud">
                             <field name="it_active_service_count" string="Servicios activos" widget="statinfo"/>
                         </button>
+                        <button type="object" name="action_open_it_coverages" class="oe_stat_button" icon="fa-umbrella">
+                            <field name="it_coverage_count" string="Coberturas" widget="statinfo"/>
+                        </button>
                         <button type="object" name="action_open_it_reviews" class="oe_stat_button" icon="fa-stethoscope">
                             <field name="it_review_count" string="Revisiones" widget="statinfo"/>
                         </button>
@@ -95,6 +98,9 @@
                                     <button type="object" name="action_open_it_assets" string="Ver activos" class="btn btn-secondary"/>
                                     <button type="object" name="action_open_it_visits" string="Ver actividades" class="btn btn-secondary"/>
                                     <button type="object" name="action_open_it_services" string="Ver servicios" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_coverages" string="Ver coberturas" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_software" string="Ver software/licencias" class="btn btn-secondary"/>
+                                    <button type="object" name="action_open_it_networks" string="Ver redes" class="btn btn-secondary"/>
                                     <button type="object" name="action_open_it_reviews" string="Ver revisiones" class="btn btn-secondary"/>
                                     <button type="object" name="action_open_it_credentials" string="Ver credenciales" class="btn btn-secondary" groups="wex_it_maintenance.group_it_maintenance_credential_user"/>
                                     <button type="object" name="action_open_it_reports" string="Ver informes" class="btn btn-secondary"/>
@@ -132,7 +138,7 @@
                         </page>
 
                         <page string="Revisiones de activos">
-                            <field name="it_asset_review_ids" context="{'default_partner_id': id}">
+                            <field name="it_asset_review_ids" context="{'default_partner_id': id}" readonly="1">
                                 <list>
                                     <field name="review_date"/>
                                     <field name="asset_id"/>
@@ -153,10 +159,52 @@
                             <field name="it_service_ids" context="{'default_partner_id': id}">
                                 <list>
                                     <field name="name"/>
-                                    <field name="service_type"/>
+                                    <field name="service_type_id"/>
                                     <field name="status"/>
                                     <field name="responsible_user_id"/>
                                     <field name="renewal_date"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Coberturas">
+                            <group>
+                                <button type="object" name="action_open_it_coverages" string="Abrir coberturas del cliente" class="btn btn-secondary"/>
+                            </group>
+                            <field name="it_coverage_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="state"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="covered_asset_limit"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Software/licencias">
+                            <group>
+                                <button type="object" name="action_open_it_software" string="Abrir software/licencias del cliente" class="btn btn-secondary"/>
+                            </group>
+                            <field name="it_software_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="software_type_id"/>
+                                    <field name="status"/>
+                                    <field name="renewal_date"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Redes">
+                            <group>
+                                <button type="object" name="action_open_it_networks" string="Abrir redes del cliente" class="btn btn-secondary"/>
+                            </group>
+                            <field name="it_network_ids" context="{'default_partner_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="network_type_id"/>
+                                    <field name="status"/>
                                 </list>
                             </field>
                         </page>
@@ -167,6 +215,8 @@
                                     <field name="name"/>
                                     <field name="asset_id"/>
                                     <field name="service_id"/>
+                                    <field name="software_id"/>
+                                    <field name="network_id"/>
                                     <field name="credential_type"/>
                                     <field name="login"/>
                                     <field name="rotation_due_date"/>
@@ -232,6 +282,9 @@
                         </button>
                         <button type="object" name="action_open_it_services" class="oe_stat_button" icon="fa-cloud">
                             <field name="it_service_count" string="Servicios" widget="statinfo"/>
+                        </button>
+                        <button type="object" name="action_open_it_coverages" class="oe_stat_button" icon="fa-umbrella">
+                            <field name="it_coverage_count" string="Coberturas" widget="statinfo"/>
                         </button>
                         <button type="object" name="action_open_it_visits" class="oe_stat_button" icon="fa-wrench">
                             <field name="it_visit_count" string="Actividades" widget="statinfo"/>

@@ -48,6 +48,7 @@ class WexItMaintenanceVisit(models.Model):
     visit_type = fields.Selection(selection=VISIT_TYPE_SELECTION, string="Tipo de mantenimiento", required=True, default="preventive", tracking=True)
     activity_mode = fields.Selection(selection=ACTIVITY_MODE_SELECTION, string="Modalidad", required=True, default="onsite", tracking=True)
     template_id = fields.Many2one("wex.it.maintenance.template", string="Plantilla de lista de comprobación")
+    coverage_id = fields.Many2one("wex.it.coverage", string="Cobertura", ondelete="set null")
     summary = fields.Text(string="Resumen")
     recommendations = fields.Text(string="Recomendaciones")
     next_visit_date = fields.Date(string="Próxima visita")
@@ -57,6 +58,20 @@ class WexItMaintenanceVisit(models.Model):
         "visit_id",
         "service_id",
         string="Servicios relacionados",
+    )
+    software_ids = fields.Many2many(
+        "wex.it.software",
+        "wex_it_software_visit_rel",
+        "visit_id",
+        "software_id",
+        string="Software/licencias",
+    )
+    network_ids = fields.Many2many(
+        "wex.it.network",
+        "wex_it_network_visit_rel",
+        "visit_id",
+        "network_id",
+        string="Redes",
     )
     line_ids = fields.One2many("wex.it.maintenance.visit.line", "visit_id", string="Líneas de actividad")
     checklist_line_ids = fields.One2many("wex.it.maintenance.visit.checklist.line", "visit_id", string="Lista de comprobación")
@@ -78,39 +93,66 @@ class WexItMaintenanceVisit(models.Model):
             if visit.partner_id.company_id and visit.company_id != visit.partner_id.company_id:
                 raise ValidationError("La compañía de la actividad debe coincidir con la del cliente.")
 
-    @api.constrains("service_ids")
+    @api.constrains("coverage_id", "service_ids", "software_ids", "network_ids")
     def _check_service_partner(self):
         for visit in self:
+            if visit.coverage_id and visit.coverage_id.partner_id != visit.partner_id:
+                raise ValidationError("La cobertura debe pertenecer al cliente seleccionado.")
             invalid_services = visit.service_ids.filtered(lambda service: service.partner_id != visit.partner_id)
             if invalid_services:
                 raise ValidationError("Todos los servicios relacionados deben pertenecer al cliente seleccionado.")
+            invalid_software = visit.software_ids.filtered(lambda software: software.partner_id != visit.partner_id)
+            if invalid_software:
+                raise ValidationError("Todo el software relacionado debe pertenecer al cliente seleccionado.")
+            invalid_networks = visit.network_ids.filtered(lambda network: network.partner_id != visit.partner_id)
+            if invalid_networks:
+                raise ValidationError("Todas las redes relacionadas deben pertenecer al cliente seleccionado.")
+
+    @api.model
+    def _get_company_id_from_partner(self, partner):
+        return partner.company_id.id or self.env.company.id
+
+    @api.model
+    def _prepare_create_vals(self, vals):
+        partner = self.env["res.partner"].browse(vals["partner_id"]) if vals.get("partner_id") else False
+        if partner and not vals.get("company_id"):
+            vals["company_id"] = self._get_company_id_from_partner(partner)
+        return vals
+
+    def _needs_sequence_name(self):
+        self.ensure_one()
+        return self.name in ("New", "Nueva")
+
+    def _assign_sequence_if_needed(self):
+        for visit in self:
+            if visit._needs_sequence_name():
+                visit.name = self.env["ir.sequence"].next_by_code("wex.it.maintenance.visit") or "Nueva"
+
+    def _should_apply_template_lines(self):
+        self.ensure_one()
+        return bool(self.template_id and not self.checklist_line_ids)
+
+    def _apply_template_if_needed(self):
+        for visit in self:
+            if visit._should_apply_template_lines():
+                visit._apply_template_lines()
 
     @api.model_create_multi
     def create(self, vals_list):
-        for vals in vals_list:
-            partner = self.env["res.partner"].browse(vals["partner_id"]) if vals.get("partner_id") else False
-            if partner and not vals.get("company_id"):
-                vals["company_id"] = partner.company_id.id or self.env.company.id
+        vals_list = [self._prepare_create_vals(vals) for vals in vals_list]
         records = super().create(vals_list)
-        for record in records:
-            if record.name == "New":
-                record.name = self.env["ir.sequence"].next_by_code("wex.it.maintenance.visit") or "Nueva"
-            if record.template_id and not record.checklist_line_ids:
-                record._apply_template_lines()
+        records._assign_sequence_if_needed()
+        records._apply_template_if_needed()
         return records
 
     def write(self, vals):
         result = super().write(vals)
         if vals.get("template_id"):
-            for visit in self:
-                if visit.template_id and not visit.checklist_line_ids:
-                    visit._apply_template_lines()
+            self._apply_template_if_needed()
         return result
 
-    def _apply_template_lines(self):
+    def _get_template_line_commands(self):
         self.ensure_one()
-        if not self.template_id:
-            return
         commands = [fields.Command.clear()]
         for line in self.template_id.line_ids:
             commands.append(fields.Command.create({
@@ -118,7 +160,13 @@ class WexItMaintenanceVisit(models.Model):
                 "name": line.name,
                 "description": line.description,
             }))
-        self.checklist_line_ids = commands
+        return commands
+
+    def _apply_template_lines(self):
+        self.ensure_one()
+        if not self.template_id:
+            return
+        self.checklist_line_ids = self._get_template_line_commands()
 
     def action_apply_template(self):
         for visit in self:
@@ -130,14 +178,22 @@ class WexItMaintenanceVisit(models.Model):
     def action_start(self):
         self.write({"state": "in_progress"})
 
+    def _check_can_complete_visit(self):
+        self.ensure_one()
+        if not self.line_ids and not self.checklist_line_ids:
+            raise UserError("No puedes completar una actividad sin líneas de trabajo o lista de comprobación.")
+
+    def _prepare_done_values(self):
+        self.ensure_one()
+        values = {"state": "done"}
+        if not self.performed_date:
+            values["performed_date"] = fields.Datetime.now()
+        return values
+
     def action_done(self):
         for visit in self:
-            if not visit.line_ids and not visit.checklist_line_ids:
-                raise UserError("No puedes completar una actividad sin líneas de trabajo o lista de comprobación.")
-            values = {"state": "done"}
-            if not visit.performed_date:
-                values["performed_date"] = fields.Datetime.now()
-            visit.write(values)
+            visit._check_can_complete_visit()
+            visit.write(visit._prepare_done_values())
             visit._create_asset_reviews()
 
     def action_cancel(self):
@@ -146,93 +202,154 @@ class WexItMaintenanceVisit(models.Model):
     def action_reset_to_draft(self):
         self.write({"state": "draft"})
 
+    def _get_asset_lines_grouped_by_asset(self):
+        self.ensure_one()
+        grouped_lines = defaultdict(lambda: self.env["wex.it.maintenance.visit.line"])
+        for line in self.line_ids.filtered("asset_id"):
+            grouped_lines[line.asset_id] |= line
+        return grouped_lines
+
+    def _has_existing_asset_review(self, asset):
+        self.ensure_one()
+        review_model = self.env["wex.it.asset.review"]
+        return bool(review_model.search_count([("visit_id", "=", self.id), ("asset_id", "=", asset.id)]))
+
+    def _join_line_field_values(self, lines, field_name):
+        return "\n".join(filter(None, lines.mapped(field_name)))
+
+    def _get_health_status_from_lines(self, lines):
+        if any(line.result == "issue" for line in lines):
+            return "critical"
+        if any(line.result == "attention" for line in lines):
+            return "attention"
+        return "healthy"
+
+    def _prepare_asset_review_vals(self, asset, lines):
+        self.ensure_one()
+        return {
+            "asset_id": asset.id,
+            "visit_id": self.id,
+            "review_date": fields.Date.context_today(self),
+            "technician_id": self.technician_id.id,
+            "health_status": self._get_health_status_from_lines(lines),
+            "tasks_done": self._join_line_field_values(lines, "action_performed"),
+            "issues_found": self._join_line_field_values(lines, "issue_found"),
+            "recommendations": self._join_line_field_values(lines, "observations"),
+            "next_action": self.recommendations,
+        }
+
     def _create_asset_reviews(self):
         review_model = self.env["wex.it.asset.review"]
         for visit in self:
-            asset_lines = visit.line_ids.filtered("asset_id")
-            grouped_lines = defaultdict(lambda: self.env["wex.it.maintenance.visit.line"])
-            for line in asset_lines:
-                grouped_lines[line.asset_id] |= line
-            for asset, lines in grouped_lines.items():
-                if review_model.search_count([("visit_id", "=", visit.id), ("asset_id", "=", asset.id)]):
+            for asset, lines in visit._get_asset_lines_grouped_by_asset().items():
+                if visit._has_existing_asset_review(asset):
                     continue
-                issues = "\n".join(filter(None, lines.mapped("issue_found")))
-                actions = "\n".join(filter(None, lines.mapped("action_performed")))
-                recommendations = "\n".join(filter(None, lines.mapped("observations")))
-                health_status = "healthy"
-                if any(line.result == "issue" for line in lines):
-                    health_status = "critical"
-                elif any(line.result == "attention" for line in lines):
-                    health_status = "attention"
-                review_model.create({
-                    "asset_id": asset.id,
-                    "visit_id": visit.id,
-                    "review_date": fields.Date.context_today(self),
-                    "technician_id": visit.technician_id.id,
-                    "health_status": health_status,
-                    "tasks_done": actions,
-                    "issues_found": issues,
-                    "recommendations": recommendations,
-                    "next_action": visit.recommendations,
-                })
+                review_model.create(visit._prepare_asset_review_vals(asset, lines))
+
+    @api.model
+    def _get_dashboard_limit(self):
+        return 6
+
+    @api.model
+    def _get_open_visit_states(self):
+        return ["draft", "scheduled", "in_progress"]
+
+    @api.model
+    def _get_dashboard_counts(self, customers):
+        asset_model = self.env["wex.it.asset"]
+        service_model = self.env["wex.it.service"]
+        software_model = self.env["wex.it.software"]
+        network_model = self.env["wex.it.network"]
+        coverage_model = self.env["wex.it.coverage"]
+        open_states = self._get_open_visit_states()
+        return {
+            "customers": len(customers),
+            "assets": asset_model.search_count([]),
+            "open_activities": self.search_count([("state", "in", open_states)]),
+            "services": service_model.search_count([]),
+            "software": software_model.search_count([]),
+            "networks": network_model.search_count([]),
+            "coverages": coverage_model.search_count([("state", "=", "active")]),
+        }
+
+    @api.model
+    def _get_upcoming_visits_data(self, now, limit):
+        return self.search_read(
+            [("state", "in", self._get_open_visit_states()), ("scheduled_date", ">=", now)],
+            ["name", "partner_id", "scheduled_date", "state", "activity_mode"],
+            limit=limit,
+            order="scheduled_date asc",
+        )
+
+    @api.model
+    def _get_overdue_visits_data(self, now, limit):
+        return self.search_read(
+            [("state", "in", self._get_open_visit_states()), ("scheduled_date", "<", now)],
+            ["name", "partner_id", "scheduled_date", "state", "activity_mode"],
+            limit=limit,
+            order="scheduled_date asc",
+        )
+
+    @api.model
+    def _get_customers_without_next_visit_data(self, customers, now, limit):
+        future_visits = self.search([
+            ("state", "in", self._get_open_visit_states()),
+            ("scheduled_date", ">=", now),
+        ])
+        partner_ids_with_future = set(future_visits.mapped("partner_id").ids)
+        customers_without_next_visit = customers.filtered(
+            lambda partner: partner.id not in partner_ids_with_future
+        )[:limit]
+        return [
+            {"id": partner.id, "name": partner.display_name, "service_level": partner.service_level or ""}
+            for partner in customers_without_next_visit
+        ]
+
+    @api.model
+    def _get_problematic_assets_data(self, limit):
+        asset_model = self.env["wex.it.asset"]
+        return asset_model.search_read(
+            [("status", "in", ["maintenance", "issue"])],
+            ["name", "partner_id", "internal_code", "status"],
+            limit=limit,
+            order="write_date desc",
+        )
+
+    @api.model
+    def _get_expiring_services_data(self, expiring_date, limit):
+        service_model = self.env["wex.it.service"]
+        return service_model.search_read(
+            [("status", "=", "active"), ("renewal_date", "!=", False), ("renewal_date", "<=", expiring_date)],
+            ["name", "partner_id", "renewal_date", "status"],
+            limit=limit,
+            order="renewal_date asc",
+        )
+
+    @api.model
+    def _get_recent_visits_data(self, limit):
+        return self.search_read(
+            [("state", "=", "done")],
+            ["name", "partner_id", "performed_date", "visit_type", "activity_mode"],
+            limit=limit,
+            order="performed_date desc",
+        )
 
     @api.model
     def get_dashboard_data(self):
         today = fields.Date.context_today(self)
         now = fields.Datetime.now()
-        limit = 6
+        limit = self._get_dashboard_limit()
         customer_model = self.env["res.partner"]
-        asset_model = self.env["wex.it.asset"]
-        service_model = self.env["wex.it.service"]
         customers = customer_model.search([("x_is_it_maintenance_customer", "=", True)])
-        future_visits = self.search([
-            ("state", "in", ["draft", "scheduled", "in_progress"]),
-            ("scheduled_date", ">=", now),
-        ])
-        partner_ids_with_future = set(future_visits.mapped("partner_id").ids)
-        customers_without_next_visit = customers.filtered(lambda partner: partner.id not in partner_ids_with_future)[:limit]
         expiring_date = today + timedelta(days=30)
         return {
-            "counts": {
-                "customers": len(customers),
-                "assets": asset_model.search_count([]),
-                "open_activities": self.search_count([("state", "in", ["draft", "scheduled", "in_progress"])]),
-                "services": service_model.search_count([]),
-            },
-            "upcoming_visits": self.search_read(
-                [("state", "in", ["draft", "scheduled", "in_progress"]), ("scheduled_date", ">=", now)],
-                ["name", "partner_id", "scheduled_date", "state", "activity_mode"],
-                limit=limit,
-                order="scheduled_date asc",
-            ),
-            "overdue_visits": self.search_read(
-                [("state", "in", ["draft", "scheduled", "in_progress"]), ("scheduled_date", "<", now)],
-                ["name", "partner_id", "scheduled_date", "state", "activity_mode"],
-                limit=limit,
-                order="scheduled_date asc",
-            ),
-            "customers_without_next_visit": [
-                {"id": partner.id, "name": partner.display_name, "service_level": partner.service_level or ""}
-                for partner in customers_without_next_visit
-            ],
-            "problematic_assets": asset_model.search_read(
-                [("status", "in", ["maintenance", "issue"])],
-                ["name", "partner_id", "internal_code", "status"],
-                limit=limit,
-                order="write_date desc",
-            ),
-            "expiring_services": service_model.search_read(
-                [("status", "=", "active"), ("renewal_date", "!=", False), ("renewal_date", "<=", expiring_date)],
-                ["name", "partner_id", "renewal_date", "status"],
-                limit=limit,
-                order="renewal_date asc",
-            ),
-            "recent_visits": self.search_read(
-                [("state", "=", "done")],
-                ["name", "partner_id", "performed_date", "visit_type", "activity_mode"],
-                limit=limit,
-                order="performed_date desc",
-            ),
+            "counts": self._get_dashboard_counts(customers),
+            "upcoming_visits": self._get_upcoming_visits_data(now, limit),
+            "overdue_visits": self._get_overdue_visits_data(now, limit),
+            "customers_without_next_visit": self._get_customers_without_next_visit_data(customers, now, limit),
+            "problematic_assets": self._get_problematic_assets_data(limit),
+            "expiring_services": self._get_expiring_services_data(expiring_date, limit),
+            "recent_visits": self._get_recent_visits_data(limit),
         }
 
 
@@ -253,18 +370,24 @@ class WexItMaintenanceVisitLine(models.Model):
     company_id = fields.Many2one(related="visit_id.company_id", store=True, index=True)
     asset_id = fields.Many2one("wex.it.asset", string="Activo", ondelete="set null")
     service_id = fields.Many2one("wex.it.service", string="Servicio", ondelete="set null")
+    software_id = fields.Many2one("wex.it.software", string="Software/licencia", ondelete="set null")
+    network_id = fields.Many2one("wex.it.network", string="Red", ondelete="set null")
     action_performed = fields.Char(string="Acción realizada", required=True)
     result = fields.Selection(selection=RESULT_SELECTION, string="Resultado", required=True, default="ok")
     issue_found = fields.Text(string="Incidencia detectada")
     observations = fields.Text(string="Observaciones")
 
-    @api.constrains("asset_id", "service_id")
+    @api.constrains("asset_id", "service_id", "software_id", "network_id")
     def _check_related_partner(self):
         for line in self:
             if line.asset_id and line.asset_id.partner_id != line.visit_id.partner_id:
                 raise ValidationError("El activo seleccionado debe pertenecer al mismo cliente que la actividad.")
             if line.service_id and line.service_id.partner_id != line.visit_id.partner_id:
                 raise ValidationError("El servicio seleccionado debe pertenecer al mismo cliente que la actividad.")
+            if line.software_id and line.software_id.partner_id != line.visit_id.partner_id:
+                raise ValidationError("El software seleccionado debe pertenecer al mismo cliente que la actividad.")
+            if line.network_id and line.network_id.partner_id != line.visit_id.partner_id:
+                raise ValidationError("La red seleccionada debe pertenecer al mismo cliente que la actividad.")
 
 
 class WexItMaintenanceVisitChecklistLine(models.Model):

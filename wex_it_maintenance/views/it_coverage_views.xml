@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_it_coverage_tree" model="ir.ui.view">
+        <field name="name">wex.it.coverage.tree</field>
+        <field name="model">wex.it.coverage</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="state" widget="badge"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="renewal_date"/>
+                <field name="covered_asset_limit"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_it_coverage_form" model="ir.ui.view">
+        <field name="name">wex.it.coverage.form</field>
+        <field name="model">wex.it.coverage</field>
+        <field name="arch" type="xml">
+            <form string="Cobertura IT">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="state"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="renewal_date"/>
+                            <field name="covered_asset_limit"/>
+                            <field name="visit_frequency"/>
+                            <field name="maintenance_template_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Activos cubiertos">
+                            <field name="asset_ids" domain="[('partner_id', '=', partner_id)]"/>
+                        </page>
+                        <page string="Servicios">
+                            <field name="service_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="service_type_id"/>
+                                    <field name="status"/>
+                                    <field name="responsible_user_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Software/licencias">
+                            <field name="software_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="software_type_id"/>
+                                    <field name="status"/>
+                                    <field name="renewal_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Redes">
+                            <field name="network_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="network_type_id"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Condiciones">
+                            <field name="coverage_terms"/>
+                            <field name="internal_notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_it_coverage_search" model="ir.ui.view">
+        <field name="name">wex.it.coverage.search</field>
+        <field name="model">wex.it.coverage</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="filter_active" string="Activas" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_renewal" string="Con renovación" domain="[('renewal_date', '!=', False)]"/>
+                <filter name="group_customer" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wex_it_coverages" model="ir.actions.act_window">
+        <field name="name">Coberturas</field>
+        <field name="res_model">wex.it.coverage</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_it_coverage_search"/>
+        <field name="context">{'default_state': 'active'}</field>
+    </record>
+</odoo>
