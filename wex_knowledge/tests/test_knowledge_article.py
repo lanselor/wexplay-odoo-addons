@@ -175,6 +175,24 @@ class TestKnowledgeArticle(SavepointCase):
         article.with_user(self.editor).write({"state": "published"})
         self.assertEqual(article.state, "published")
 
+    def test_publish_requires_body_content(self):
+        article = self.env["wex.knowledge.article"].with_user(self.user_a).create({
+            "name": "Sin contenido",
+            "body_html": "<p><br/></p>",
+        })
+        with self.assertRaises(ValidationError):
+            article.with_user(self.editor).action_publish()
+
+    def test_publish_action_logs_in_history(self):
+        article = self.env["wex.knowledge.article"].with_user(self.user_a).create({
+            "name": "Manual trazado",
+            "body_html": "<p>Contenido válido</p>",
+        })
+        initial_history_count = len(article.history_ids)
+        article.with_user(self.editor).action_publish()
+        self.assertEqual(article.state, "published")
+        self.assertGreater(len(article.history_ids), initial_history_count)
+
     def test_locked_article_blocks_editor_but_manager_can_edit(self):
         article = self.env["wex.knowledge.article"].with_user(self.manager).create({
             "name": "Bloqueado",

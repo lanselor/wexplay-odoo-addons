@@ -1,4 +1,5 @@
 from . import knowledge_article
+from . import knowledge_article_history
 from . import knowledge_article_link
 from . import knowledge_category
 from . import knowledge_tag

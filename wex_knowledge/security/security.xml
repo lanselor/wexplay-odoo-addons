@@ -129,6 +129,31 @@
         <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_user'))]"/>
     </record>
 
+    <record id="knowledge_history_rule_read" model="ir.rule">
+        <field name="name">Knowledge History Read with Article</field>
+        <field name="model_id" ref="model_wex_knowledge_article_history"/>
+        <field name="domain_force">
+            ['&amp;',
+                '|', ('article_id.is_global', '=', True), ('article_id.company_id', 'in', company_ids),
+                '|',
+                    ('article_id.visibility', '=', 'internal'),
+                    '|',
+                        '&amp;', ('article_id.visibility', '=', 'private'),
+                            '|', ('article_id.author_id', '=', user.id),
+                                '|', ('article_id.owner_id', '=', user.id), ('article_id.collaborator_ids', 'in', user.id),
+                        '&amp;', ('article_id.visibility', '=', 'by_group'), ('article_id.allowed_group_ids', 'in', user.groups_id.ids)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_user'))]"/>
+    </record>
+
+    <record id="knowledge_history_rule_manager_all" model="ir.rule">
+        <field name="name">Knowledge History Manager All</field>
+        <field name="model_id" ref="model_wex_knowledge_article_history"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('wex_knowledge.group_knowledge_manager'))]"/>
+    </record>
+
     <record id="knowledge_link_rule_editor_write" model="ir.rule">
         <field name="name">Knowledge Link Editor Write</field>
         <field name="model_id" ref="model_wex_knowledge_article_link"/>

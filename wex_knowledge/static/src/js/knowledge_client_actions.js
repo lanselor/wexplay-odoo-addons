@@ -95,6 +95,33 @@ class KnowledgeBaseClientAction extends Component {
             by_group: "Por grupo",
         }[visibility] || visibility;
     }
+
+    stateBadgeClass(state) {
+        return {
+            draft: "wex_kb_badge is-draft",
+            published: "wex_kb_badge is-published",
+            archived: "wex_kb_badge is-archived",
+            obsolete: "wex_kb_badge is-obsolete",
+        }[state] || "wex_kb_badge";
+    }
+
+    visibilityBadgeClass(visibility) {
+        return {
+            private: "wex_kb_badge is-visibility-private",
+            internal: "wex_kb_badge is-visibility-internal",
+            by_group: "wex_kb_badge is-visibility-group",
+        }[visibility] || "wex_kb_badge is-muted";
+    }
+
+    externalChannelLabel(article) {
+        if (article.public_link_enabled) {
+            return "Enlace público";
+        }
+        if (article.portal_visible) {
+            return "Portal";
+        }
+        return "";
+    }
 }
 
 class KnowledgeDashboard extends KnowledgeBaseClientAction {

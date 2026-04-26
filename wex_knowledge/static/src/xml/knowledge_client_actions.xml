@@ -353,8 +353,11 @@
                             <t t-foreach="state.data.articles" t-as="article" t-key="article.id">
                                 <article class="wex_kb_card wex_kb_card_article" t-att-data-article-id="article.id" t-on-click="openArticle">
                                     <div class="wex_kb_card_header">
-                                        <span class="wex_kb_badge"><t t-esc="humanStateLabel(article.state)"/></span>
-                                        <span class="wex_kb_badge is-muted"><t t-esc="humanVisibilityLabel(article.visibility)"/></span>
+                                        <span t-att-class="stateBadgeClass(article.state)"><t t-esc="humanStateLabel(article.state)"/></span>
+                                        <div class="wex_kb_card_header_badges">
+                                            <span t-att-class="visibilityBadgeClass(article.visibility)"><t t-esc="humanVisibilityLabel(article.visibility)"/></span>
+                                            <span t-if="externalChannelLabel(article)" class="wex_kb_badge is-external"><t t-esc="externalChannelLabel(article)"/></span>
+                                        </div>
                                     </div>
                                     <div class="wex_kb_card_body">
                                         <h3><t t-esc="article.name"/></h3>
@@ -384,8 +387,11 @@
                                         <strong><t t-esc="article.name"/></strong>
                                         <small><t t-esc="article.subtitle || article.preview || 'Sin resumen'"/></small>
                                     </span>
-                                    <span><span class="wex_kb_badge"><t t-esc="humanStateLabel(article.state)"/></span></span>
-                                    <span><span class="wex_kb_badge is-muted"><t t-esc="humanVisibilityLabel(article.visibility)"/></span></span>
+                                    <span><span t-att-class="stateBadgeClass(article.state)"><t t-esc="humanStateLabel(article.state)"/></span></span>
+                                    <span>
+                                        <span t-att-class="visibilityBadgeClass(article.visibility)"><t t-esc="humanVisibilityLabel(article.visibility)"/></span>
+                                        <span t-if="externalChannelLabel(article)" class="wex_kb_badge is-external"><t t-esc="externalChannelLabel(article)"/></span>
+                                    </span>
                                     <span class="wex_kb_article_list_path"><t t-esc="article.display_path"/></span>
                                     <span><t t-esc="article.owner_name"/></span>
                                     <span><t t-esc="article.company_name"/></span>

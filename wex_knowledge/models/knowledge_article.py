@@ -92,6 +92,7 @@ class KnowledgeArticle(models.Model):
     parent_path = fields.Char(index=True)
     child_ids = fields.One2many("wex.knowledge.article", "parent_id")
     link_ids = fields.One2many("wex.knowledge.article.link", "article_id", string="Related Records")
+    history_ids = fields.One2many("wex.knowledge.article.history", "article_id", string="History", readonly=True)
     favorite_user_ids = fields.Many2many(
         "res.users",
         "wex_knowledge_article_favorite_rel",
@@ -106,6 +107,7 @@ class KnowledgeArticle(models.Model):
     can_edit = fields.Boolean(compute="_compute_permissions")
     can_manage_relations = fields.Boolean(compute="_compute_permissions")
     can_change_lock = fields.Boolean(compute="_compute_permissions")
+    can_publish = fields.Boolean(compute="_compute_can_publish")
 
     @api.depends("body_html")
     def _compute_body_plaintext(self):
@@ -181,6 +183,11 @@ class KnowledgeArticle(models.Model):
             article.can_manage_relations = article._can_user_manage_relations(current_user)
             article.can_change_lock = article._user_is_manager(current_user)
 
+    @api.depends("name", "body_html", "is_locked")
+    def _compute_can_publish(self):
+        for article in self:
+            article.can_publish = not bool(article._get_publish_validation_errors())
+
     @api.constrains("parent_id")
     def _check_parent_recursion(self):
         if not self._check_recursion():
@@ -240,6 +247,112 @@ class KnowledgeArticle(models.Model):
             prepared_vals = self._prepare_create_vals(vals, current_user)
             vals.update(prepared_vals)
             self._check_restricted_field_permissions(prepared_vals, current_user, create_mode=True)
+            article = self.new(prepared_vals)
+            if prepared_vals.get("state") == "published":
+                article._check_can_publish()
+
+    def _get_history_tracked_fields(self):
+        return {
+            "state": {"label": _("Estado")},
+            "visibility": {"label": _("Acceso interno")},
+            "is_locked": {"label": _("Bloqueado")},
+            "owner_id": {"label": _("Responsable")},
+        }
+
+    def _get_history_snapshot(self):
+        snapshot = {}
+        tracked_fields = self._get_history_tracked_fields()
+        for article in self:
+            snapshot[article.id] = {}
+            for field_name in tracked_fields:
+                if field_name not in article._fields:
+                    continue
+                field = article._fields[field_name]
+                value = article[field_name]
+                if field.type == "many2many":
+                    snapshot[article.id][field_name] = value.ids
+                else:
+                    snapshot[article.id][field_name] = value.id if hasattr(value, "id") else value
+        return snapshot
+
+    def _format_history_value(self, field_name, value):
+        field = self._fields.get(field_name)
+        if not field:
+            return ""
+        if field.type == "selection":
+            return dict(field.selection).get(value, value or _("Empty"))
+        if field.type == "boolean":
+            return _("Sí") if value else _("No")
+        if field.type == "many2one":
+            if not value:
+                return _("Vacío")
+            return self.env[field.comodel_name].browse(value).display_name
+        if field.type == "many2many":
+            if not value:
+                return _("Ninguno")
+            return ", ".join(self.env[field.comodel_name].browse(value).mapped("display_name"))
+        if field.type == "datetime":
+            return fields.Datetime.to_string(value) if value else _("Vacío")
+        return value or _("Vacío")
+
+    def _get_history_event_type(self, changed_fields):
+        publication_fields = {"portal_visible", "portal_contact_ids", "public_link_enabled", "public_access_expires_at"}
+        security_fields = {"visibility", "is_locked"}
+        if publication_fields.intersection(changed_fields):
+            return "publication"
+        if security_fields.intersection(changed_fields):
+            return "security"
+        if "state" in changed_fields:
+            return "editorial"
+        return "system"
+
+    def _create_history_entry(self, description, event_type="system", user=None):
+        user = user or self.env.user
+        values_list = [
+            {
+                "article_id": article.id,
+                "event_type": event_type,
+                "description": description,
+                "user_id": user.id if user else False,
+                "event_at": fields.Datetime.now(),
+            }
+            for article in self
+        ]
+        if values_list:
+            self.env["wex.knowledge.article.history"].sudo().create(values_list)
+
+    def _log_history_from_write(self, before_snapshot, user=None):
+        tracked_fields = self._get_history_tracked_fields()
+        for article in self:
+            previous_values = before_snapshot.get(article.id, {})
+            changed_fields = set()
+            changes = []
+            for field_name, info in tracked_fields.items():
+                if field_name not in article._fields or field_name not in previous_values:
+                    continue
+                field = article._fields[field_name]
+                current_value = article[field_name]
+                if field.type == "many2many":
+                    normalized_current = current_value.ids
+                else:
+                    normalized_current = current_value.id if hasattr(current_value, "id") else current_value
+                if previous_values[field_name] == normalized_current:
+                    continue
+                changed_fields.add(field_name)
+                changes.append(
+                    _("%s: %s -> %s")
+                    % (
+                        info["label"],
+                        article._format_history_value(field_name, previous_values[field_name]),
+                        article._format_history_value(field_name, normalized_current),
+                    )
+                )
+            if changes:
+                article._create_history_entry(
+                    " | ".join(changes),
+                    event_type=article._get_history_event_type(changed_fields),
+                    user=user,
+                )
 
     def _check_user_can_edit_records(self, current_user):
         for article in self:
@@ -252,21 +365,59 @@ class KnowledgeArticle(models.Model):
         if self._EDITORIAL_FIELDS.intersection(prepared_vals):
             self._check_user_can_edit_records(current_user)
             prepared_vals["last_editor_id"] = current_user.id
+        if prepared_vals.get("state") == "published":
+            for article in self:
+                errors = article._get_publish_validation_errors_for_vals(prepared_vals)
+                if errors:
+                    raise ValidationError("\n".join(errors))
         return prepared_vals
 
     @api.model_create_multi
     def create(self, vals_list):
         current_user = self.env.user
         self._check_create_permissions(vals_list, current_user)
-        return super().create(vals_list)
+        articles = super().create(vals_list)
+        articles._create_history_entry(_("Artículo creado."), event_type="system", user=current_user)
+        return articles
 
     def write(self, vals):
+        before_snapshot = self._get_history_snapshot()
         prepared_vals = self._prepare_write_vals(vals, self.env.user)
-        return super().write(prepared_vals)
+        result = super().write(prepared_vals)
+        self._log_history_from_write(before_snapshot, user=self.env.user)
+        return result
 
     def _check_can_unlink(self):
         if not self._user_is_manager():
             raise AccessError(_("Only managers can delete knowledge articles."))
+
+    def _has_publishable_body_content(self):
+        self.ensure_one()
+        return bool(tools.html2plaintext(self.body_html or "").strip())
+
+    def _get_publish_validation_errors_for_vals(self, vals):
+        self.ensure_one()
+        name = vals.get("name", self.name)
+        body_html = vals.get("body_html", self.body_html)
+        is_locked = vals.get("is_locked", self.is_locked)
+        errors = []
+        if not (name or "").strip():
+            errors.append(_("The article title is required before publishing."))
+        if not tools.html2plaintext(body_html or "").strip():
+            errors.append(_("The article must have body content before publishing."))
+        if is_locked and not self._user_is_manager():
+            errors.append(_("A locked article can only be published by a knowledge manager."))
+        return errors
+
+    def _get_publish_validation_errors(self):
+        self.ensure_one()
+        return self._get_publish_validation_errors_for_vals({})
+
+    def _check_can_publish(self):
+        for article in self:
+            errors = article._get_publish_validation_errors()
+            if errors:
+                raise ValidationError("\n".join(errors))
 
     def unlink(self):
         self._check_can_unlink()
@@ -278,6 +429,7 @@ class KnowledgeArticle(models.Model):
         return True
 
     def action_publish(self):
+        self._check_can_publish()
         self.write({"state": "published"})
 
     def action_archive(self):
@@ -317,7 +469,7 @@ class KnowledgeArticle(models.Model):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Child Articles"),
+            "name": _("Sub-articulos"),
             "res_model": "wex.knowledge.article",
             "view_mode": "list,form",
             "domain": [("parent_id", "=", self.id)],
@@ -330,7 +482,7 @@ class KnowledgeArticle(models.Model):
         payload = self._get_explorer_payload_from_context()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Nuevo art?culo hijo"),
+            "name": _("Nuevo sub-articulo"),
             "res_model": "wex.knowledge.article",
             "view_mode": "form",
             "target": "current",
