@@ -11,3 +11,816 @@
 .o_list_view .o_data_row.text-info   { background-color: #eef5ff !important; }
 .o_list_view .o_data_row.text-success{ background-color: #edf7ed !important; }
 .o_list_view .o_data_row.text-danger { background-color: #fdecea !important; }
+
+.o_list_view .wex_purchase_list_tree table,
+.o_list_renderer .wex_purchase_list_tree table {
+    table-layout: fixed;
+}
+
+.o_list_view .wex_purchase_list_tree .o_list_table thead > tr > th,
+.o_list_view .wex_purchase_list_tree .o_list_table tbody > tr > td,
+.o_list_renderer .wex_purchase_list_tree .o_list_table thead > tr > th,
+.o_list_renderer .wex_purchase_list_tree .o_list_table tbody > tr > td {
+    padding: 0.18rem 0.35rem !important;
+    vertical-align: middle;
+}
+
+.o_list_view .wex_purchase_list_tree .o_list_table tbody > tr > td,
+.o_list_renderer .wex_purchase_list_tree .o_list_table tbody > tr > td {
+    font-size: 12px;
+    line-height: 1.05;
+}
+
+.o_list_view .wex_purchase_list_tree .o_list_table thead > tr > th,
+.o_list_renderer .wex_purchase_list_tree .o_list_table thead > tr > th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #4b5563;
+    background: #eef1f5;
+    border-bottom: 1px solid #cfd6e0;
+}
+
+.o_list_view .wex_purchase_list_tree tbody > tr > td,
+.o_list_renderer .wex_purchase_list_tree tbody > tr > td {
+    border-bottom: 1px solid #e6eaf0;
+}
+
+.o_list_view .wex_purchase_list_tree .o_data_row:hover > .o_data_cell,
+.o_list_renderer .wex_purchase_list_tree .o_data_row:hover > .o_data_cell {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_requested_by,
+.o_list_renderer .wex_purchase_list_tree .wex_col_requested_by {
+    width: 118px;
+    font-size: 11px;
+    color: #475569;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_product,
+.o_list_renderer .wex_purchase_list_tree .wex_col_product {
+    width: 250px;
+    font-weight: 600;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_repair,
+.o_list_renderer .wex_purchase_list_tree .wex_col_repair {
+    width: 160px;
+    font-size: 11px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_sale_line,
+.o_list_renderer .wex_purchase_list_tree .wex_col_sale_line {
+    width: 120px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_vendor_url a,
+.o_list_view .wex_purchase_list_tree .wex_col_product .o_field_many2one,
+.o_list_view .wex_purchase_list_tree .wex_col_repair .o_field_many2one,
+.o_list_view .wex_purchase_list_tree .wex_col_sale_line .o_field_many2one,
+.o_list_view .wex_purchase_list_tree .wex_col_vendor .o_field_many2one,
+.o_list_view .wex_purchase_list_tree .wex_col_purchase_order .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_vendor_url a,
+.o_list_renderer .wex_purchase_list_tree .wex_col_product .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_repair .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_sale_line .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_vendor .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_purchase_order .o_field_many2one {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_product .o_field_many2one,
+.o_list_renderer .wex_purchase_list_tree .wex_col_product .o_field_many2one {
+    font-weight: 600;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_qty,
+.o_list_renderer .wex_purchase_list_tree .wex_col_qty {
+    width: 52px;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: 700;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_customer_price,
+.o_list_renderer .wex_purchase_list_tree .wex_col_customer_price {
+    width: 76px;
+    text-align: right;
+    white-space: nowrap;
+    font-weight: 700;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_vendor,
+.o_list_renderer .wex_purchase_list_tree .wex_col_vendor {
+    width: 130px;
+    font-size: 11px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_customer,
+.o_list_renderer .wex_purchase_list_tree .wex_col_customer {
+    width: 160px;
+    font-size: 11px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_vendor_link,
+.o_list_renderer .wex_purchase_list_tree .wex_col_vendor_link {
+    width: 78px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_vendor_link .o_readonly_modifier,
+.o_list_renderer .wex_purchase_list_tree .wex_col_vendor_link .o_readonly_modifier {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_vendor_link_button,
+.o_list_renderer .wex_purchase_list_tree .wex_vendor_link_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.18rem;
+    min-width: 56px;
+    height: 24px;
+    border-radius: 6px;
+    background: #e8eef8;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 0.38rem;
+    text-decoration: none !important;
+    border: 1px solid #c7d4ea;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_vendor_link_button:hover,
+.o_list_renderer .wex_purchase_list_tree .wex_vendor_link_button:hover {
+    background: #dbe7fb;
+    color: #1e40af;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_vendor_link_icon,
+.o_list_renderer .wex_purchase_list_tree .wex_vendor_link_icon {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_vendor_link_text,
+.o_list_renderer .wex_purchase_list_tree .wex_vendor_link_text {
+    line-height: 1;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user,
+.o_list_renderer .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user img,
+.o_list_renderer .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user img {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 999px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user span,
+.o_list_renderer .wex_purchase_list_tree .wex_col_requested_by .o_field_many2one_avatar_user span {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_reservation,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation {
+    width: 96px;
+    white-space: nowrap;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_followup,
+.o_list_renderer .wex_purchase_list_tree .wex_col_followup {
+    width: 120px;
+    white-space: nowrap;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_reservation .badge,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation .badge,
+.o_list_view .wex_purchase_list_tree .wex_col_followup .badge,
+.o_list_renderer .wex_purchase_list_tree .wex_col_followup .badge {
+    width: 100%;
+    justify-content: center;
+    font-weight: 700;
+    border-radius: 999px;
+    font-size: 10px;
+    padding: 0.28rem 0.35rem;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_reservation .badge.text-bg-secondary,
+.o_list_view .wex_purchase_list_tree .wex_col_reservation .badge.bg-secondary,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation .badge.text-bg-secondary,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation .badge.bg-secondary {
+    background-color: #eef2f7 !important;
+    color: #445166 !important;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_reservation .badge.text-bg-primary,
+.o_list_view .wex_purchase_list_tree .wex_col_reservation .badge.bg-primary,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation .badge.text-bg-primary,
+.o_list_renderer .wex_purchase_list_tree .wex_col_reservation .badge.bg-primary {
+    background-color: #ffe082 !important;
+    color: #5d4300 !important;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_notified,
+.o_list_renderer .wex_purchase_list_tree .wex_col_notified {
+    width: 58px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_state,
+.o_list_renderer .wex_purchase_list_tree .wex_col_state {
+    width: 102px;
+    white-space: nowrap;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_state .badge,
+.o_list_renderer .wex_purchase_list_tree .wex_col_state .badge {
+    width: 100%;
+    justify-content: center;
+    font-weight: 700;
+    border-radius: 999px;
+    font-size: 10px;
+    padding: 0.28rem 0.35rem;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_purchase_order,
+.o_list_renderer .wex_purchase_list_tree .wex_col_purchase_order {
+    width: 112px;
+}
+
+.o_list_view .wex_purchase_reservation_tree .o_group_header td,
+.o_list_renderer .wex_purchase_reservation_tree .o_group_header td {
+    background: #1f2937 !important;
+    color: #f9fafb !important;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-bottom: 0 !important;
+}
+
+.o_list_view .wex_purchase_reservation_tree .o_group_header .o_group_name,
+.o_list_renderer .wex_purchase_reservation_tree .o_group_header .o_group_name {
+    color: inherit !important;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_requested_on,
+.o_list_renderer .wex_purchase_list_tree .wex_col_requested_on,
+.o_list_view .wex_purchase_list_tree .wex_col_received_on,
+.o_list_renderer .wex_purchase_list_tree .wex_col_received_on,
+.o_list_view .wex_purchase_list_tree .wex_col_notified_on,
+.o_list_renderer .wex_purchase_list_tree .wex_col_notified_on {
+    width: 96px;
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+.o_list_view .wex_purchase_list_tree .wex_col_days,
+.o_list_renderer .wex_purchase_list_tree .wex_col_days {
+    width: 74px;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: 700;
+}
+
+.o_list_view .wex_purchase_list_tree .o_data_row.text-warning > .o_data_cell,
+.o_list_renderer .wex_purchase_list_tree .o_data_row.text-warning > .o_data_cell {
+    box-shadow: inset 3px 0 0 #d4a100;
+}
+
+.o_list_view .wex_purchase_list_tree .o_data_row.text-info > .o_data_cell,
+.o_list_renderer .wex_purchase_list_tree .o_data_row.text-info > .o_data_cell {
+    box-shadow: inset 3px 0 0 #3b82f6;
+}
+
+.o_list_view .wex_purchase_list_tree .o_data_row.text-success > .o_data_cell,
+.o_list_renderer .wex_purchase_list_tree .o_data_row.text-success > .o_data_cell {
+    box-shadow: inset 3px 0 0 #2f855a;
+}
+
+.o_list_view .wex_purchase_list_tree .o_data_row.text-danger > .o_data_cell,
+.o_list_renderer .wex_purchase_list_tree .o_data_row.text-danger > .o_data_cell {
+    box-shadow: inset 3px 0 0 #c53030;
+}
+
+.o_wex_operational_list_view .o_content,
+.o_wex_operational_list_view .o_kanban_renderer {
+    padding: 0 !important;
+    background: #f4f6f9;
+}
+
+.wex_pl_app {
+    height: 100%;
+    background: transparent;
+    color: #18202c;
+    padding: 0;
+    font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+    font-feature-settings: "tnum";
+}
+
+.wex_pl_selection_bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    margin: 0 0 6px;
+    padding: 6px 10px;
+    border: 1px solid #bfd0e7;
+    background: #e8f0fb;
+    color: #1e3a8a;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.wex_pl_toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.wex_pl_toolbar_left,
+.wex_pl_toolbar_filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wex_pl_toolbar_filters {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.wex_pl_toolbar_filters .form-control {
+    max-width: 420px;
+}
+
+.wex_pl_toolbar_filters .form-select {
+    max-width: 180px;
+}
+
+.wex_pl_table {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.wex_pl_header {
+    display: grid;
+    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    gap: 0;
+    align-items: center;
+    width: 100%;
+    min-width: 1220px;
+    padding: 7px 12px;
+    border-bottom: 1px solid #cbd5e1;
+    background: #e9edf3;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wex_pl_row {
+    width: 100%;
+    min-width: 1220px;
+    margin: 4px 0;
+    border: 1px solid #d7dee8;
+    border-left: 9px solid #b7c2d1;
+    background: #ffffff;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+}
+
+.wex_pl_row:hover {
+    border-color: #b9c6d6;
+    background: #fbfdff;
+}
+
+.wex_pl_row.is-overdue {
+    border-left-color: #dc2626;
+    background: #fff1f1;
+}
+
+.wex_pl_row.is-state-ordered {
+    border-left-color: #2563eb;
+    background: #eff6ff;
+}
+
+.wex_pl_row.is-state-received {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.wex_pl_row.is-state-cancelled {
+    border-left-color: #991b1b;
+    background: #fef2f2;
+}
+
+.wex_pl_row.is-state-draft_wait_customer {
+    border-left-color: #d97706;
+    background: #fffbeb;
+}
+
+.wex_pl_row.is-depth-1 {
+    width: calc(100% - 24px);
+    min-width: calc(1220px - 24px);
+    margin-left: 24px;
+}
+
+.wex_pl_row.is-depth-2,
+.wex_pl_row.is-depth-3 {
+    width: calc(100% - 48px);
+    min-width: calc(1220px - 48px);
+    margin-left: 48px;
+}
+
+.wex_pl_main {
+    min-width: 0;
+}
+
+.wex_pl_group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 1220px;
+    margin: 4px 0 0;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    background: #dbe3ee;
+    color: #263445;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.wex_pl_group.is-depth-0 {
+    border-left: 0;
+    background: #cfd9e6;
+    font-size: 12px;
+}
+
+.wex_pl_group.is-depth-1 {
+    width: calc(100% - 24px);
+    min-width: calc(1220px - 24px);
+    margin-left: 24px;
+    border-left: 6px solid #64748b;
+    background: #e7edf5;
+}
+
+.wex_pl_group.is-depth-2 {
+    width: calc(100% - 48px);
+    min-width: calc(1220px - 48px);
+    margin-left: 48px;
+    border-left: 6px solid #94a3b8;
+    background: #f1f5f9;
+}
+
+.wex_pl_group:hover {
+    background: #d2dce9;
+}
+
+.wex_pl_group.is-depth-1:hover {
+    background: #dbe4ef;
+}
+
+.wex_pl_group.is-depth-2:hover {
+    background: #e8eef5;
+}
+
+.wex_pl_group_title {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.wex_pl_group_count {
+    min-width: 26px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    text-align: center;
+}
+
+.wex_pl_top,
+.wex_pl_bottom {
+    display: grid;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.wex_pl_top {
+    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    min-height: 35px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.wex_pl_bottom {
+    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    min-height: 34px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background: rgba(255, 255, 255, 0.58);
+}
+
+.wex_pl_cell {
+    min-width: 0;
+    padding-right: 10px;
+}
+
+.wex_pl_cell.is-select {
+    display: flex;
+    justify-content: center;
+    padding-right: 0;
+}
+
+.wex_pl_cell.is-select input {
+    margin: 0;
+}
+
+.wex_pl_label {
+    display: block;
+    margin-bottom: 3px;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+    text-transform: uppercase;
+}
+
+.wex_pl_value,
+.wex_pl_muted,
+.wex_pl_origin {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #18202c;
+    font-size: 12px;
+    line-height: 1.28;
+}
+
+.wex_pl_value.strong {
+    font-weight: 700;
+}
+
+.wex_pl_muted {
+    color: #94a3b8;
+}
+
+.wex_pl_link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 7px;
+    border: 1px solid #bfd0e7;
+    background: #e8f0fb;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none !important;
+}
+
+.wex_pl_badge,
+.wex_pl_state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    min-height: 20px;
+    padding: 2px 7px;
+    border: 1px solid transparent;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.wex_pl_badge.is-normal,
+.wex_pl_badge.is-not_reservation {
+    background: #eef2f7;
+    color: #475569;
+}
+
+.wex_pl_badge.is-reservation {
+    background: #fff3bd;
+    color: #76520a;
+}
+
+.wex_pl_badge.is-waiting_arrival {
+    background: #e5efff;
+    color: #1d4ed8;
+}
+
+.wex_pl_badge.is-pending_notification {
+    background: #fff0ce;
+    color: #92400e;
+}
+
+.wex_pl_badge.is-overdue {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.wex_pl_badge.is-notified {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.wex_pl_state {
+    background: #e8eef6;
+    color: #243447;
+}
+
+.wex_pl_state.is-to_purchase {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.wex_pl_state.is-ordered {
+    background: #cffafe;
+    color: #0e7490;
+}
+
+.wex_pl_state.is-received {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.wex_pl_state.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.wex_pl_actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid #dfe5ed;
+    background: #f8fafc;
+}
+
+.wex_pl_empty {
+    padding: 24px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
+.wex_purchase_list_line_form .o_form_sheet_bg {
+    background: #f4f6f9;
+}
+
+.wex_purchase_list_line_form .o_form_sheet {
+    max-width: none;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+}
+
+.wex_pl_form_title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin: -8px -8px 18px;
+    padding: 16px 18px;
+    border: 1px solid #cbd5e1;
+    border-left: 8px solid #64748b;
+    background: linear-gradient(135deg, #eef3f9 0%, #ffffff 100%);
+}
+
+.wex_pl_form_title h2 {
+    margin: 3px 0 0;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 750;
+}
+
+.wex_pl_form_kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wex_pl_form_status {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.wex_pl_form_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.wex_purchase_list_line_form .wex_pl_form_panel {
+    min-height: 152px;
+    padding: 14px 16px;
+    border: 1px solid #dbe3ee;
+    background: #fbfdff;
+}
+
+.wex_purchase_list_line_form .wex_pl_form_panel.is-notes {
+    min-height: 118px;
+    margin-top: 12px;
+}
+
+.wex_purchase_list_line_form .wex_pl_form_panel .o_group {
+    margin: 0;
+}
+
+.wex_purchase_list_line_form .wex_pl_form_panel .o_td_label,
+.wex_purchase_list_line_form .wex_pl_form_panel .o_field_widget {
+    font-size: 14px;
+}
+
+.wex_purchase_list_line_form .wex_pl_form_panel .o_td_label {
+    min-width: 150px;
+}
+
+.wex_pl_panel_title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wex_pl_panel_title i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: #e8f0fb;
+    color: #2563eb;
+    font-size: 12px;
+}
+
+.wex_pl_panel_actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -2px 0 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #dbe3ee;
+}
+
+.wex_pl_panel_actions .btn {
+    padding: 5px 10px;
+    font-size: 13px;
+    font-weight: 700;
+}

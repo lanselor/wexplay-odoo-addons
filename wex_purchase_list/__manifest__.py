@@ -12,12 +12,13 @@ Lista de compra mínima para taller de reparaciones.
     "author": "Wexplay",
     "license": "LGPL-3",
     "depends": [
-        "base",
         "product",
         "purchase",
         "repair",
         "sale",
         "stock",
+        "web",
+        "wex_whatsapp_chatter",
     ],
     "data": [
         "security/security.xml",
@@ -27,14 +28,14 @@ Lista de compra mínima para taller de reparaciones.
         "views/repair_order_views.xml",
         "views/sale_order_views.xml",
         "views/product_views.xml",
-
-        "views/menu.xml",
     ],
     "assets": {
         "web.assets_backend": [
+            "wex_purchase_list/static/src/js/purchase_list_operational_action.js",
+            "wex_purchase_list/static/src/xml/purchase_list_operational_action.xml",
             "wex_purchase_list/static/src/css/purchase_list.css",
         ],
-},
+    },
     "installable": True,
     "application": False,
 }

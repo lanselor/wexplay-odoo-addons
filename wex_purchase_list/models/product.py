@@ -33,3 +33,35 @@ class ProductTemplate(models.Model):
                 "sticky": False,
             }
         }
+
+
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    def action_add_to_purchase_list(self):
+        self.ensure_one()
+        qty = float(self.env.context.get("wex_qty", 1.0))
+
+        result = self.env["wex_purchase_list.line"].add_from_origin(
+            origin_model="product.product",
+            origin_id=self.id,
+            product_id=self.id,
+            qty=qty,
+            state="to_purchase",
+        )
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("OK"),
+                "message": result.get("message") or _("Operación completada."),
+                "type": "success",
+                "sticky": False,
+            }
+        }
+
+    def action_apply_wex_suggested_price(self):
+        for product in self:
+            product.product_tmpl_id.action_apply_wex_suggested_price()
+        return True

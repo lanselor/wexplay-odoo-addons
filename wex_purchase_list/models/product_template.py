@@ -1,3 +1,5 @@
+import math
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -10,7 +12,7 @@ class ProductTemplate(models.Model):
         currency_field="currency_id",
         compute="_compute_wex_list_price_tax_included",
         inverse="_inverse_wex_list_price_tax_included",
-        store=True,
+        store=False,
         help="Introduce el precio con IVA para recalcular el precio base.",
     )
 
@@ -32,42 +34,73 @@ class ProductTemplate(models.Model):
         help="Precio sugerido aplicando el margen sobre venta al coste y mostrando el total con IVA.",
     )
 
-    @api.depends("list_price", "taxes_id", "currency_id")
+    def _round_currency(self, amount):
+        self.ensure_one()
+        return self.currency_id.round(amount) if self.currency_id else amount
+
+    def _round_commercial_price(self, amount):
+        """Redondeo comercial Wexplay: siempre hacia arriba al siguiente 0 o 5."""
+        if not amount:
+            return 0.0
+        return math.ceil(amount / 5.0) * 5.0
+
+    def _get_price_tax_included(self, base_price):
+        self.ensure_one()
+        if not self.taxes_id:
+            return self._round_currency(base_price)
+
+        taxes_res = self.taxes_id.compute_all(
+            base_price,
+            product=self.product_variant_id,
+            currency=self.currency_id,
+            quantity=1.0,
+        )
+        return self._round_currency(taxes_res["total_included"])
+
+    def _get_tax_included_ratio(self):
+        self.ensure_one()
+        if not self.taxes_id:
+            return 1.0
+
+        taxes_res = self.taxes_id.compute_all(
+            1.0,
+            product=self.product_variant_id,
+            currency=self.currency_id,
+            quantity=1.0,
+        )
+        return taxes_res["total_included"] or 1.0
+
+    def _get_price_tax_excluded(self, tax_included_price):
+        self.ensure_one()
+        if not self.taxes_id:
+            return self._round_currency(tax_included_price)
+
+        base_price = tax_included_price / self._get_tax_included_ratio()
+        return self._round_currency(base_price)
+
+    def _get_suggested_base_price_from_margin(self):
+        self.ensure_one()
+        cost = self.standard_price or 0.0
+        margin = (self.wex_margin_percent or 0.0) / 100.0
+        if not cost or margin >= 1.0:
+            return 0.0
+        return cost / (1.0 - margin)
+
+    def _get_suggested_price_tax_included(self):
+        self.ensure_one()
+        base_price = self._get_suggested_base_price_from_margin()
+        if not base_price:
+            return 0.0
+        return self._round_commercial_price(self._get_price_tax_included(base_price))
+
+    @api.depends("list_price", "taxes_id", "currency_id", "product_variant_id")
     def _compute_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.taxes_id:
-                # Calculamos el PVP (Base + IVA)
-                res = rec.taxes_id.compute_all(
-                    rec.list_price,
-                    product=rec.product_variant_id,
-                    currency=rec.currency_id,
-                    quantity=1.0
-                )
-                # Redondeamos según la moneda para evitar decimales infinitos en UI
-                rec.wex_list_price_tax_included = rec.currency_id.round(res["total_included"])
-            else:
-                rec.wex_list_price_tax_included = rec.list_price
+            rec.wex_list_price_tax_included = rec._get_price_tax_included(rec.list_price or 0.0)
 
     def _inverse_wex_list_price_tax_included(self):
         for rec in self:
-            if rec.taxes_id:
-                # Calculamos la proporción del IVA sin "forzar" el objeto impuesto.
-                # Obtenemos cuánto IVA se añadiría a 1.0 unidad de base.
-                dummy_res = rec.taxes_id.compute_all(
-                    1.0,
-                    product=rec.product_variant_id,
-                    currency=rec.currency_id
-                )
-
-                # Ratio = Total con IVA / Base 1.0
-                # Ejemplo: 1.21 si el IVA es 21%
-                ratio = dummy_res["total_included"]
-
-                if ratio > 0:
-                    base_price = rec.wex_list_price_tax_included / ratio
-                    rec.list_price = rec.currency_id.round(base_price)
-            else:
-                rec.list_price = rec.wex_list_price_tax_included
+            rec.list_price = rec._get_price_tax_excluded(rec.wex_list_price_tax_included or 0.0)
 
     @api.onchange("wex_list_price_tax_included")
     def _onchange_wex_list_price_tax_included(self):
@@ -86,34 +119,21 @@ class ProductTemplate(models.Model):
             if rec.wex_margin_percent < 0.0:
                 raise ValidationError("El margen (%) no puede ser negativo.")
 
-    @api.depends("standard_price", "wex_margin_percent", "taxes_id", "currency_id")
+    @api.depends("standard_price", "wex_margin_percent", "taxes_id", "currency_id", "product_variant_id")
     def _compute_wex_suggested_price_tax_included(self):
         for rec in self:
-            currency = rec.currency_id
-            if not currency:
-                rec.wex_suggested_price_tax_included = 0.0
-                continue
+            rec.wex_suggested_price_tax_included = rec._get_suggested_price_tax_included()
 
-            cost = rec.standard_price or 0.0
-            m = (rec.wex_margin_percent or 0.0) / 100.0
+    @api.onchange("standard_price", "wex_margin_percent", "taxes_id")
+    def _onchange_wex_pricing_inputs(self):
+        for rec in self:
+            rec.wex_suggested_price_tax_included = rec._get_suggested_price_tax_included()
 
-            # Base sugerida (sin IVA) según margen real sobre PVP:
-            # base = coste / (1 - m)
-            if m >= 1.0 or not cost:
-                rec.wex_suggested_price_tax_included = 0.0
-                continue
-
-            base_suggested = cost / (1.0 - m)
-
-            # Si no hay impuestos de venta, el "IVA incl." coincide con la base
-            if not rec.taxes_id:
-                rec.wex_suggested_price_tax_included = currency.round(base_suggested)
-                continue
-
-            taxes_res = rec.taxes_id.compute_all(
-                base_suggested,
-                currency=currency,
-                quantity=1.0,
-                product=rec.product_variant_id,
-            )
-            rec.wex_suggested_price_tax_included = currency.round(taxes_res["total_included"])
+    def action_apply_wex_suggested_price(self):
+        for rec in self:
+            suggested_price = rec._get_suggested_price_tax_included()
+            if suggested_price:
+                rec.write({
+                    "list_price": rec._get_price_tax_excluded(suggested_price),
+                })
+        return True

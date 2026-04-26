@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_purchase_list.OperationalListRenderer">
+        <div class="wex_pl_app">
+            <div class="wex_pl_selection_bar" t-if="selectedCount">
+                <span><t t-esc="selectedCount"/> seleccionada(s)</span>
+                <button type="button" class="btn btn-primary btn-sm" t-on-click="createRfqs">
+                    Crear Orden de Compra
+                </button>
+                <button t-if="selectedLinkCount"
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        t-on-click="openSelectedLinks">
+                    Abrir enlaces
+                </button>
+            </div>
+            <div class="wex_pl_table">
+                <div class="wex_pl_header">
+                    <span></span>
+                    <span>Producto</span>
+                    <span>Cant.</span>
+                    <span>Proveedor</span>
+                    <span>Enlace</span>
+                    <span>SAT</span>
+                    <span>Venta</span>
+                    <span>Estado</span>
+                </div>
+
+                <t t-if="isGrouped">
+                    <t t-foreach="groups" t-as="group" t-key="group.id">
+                        <t t-set="depth" t-value="0"/>
+                        <t t-call="wex_purchase_list.OperationalListGroup"/>
+                    </t>
+                </t>
+                <t t-elif="!records.length">
+                    <div class="wex_pl_empty">No hay líneas con los filtros actuales.</div>
+                </t>
+                <t t-else="">
+                    <t t-foreach="records" t-as="record" t-key="record.id">
+                        <t t-set="depth" t-value="0"/>
+                        <t t-call="wex_purchase_list.OperationalListRow"/>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="wex_purchase_list.OperationalListGroup">
+        <div t-att-class="groupClass(depth)" t-on-click="(ev) => this.toggleGroup(group, ev)">
+            <span class="wex_pl_group_title">
+                <i t-att-class="group.isFolded ? 'fa fa-caret-right' : 'fa fa-caret-down'"/>
+                <span t-esc="group.displayName"/>
+            </span>
+            <span class="wex_pl_group_count" t-esc="group.count"/>
+        </div>
+        <t t-if="!group.isFolded">
+            <t t-set="childDepth" t-value="depth + 1"/>
+            <t t-if="groupGroups(group).length">
+                <t t-foreach="groupGroups(group)" t-as="group" t-key="group.id">
+                    <t t-set="depth" t-value="childDepth"/>
+                    <t t-call="wex_purchase_list.OperationalListGroup"/>
+                </t>
+            </t>
+            <t t-else="">
+                <t t-foreach="groupRecords(group)" t-as="record" t-key="record.id">
+                    <t t-set="depth" t-value="childDepth"/>
+                    <t t-call="wex_purchase_list.OperationalListRow"/>
+                </t>
+            </t>
+        </t>
+    </t>
+
+    <t t-name="wex_purchase_list.OperationalListRow">
+        <div t-att-class="rowClass(record, depth)" t-on-click="() => this.openRecord(record)">
+            <div class="wex_pl_main">
+                <div class="wex_pl_top">
+                    <div class="wex_pl_cell is-select">
+                        <input type="checkbox"
+                               t-att-checked="isSelected(record)"
+                               t-on-click="(ev) => this.toggleRecord(record, ev)"/>
+                    </div>
+                    <div class="wex_pl_cell is-product">
+                        <span class="wex_pl_value strong" t-esc="m2oName(value(record, 'product_id')) || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-qty">
+                        <span class="wex_pl_value strong" t-esc="value(record, 'quantity')"/>
+                    </div>
+                    <div class="wex_pl_cell is-vendor">
+                        <span class="wex_pl_value" t-esc="m2oName(value(record, 'vendor_id')) || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-link">
+                        <a t-if="value(record, 'vendor_url')"
+                           t-att-href="value(record, 'vendor_url')"
+                           target="_blank"
+                           class="wex_pl_link"
+                           t-on-click="stopClick">
+                            <i class="fa fa-external-link"/>
+                            <span>Abrir</span>
+                        </a>
+                        <span t-else="" class="wex_pl_muted">-</span>
+                    </div>
+                    <div class="wex_pl_cell is-repair">
+                        <span class="wex_pl_origin" t-esc="m2oName(value(record, 'repair_id')) || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-sale">
+                        <span class="wex_pl_origin" t-esc="m2oName(value(record, 'sale_line_id')) || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-state">
+                        <span t-att-class="'wex_pl_state is-' + value(record, 'state')">
+                            <t t-esc="stateLabel(value(record, 'state'))"/>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="wex_pl_bottom">
+                    <div class="wex_pl_cell is-select"></div>
+                    <div class="wex_pl_cell is-customer">
+                        <span class="wex_pl_label">Cliente</span>
+                        <span class="wex_pl_value" t-esc="m2oName(value(record, 'customer_id')) || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-reservation">
+                        <span class="wex_pl_label">Reserva</span>
+                        <span t-att-class="reservationClass(record)">
+                            <t t-esc="value(record, 'is_reservation') ? 'Reserva' : 'Normal'"/>
+                        </span>
+                    </div>
+                    <div class="wex_pl_cell is-followup">
+                        <span class="wex_pl_label">Seguimiento</span>
+                        <span t-att-class="followupClass(record)">
+                            <t t-esc="followupLabel(value(record, 'reservation_followup_state'))"/>
+                        </span>
+                    </div>
+                    <div class="wex_pl_cell is-date">
+                        <span class="wex_pl_label">Solicitado</span>
+                        <span class="wex_pl_value" t-esc="value(record, 'requested_on') || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-date">
+                        <span class="wex_pl_label">Llegó</span>
+                        <span class="wex_pl_value" t-esc="value(record, 'received_on') || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-date">
+                        <span class="wex_pl_label">Avisado</span>
+                        <span class="wex_pl_value" t-esc="value(record, 'customer_notified_on') || '-'"/>
+                    </div>
+                    <div class="wex_pl_cell is-user">
+                        <span class="wex_pl_label">Apunta</span>
+                        <span class="wex_pl_value" t-esc="m2oName(value(record, 'requested_by')) || '-'"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

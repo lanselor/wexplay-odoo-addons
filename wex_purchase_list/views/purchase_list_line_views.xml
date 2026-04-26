@@ -1,84 +1,275 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    
-    <!-- =========================================================
-         VISTAS: wex_purchase_list.line
-         ========================================================= -->
-    
-    <!-- List View (main) -->
     <record id="view_wex_purchase_list_line_list" model="ir.ui.view">
         <field name="name">wex_purchase_list.line.list</field>
         <field name="model">wex_purchase_list.line</field>
         <field name="arch" type="xml">
-            <list string="Lista de compra (Wexplay)" editable="bottom"
+            <list string="Lista de compra (Wexplay)"
+                  class="wex_purchase_list_tree"
                   decoration-warning="state == 'draft_wait_customer'"
                   decoration-info="state == 'ordered'"
                   decoration-success="state == 'received'"
-                  decoration-danger="state == 'cancelled'">
-                
-                <field name="requested_by" string="Solicitado por" optional="show"/>
-                <field name="product_id" string="Producto" required="1"/>
-                <field name="quantity" string="Cantidad"/>
-                <field name="vendor_id" string="Proveedor" required="1"/>
-                <field name="vendor_url" string="URL proveedor" widget="url" optional="show"/>
-                
-                <!-- Origen SAT -->
-                <field name="repair_id" string="Reparación" optional="show"/>
-                
-                <field name="state" string="Estado"/>
-                <field name="is_reservation" string="Reserva"/>
-                <field name="customer_notified" string="Cliente avisado"/>
-                <field name="customer_price_note" string="Precio al cliente" widget="monetary" optional="show"/>
-                
-                <field name="purchase_order_id" string="RFQ/PO" optional="show"/>
-                <field name="purchase_order_line_id" string="Línea RFQ/PO" optional="hide"/>
+                  decoration-danger="state == 'cancelled' or is_notification_overdue or is_request_overdue">
+                <field name="requested_by"
+                       string="Apunta"
+                       widget="many2one_avatar_user"
+                       optional="show"
+                       class="wex_col_requested_by"/>
+                <field name="product_id" string="Producto" required="1" class="wex_col_product"/>
+                <field name="repair_id" string="SAT" optional="show" class="wex_col_repair"/>
+                <field name="sale_line_id" string="Venta" optional="hide" class="wex_col_sale_line"/>
+                <field name="quantity" string="Qty" class="wex_col_qty"/>
+                <field name="customer_price_note" string="PVP" widget="monetary" optional="show" class="wex_col_customer_price"/>
+                <field name="vendor_id" string="Proveedor" required="1" optional="show" class="wex_col_vendor"/>
+                <field name="vendor_link_html" string="Enlace" widget="html" optional="show" class="wex_col_vendor_link"/>
+                <field name="customer_id" string="Cliente" optional="show" class="wex_col_customer"/>
+                <field name="is_reservation" column_invisible="1"/>
+                <field name="customer_notified" column_invisible="1"/>
+                <field name="is_notification_overdue" column_invisible="1"/>
+                <field name="is_request_overdue" column_invisible="1"/>
+                <field name="reservation_status"
+                       string="Reserva"
+                       widget="badge"
+                       optional="show"
+                       class="wex_col_reservation"
+                       decoration-warning="reservation_status == 'reservation'"
+                       decoration-muted="reservation_status == 'normal'"/>
+                <field name="reservation_followup_state"
+                       string="Seguimiento"
+                       widget="badge"
+                       optional="show"
+                       class="wex_col_followup"
+                       decoration-muted="reservation_followup_state == 'not_reservation'"
+                       decoration-info="reservation_followup_state == 'waiting_arrival'"
+                       decoration-warning="reservation_followup_state == 'pending_notification'"
+                       decoration-danger="reservation_followup_state == 'overdue'"
+                       decoration-success="reservation_followup_state == 'notified'"/>
+                <field name="received_on" string="Llegó" optional="show" class="wex_col_received_on"/>
+                <field name="customer_notified_on" string="Avisado el" optional="hide" class="wex_col_notified_on"/>
+                <field name="state"
+                       string="Estado"
+                       widget="badge"
+                       class="wex_col_state"
+                       decoration-warning="state == 'draft_wait_customer'"
+                       decoration-primary="state == 'to_purchase'"
+                       decoration-info="state == 'ordered'"
+                       decoration-success="state == 'received'"
+                       decoration-danger="state == 'cancelled'"/>
+                <button name="action_mark_customer_notified"
+                        type="object"
+                        string="Avisado"
+                        class="btn btn-secondary"
+                        invisible="not is_reservation or customer_notified or state != 'received'"/>
+                <field name="purchase_order_id" string="RFQ/PO" optional="show" class="wex_col_purchase_order"/>
             </list>
         </field>
     </record>
-    
-    <!-- Form View -->
+
+    <record id="view_wex_purchase_reservation_line_list" model="ir.ui.view">
+        <field name="name">wex_purchase_list.line.reservation.list</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="arch" type="xml">
+            <list string="Reservas"
+                  class="wex_purchase_list_tree wex_purchase_reservation_tree"
+                  decoration-info="reservation_followup_state == 'waiting_arrival'"
+                  decoration-warning="reservation_followup_state == 'pending_notification'"
+                  decoration-danger="reservation_followup_state == 'overdue'"
+                  decoration-success="reservation_followup_state == 'notified'">
+                <field name="requested_by"
+                       string="Apunta"
+                       widget="many2one_avatar_user"
+                       optional="show"
+                       class="wex_col_requested_by"/>
+                <field name="customer_id" string="Cliente" class="wex_col_customer"/>
+                <field name="customer_notified" column_invisible="1"/>
+                <field name="state" column_invisible="1"/>
+                <field name="product_id" string="Producto" class="wex_col_product"/>
+                <field name="repair_id" string="SAT" optional="show" class="wex_col_repair"/>
+                <field name="sale_line_id" string="Venta" optional="show" class="wex_col_sale_line"/>
+                <field name="vendor_id" string="Proveedor" optional="show" class="wex_col_vendor"/>
+                <field name="reservation_followup_state"
+                       string="Seguimiento"
+                       widget="badge"
+                       class="wex_col_followup"
+                       decoration-info="reservation_followup_state == 'waiting_arrival'"
+                       decoration-warning="reservation_followup_state == 'pending_notification'"
+                       decoration-danger="reservation_followup_state == 'overdue'"
+                       decoration-success="reservation_followup_state == 'notified'"/>
+                <field name="requested_on" string="Solicitado" class="wex_col_requested_on"/>
+                <field name="received_on" string="Llegó" class="wex_col_received_on"/>
+                <field name="days_since_request" string="Días solicitud" optional="show" class="wex_col_days"/>
+                <field name="days_pending_notification" string="Días aviso" optional="show" class="wex_col_days"/>
+                <field name="customer_notified_on" string="Avisado el" optional="show" class="wex_col_notified_on"/>
+                <field name="customer_notified_by" string="Avisó" optional="show" class="wex_col_requested_by"/>
+                <button name="action_mark_customer_notified"
+                        type="object"
+                        string="Avisado"
+                        class="btn btn-secondary"
+                        invisible="customer_notified or state != 'received'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_purchase_list_line_operational" model="ir.ui.view">
+        <field name="name">wex_purchase_list.line.operational</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="arch" type="xml">
+            <wex_operational_list string="Lista operativa"
+                                  js_class="wex_purchase_list_operational"
+                                  class="wex_purchase_list_operational_view"
+                                  create="true"
+                                  quick_create="false"
+                                  default_order="create_date desc, id desc">
+                <field name="requested_by"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="vendor_id"/>
+                <field name="vendor_url"/>
+                <field name="repair_id"/>
+                <field name="sale_line_id"/>
+                <field name="customer_id"/>
+                <field name="is_reservation"/>
+                <field name="reservation_followup_state"/>
+                <field name="requested_on"/>
+                <field name="received_on"/>
+                <field name="customer_notified"/>
+                <field name="customer_notified_on"/>
+                <field name="state"/>
+                <field name="is_notification_overdue"/>
+                <field name="is_request_overdue"/>
+            </wex_operational_list>
+        </field>
+    </record>
+
     <record id="view_wex_purchase_list_line_form" model="ir.ui.view">
         <field name="name">wex_purchase_list.line.form</field>
         <field name="model">wex_purchase_list.line</field>
         <field name="arch" type="xml">
-            <form string="Línea de lista de compra (Wexplay)">
+            <form string="Línea de lista de compra (Wexplay)" class="wex_purchase_list_line_form">
+                <header>
+                    <button name="action_mark_customer_notified"
+                            type="object"
+                            string="Marcar cliente avisado"
+                            class="btn btn-primary"
+                            invisible="not is_reservation or customer_notified or state != 'received'"/>
+                </header>
                 <sheet>
-                    <group>
-                        <group>
+                    <div class="wex_pl_form_title">
+                        <div>
+                            <span class="wex_pl_form_kicker">
+                                <i class="fa fa-shopping-basket"/>
+                                Línea de compra
+                            </span>
+                            <h2>
+                                <field name="name" readonly="1" nolabel="1"/>
+                            </h2>
+                        </div>
+                        <div class="wex_pl_form_status">
+                            <field name="state" string="Estado" widget="badge" readonly="1"/>
+                            <field name="reservation_followup_state" string="Seguimiento" widget="badge" readonly="1"/>
+                        </div>
+                    </div>
+
+                    <div class="wex_pl_form_grid">
+                        <div class="wex_pl_form_panel is-request">
+                            <div class="wex_pl_panel_title"><i class="fa fa-shopping-cart"/> Pedido</div>
+                            <group>
+                            <field name="state" string="Estado"/>
                             <field name="company_id" string="Compañía" groups="base.group_multi_company"/>
                             <field name="requested_by" string="Solicitado por"/>
-                            <field name="state" string="Estado"/>
-                        </group>
-                        <group>
                             <field name="product_id" string="Producto"/>
                             <field name="quantity" string="Cantidad"/>
+                            </group>
+                        </div>
+                        <div class="wex_pl_form_panel is-vendor">
+                            <div class="wex_pl_panel_title"><i class="fa fa-truck"/> Proveedor</div>
+                            <group>
                             <field name="vendor_id" string="Proveedor"/>
                             <field name="vendor_url" string="URL proveedor" widget="url"/>
-                        </group>
-                    </group>
-                    
-                    <group>
-                        <group>
-                            <!-- Origen SAT -->
-                            <field name="repair_id" string="Reparación" options="{'no_create': True}"/>
-                        </group>
-                        <group>
-                            <field name="is_reservation" string="Reserva"/>
-                            <field name="customer_notified" string="Cliente avisado"/>
                             <field name="customer_price_note" string="Precio al cliente" widget="monetary"/>
+                            </group>
+                        </div>
+
+                        <div class="wex_pl_form_panel is-reservation">
+                            <div class="wex_pl_panel_title"><i class="fa fa-bell"/> Reserva y cliente</div>
+                            <group>
+                            <field name="is_reservation" string="Reserva"/>
+                            <field name="customer_id"
+                                   string="Cliente"
+                                   readonly="(repair_id or sale_line_id) and customer_id"
+                                   required="is_reservation and not allow_reservation_without_customer"/>
+                            <field name="allow_reservation_without_customer"
+                                   string="Permitir repuesto sin cliente seleccionado"
+                                   class="text-muted o_small"
+                                   invisible="not is_reservation or ((repair_id or sale_line_id) and customer_id)"/>
+                            </group>
+                        </div>
+                        <div class="wex_pl_form_panel is-notification">
+                            <div class="wex_pl_panel_title"><i class="fa fa-commenting"/> Aviso</div>
+                            <div class="wex_pl_panel_actions">
+                                <button name="action_open_customer_whatsapp"
+                                        type="object"
+                                        string="WhatsApp"
+                                        icon="fa-whatsapp"
+                                        class="btn btn-secondary"
+                                        invisible="not is_reservation or not customer_id"/>
+                                <button name="action_mark_customer_notified"
+                                        type="object"
+                                        string="Marcar avisado"
+                                        icon="fa-check"
+                                        class="btn btn-primary"
+                                        invisible="not is_reservation or customer_notified or state != 'received'"/>
+                            </div>
+                            <group>
+                            <field name="customer_notified" string="Cliente avisado" readonly="1"/>
+                            <field name="customer_notified_on" string="Avisado el" readonly="1"/>
+                            <field name="customer_notified_by" string="Avisado por" readonly="1"/>
+                            </group>
+                        </div>
+
+                        <div class="wex_pl_form_panel is-origin">
+                            <div class="wex_pl_panel_title"><i class="fa fa-link"/> Origen</div>
+                            <group>
+                            <field name="repair_id" string="Reparación" options="{'no_create': True}"/>
+                            <field name="sale_line_id" string="Línea de venta" options="{'no_create': True}"/>
+                            <field name="requested_on" string="Solicitado el" readonly="1"/>
+                            <field name="received_on" string="Recibido el" readonly="1"/>
+                            </group>
+                        </div>
+                        <div class="wex_pl_form_panel is-purchase">
+                            <div class="wex_pl_panel_title"><i class="fa fa-file-text-o"/> Compra</div>
+                            <group>
+                            <field name="purchase_order_id" string="RFQ/PO" readonly="1"/>
+                            <field name="purchase_order_line_id" string="Línea RFQ/PO" readonly="1"/>
+                            </group>
+                        </div>
+
+                        <div class="wex_pl_form_panel is-deadline">
+                            <div class="wex_pl_panel_title"><i class="fa fa-clock-o"/> Plazos</div>
+                            <group>
+                            <field name="days_since_request" string="Días desde solicitud" readonly="1"/>
+                            <field name="days_pending_notification" string="Días pendiente de aviso" readonly="1"/>
+                            </group>
+                        </div>
+                        <div class="wex_pl_form_panel is-overdue">
+                            <div class="wex_pl_panel_title"><i class="fa fa-exclamation-triangle"/> Retrasos</div>
+                            <group>
+                            <field name="is_request_overdue" string="Solicitud retrasada" readonly="1"/>
+                            <field name="is_notification_overdue" string="Aviso retrasado" readonly="1"/>
+                            </group>
+                        </div>
+                    </div>
+
+                    <div class="wex_pl_form_panel is-notes">
+                        <div class="wex_pl_panel_title"><i class="fa fa-sticky-note-o"/> Notas</div>
+                        <group>
+                        <field name="notes" string="Notas" placeholder="Notas internas, detalles para el pedido, reservas, etc."/>
                         </group>
-                    </group>
-                    
-                    <group>
-                        <field name="notes" string="Notas"
-                               placeholder="Notas internas, detalles para el pedido, reservas, etc."/>
-                    </group>
+                    </div>
                 </sheet>
             </form>
         </field>
     </record>
-    
-    <!-- Search View -->
+
     <record id="view_wex_purchase_list_line_search" model="ir.ui.view">
         <field name="name">wex_purchase_list.line.search</field>
         <field name="model">wex_purchase_list.line</field>
@@ -87,75 +278,152 @@
                 <field name="product_id" string="Producto"/>
                 <field name="requested_by" string="Solicitado por"/>
                 <field name="vendor_id" string="Proveedor"/>
+                <field name="customer_id" string="Cliente"/>
                 <field name="state" string="Estado"/>
-                
-                <!-- Origen SAT -->
                 <field name="repair_id" string="Reparación"/>
-                
+                <field name="reservation_status" string="Reserva"/>
+                <field name="reservation_followup_state" string="Seguimiento"/>
+                <field name="requested_on" string="Solicitado"/>
+                <field name="received_on" string="Llegó"/>
+                <field name="customer_notified_on" string="Avisado el"/>
                 <filter string="Esperando cliente (no pedir)" name="f_wait" domain="[('state','=','draft_wait_customer')]"/>
                 <filter string="Pendiente de compra" name="f_to_purchase" domain="[('state','=','to_purchase')]"/>
                 <filter string="Pedido realizado" name="f_ordered" domain="[('state','=','ordered')]"/>
                 <filter string="Recibido" name="f_received" domain="[('state','=','received')]"/>
                 <filter string="Cancelado" name="f_cancelled" domain="[('state','=','cancelled')]"/>
-                
                 <separator/>
-                
                 <filter string="Reserva" name="f_reservation" domain="[('is_reservation','=',True)]"/>
+                <filter string="Reservas sin avisar" name="f_pending_notify" domain="[('reservation_followup_state','=','pending_notification')]"/>
+                <filter string="Aviso retrasado" name="f_notify_overdue" domain="[('is_notification_overdue','=',True)]"/>
+                <filter string="Solicitud retrasada" name="f_request_overdue" domain="[('is_request_overdue','=',True)]"/>
+                <filter string="Esperando llegada" name="f_waiting_arrival" domain="[('reservation_followup_state','=','waiting_arrival')]"/>
+                <filter string="Avisadas" name="f_notified_reservations" domain="[('reservation_followup_state','=','notified')]"/>
                 <filter string="Cliente avisado" name="f_notified" domain="[('customer_notified','=',True)]"/>
-                
                 <group expand="0" string="Agrupar por">
                     <filter string="Solicitado por" name="gb_requested_by" context="{'group_by':'requested_by'}"/>
                     <filter string="Proveedor" name="gb_vendor" context="{'group_by':'vendor_id'}"/>
+                    <filter string="Cliente" name="gb_customer" context="{'group_by':'customer_id'}"/>
                     <filter string="Estado" name="gb_state" context="{'group_by':'state'}"/>
                     <filter string="Reparación" name="gb_repair" context="{'group_by':'repair_id'}"/>
+                    <filter string="Reserva" name="gb_reservation" context="{'group_by':'reservation_status'}"/>
+                    <filter string="Seguimiento" name="gb_followup" context="{'group_by':'reservation_followup_state'}"/>
+                    <filter string="Tablero reservas" name="gb_board" context="{'group_by':'reservation_board_section'}"/>
                 </group>
             </search>
         </field>
     </record>
-    
-    <!-- Action -->
+
+    <delete model="ir.actions.client"
+            search="[('tag','=','wex_purchase_list_operational')]"/>
+
     <record id="action_wex_purchase_list_line" model="ir.actions.act_window">
         <field name="name">Lista de compra</field>
         <field name="res_model">wex_purchase_list.line</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="view_wex_purchase_list_line_list"/>
+        <field name="view_mode">wex_operational_list,list,form</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
         <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
-        <!-- por defecto: ver "Pendiente de compra" -->
         <field name="context">{'search_default_f_to_purchase': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Lista de compra (Fase 1).
-            </p>
-            <p>
-                Añade repuestos a pedir, proveedor y enlace rápido.
-            </p>
+            <p class="o_view_nocontent_smiling_face">Lista de compra.</p>
+            <p>Añade repuestos a pedir y gestiona su seguimiento interno.</p>
         </field>
     </record>
-    
-    <!-- =========================================================
-         ACCIÓN SERVIDOR: Crear RFQ desde líneas seleccionadas
-         ========================================================= -->
+
+    <record id="action_wex_purchase_list_line_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_list"/>
+        <field name="act_window_id" ref="action_wex_purchase_list_line"/>
+    </record>
+
+    <record id="action_wex_purchase_list_line_view_operational" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">wex_operational_list</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="act_window_id" ref="action_wex_purchase_list_line"/>
+    </record>
+
+    <record id="action_wex_purchase_list_line_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_form"/>
+        <field name="act_window_id" ref="action_wex_purchase_list_line"/>
+    </record>
+
+    <record id="action_wex_purchase_reservation_line" model="ir.actions.act_window">
+        <field name="name">Reservas</field>
+        <field name="res_model">wex_purchase_list.line</field>
+        <field name="view_mode">wex_operational_list,list,form</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
+        <field name="domain">[('is_reservation','=',True)]</field>
+        <field name="context">{'group_by':'reservation_board_section'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Reservas y avisos.</p>
+            <p>Controla reservas, retrasos y avisos al cliente desde una vista dedicada.</p>
+        </field>
+    </record>
+
+    <record id="action_wex_purchase_reservation_line_view_operational" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">wex_operational_list</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="act_window_id" ref="action_wex_purchase_reservation_line"/>
+    </record>
+
+    <record id="action_wex_purchase_reservation_line_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_wex_purchase_reservation_line_list"/>
+        <field name="act_window_id" ref="action_wex_purchase_reservation_line"/>
+    </record>
+
+    <record id="action_wex_purchase_reservation_line_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_wex_purchase_list_line_form"/>
+        <field name="act_window_id" ref="action_wex_purchase_reservation_line"/>
+    </record>
+
     <record id="action_server_create_rfq_from_purchase_list" model="ir.actions.server">
         <field name="name">Crear RFQ (agrupar por proveedor)</field>
         <field name="model_id" ref="model_wex_purchase_list_line"/>
         <field name="state">code</field>
         <field name="code">action = records.action_create_rfqs()</field>
-        
-        <!-- Vincular al modelo para que aparezca en el menú "Acciones" de la lista -->
         <field name="binding_model_id" ref="model_wex_purchase_list_line"/>
         <field name="binding_view_types">list</field>
-        
-        <!-- Restringir a managers -->
         <field name="groups_id" eval="[(4, ref('wex_purchase_list.group_wex_purchase_list_manager'))]"/>
     </record>
-    
-    <!-- =========================================================
-         MENÚ: Compras → Lista de compra (Wexplay)
-         ========================================================= -->
+
+    <menuitem id="menu_wex_purchase_list_app"
+              name="Lista de compra"
+              sequence="75"
+              web_icon="wex_purchase_list,static/description/icon.png"/>
+
+    <delete model="ir.ui.menu"
+            search="[('name','=','Vista operativa'), ('parent_id','in',[ref('menu_wex_purchase_list_app'), ref('purchase.menu_purchase_root')])]"/>
+
     <menuitem id="menu_wex_purchase_list_root"
+              name="Lista de compra"
+              parent="menu_wex_purchase_list_app"
+              action="action_wex_purchase_list_line"
+              sequence="5"/>
+
+    <menuitem id="menu_wex_purchase_list_reservations_root"
+              name="Reservas"
+              parent="menu_wex_purchase_list_app"
+              action="action_wex_purchase_reservation_line"
+              sequence="10"/>
+
+    <menuitem id="menu_wex_purchase_list_purchase_root"
               name="Lista de compra (Wexplay)"
               parent="purchase.menu_purchase_root"
               action="action_wex_purchase_list_line"
               sequence="60"/>
-    
+
+    <menuitem id="menu_wex_purchase_list_purchase_reservations"
+              name="Reservas"
+              parent="purchase.menu_purchase_root"
+              action="action_wex_purchase_reservation_line"
+              sequence="62"/>
 </odoo>

@@ -30,6 +30,7 @@
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[.//field[@name='move_ids']]//field[@name='move_ids']//list" position="inside">
+                <field name="wex_is_reservation" string="Reserva"/>
                 <button name="action_add_to_purchase_list"
                         type="object"
                         string="Añadir a lista"

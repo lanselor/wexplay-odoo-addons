@@ -30,6 +30,11 @@ class RepairOrder(models.Model):
 class StockMove(models.Model):
     _inherit = "stock.move"
 
+    wex_is_reservation = fields.Boolean(
+        string="Reserva",
+        help="Marca la pieza como reserva para avisar al cliente cuando llegue.",
+    )
+
     purchase_list_line_id = fields.Many2one(
         "wex_purchase_list.line",
         string="Línea lista de compra",
@@ -38,6 +43,16 @@ class StockMove(models.Model):
         index=True,
         help="Si se creó una línea de lista de compra desde esta pieza, queda vinculada aquí.",
     )
+
+    def write(self, vals):
+        result = super().write(vals)
+        if "wex_is_reservation" in vals:
+            self._sync_purchase_list_reservation()
+        return result
+
+    def _sync_purchase_list_reservation(self):
+        for move in self.filtered(lambda record: record.purchase_list_line_id and record.repair_id):
+            move.purchase_list_line_id._sync_from_stock_move_reservation(move)
 
     def action_add_to_purchase_list(self):
         self.ensure_one()

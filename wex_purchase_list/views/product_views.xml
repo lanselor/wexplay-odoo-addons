@@ -28,35 +28,28 @@
                 </group>
             </xpath>
             
-            <!-- NUEVO: PVP con IVA debajo de Precio de venta -->
             <xpath expr="//field[@name='standard_price']" position="after">
-                <separator string="Cálculo de Precios y Margen (Wexplay)" class="mt-4 mb-2"/>
-                
-                <group name="wexplay_pricing">
-                    <group>
-                        <label for="wex_list_price_tax_included"/>
-                        <div class="o_row">
-                            <field name="wex_list_price_tax_included" class="oe_inline"/>
-                            <span class="text-muted">IVA Incl.</span>
-                        </div>
-                        
-                        <label for="wex_margin_percent"/>
-                        <div class="o_row">
-                            <field name="wex_margin_percent" class="oe_inline" style="width: 70px !important;"/>
-                            <span>%</span>
-                        </div>
-                    </group>
-                    
-                    <group>
-                        <field name="wex_suggested_price_tax_included" 
-                               string="Sugerencia (PVP)" 
-                               decoration-bf="1" 
-                               decoration-info="1"
-                               widget="monetary"/>
-                        <p class="text-muted small" colspan="2">
-                            * Precio recomendado basado en el margen sobre el venta.
-                        </p>
-                    </group>
+                <separator string="Precio Wexplay" class="mt-4 mb-2"/>
+
+                <group name="wexplay_pricing" string="Cálculo rápido de PVP">
+                    <field name="wex_list_price_tax_included"
+                           string="PVP con IVA"
+                           widget="monetary"/>
+                    <field name="wex_margin_percent"
+                           string="Margen sobre venta (%)"/>
+                    <field name="wex_suggested_price_tax_included"
+                           string="Sugerencia PVP con IVA"
+                           widget="monetary"
+                           readonly="1"/>
+                    <button name="action_apply_wex_suggested_price"
+                            type="object"
+                            string="Aplicar sugerencia"
+                            icon="fa-magic"
+                            class="btn btn-secondary"
+                            invisible="not wex_suggested_price_tax_included"/>
+                    <p class="text-muted small" colspan="2">
+                        La sugerencia se calcula con margen sobre venta y se redondea siempre hacia arriba al siguiente precio acabado en 0 o 5.
+                    </p>
                 </group>
             </xpath>
             
