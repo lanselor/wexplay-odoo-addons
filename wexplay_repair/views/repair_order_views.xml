@@ -34,7 +34,7 @@
             <xpath expr="//sheet/group/group[2]/field[@name='tag_ids']" position="replace"/>
 
             <xpath expr="(//sheet//field[@name='under_warranty'])[1]" position="after">
-                <div class="wex_repair_form_intro">
+                <div name="wex_repair_device_intro" class="wex_repair_form_intro">
                     <div class="wex_repair_form_card wex_repair_form_card--hero wex_repair_form_card--compact wex_repair_form_card--topmatch">
                         <div class="wex_repair_form_eyebrow">Recepción SAT</div>
                         <div class="wex_repair_form_heading">
@@ -81,7 +81,7 @@
             </xpath>
 
             <xpath expr="(//sheet//field[@name='schedule_date'])[1]" position="before">
-                <div class="wex_repair_form_intro">
+                <div name="wex_repair_customer_intro" class="wex_repair_form_intro">
                     <div class="wex_repair_form_card wex_repair_form_card--client wex_repair_form_card--topmatch">
                         <div class="wex_repair_form_eyebrow">Cliente</div>
                         <div class="wex_repair_form_heading">
@@ -155,7 +155,7 @@
             <xpath expr="//sheet/group/group[2]/field[@name='schedule_date']" position="replace"/>
 
             <xpath expr="//sheet//notebook[1]" position="before">
-                <div class="wex_repair_form_sections">
+                <div name="wex_repair_technical_sections" class="wex_repair_form_sections">
                     <div class="wex_repair_form_section_marker">
                         <span>Ficha técnica y diagnóstico</span>
                     </div>
@@ -292,7 +292,7 @@
             </xpath>
 
             <xpath expr="//sheet//notebook[1]" position="after">
-                <div class="wex_repair_form_sections wex_repair_form_sections--admin">
+                <div name="wex_repair_admin_sections" class="wex_repair_form_sections wex_repair_form_sections--admin">
                     <div class="wex_repair_form_section_marker is-secondary">
                         <span>Datos administrativos</span>
                     </div>

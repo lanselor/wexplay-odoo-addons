@@ -142,15 +142,10 @@ class RepairOrder(models.Model):
 
     x_sat_currency_id = fields.Many2one(
         "res.currency",
-        compute="_compute_x_sat_currency_id",
+        compute="_compute_x_sat_total_amount",
         store=False,
         readonly=True,
     )
-
-    @api.depends("company_id")
-    def _compute_x_sat_currency_id(self):
-        for rec in self:
-            rec.x_sat_currency_id = rec.company_id.currency_id
 
     def _get_partner_address_parts(self):
         self.ensure_one()
@@ -209,13 +204,20 @@ class RepairOrder(models.Model):
         if not normalized_value:
             return self.env["res.partner"]
 
-        phone_partners = self.env["res.partner"].search(
-            ["|", ("phone", "!=", False), ("mobile", "!=", False)]
+        like_value = f"%{normalized_value}%"
+        self.env.cr.execute(
+            r"""
+            SELECT id
+              FROM res_partner
+             WHERE regexp_replace(COALESCE(phone, ''), '\D', '', 'g') LIKE %s
+                OR regexp_replace(COALESCE(mobile, ''), '\D', '', 'g') LIKE %s
+            """,
+            [like_value, like_value],
         )
-        return phone_partners.filtered(
-            lambda partner: self._match_normalized_phone(partner.phone, normalized_value)
-            or self._match_normalized_phone(partner.mobile, normalized_value)
-        )
+        partner_ids = [row[0] for row in self.env.cr.fetchall()]
+        if not partner_ids:
+            return self.env["res.partner"]
+        return self.env["res.partner"].search([("id", "in", partner_ids)])
 
     @api.model
     def _get_partners_matching_phone_search(self, operator, value):
@@ -237,13 +239,6 @@ class RepairOrder(models.Model):
 
         partners = self._get_partners_matching_phone_search(operator, value)
         return [("partner_id", "in", partners.ids or [0])]
-
-    @api.model
-    def _match_normalized_phone(self, phone_value, normalized_value):
-        normalized_phone = re.sub(r"\D+", "", phone_value or "")
-        if not normalized_phone or not normalized_value:
-            return False
-        return normalized_value in normalized_phone
 
     @api.onchange("x_device_type")
     def _onchange_x_device_type_reset_model_brand(self):

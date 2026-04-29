@@ -13,8 +13,6 @@ from . import account_move
 from . import account_move_send
 from . import account_move_send_wizard
 from . import mail_template
-#from . import account_move_print_sat
-
 
 from . import res_company
 from . import res_config_settings
