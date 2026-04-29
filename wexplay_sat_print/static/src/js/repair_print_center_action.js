@@ -1,8 +1,6 @@
 // wexplay_sat_print/static/src/js/repair_print_center_action.js
 /** @odoo-module **/
 
-console.log("WEXPLAY_SAT_PRINT: repair_print_center_action.js cargado");
-
 import { registry } from "@web/core/registry";
 import { SatPrintCenterModal } from "./repair_print_center_modal"; // ruta relativa, mismo módulo
 

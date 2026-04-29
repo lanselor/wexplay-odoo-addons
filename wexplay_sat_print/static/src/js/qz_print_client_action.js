@@ -1,8 +1,6 @@
 // wexplay_sat_print/static/src/js/qz_print_client_action.js
 /** @odoo-module **/
 
-console.log("WEXPLAY_SAT_PRINT: QZ client action (headless) cargado");
-
 import { registry } from "@web/core/registry";
 import { browser } from "@web/core/browser/browser";
 import { printOdooDocument } from "@wex_print_core/js/qz_print";

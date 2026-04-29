@@ -1,8 +1,6 @@
 // wexplay_sat_print/static/src/js/repair_print_center_modal.js
 /** @odoo-module **/
 
-console.log("WEXPLAY_SAT_PRINT: modal JS cargado Versión 13 (qty accesorios)");
-
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { browser } from "@web/core/browser/browser";
@@ -23,15 +21,6 @@ export class SatPrintCenterModal extends Component {
         // Estado mínimo para cantidad de etiquetas de accesorios
         this.state = useState({
             accessoryQty: 1,
-        });
-
-        console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
-            hasClose: !!this.props?.close,
-            record: this.props?.record,
-        });
-        console.log("WEXPLAY_SAT_PRINT: setup ejecutado", {
-            orm: this.orm,
-            hasOrmCall: !!this.orm?.call,
         });
     }
 

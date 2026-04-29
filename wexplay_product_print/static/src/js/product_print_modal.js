@@ -1,7 +1,5 @@
 /** @odoo-module **/
 
-console.log("WEXPLAY_PRINT: JS cargado V 20");
-
 import { registry } from "@web/core/registry";
 import { Component, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
@@ -16,11 +14,6 @@ class PrintCenterModal extends Component {
         this.dialog = useService("dialog");
 
         this.state = useState({ qty: 1 });
-
-        console.log("WEXPLAY_PRINT: setup ejecutado", {
-            orm: this.orm,
-            hasOrmCall: !!this.orm?.call,
-        });
     }
 
     close() {
@@ -87,8 +80,6 @@ class PrintCenterModal extends Component {
 PrintCenterModal.template = "wexplay_product_print.PrintCenterModal";
 
 registry.category("actions").add("wexplay_product_print.print_center", async (env, action) => {
-    console.log("WEXPLAY_PRINT: handler ejecutado");
-
     env.services.notification.add("Wexplay Print: acción ejecutada", { type: "info" });
 
     const activeId = action?.context?.active_id;
