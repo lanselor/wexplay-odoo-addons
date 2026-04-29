@@ -9,7 +9,7 @@ It currently covers:
 - pending-delivery filter logic
 - delivery confirmation wizard after payment
 - delivery action from repair order
-- SAT internal notification when the repair reaches the expected point of readiness
+- SAT internal notification when a budget is explicitly accepted
 
 ## Current Responsibilities
 
@@ -18,7 +18,7 @@ It currently covers:
 - Computes delivery helper fields
 - Validates whether a repair can be marked as delivered
 - Posts SAT channel notifications
-- Watches state transitions in `write()`
+- Hooks budget acceptance through `action_budget_accept()`
 
 ### `models/account_payment_register.py`
 - Intercepts the customer payment wizard
@@ -46,12 +46,9 @@ This module should not become the general owner of:
 
 ## Known Architectural Debt
 
-- The notification trigger is inferred from `state == confirmed`, which is less explicit than a dedicated business event.
-- `x_pending_delivery_filter` still uses a Python-side filtered search instead of a more direct persisted criterion.
 - Delivery state change still relies on workflow-side location synchronization.
 
 ## Notes For Next Phases
 
-- Revisit whether SAT notification should be triggered by a more explicit budget event.
-- Decide if pending-delivery detection should remain dynamic or gain a more query-friendly persistence strategy.
+- Decide when the channel-name fallback can be removed after production settings are configured.
 - Consider making delivery-to-location synchronization more explicit if the current indirection becomes a maintenance issue.

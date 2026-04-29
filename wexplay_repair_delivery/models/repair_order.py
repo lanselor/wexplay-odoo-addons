@@ -31,8 +31,8 @@ class RepairOrder(models.Model):
     x_pending_delivery_filter = fields.Boolean(
         string="Pendiente de entrega",
         compute="_compute_x_pending_delivery_filter",
-        search="_search_x_pending_delivery_filter",
-        store=False,
+        store=True,
+        index=True,
     )
 
     x_can_mark_delivered = fields.Boolean(
@@ -85,23 +85,19 @@ class RepairOrder(models.Model):
             and self.company_id.x_repair_state_location_delivered_id
         )
 
-    def _search_x_pending_delivery_filter(self, operator, value):
-        if operator not in ("=", "!=") or value not in (True, False):
-            raise UserError(_("Busqueda no soportada para 'Pendiente de entrega'."))
-
-        repairs = self.env["repair.order"].search([
-            ("state", "in", ("done", "cancel")),
-        ])
-        repair_ids = repairs.filtered(
-            lambda repair: repair._is_pending_delivery_candidate()
-        ).ids
-        positive = (operator == "=" and value is True) or (
-            operator == "!=" and value is False
-        )
-        return [("id", "in" if positive else "not in", repair_ids)]
-
     def _get_sat_channel(self):
         self.ensure_one()
+        channel_id = self.env["ir.config_parameter"].sudo().get_param(
+            "wexplay_repair_delivery.sat_budget_accepted_channel_id"
+        )
+        configured_channel = self.env["discuss.channel"]
+        if channel_id and str(channel_id).isdigit():
+            configured_channel = self.env["discuss.channel"].browse(
+                int(channel_id)
+            ).exists()
+        if configured_channel:
+            return configured_channel
+
         return self.env["discuss.channel"].search(
             [("name", "in", self._SAT_CHANNEL_NAMES)],
             limit=1,
@@ -170,6 +166,17 @@ class RepairOrder(models.Model):
         self.action_mark_delivered()
         return {"type": "ir.actions.client", "tag": "reload"}
 
+    def action_budget_accept(self):
+        previous_budget_stages = {repair.id: repair.x_budget_stage for repair in self}
+        result = super().action_budget_accept()
+        repairs_to_notify = self.filtered(
+            lambda repair: previous_budget_stages.get(repair.id) == "waiting_customer"
+            and repair.x_budget_stage == "accepted"
+        )
+        if repairs_to_notify:
+            repairs_to_notify._post_budget_accepted_to_sat_channel()
+        return result
+
     def _post_budget_accepted_to_sat_channel(self):
         for repair in self:
             channel_sat = repair._get_sat_channel()
@@ -196,22 +203,3 @@ class RepairOrder(models.Model):
                     "Error posting SAT budget acceptance notification for %s.",
                     repair.display_name,
                 )
-
-    def write(self, vals):
-        previous_states = {}
-        track_confirmed_transition = "state" in vals
-
-        if track_confirmed_transition:
-            previous_states = {rec.id: rec.state for rec in self}
-
-        res = super().write(vals)
-
-        if vals.get("state") == "confirmed":
-            repairs_to_notify = self.filtered(
-                lambda r: previous_states.get(r.id) != "confirmed"
-                and r.state == "confirmed"
-            )
-            if repairs_to_notify:
-                repairs_to_notify._post_budget_accepted_to_sat_channel()
-
-        return res

@@ -19,6 +19,7 @@
         "views/repair_order_views.xml",
         "views/repair_order_search_views.xml",
         "views/repair_order_actions.xml",
+        "views/res_config_settings_views.xml",
         "views/repair_channel_templates.xml",
         "views/repair_delivery_wizard_views.xml",
     ],
