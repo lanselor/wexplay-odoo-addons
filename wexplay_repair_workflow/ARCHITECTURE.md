@@ -44,6 +44,15 @@ The XML layer should stay limited to visibility and access to actions.
 - XML button invisibility still duplicates part of the Python business rules.
 - Location synchronization is split across several helpers and post-write behavior.
 
+## `write()` Side-Effect Contract
+
+`write()` in this module owns only workflow side effects caused by `state` changes:
+- `cancel` marks the budget as rejected and syncs to the rejected budget location.
+- `under_repair`, `done` and `delivered` sync `product_location_src_id` from the configured state location.
+- The context flag `skip_repair_state_location_sync` intentionally bypasses state-location synchronization when a caller must set the final location itself in the same business action.
+
+Downstream modules may call public actions such as `action_budget_accept()` or `action_mark_delivered()`, but should avoid duplicating workflow location rules.
+
 ## Notes For Next Phases
 
 - Reduce duplicated XML conditions by relying more clearly on Python helpers.

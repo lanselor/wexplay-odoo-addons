@@ -22,7 +22,10 @@ class WexFinishRepairGlueChoiceWizard(models.TransientModel):
         if not repair:
             raise UserError(_("No se ha encontrado la reparación."))
 
-        repair.with_context(skip_glue_finish_wizard=True).action_repair_end()
+        repair.with_context(
+            skip_glue_finish_wizard=True,
+            skip_repair_state_location_sync=True,
+        ).action_repair_end()
 
         if location:
             repair.write({"product_location_src_id": location.id})

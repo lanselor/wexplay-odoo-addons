@@ -419,6 +419,9 @@ class RepairOrder(models.Model):
             )
 
     def _handle_state_write_side_effects(self, new_state):
+        if self.env.context.get("skip_repair_state_location_sync"):
+            return
+
         if new_state == "cancel":
             self._mark_budget_rejected_on_cancel()
             self._sync_location_for_budget_stage()

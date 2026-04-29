@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             
             <xpath expr="//sheet/*[1]" position="before">
-                <div class="w-100 d-flex justify-content-between align-items-center flex-wrap mb-3">
+                <div name="wex_repair_budget_workflow_panel" class="w-100 d-flex justify-content-between align-items-center flex-wrap mb-3">
                     
                     <div class="d-flex flex-wrap gap-2">
                         <button
