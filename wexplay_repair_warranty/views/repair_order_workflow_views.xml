@@ -5,18 +5,24 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="wexplay_repair_delivery.view_repair_order_form_delivery_status_inherit"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('w-100') and hasclass('d-flex') and hasclass('justify-content-between') and hasclass('align-items-center') and hasclass('flex-wrap') and hasclass('mb-3')]" position="attributes">
+            <xpath expr="//div[@name='wex_repair_budget_workflow_panel']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
 
             <xpath expr="//sheet/*[1]" position="before">
-                <div class="wex_repair_workflow_panel" invisible="x_is_warranty_case">
+                <div class="wex_repair_workflow_panel">
                     <div class="wex_repair_workflow_actions">
                         <button name="action_start_budget"
                                 type="object"
                                 string="Iniciar presupuesto"
                                 class="btn btn-success"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage not in ('none', 'rejected')"/>
+                                invisible="x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage not in ('none', 'rejected')"/>
+
+                        <button name="action_start_budget"
+                                type="object"
+                                string="Iniciar revisión"
+                                class="btn btn-success"
+                                invisible="not x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage not in ('none', 'rejected')"/>
 
                         <button name="action_budget_wait_customer"
                                 type="object"
@@ -28,71 +34,37 @@
                                 type="object"
                                 string="Presupuesto aceptado"
                                 class="btn btn-success"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
-
-                        <button name="action_budget_reject"
-                                type="object"
-                                string="Presupuesto rechazado"
-                                class="btn btn-danger"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
-
-                        <button name="action_budget_reestimate"
-                                type="object"
-                                string="Volver a presupuestar"
-                                class="btn btn-warning"
-                                invisible="state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
-
-                        <button name="action_mark_ready_for_pickup_from_glue"
-                                type="object"
-                                string="Pendiente de recogida"
-                                class="btn btn-info"
-                                invisible="state != 'done' or not x_is_in_glue_desk"/>
-
-                        <button name="action_mark_delivered"
-                                type="object"
-                                string="Entregado"
-                                class="btn btn-secondary"
-                                invisible="state not in ('done', 'cancel')"/>
-                    </div>
-
-                    <div class="wex_repair_workflow_status">
-                        <field name="x_budget_stage"
-                               widget="statusbar"
-                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"/>
-                    </div>
-                </div>
-
-                <div class="wex_repair_workflow_panel" invisible="not x_is_warranty_case">
-                    <div class="wex_repair_workflow_actions">
-                        <button name="action_start_budget"
-                                type="object"
-                                string="Iniciar revisión"
-                                class="btn btn-success"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage not in ('none', 'rejected')"/>
-
-                        <button name="action_budget_wait_customer"
-                                type="object"
-                                string="Espera cliente"
-                                class="btn btn-warning"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'estimating'"/>
+                                invisible="x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
 
                         <button name="action_budget_accept"
                                 type="object"
                                 string="Garantía aprobada"
                                 class="btn btn-success"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
+                                invisible="not x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
+
+                        <button name="action_budget_reject"
+                                type="object"
+                                string="Presupuesto rechazado"
+                                class="btn btn-danger"
+                                invisible="x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
 
                         <button name="action_budget_reject"
                                 type="object"
                                 string="Garantía rechazada"
                                 class="btn btn-danger"
-                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
+                                invisible="not x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
+
+                        <button name="action_budget_reestimate"
+                                type="object"
+                                string="Volver a presupuestar"
+                                class="btn btn-warning"
+                                invisible="x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
 
                         <button name="action_budget_reestimate"
                                 type="object"
                                 string="Volver a revisar"
                                 class="btn btn-warning"
-                                invisible="state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
+                                invisible="not x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
 
                         <button name="action_mark_ready_for_pickup_from_glue"
                                 type="object"
@@ -104,13 +76,18 @@
                                 type="object"
                                 string="Entregado"
                                 class="btn btn-secondary"
-                                invisible="state not in ('done', 'cancel')"/>
+                                invisible="not x_can_mark_delivered"/>
                     </div>
 
                     <div class="wex_repair_workflow_status">
+                        <field name="x_budget_stage"
+                               widget="statusbar"
+                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                               invisible="x_is_warranty_case"/>
                         <field name="x_warranty_budget_stage"
                                widget="statusbar"
-                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"/>
+                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                               invisible="not x_is_warranty_case"/>
                     </div>
                 </div>
             </xpath>

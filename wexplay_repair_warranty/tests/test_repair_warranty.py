@@ -3,10 +3,10 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase
 
 
-class TestRepairWarranty(SavepointCase):
+class TestRepairWarranty(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

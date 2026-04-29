@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import _, api, fields, models
+from odoo import _, fields, models
 
 
 class ResPartner(models.Model):
@@ -11,7 +11,6 @@ class ResPartner(models.Model):
         compute="_compute_x_warranty_repair_count",
     )
 
-    @api.depends("child_ids")
     def _compute_x_warranty_repair_count(self):
         repair_model = self.env["repair.order"]
         for partner in self:
