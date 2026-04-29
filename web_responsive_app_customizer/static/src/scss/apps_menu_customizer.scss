@@ -1,0 +1,71 @@
+.app-menu-container {
+    &[style*="background-image"] {
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    &.o_app_menu_customizer_edit_mode {
+        .o-app-menu-list {
+            cursor: move;
+        }
+
+        .o-app-menu-item {
+            cursor: grab;
+            outline: 1px dashed rgba(255, 255, 255, 0.55);
+            outline-offset: -0.25rem;
+
+            &:active {
+                cursor: grabbing;
+            }
+
+            &__icon {
+                animation: o-app-menu-customizer-wiggle 0.45s ease-in-out infinite;
+                box-shadow:
+                    0 0 0 3px rgba(255, 255, 255, 0.35),
+                    $app-menu-box-shadow;
+            }
+        }
+    }
+}
+
+.o_app_menu_customizer_done {
+    align-items: center;
+    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    height: 2.5rem;
+    justify-content: center;
+    position: fixed;
+    right: 1rem;
+    top: calc(#{$o-navbar-height} + 1rem);
+    width: 2.5rem;
+    z-index: 1;
+
+    &:hover,
+    &:focus {
+        background: rgba(255, 255, 255, 0.38);
+    }
+}
+
+.o_app_menu_customizer_sortable_ghost {
+    opacity: 0.45;
+}
+
+.o_app_menu_customizer_sortable_chosen {
+    transform: scale(1.04);
+}
+
+@keyframes o-app-menu-customizer-wiggle {
+    0%,
+    100% {
+        transform: rotate(-1deg);
+    }
+
+    50% {
+        transform: rotate(1deg);
+    }
+}

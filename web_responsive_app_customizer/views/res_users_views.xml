@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_users_view_form_apps_menu_preferences_customizer" model="ir.ui.view">
+        <field name="name">res.users.apps.menu.preferences.customizer.form</field>
+        <field name="model">res.users</field>
+        <field
+            name="inherit_id"
+            ref="web_responsive.res_users_view_form_apps_menu_preferences"
+        />
+        <field name="arch" type="xml">
+            <xpath expr="//form/group" position="after">
+                <group string="Personalization">
+                    <group>
+                        <field
+                            name="apps_menu_background_image"
+                            widget="image"
+                            options="{'preview_image': 'apps_menu_background_image'}"
+                        />
+                    </group>
+                    <group>
+                        <field name="apps_menu_custom_order" invisible="1" />
+                        <button
+                            name="action_reset_apps_menu_order"
+                            type="object"
+                            string="Reset App Order"
+                            class="btn-secondary"
+                        />
+                        <button
+                            name="action_reset_apps_menu_background"
+                            type="object"
+                            string="Reset Background"
+                            class="btn-secondary"
+                        />
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
