@@ -6,6 +6,7 @@ import {patch} from "@web/core/utils/patch";
 import {session} from "@web/session";
 import {user} from "@web/core/user";
 import {AppsMenu} from "@web_responsive/components/apps_menu/apps_menu.esm";
+import {menuService} from "@web/webclient/menus/menu_service";
 
 const LONG_PRESS_DELAY = 650;
 const MOVE_TOLERANCE = 8;
@@ -19,6 +20,28 @@ function setStoredOrder(order) {
     session.apps_menu.custom_order = order;
 }
 
+function sortMenusByStoredOrder(menus) {
+    const order = getStoredOrder().map((id) => Number(id));
+    if (!order.length) {
+        return menus;
+    }
+    const indexedOrder = new Map(order.map((id, index) => [id, index]));
+    return [...menus].sort((left, right) => {
+        const leftIndex = indexedOrder.get(left.id);
+        const rightIndex = indexedOrder.get(right.id);
+        if (leftIndex === undefined && rightIndex === undefined) {
+            return 0;
+        }
+        if (leftIndex === undefined) {
+            return 1;
+        }
+        if (rightIndex === undefined) {
+            return -1;
+        }
+        return leftIndex - rightIndex;
+    });
+}
+
 function getMenuItemId(item) {
     if (item.dataset.menuId) {
         return Number(item.dataset.menuId);
@@ -30,6 +53,14 @@ function getMenuItemId(item) {
     const match = href.match(/(?:^|[?#&])menu_id=(\d+)/);
     return match ? Number(match[1]) : 0;
 }
+
+const originalMenuServiceStart = menuService.start;
+menuService.start = async function (...args) {
+    const service = await originalMenuServiceStart.call(this, ...args);
+    const originalGetApps = service.getApps.bind(service);
+    service.getApps = () => sortMenusByStoredOrder(originalGetApps());
+    return service;
+};
 
 patch(AppsMenu.prototype, {
     setup() {
