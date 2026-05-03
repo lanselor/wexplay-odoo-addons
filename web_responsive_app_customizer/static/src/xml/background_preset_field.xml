@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="web_responsive_app_customizer.AppsMenuBackgroundPresetField">
+        <div class="o_apps_menu_background_presets" role="radiogroup">
+            <t t-foreach="options" t-as="option" t-key="option.value">
+                <button
+                    type="button"
+                    t-attf-class="o_apps_menu_background_preset #{option.value === value ? 'o_selected' : ''}"
+                    t-att-disabled="props.readonly"
+                    t-att-aria-checked="option.value === value"
+                    role="radio"
+                    t-on-click="() => this.selectPreset(option.value)"
+                >
+                    <span
+                        t-attf-class="o_apps_menu_background_preset_image #{option.className}"
+                        t-att-style="option.image ? `background-image: url('${option.image}')` : ''"
+                    />
+                    <span class="o_apps_menu_background_preset_label" t-esc="option.label" />
+                </button>
+            </t>
+        </div>
+    </t>
+</templates>

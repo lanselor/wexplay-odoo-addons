@@ -10,25 +10,63 @@ import {menuService} from "@web/webclient/menus/menu_service";
 
 const LONG_PRESS_DELAY = 650;
 const MOVE_TOLERANCE = 8;
+const ICON_SIZES = ["small", "medium", "large"];
 
 function getStoredOrder() {
-    return (session.apps_menu && session.apps_menu.custom_order) || [];
+    return getPreferenceList("custom_order");
+}
+
+function getPreferenceList(name) {
+    return ((session.apps_menu && session.apps_menu[name]) || [])
+        .map((key) => String(key))
+        .filter(Boolean);
+}
+
+function setPreferenceList(name, values) {
+    session.apps_menu = session.apps_menu || {};
+    session.apps_menu[name] = values;
+}
+
+function getIconSize() {
+    return (session.apps_menu && session.apps_menu.icon_size) || "medium";
+}
+
+function getIconSizeIndex() {
+    return Math.max(0, ICON_SIZES.indexOf(getIconSize()));
 }
 
 function setStoredOrder(order) {
-    session.apps_menu = session.apps_menu || {};
-    session.apps_menu.custom_order = order;
+    setPreferenceList("custom_order", order);
+}
+
+function getMenuOrderIndex(indexedOrder, menu) {
+    const keys = [getMenuKey(menu), menu.id].map((key) => String(key || ""));
+    for (const key of keys) {
+        if (indexedOrder.has(key)) {
+            return indexedOrder.get(key);
+        }
+    }
+}
+
+function getMenuKey(menu) {
+    return String(menu.xmlid || menu.id || "");
 }
 
 function sortMenusByStoredOrder(menus) {
-    const order = getStoredOrder().map((id) => Number(id));
-    if (!order.length) {
+    const order = getStoredOrder();
+    const favoriteKeys = new Set(getPreferenceList("favorite_keys"));
+    if (!order.length && !favoriteKeys.size) {
         return menus;
     }
     const indexedOrder = new Map(order.map((id, index) => [id, index]));
     return [...menus].sort((left, right) => {
-        const leftIndex = indexedOrder.get(left.id);
-        const rightIndex = indexedOrder.get(right.id);
+        const leftFavorite = favoriteKeys.has(getMenuKey(left));
+        const rightFavorite = favoriteKeys.has(getMenuKey(right));
+        if (leftFavorite !== rightFavorite) {
+            return leftFavorite ? -1 : 1;
+        }
+        const leftIndex = getMenuOrderIndex(indexedOrder, left);
+        const rightIndex = getMenuOrderIndex(indexedOrder, right);
         if (leftIndex === undefined && rightIndex === undefined) {
             return 0;
         }
@@ -42,16 +80,28 @@ function sortMenusByStoredOrder(menus) {
     });
 }
 
-function getMenuItemId(item) {
+function getMenuItemKey(item) {
+    if (item.dataset.menuKey) {
+        return item.dataset.menuKey;
+    }
+    if (item.dataset.menuXmlid) {
+        return item.dataset.menuXmlid;
+    }
     if (item.dataset.menuId) {
-        return Number(item.dataset.menuId);
+        return item.dataset.menuId;
     }
     const href = item.getAttribute("href");
     if (!href) {
-        return 0;
+        return "";
     }
     const match = href.match(/(?:^|[?#&])menu_id=(\d+)/);
-    return match ? Number(match[1]) : 0;
+    return match ? match[1] : "";
+}
+
+function buildIcon(className) {
+    const icon = document.createElement("i");
+    icon.className = className;
+    return icon;
 }
 
 const originalMenuServiceStart = menuService.start;
@@ -95,9 +145,12 @@ patch(AppsMenu.prototype, {
     exitCustomizerEditMode() {
         this._customizerEditMode = false;
         this._customizerContainer?.classList.remove("o_app_menu_customizer_edit_mode");
-        this._customizerDoneButton?.remove();
-        this._customizerDoneButton = null;
+        this._customizerToolbar?.remove();
+        this._customizerToolbar = null;
         this._setCustomizerSortableEnabled(false);
+        if (this._customizerContainer) {
+            this._applyCustomizerItemStates(this._customizerContainer);
+        }
     },
 
     _refreshCustomizer() {
@@ -106,18 +159,20 @@ patch(AppsMenu.prototype, {
             this._destroyCustomizerSortable();
             return;
         }
-        this._ensureCustomizerMenuIds(container);
+        this._ensureCustomizerMenuKeys(container);
         this._applyCustomizerBackground(container);
         this._applyStoredCustomizerOrder(container);
+        this._applyCustomizerIconSize(container);
+        this._applyCustomizerItemStates(container);
         this._bindCustomizerEvents(container);
         this._setupCustomizerSortable(container);
     },
 
-    _ensureCustomizerMenuIds(container) {
+    _ensureCustomizerMenuKeys(container) {
         for (const item of container.querySelectorAll(".o-app-menu-item")) {
-            const menuId = getMenuItemId(item);
-            if (menuId) {
-                item.dataset.menuId = String(menuId);
+            const menuKey = getMenuItemKey(item);
+            if (menuKey) {
+                item.dataset.menuKey = menuKey;
             }
         }
     },
@@ -131,6 +186,76 @@ patch(AppsMenu.prototype, {
             "linear-gradient(rgba(79, 67, 121, 0.72), rgba(108, 96, 151, 0.62))",
             `url("${backgroundUrl}")`,
         ].join(", ");
+    },
+
+    _applyCustomizerIconSize(container) {
+        container.dataset.iconSize = getIconSize();
+    },
+
+    _applyCustomizerItemStates(container) {
+        const favoriteKeys = new Set(getPreferenceList("favorite_keys"));
+        const hiddenKeys = new Set(getPreferenceList("hidden_keys"));
+        for (const item of container.querySelectorAll(".o-app-menu-item")) {
+            const menuKey = getMenuItemKey(item);
+            const isFavorite = favoriteKeys.has(menuKey);
+            const isHidden = hiddenKeys.has(menuKey);
+            item.classList.toggle("o_app_menu_customizer_favorite", isFavorite);
+            item.classList.toggle("o_app_menu_customizer_hidden", isHidden);
+            item.classList.toggle("d-none", isHidden && !this._customizerEditMode);
+            if (this._customizerEditMode) {
+                this._ensureCustomizerItemControls(item);
+            } else {
+                this._removeCustomizerItemControls(item);
+            }
+        }
+    },
+
+    _ensureCustomizerItemControls(item) {
+        if (!item.querySelector(".o_app_menu_customizer_item_tools")) {
+            const tools = document.createElement("div");
+            tools.className = "o_app_menu_customizer_item_tools";
+            const favoriteButton = document.createElement("button");
+            favoriteButton.type = "button";
+            favoriteButton.title = "Toggle favorite";
+            favoriteButton.dataset.appMenuCustomizerAction = "favorite";
+            const hiddenButton = document.createElement("button");
+            hiddenButton.type = "button";
+            hiddenButton.title = "Hide or show app";
+            hiddenButton.dataset.appMenuCustomizerAction = "hidden";
+            tools.append(favoriteButton, hiddenButton);
+            item.prepend(tools);
+        }
+        this._syncCustomizerItemControls(item);
+    },
+
+    _syncCustomizerItemControls(item) {
+        const favoriteButton = item.querySelector(
+            "[data-app-menu-customizer-action='favorite']"
+        );
+        const hiddenButton = item.querySelector(
+            "[data-app-menu-customizer-action='hidden']"
+        );
+        if (!favoriteButton || !hiddenButton) {
+            return;
+        }
+        favoriteButton.replaceChildren(
+            buildIcon(
+                item.classList.contains("o_app_menu_customizer_favorite")
+                    ? "fa fa-star"
+                    : "fa fa-star-o"
+            )
+        );
+        hiddenButton.replaceChildren(
+            buildIcon(
+                item.classList.contains("o_app_menu_customizer_hidden")
+                    ? "fa fa-eye-slash"
+                    : "fa fa-eye"
+            )
+        );
+    },
+
+    _removeCustomizerItemControls(item) {
+        item.querySelector(".o_app_menu_customizer_item_tools")?.remove();
     },
 
     _bindCustomizerEvents(container) {
@@ -165,7 +290,7 @@ patch(AppsMenu.prototype, {
         this._destroyCustomizerSortable();
         this._customizerSortable = new Sortable(list, {
             animation: 150,
-            dataIdAttr: "data-menu-id",
+            dataIdAttr: "data-menu-key",
             disabled: !this._customizerEditMode,
             draggable: ".o-app-menu-item",
             ghostClass: "o_app_menu_customizer_sortable_ghost",
@@ -192,16 +317,25 @@ patch(AppsMenu.prototype, {
         if (!list) {
             return;
         }
-        const order = getStoredOrder().map((id) => Number(id));
+        const order = getStoredOrder();
         if (!order.length) {
-            return;
+            const favoriteKeys = new Set(getPreferenceList("favorite_keys"));
+            if (!favoriteKeys.size) {
+                return;
+            }
         }
+        const favoriteKeys = new Set(getPreferenceList("favorite_keys"));
         const indexedOrder = new Map(order.map((id, index) => [id, index]));
         const items = [...list.querySelectorAll(".o-app-menu-item")];
         items
             .sort((left, right) => {
-                const leftIndex = indexedOrder.get(getMenuItemId(left));
-                const rightIndex = indexedOrder.get(getMenuItemId(right));
+                const leftFavorite = favoriteKeys.has(getMenuItemKey(left));
+                const rightFavorite = favoriteKeys.has(getMenuItemKey(right));
+                if (leftFavorite !== rightFavorite) {
+                    return leftFavorite ? -1 : 1;
+                }
+                const leftIndex = indexedOrder.get(getMenuItemKey(left));
+                const rightIndex = indexedOrder.get(getMenuItemKey(right));
                 if (leftIndex === undefined && rightIndex === undefined) {
                     return 0;
                 }
@@ -241,27 +375,139 @@ patch(AppsMenu.prototype, {
     _enterCustomizerEditMode() {
         this._customizerEditMode = true;
         this._customizerContainer?.classList.add("o_app_menu_customizer_edit_mode");
-        this._ensureCustomizerDoneButton();
+        this._ensureCustomizerToolbar();
+        if (this._customizerContainer) {
+            this._applyCustomizerItemStates(this._customizerContainer);
+        }
     },
 
-    _ensureCustomizerDoneButton() {
-        if (this._customizerDoneButton || !this._customizerContainer) {
+    _ensureCustomizerToolbar() {
+        if (this._customizerToolbar || !this._customizerContainer) {
             return;
         }
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "o_app_menu_customizer_done";
-        button.title = "Finish editing";
-        const icon = document.createElement("i");
-        icon.className = "fa fa-check";
-        button.appendChild(icon);
-        button.addEventListener("click", (event) => {
+        const toolbar = document.createElement("div");
+        toolbar.className = "o_app_menu_customizer_toolbar";
+
+        const title = document.createElement("div");
+        title.className = "o_app_menu_customizer_toolbar_title";
+        title.replaceChildren(buildIcon("fa fa-arrows"), document.createTextNode("Editando menú"));
+
+        const sizeControl = document.createElement("label");
+        sizeControl.className = "o_app_menu_customizer_size";
+        const sizeText = document.createElement("span");
+        sizeText.textContent = "Tamaño";
+        const sizeInput = document.createElement("input");
+        sizeInput.type = "range";
+        sizeInput.min = "0";
+        sizeInput.max = String(ICON_SIZES.length - 1);
+        sizeInput.step = "1";
+        sizeInput.value = String(getIconSizeIndex());
+        sizeInput.addEventListener("input", () => {
+            this._setCustomizerIconSize(ICON_SIZES[Number(sizeInput.value)], false);
+        });
+        sizeInput.addEventListener("change", () => {
+            this._setCustomizerIconSize(ICON_SIZES[Number(sizeInput.value)], true);
+        });
+        sizeControl.append(sizeText, sizeInput);
+
+        const resetButton = document.createElement("button");
+        resetButton.type = "button";
+        resetButton.className = "o_app_menu_customizer_toolbar_button";
+        resetButton.title = "Restaurar escritorio";
+        resetButton.replaceChildren(
+            buildIcon("fa fa-refresh"),
+            document.createTextNode("Restaurar")
+        );
+        resetButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this._resetCustomizerDesktop();
+        });
+
+        const doneButton = document.createElement("button");
+        doneButton.type = "button";
+        doneButton.className = "o_app_menu_customizer_toolbar_button o-primary";
+        doneButton.title = "Terminar edición";
+        doneButton.replaceChildren(buildIcon("fa fa-check"), document.createTextNode("Listo"));
+        doneButton.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             this.exitCustomizerEditMode();
         });
-        this._customizerContainer.prepend(button);
-        this._customizerDoneButton = button;
+
+        toolbar.append(title, sizeControl, resetButton, doneButton);
+        this._customizerContainer.prepend(toolbar);
+        this._customizerToolbar = toolbar;
+    },
+
+    async _setCustomizerIconSize(size, persist) {
+        session.apps_menu = session.apps_menu || {};
+        session.apps_menu.icon_size = size || "medium";
+        if (this._customizerContainer) {
+            this._applyCustomizerIconSize(this._customizerContainer);
+        }
+        if (persist) {
+            await this.orm.write("res.users", [user.userId], {
+                apps_menu_icon_size: session.apps_menu.icon_size,
+            });
+        }
+    },
+
+    async _resetCustomizerDesktop() {
+        const defaults = {
+            custom_order: [],
+            favorite_keys: [],
+            hidden_keys: [],
+        };
+        for (const [key, value] of Object.entries(defaults)) {
+            setPreferenceList(key, value);
+        }
+        session.apps_menu = session.apps_menu || {};
+        session.apps_menu.icon_size = "medium";
+        await this.orm.write("res.users", [user.userId], {
+            apps_menu_custom_order: [],
+            apps_menu_favorite_keys: [],
+            apps_menu_hidden_keys: [],
+            apps_menu_icon_size: "medium",
+        });
+        if (this._customizerContainer) {
+            this._applyCustomizerIconSize(this._customizerContainer);
+            this._applyDefaultMenuOrder(this._customizerContainer);
+            this._applyCustomizerItemStates(this._customizerContainer);
+            this._refreshCustomizerToolbar();
+        }
+    },
+
+    _applyDefaultMenuOrder(container) {
+        const list = container.querySelector(".o-app-menu-list");
+        if (!list) {
+            return;
+        }
+        const defaultOrder = this.menuService.getApps().map(getMenuKey);
+        const indexedOrder = new Map(defaultOrder.map((key, index) => [key, index]));
+        [...list.querySelectorAll(".o-app-menu-item")]
+            .sort((left, right) => {
+                const leftIndex = indexedOrder.get(getMenuItemKey(left));
+                const rightIndex = indexedOrder.get(getMenuItemKey(right));
+                if (leftIndex === undefined && rightIndex === undefined) {
+                    return 0;
+                }
+                if (leftIndex === undefined) {
+                    return 1;
+                }
+                if (rightIndex === undefined) {
+                    return -1;
+                }
+                return leftIndex - rightIndex;
+            })
+            .forEach((item) => list.appendChild(item));
+    },
+
+    _refreshCustomizerToolbar() {
+        const sizeInput = this._customizerToolbar?.querySelector("input[type='range']");
+        if (sizeInput) {
+            sizeInput.value = String(getIconSizeIndex());
+        }
     },
 
     _onCustomizerPointerMove(event) {
@@ -291,6 +537,13 @@ patch(AppsMenu.prototype, {
     },
 
     _onCustomizerClick(event) {
+        const actionButton = event.target.closest("[data-app-menu-customizer-action]");
+        if (actionButton) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            this._onCustomizerItemAction(actionButton);
+            return;
+        }
         if (!this._customizerEditMode) {
             return;
         }
@@ -301,13 +554,46 @@ patch(AppsMenu.prototype, {
         }
     },
 
+    _onCustomizerItemAction(actionButton) {
+        const item = actionButton.closest(".o-app-menu-item");
+        const menuKey = item && getMenuItemKey(item);
+        if (!menuKey) {
+            return;
+        }
+        const action = actionButton.dataset.appMenuCustomizerAction;
+        if (action === "favorite") {
+            this._toggleCustomizerListValue("favorite_keys", menuKey);
+        } else if (action === "hidden") {
+            this._toggleCustomizerListValue("hidden_keys", menuKey);
+        }
+    },
+
+    async _toggleCustomizerListValue(fieldName, menuKey) {
+        const currentValues = getPreferenceList(fieldName);
+        const nextValues = currentValues.includes(menuKey)
+            ? currentValues.filter((key) => key !== menuKey)
+            : [...currentValues, menuKey];
+        setPreferenceList(fieldName, nextValues);
+        if (this._customizerContainer) {
+            this._applyStoredCustomizerOrder(this._customizerContainer);
+            this._applyCustomizerItemStates(this._customizerContainer);
+        }
+        const odooField =
+            fieldName === "favorite_keys"
+                ? "apps_menu_favorite_keys"
+                : "apps_menu_hidden_keys";
+        await this.orm.write("res.users", [user.userId], {
+            [odooField]: nextValues,
+        });
+    },
+
     async _saveCustomizerOrder() {
         const list = this._customizerContainer?.querySelector(".o-app-menu-list");
         if (!list) {
             return;
         }
         const order = [...list.querySelectorAll(".o-app-menu-item")]
-            .map((item) => getMenuItemId(item))
+            .map((item) => getMenuItemKey(item))
             .filter(Boolean);
         setStoredOrder(order);
         await this.orm.write("res.users", [user.userId], {

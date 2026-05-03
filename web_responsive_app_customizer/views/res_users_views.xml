@@ -12,17 +12,37 @@
                 <group string="Personalization">
                     <group>
                         <field
+                            name="apps_menu_background_preset"
+                            widget="apps_menu_background_preset"
+                        />
+                        <field
                             name="apps_menu_background_image"
                             widget="image"
+                            invisible="apps_menu_background_preset != 'custom'"
                             options="{'preview_image': 'apps_menu_background_image'}"
                         />
                     </group>
                     <group>
+                        <field name="apps_menu_icon_size" />
                         <field name="apps_menu_custom_order" invisible="1" />
+                        <field name="apps_menu_favorite_keys" invisible="1" />
+                        <field name="apps_menu_hidden_keys" invisible="1" />
                         <button
                             name="action_reset_apps_menu_order"
                             type="object"
                             string="Reset App Order"
+                            class="btn-secondary"
+                        />
+                        <button
+                            name="action_reset_apps_menu_favorites"
+                            type="object"
+                            string="Reset Favorites"
+                            class="btn-secondary"
+                        />
+                        <button
+                            name="action_reset_apps_menu_hidden"
+                            type="object"
+                            string="Show Hidden Apps"
                             class="btn-secondary"
                         />
                         <button
