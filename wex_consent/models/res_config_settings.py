@@ -17,7 +17,9 @@ class ResConfigSettings(models.TransientModel):
     )
 
     x_wex_consent_reception_legal_text = fields.Text(
+        related="company_id.x_wex_consent_reception_legal_text",
         string="Texto legal de recepción",
+        readonly=False,
     )
     x_wex_consent_auto_send_reception_email = fields.Boolean(
         string="Enviar correo automático de recepción",
@@ -39,20 +41,3 @@ class ResConfigSettings(models.TransientModel):
         string="URL de privacidad extendida",
         config_parameter="wex_consent.privacy_url",
     )
-
-    def get_values(self):
-        res = super().get_values()
-        res["x_wex_consent_reception_legal_text"] = (
-            self.env["ir.config_parameter"].sudo().get_param(
-                "wex_consent.reception_legal_text"
-            )
-            or ""
-        )
-        return res
-
-    def set_values(self):
-        super().set_values()
-        self.env["ir.config_parameter"].sudo().set_param(
-            "wex_consent.reception_legal_text",
-            self.x_wex_consent_reception_legal_text or "",
-        )

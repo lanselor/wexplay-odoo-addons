@@ -40,7 +40,7 @@
                         </group>
                     </group>
                     <group>
-                        <field name="reception_legal_text" string="Texto legal de recepción" widget="text"/>
+                        <field name="reception_legal_text" string="Texto legal de recepción" widget="text" readonly="1"/>
                     </group>
                 </sheet>
             </form>

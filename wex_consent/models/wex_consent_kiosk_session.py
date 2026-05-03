@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import uuid
+from datetime import timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError
@@ -9,6 +10,7 @@ from odoo.exceptions import AccessError
 class WexConsentKioskSession(models.Model):
     _name = "wex.consent.kiosk.session"
     _description = "Sesión de kiosko de consentimientos"
+    _inherit = ["wex.consent.kiosk.access.mixin"]
     _order = "company_id, name"
 
     name = fields.Char(required=True)
@@ -40,52 +42,24 @@ class WexConsentKioskSession(models.Model):
     )
     reception_legal_text = fields.Text(
         compute="_compute_reception_legal_text",
-        inverse="_inverse_reception_legal_text",
+        readonly=True,
     )
 
     _sql_constraints = [
         ("wex_consent_kiosk_session_token_uniq", "unique(access_token)", "The kiosk token must be unique."),
     ]
 
-    @api.model
-    def _check_kiosk_access(self):
-        if not (
-            self.env.user.has_group("wex_consent.group_wex_consent_kiosk")
-            or self.env.user.has_group("wex_consent.group_wex_consent_manager")
-        ):
-            raise AccessError(_("No tienes permisos para operar el modo kiosko."))
+    _TOUCH_THROTTLE_SECONDS = 10
 
     @api.model
     def _check_company_access(self, company):
         if company not in self.env.companies:
             raise AccessError(_("No tienes acceso a la compañía solicitada."))
 
-    @api.depends_context("uid")
+    @api.depends("company_id", "company_id.x_wex_consent_reception_legal_text")
     def _compute_reception_legal_text(self):
-        legal_text = (
-            self.env["ir.config_parameter"].sudo().get_param(
-                "wex_consent.reception_legal_text"
-            )
-            or self._get_default_reception_legal_text()
-        )
         for rec in self:
-            rec.reception_legal_text = legal_text
-
-    def _inverse_reception_legal_text(self):
-        for rec in self:
-            self.env["ir.config_parameter"].sudo().set_param(
-                "wex_consent.reception_legal_text",
-                rec.reception_legal_text or self._get_default_reception_legal_text(),
-            )
-
-    @api.model
-    def _get_default_reception_legal_text(self):
-        return (
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-            "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris "
-            "nisi ut aliquip ex ea commodo consequat."
-        )
+            rec.reception_legal_text = rec.company_id.x_wex_consent_reception_legal_text
 
     @api.model
     def get_default_session(self, company_id=None):
@@ -141,11 +115,18 @@ class WexConsentKioskSession(models.Model):
 
     def touch(self, active_request_id=False):
         self._check_kiosk_access()
-        values = {
-            "state": "online",
-            "last_seen_at": fields.Datetime.now(),
-        }
-        if active_request_id is not False:
-            values["active_request_id"] = active_request_id
-        self.write(values)
+        now = fields.Datetime.now()
+        for session in self:
+            values = {}
+            if session.state != "online":
+                values["state"] = "online"
+            if (
+                not session.last_seen_at
+                or now - session.last_seen_at >= timedelta(seconds=self._TOUCH_THROTTLE_SECONDS)
+            ):
+                values["last_seen_at"] = now
+            if active_request_id is not False and session.active_request_id.id != active_request_id:
+                values["active_request_id"] = active_request_id
+            if values:
+                session.write(values)
         return True

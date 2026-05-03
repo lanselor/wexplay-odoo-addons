@@ -3,13 +3,13 @@
 import uuid
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import UserError
 
 
 class WexConsentRequest(models.Model):
     _name = "wex.consent.request"
     _description = "Solicitud de consentimiento"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "wex.consent.kiosk.access.mixin"]
     _order = "create_date asc, id asc"
 
     name = fields.Char(
@@ -80,14 +80,6 @@ class WexConsentRequest(models.Model):
     _sql_constraints = [
         ("wex_consent_request_token_uniq", "unique(token)", "The request token must be unique."),
     ]
-
-    @api.model
-    def _check_kiosk_access(self):
-        if not (
-            self.env.user.has_group("wex_consent.group_wex_consent_kiosk")
-            or self.env.user.has_group("wex_consent.group_wex_consent_manager")
-        ):
-            raise AccessError(_("No tienes permisos para operar el modo kiosko."))
 
     @api.model
     def _sanitize_signer_name(self, signer_name):
@@ -247,7 +239,6 @@ class WexConsentRequest(models.Model):
             confirmation_ok=confirmation_ok,
             signer_vat=signer_vat,
             consent_values=consent_values,
-            request=self,
         )
         self.write(
             {

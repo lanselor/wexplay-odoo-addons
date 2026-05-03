@@ -6,7 +6,7 @@ import logging
 import re
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import ValidationError, UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 class WexConsentDocument(models.Model):
     _name = "wex.consent.document"
     _description = "Documento de consentimiento"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "wex.consent.kiosk.access.mixin"]
     _order = "create_date desc, id desc"
 
     name = fields.Char(required=True, tracking=True)
@@ -111,21 +111,81 @@ class WexConsentDocument(models.Model):
         default="He revisado el dispositivo y todo está bien.",
     )
 
-    _sql_constraints = [
-        (
-            "wex_consent_document_unique_type_per_repair",
-            "unique(repair_order_id, document_type)",
-            "Solo puede existir un documento activo por tipo y reparación.",
-        ),
-    ]
+    def init(self):
+        self.env.cr.execute(
+            """
+            ALTER TABLE wex_consent_document
+            DROP CONSTRAINT IF EXISTS wex_consent_document_unique_type_per_repair
+            """
+        )
+        self.env.cr.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS wex_consent_document_active_type_per_repair_uniq
+                ON wex_consent_document (repair_order_id, document_type)
+             WHERE state != 'cancelled'
+            """
+        )
 
-    @api.model
-    def _check_kiosk_access(self):
-        if not (
-            self.env.user.has_group("wex_consent.group_wex_consent_kiosk")
-            or self.env.user.has_group("wex_consent.group_wex_consent_manager")
-        ):
-            raise AccessError(_("No tienes permisos para operar el modo kiosko."))
+    @api.constrains("repair_order_id", "document_type", "state")
+    def _check_unique_active_document_type_per_repair(self):
+        for rec in self.filtered(lambda document: document.state != "cancelled"):
+            rec._check_no_active_document_duplicate(exclude_id=rec.id)
+
+    def _check_no_active_document_duplicate(
+        self,
+        repair_order_id=False,
+        document_type=False,
+        state=False,
+        exclude_id=False,
+    ):
+        self.ensure_one()
+        target_repair_order_id = repair_order_id or self.repair_order_id.id
+        target_document_type = document_type or self.document_type
+        target_state = state or self.state
+        if target_state == "cancelled" or not target_repair_order_id or not target_document_type:
+            return
+
+        duplicate = self.search(
+            [
+                ("id", "!=", exclude_id or 0),
+                ("repair_order_id", "=", target_repair_order_id),
+                ("document_type", "=", target_document_type),
+                ("state", "!=", "cancelled"),
+            ],
+            limit=1,
+        )
+        if duplicate:
+            raise ValidationError(
+                _(
+                    "Ya existe un documento activo de %(doc_type)s para esta reparación."
+                )
+                % {
+                    "doc_type": self._get_document_type_label(target_document_type),
+                }
+            )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            pseudo_document = self.new(vals)
+            pseudo_document._check_no_active_document_duplicate(
+                repair_order_id=vals.get("repair_order_id"),
+                document_type=vals.get("document_type"),
+                state=vals.get("state") or "draft",
+                exclude_id=0,
+            )
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if {"repair_order_id", "document_type", "state"}.intersection(vals):
+            for rec in self:
+                rec._check_no_active_document_duplicate(
+                    repair_order_id=vals.get("repair_order_id") or rec.repair_order_id.id,
+                    document_type=vals.get("document_type") or rec.document_type,
+                    state=vals.get("state") or rec.state,
+                    exclude_id=rec.id,
+                )
+        return super().write(vals)
 
     @api.model
     def _validate_signature_image(self, signature_image):
@@ -140,18 +200,23 @@ class WexConsentDocument(models.Model):
         return signature_image
 
     @api.model
-    def _get_default_reception_legal_text(self):
-        return (
-            self.env["ir.config_parameter"].sudo().get_param(
-                "wex_consent.reception_legal_text"
-            )
-            or (
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris "
-                "nisi ut aliquip ex ea commodo consequat."
-            )
-        )
+    def _get_default_reception_legal_text(self, company=False):
+        company = company or self.env.company
+        return company.x_wex_consent_reception_legal_text
+
+    @api.model
+    def _is_placeholder_reception_legal_text(self, legal_text):
+        return "lorem ipsum" in (legal_text or "").strip().lower()
+
+    def _check_reception_legal_text_configured(self):
+        for rec in self.filtered(lambda document: document.document_type == "reception"):
+            legal_text = (rec.legal_text or "").strip()
+            if not legal_text or rec._is_placeholder_reception_legal_text(legal_text):
+                raise UserError(
+                    _(
+                        "Configura un texto legal de recepción válido antes de solicitar o registrar la firma."
+                    )
+                )
 
     @api.model
     def _get_mail_config(self):
@@ -263,14 +328,14 @@ class WexConsentDocument(models.Model):
                 if rec.state == "draft" and not rec.request_ids:
                     values.update(
                         {
-                            "allow_email_non_commercial": True,
-                            "allow_email_commercial": True,
-                            "allow_whatsapp_non_commercial": True,
-                            "allow_whatsapp_commercial": True,
-                            "warranty_conditions_accepted": True,
+                            "allow_email_non_commercial": False,
+                            "allow_email_commercial": False,
+                            "allow_whatsapp_non_commercial": False,
+                            "allow_whatsapp_commercial": False,
+                            "warranty_conditions_accepted": False,
                         }
                     )
-                values["legal_text"] = rec.legal_text or rec._get_default_reception_legal_text()
+                values["legal_text"] = rec.legal_text or rec._get_default_reception_legal_text(rec.company_id)
             rec.write(values)
         return True
 
@@ -287,6 +352,7 @@ class WexConsentDocument(models.Model):
             [
                 ("repair_order_id", "=", repair.id),
                 ("document_type", "=", document_type),
+                ("state", "!=", "cancelled"),
             ],
             limit=1,
         )
@@ -489,6 +555,7 @@ class WexConsentDocument(models.Model):
         for rec in self:
             if not rec.signature_image:
                 raise UserError(_("No se puede generar el PDF sin una firma capturada."))
+            rec._check_reception_legal_text_configured()
             if rec.pdf_file and not self.env.context.get("force_regenerate_consent_pdf"):
                 raise UserError(
                     _("El PDF firmado ya fue generado y no debe regenerarse desde la interfaz.")
@@ -518,9 +585,9 @@ class WexConsentDocument(models.Model):
         confirmation_ok=False,
         signer_vat=False,
         consent_values=None,
-        request=False,
     ):
         for rec in self:
+            rec._check_reception_legal_text_configured()
             clean_signature_image = rec._validate_signature_image(signature_image)
             values = {
                 "signer_name": signer_name or rec.partner_id.name,
@@ -570,6 +637,7 @@ class WexConsentDocument(models.Model):
                 _("Este documento ya está firmado. No se puede reenviar una firma ya cerrada.")
             )
         self.action_refresh_from_repair()
+        self._check_reception_legal_text_configured()
         active_request = self.request_ids.filtered(
             lambda request: request.state in ("queued", "presented")
         )[:1]
