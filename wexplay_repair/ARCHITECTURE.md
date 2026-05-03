@@ -73,6 +73,7 @@ Those belong in extender modules.
 - The main repair form inheritance is large and therefore more sensitive to upstream view changes.
 - There are historical backup files in the module tree that should not be treated as live source.
 - The SAT invoice report still resolves repairs directly in QWeb instead of receiving fully prepared values.
+- SAT DMS route helpers live in `wexplay_repair`, while part of the DMS company configuration still uses fields introduced by `wex_consent`. This is accepted for now because the repair/consent scope is stable. See `docs/DMS_ROUTE_TECHNICAL_DEBT.md`.
 
 ## Printing Notes
 

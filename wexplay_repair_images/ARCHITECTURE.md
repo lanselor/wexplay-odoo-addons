@@ -47,7 +47,35 @@ Este módulo depende de:
 - `wexplay_repair`
 - `wexplay_image_core`
 - módulo DMS/OCA usado por el proyecto
-- `wex_consent`, porque hoy es quien introduce la notebook SAT con pestañas de firmas e imágenes
+- `wex_consent`, porque hoy aporta parte de la configuración DMS SAT usada por las rutas compartidas
+
+### Deuda pendiente sobre consentimientos
+
+La dependencia con `wex_consent` se mantiene por compatibilidad funcional actual,
+pero no debe crecer como acoplamiento conceptual.
+
+Motivos actuales:
+
+- `wex_consent` define campos de configuración DMS de compañía usados hoy por
+  la estructura documental SAT.
+- `wexplay_repair` centraliza los helpers que crean rutas como
+  `SAT/<NUMERO_SAT>/IMAGES` y `SAT/<NUMERO_SAT>/SIGNATURES`.
+- `security/security.xml` hace que usuarios de consentimientos hereden grupos
+  de imágenes para operar el flujo SAT completo.
+
+Pendiente para una iteración futura:
+
+- decidir si la configuración/ruta DMS SAT debe vivir en un módulo base
+  compartido;
+- mover la vinculación de grupos a un módulo de configuración/glue si el uso de
+  imágenes debe independizarse de consentimientos;
+- permitir instalar imágenes SAT sin arrastrar el flujo de firmas cuando el caso
+  de negocio lo requiera.
+
+Hasta tomar esa decisión, no se debe añadir más lógica de consentimientos dentro
+de `wexplay_repair_images`.
+
+La deuda queda documentada como aceptada en `docs/DMS_ROUTE_TECHNICAL_DEBT.md`.
 
 ---
 
