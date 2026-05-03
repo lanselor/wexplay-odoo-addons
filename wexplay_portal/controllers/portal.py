@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from werkzeug.exceptions import NotFound
 
@@ -133,9 +133,11 @@ class WexplayCustomerPortal(CustomerPortal):
         repair_model = request.env["repair.order"]
         equipment_fields = [
             field_name
-            for field_name in ("x_brand", "x_model")
+            for field_name in ("x_brand", "x_model", "x_device_type")
             if field_name in repair_model._fields
         ]
+        if "product_id" in repair_model._fields:
+            equipment_fields.append("product_id")
         search_terms = [term for term in (search or "").split() if term]
         if not search_terms or not equipment_fields:
             return []
@@ -161,22 +163,8 @@ class WexplayCustomerPortal(CustomerPortal):
             "sat_reference": [("name", "ilike", search)],
         }
         if search_in == "equipment":
-            return []
+            return self._get_portal_repair_equipment_search_domain(search)
         return search_domains.get(search_in, [("x_imei", "ilike", search)])
-
-    def _match_portal_repair_equipment_search(self, repair, search):
-        search_terms = [term.lower() for term in (search or "").split() if term]
-        if not search_terms:
-            return True
-
-        searchable_chunks = [
-            repair._get_portal_brand_label() or "",
-            repair._get_portal_model_label() or "",
-            repair._get_portal_product_label() or "",
-            repair._get_portal_device_type_label() or "",
-        ]
-        searchable_text = " ".join(searchable_chunks).lower()
-        return all(term in searchable_text for term in search_terms)
 
     @http.route(
         ["/my/repairs", "/my/repairs/page/<int:page>"],
@@ -203,39 +191,21 @@ class WexplayCustomerPortal(CustomerPortal):
         search_domain = self._get_portal_repair_search_domain(search_in, search)
         url_args = {"filterby": filterby, "search": search, "search_in": search_in}
 
-        if search and search_in == "equipment":
-            visible_repairs = repair_model.search(
-                base_domain,
-                order="create_date desc, id desc",
-            )
-            filtered_repairs = visible_repairs.filtered(
-                lambda repair: self._match_portal_repair_equipment_search(repair, search)
-            )
-            repairs_count = len(filtered_repairs)
-            pager = portal_pager(
-                url="/my/repairs",
-                url_args=url_args,
-                total=repairs_count,
-                page=page,
-                step=self._items_per_page,
-            )
-            repairs = filtered_repairs[pager["offset"] : pager["offset"] + self._items_per_page]
-        else:
-            domain = expression.AND([base_domain, search_domain])
-            repairs_count = repair_model.search_count(domain)
-            pager = portal_pager(
-                url="/my/repairs",
-                url_args=url_args,
-                total=repairs_count,
-                page=page,
-                step=self._items_per_page,
-            )
-            repairs = repair_model.search(
-                domain,
-                order="create_date desc, id desc",
-                limit=self._items_per_page,
-                offset=pager["offset"],
-            )
+        domain = expression.AND([base_domain, search_domain])
+        repairs_count = repair_model.search_count(domain)
+        pager = portal_pager(
+            url="/my/repairs",
+            url_args=url_args,
+            total=repairs_count,
+            page=page,
+            step=self._items_per_page,
+        )
+        repairs = repair_model.search(
+            domain,
+            order="create_date desc, id desc",
+            limit=self._items_per_page,
+            offset=pager["offset"],
+        )
 
         values.update(
             {
@@ -319,13 +289,16 @@ class WexplayCustomerPortal(CustomerPortal):
             raise NotFound()
 
         filename = image.dms_file_name or image.name or f"repair-image-{image.id}"
+        ascii_filename = filename.encode("ascii", "ignore").decode("ascii") or "repair-image"
+        disposition = "attachment" if is_download else "inline"
+        content_disposition = (
+            "%s; filename=\"%s\"; filename*=UTF-8''%s"
+            % (disposition, ascii_filename.replace('"', ""), quote(filename, safe=""))
+        )
         headers = [
             ("Content-Type", dms_file.mimetype or "application/octet-stream"),
             ("Cache-Control", "private, no-store, max-age=0" if is_download else "private, max-age=300, must-revalidate"),
             ("X-Content-Type-Options", "nosniff"),
+            ("Content-Disposition", content_disposition),
         ]
-        if is_download:
-            headers.append(("Content-Disposition", f'attachment; filename="{filename}"'))
-        else:
-            headers.append(("Content-Disposition", f'inline; filename="{filename}"'))
         return request.make_response(base64.b64decode(binary), headers)

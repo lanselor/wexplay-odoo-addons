@@ -12,6 +12,16 @@ En esta primera fase solo cubre el portal B2B autenticado para clientes empresa:
 
 No implementa acceso por token, vistas publicas ni logica B2C.
 
+## Documentacion de arquitectura
+
+Las decisiones mas importantes de negocio, seguridad, limites de alcance y
+restricciones del portal se documentan en:
+
+- `ARCHITECTURE.md`
+
+Ese documento debe tratarse como la referencia principal antes de abrir nuevas
+iteraciones del portal.
+
 ## Dependencias
 
 - `portal`
