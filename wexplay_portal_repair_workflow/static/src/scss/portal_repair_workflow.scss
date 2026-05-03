@@ -1,0 +1,216 @@
+.wex_portal_budget_page {
+    color: #20313f;
+}
+
+.wex_portal_budget_result {
+    border-radius: 14px;
+}
+
+.wex_portal_budget_header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.wex_portal_budget_eyebrow {
+    display: inline-flex;
+    margin-bottom: 0.45rem;
+    color: #6a7b8b;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wex_portal_budget_header h1 {
+    margin: 0 0 0.45rem;
+    color: #20313f;
+    font-size: 2.35rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.12;
+}
+
+.wex_portal_budget_header p {
+    max-width: 44rem;
+    margin: 0;
+    color: #607284;
+    line-height: 1.65;
+}
+
+.wex_portal_budget_state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.62rem 1rem;
+    border: 2px solid #d9cdea;
+    border-radius: 999px;
+    background: #f3eef9;
+    color: #5f4f81;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.wex_portal_budget_state--accepted {
+    border-color: #a9d7b5;
+    background: #e9f7ee;
+    color: #165b2a;
+}
+
+.wex_portal_budget_state--rejected {
+    border-color: #efb8c1;
+    background: #fdecef;
+    color: #8a2332;
+}
+
+.wex_portal_budget_state--pending {
+    border-color: #ead6a4;
+    background: #fff8e7;
+    color: #7a5a14;
+}
+
+.wex_portal_budget_card {
+    border: 2px solid #ddd7e8;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 12px 28px -24px rgba(49, 78, 102, 0.45);
+}
+
+.wex_portal_budget_card .card-body {
+    padding: 1.25rem;
+}
+
+.wex_portal_budget_card h2 {
+    margin: 0 0 1rem;
+    color: #20313f;
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.wex_portal_budget_dl {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.8fr) minmax(0, 1fr);
+    gap: 0.65rem 1rem;
+    margin: 0;
+}
+
+.wex_portal_budget_dl dt {
+    color: #6a7b8b;
+    font-weight: 800;
+}
+
+.wex_portal_budget_dl dd {
+    margin: 0;
+    color: #20313f;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.wex_portal_budget_table {
+    margin-bottom: 0;
+}
+
+.wex_portal_budget_table thead th {
+    border-bottom: 2px solid #ddd5ea;
+    background: #f7f3fb;
+    color: #20313f;
+}
+
+.wex_portal_budget_table td {
+    border-color: #e1e8ee;
+}
+
+.wex_portal_budget_totals {
+    display: grid;
+    justify-content: end;
+    gap: 0.45rem;
+    margin-top: 1rem;
+}
+
+.wex_portal_budget_totals div {
+    display: grid;
+    grid-template-columns: 8rem 9rem;
+    gap: 1rem;
+    align-items: center;
+}
+
+.wex_portal_budget_totals span {
+    color: #607284;
+    font-weight: 700;
+}
+
+.wex_portal_budget_totals strong {
+    text-align: right;
+}
+
+.wex_portal_budget_total_final {
+    padding-top: 0.55rem;
+    border-top: 2px solid #ddd7e8;
+    font-size: 1.2rem;
+}
+
+.wex_portal_budget_text {
+    color: #20313f;
+    line-height: 1.7;
+}
+
+.wex_portal_budget_text p:last-child {
+    margin-bottom: 0;
+}
+
+.wex_portal_budget_actions {
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 15;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 0.85rem;
+    border: 2px solid #d9cdea;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 -16px 34px -30px rgba(49, 78, 102, 0.7);
+    backdrop-filter: blur(10px);
+}
+
+.wex_portal_budget_actions .btn {
+    min-height: 44px;
+    font-weight: 800;
+}
+
+.wex_portal_budget_modal {
+    border: 2px solid #d9cdea;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+@media (max-width: 991.98px) {
+    .wex_portal_budget_header {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wex_portal_budget_header h1 {
+        font-size: 1.85rem;
+    }
+
+    .wex_portal_budget_dl {
+        grid-template-columns: 1fr;
+    }
+
+    .wex_portal_budget_dl dt {
+        margin-top: 0.35rem;
+    }
+
+    .wex_portal_budget_totals,
+    .wex_portal_budget_totals div,
+    .wex_portal_budget_actions .btn {
+        width: 100%;
+    }
+}

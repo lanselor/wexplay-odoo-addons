@@ -271,6 +271,38 @@
         </t>
     </template>
 
+    <template id="portal_repair_context_bar" name="Repair Context Bar">
+        <t t-set="context_bar" t-value="repair._get_portal_repair_context_bar_values()"/>
+        <div class="wex_portal_repair_context_bar">
+            <div class="wex_portal_repair_context_inner">
+                <div class="wex_portal_repair_context_main">
+                    <div class="wex_portal_repair_context_item wex_portal_repair_context_item--strong">
+                        <span>SAT</span>
+                        <strong><t t-out="context_bar['repair_name']"/></strong>
+                    </div>
+                    <div class="wex_portal_repair_context_item" t-if="context_bar['customer_reference']">
+                        <span>Referencia cliente</span>
+                        <strong><t t-out="context_bar['customer_reference']"/></strong>
+                    </div>
+                    <div class="wex_portal_repair_context_item">
+                        <span>Dispositivo</span>
+                        <strong><t t-out="context_bar['device_label']"/></strong>
+                    </div>
+                    <div t-att-class="'wex_portal_repair_context_status wex_portal_repair_context_status--%s' % context_bar['status']['key']">
+                        <span><t t-out="context_bar['status']['label']"/></span>
+                    </div>
+                </div>
+                <div class="wex_portal_repair_context_actions" t-if="context_bar['action_url']">
+                    <a t-att-href="context_bar['action_url']"
+                       class="btn btn-primary wex_portal_repair_context_cta">
+                        <t t-out="context_bar['action_label']"/>
+                        <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <template id="portal_repair_page" name="Repair Detail">
         <t t-call="portal.portal_layout">
             <t t-set="status_steps" t-value="repair._get_portal_status_steps()"/>
@@ -282,6 +314,8 @@
             <t t-set="image_values" t-value="repair._get_portal_image_values(tag_code=image_tag) if 'x_image_ids' in repair._fields else []"/>
 
             <div class="o_portal_wrap">
+                <t t-call="wexplay_portal.portal_repair_context_bar"/>
+
                 <div class="d-flex justify-content-between align-items-start mb-4">
                     <div>
                         <h1 class="mb-2 wex_portal_repair_title">
@@ -427,6 +461,7 @@
                                     </h5>
                                     <a href="/my/invoices" class="btn btn-outline-secondary wex_portal_invoice_cta">
                                         Ver todas mis facturas
+                                        <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
                                     </a>
                                 </div>
                                 <t t-if="invoice_values">
@@ -461,6 +496,7 @@
                                                     <td class="text-end">
                                                         <a t-att-href="invoice_item['portal_url']" class="btn btn-outline-secondary btn-sm">
                                                             Ver factura
+                                                            <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -473,6 +509,7 @@
                                         No hay facturas relacionadas visibles desde este SAT.
                                     </div>
                                 </t>
+                                <t t-call="wexplay_portal.portal_repair_billing_extra"/>
                             </div>
                         </div>
                     </div>
@@ -787,4 +824,6 @@
             </div>
         </t>
     </template>
+
+    <template id="portal_repair_billing_extra" name="Repair Billing Extra"/>
 </odoo>

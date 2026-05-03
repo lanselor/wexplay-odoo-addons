@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_portal_repair_event_list" model="ir.ui.view">
+        <field name="name">wex.portal.repair.event.list</field>
+        <field name="model">wex.portal.repair.event</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-warning="handled_state == 'pending'" decoration-info="handled_state == 'in_progress'" decoration-muted="handled_state in ('done', 'ignored')">
+                <field name="event_date" string="Fecha"/>
+                <field name="pending_days" string="Días"/>
+                <field name="event_type" string="Evento" widget="badge"/>
+                <field name="handled_state" string="Gestión" widget="badge"/>
+                <field name="repair_id" string="SAT"/>
+                <field name="sale_order_id" string="Cotización"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="user_id" string="Usuario portal"/>
+                <field name="responsible_user_id" string="Responsable SAT"/>
+                <field name="amount_total" string="Importe"/>
+                <field name="repair_schedule_date" string="Salida prevista"/>
+                <button name="action_open_repair" type="object" string="Abrir SAT" class="btn btn-secondary"/>
+                <button name="action_mark_in_progress" type="object" string="En gestión" class="btn btn-secondary" invisible="handled_state != 'pending'"/>
+                <button name="action_mark_done" type="object" string="Hecho" class="btn btn-primary" invisible="handled_state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_portal_repair_event_form" model="ir.ui.view">
+        <field name="name">wex.portal.repair.event.form</field>
+        <field name="model">wex.portal.repair.event</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <header>
+                    <button name="action_mark_in_progress" type="object" string="Marcar en gestión" class="btn-primary" invisible="handled_state != 'pending'"/>
+                    <button name="action_mark_done" type="object" string="Marcar hecho" class="btn-primary" invisible="handled_state == 'done'"/>
+                    <button name="action_ignore" type="object" string="Sin acción" invisible="handled_state == 'ignored'"/>
+                    <button name="action_reset_pending" type="object" string="Reabrir" invisible="handled_state == 'pending'"/>
+                    <field name="handled_state" widget="statusbar" statusbar_visible="pending,in_progress,done,ignored"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_repair" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Abrir SAT</span>
+                            </div>
+                        </button>
+                        <button name="action_open_sale_order" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not sale_order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Abrir cotización</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Evento">
+                            <field name="name" readonly="1"/>
+                            <field name="event_type" readonly="1"/>
+                            <field name="event_date" readonly="1"/>
+                            <field name="pending_days" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Gestión interna">
+                            <field name="handled_state" readonly="1"/>
+                            <field name="handled_by_id" readonly="1"/>
+                            <field name="handled_at" readonly="1"/>
+                            <field name="responsible_user_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Contexto SAT">
+                            <field name="repair_id" readonly="1"/>
+                            <field name="repair_state" readonly="1"/>
+                            <field name="budget_stage" readonly="1"/>
+                            <field name="repair_schedule_date" readonly="1"/>
+                        </group>
+                        <group string="Cliente y presupuesto">
+                            <field name="partner_id" readonly="1"/>
+                            <field name="commercial_partner_id" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="sale_order_state" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_total" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note" placeholder="Añade una nota interna de seguimiento si hace falta."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_portal_repair_event_search" model="ir.ui.view">
+        <field name="name">wex.portal.repair.event.search</field>
+        <field name="model">wex.portal.repair.event</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="repair_id" string="SAT"/>
+                <field name="sale_order_id" string="Cotización"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="commercial_partner_id" string="Empresa"/>
+                <field name="user_id" string="Usuario portal"/>
+                <field name="responsible_user_id" string="Responsable SAT"/>
+                <filter name="pending" string="Pendientes" domain="[('handled_state', '=', 'pending')]"/>
+                <filter name="in_progress" string="En gestión" domain="[('handled_state', '=', 'in_progress')]"/>
+                <separator/>
+                <filter name="budget_accepted" string="Aceptaciones" domain="[('event_type', '=', 'budget_accepted')]"/>
+                <filter name="budget_rejected" string="Rechazos" domain="[('event_type', '=', 'budget_rejected')]"/>
+                <filter name="budget_viewed" string="Presupuestos vistos" domain="[('event_type', '=', 'budget_viewed')]"/>
+                <separator/>
+                <filter name="group_event_type" string="Agrupar por evento" context="{'group_by': 'event_type'}"/>
+                <filter name="group_handled_state" string="Agrupar por gestión" context="{'group_by': 'handled_state'}"/>
+                <filter name="group_responsible" string="Agrupar por responsable" context="{'group_by': 'responsible_user_id'}"/>
+                <filter name="group_customer" string="Agrupar por cliente" context="{'group_by': 'commercial_partner_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_wex_portal_repair_event" model="ir.actions.act_window">
+        <field name="name">Actividad portal SAT</field>
+        <field name="res_model">wex.portal.repair.event</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_portal_repair_event_search"/>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay actividad portal SAT pendiente.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_wex_portal_repair_activity_root"
+              name="Portal clientes"
+              parent="repair.menu_repair_order"
+              sequence="80"
+              groups="base.group_user"/>
+
+    <menuitem id="menu_wex_portal_repair_event"
+              name="Actividad portal SAT"
+              parent="menu_wex_portal_repair_activity_root"
+              action="action_wex_portal_repair_event"
+              sequence="10"
+              groups="base.group_user"/>
+</odoo>

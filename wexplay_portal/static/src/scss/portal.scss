@@ -8,6 +8,9 @@
     --wex-portal-secondary-soft: #edf8f1;
     --wex-portal-secondary-border: #c3e6d1;
     --wex-portal-ink: #20313f;
+    --wex-portal-sticky-top: 4.75rem;
+    --wex-portal-panel-border: #e2dbea;
+    --wex-portal-panel-shadow: 0 10px 24px -24px rgba(49, 78, 102, 0.42);
 }
 
 .wex_portal_filterbar {
@@ -82,15 +85,20 @@
 }
 
 .wex_portal_panel {
-    border: 2px solid #ddd7e8;
-    border-radius: 18px;
-    background:
-        linear-gradient(180deg, rgba(252, 250, 254, 0.98) 0%, rgba(247, 244, 251, 0.98) 100%);
-    box-shadow: 0 12px 28px -24px rgba(49, 78, 102, 0.45);
+    border: 1px solid var(--wex-portal-panel-border);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: var(--wex-portal-panel-shadow);
 }
 
 .wex_portal_panel .card-body {
-    padding: 1.35rem 1.45rem;
+    padding: 1.25rem 1.35rem;
+}
+
+.wex_portal_panel .card-title {
+    color: var(--wex-portal-ink);
+    font-size: 1.1rem;
+    font-weight: 800;
 }
 
 .wex_portal_card_icon {
@@ -212,19 +220,17 @@
 }
 
 .wex_portal_panel--table {
-    background: #fbfcfd;
+    background: #fff;
 }
 
 .wex_portal_panel--warranty {
-    border-color: var(--wex-portal-primary-border);
-    background:
-        linear-gradient(180deg, rgba(250, 247, 255, 0.98) 0%, rgba(245, 242, 250, 0.98) 100%);
+    border-color: var(--wex-portal-panel-border);
+    background: #fff;
 }
 
 .wex_portal_panel--diagnosis {
-    border-color: var(--wex-portal-primary-border);
-    background:
-        linear-gradient(180deg, rgba(250, 246, 255, 0.98) 0%, rgba(244, 238, 251, 0.98) 100%);
+    border-color: var(--wex-portal-panel-border);
+    background: #fff;
 }
 
 .wex_portal_filtertabs {
@@ -232,7 +238,7 @@
     flex-wrap: wrap;
     gap: 0.35rem;
     padding: 0.9rem 1rem 0;
-    background: linear-gradient(180deg, #faf7fd 0%, #f5f0fb 100%);
+    background: #fff;
 }
 
 .wex_portal_filtertab {
@@ -242,10 +248,10 @@
     min-width: 138px;
     min-height: 46px;
     padding: 0.7rem 1rem;
-    border: 2px solid var(--wex-portal-primary-border);
+    border: 1px solid var(--wex-portal-primary-border);
     border-bottom: 0;
-    border-radius: 16px 16px 0 0;
-    background: #f3eef8;
+    border-radius: 10px 10px 0 0;
+    background: #f8f5fb;
     color: #66577f;
     font-weight: 700;
     text-decoration: none;
@@ -268,8 +274,8 @@
 }
 
 .wex_portal_repair_table thead th {
-    border-bottom: 2px solid #ddd5ea;
-    background: rgba(243, 238, 248, 0.75);
+    border-bottom: 1px solid #ddd5ea;
+    background: #f8f5fb;
     color: var(--wex-portal-ink);
     font-size: 0.95rem;
 }
@@ -280,12 +286,22 @@
 }
 
 .wex_portal_section_title {
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid #ebe5f1;
     font-size: 0.9rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #6c757d;
+}
+
+.wex_portal_subsection_title {
+    color: #6c757d;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .wex_portal_stepper {
@@ -298,7 +314,7 @@
 .wex_portal_step {
     position: relative;
     padding: 0.55rem 0.92rem;
-    border: 2px solid #ddd6ea;
+    border: 1px solid #ddd6ea;
     border-radius: 999px;
     background: #faf8fc;
     color: #645c73;
@@ -326,7 +342,7 @@
     display: inline-flex;
     align-items: center;
     padding: 0.45rem 0.8rem;
-    border: 2px solid var(--wex-portal-primary-border);
+    border: 1px solid var(--wex-portal-primary-border);
     border-radius: 999px;
     background: var(--wex-portal-primary-soft);
     color: var(--wex-portal-primary-dark);
@@ -340,18 +356,16 @@
     height: 100%;
     min-height: 220px;
     padding: 1.15rem 1.2rem;
-    border: 2px solid #e0d8ec;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e0d8ec;
+    border-radius: 12px;
+    background: #fff;
 }
 
 .wex_portal_focus_block--diagnosis {
-    border-color: var(--wex-portal-primary-border);
+    border-color: #d9cdea;
     min-height: 295px;
-    background: linear-gradient(180deg, #ffffff 0%, #faf6ff 100%);
-    box-shadow:
-        inset 0 0 0 1px rgba(166, 143, 205, 0.06),
-        0 16px 30px -30px rgba(166, 143, 205, 0.42);
+    background: #fff;
+    box-shadow: none;
 }
 
 .wex_portal_focus_label {
@@ -408,7 +422,7 @@
     flex-wrap: wrap;
     gap: 0.35rem;
     padding: 0.3rem 0 0;
-    border-bottom: 2px solid #e0d8ec;
+    border-bottom: 1px solid #e0d8ec;
 }
 
 .wex_portal_image_filter {
@@ -416,10 +430,10 @@
     align-items: center;
     gap: 0.45rem;
     padding: 0.7rem 1rem;
-    border: 2px solid var(--wex-portal-primary-border);
+    border: 1px solid var(--wex-portal-primary-border);
     border-bottom: 0;
-    border-radius: 16px 16px 0 0;
-    background: #f5f0fb;
+    border-radius: 10px 10px 0 0;
+    background: #f8f5fb;
     color: #62557a;
     font-size: 0.92rem;
     font-weight: 700;
@@ -464,8 +478,8 @@
     min-height: 100%;
     width: 100%;
     padding: 0;
-    border: 2px solid #d8e2ea;
-    border-radius: 18px;
+    border: 1px solid #d8e2ea;
+    border-radius: 12px;
     background: #fff;
     box-shadow: 0 10px 24px -24px rgba(49, 78, 102, 0.55);
     color: inherit;
@@ -476,9 +490,9 @@
 .wex_portal_invoice_cta {
     min-height: 44px;
     padding: 0.65rem 1rem;
-    border-width: 2px;
+    border-width: 1px;
     border-color: var(--wex-portal-primary-border);
-    background: var(--wex-portal-primary-soft);
+    background: #fff;
     color: var(--wex-portal-primary-dark);
     font-size: 0.95rem;
     font-weight: 700;
@@ -605,6 +619,115 @@
     color: #243746;
 }
 
+.wex_portal_repair_context_bar {
+    position: sticky;
+    top: var(--wex-portal-sticky-top);
+    z-index: 20;
+    width: 100vw;
+    margin: 0 0 1rem calc(50% - 50vw);
+    border-top: 1px solid #e8e1f0;
+    border-bottom: 1px solid #d9cdea;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 12px 22px -22px rgba(49, 78, 102, 0.7);
+}
+
+.wex_portal_repair_context_inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0.7rem 1rem;
+}
+
+.wex_portal_repair_context_main {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.wex_portal_repair_context_item,
+.wex_portal_repair_context_status {
+    min-height: 42px;
+}
+
+.wex_portal_repair_context_item {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 22rem;
+    padding: 0.25rem 1rem;
+    border-right: 1px solid #e0d8ec;
+}
+
+.wex_portal_repair_context_item span {
+    color: #6a7b8b;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.wex_portal_repair_context_item strong {
+    overflow: hidden;
+    color: var(--wex-portal-ink);
+    font-size: 1.1rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wex_portal_repair_context_item--strong strong {
+    color: #5f4f81;
+}
+
+.wex_portal_repair_context_status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.52rem 0.9rem;
+    border: 1px solid var(--wex-portal-primary-border);
+    border-radius: 6px;
+    background: #fbf9fd;
+    color: #5f4f81;
+    font-size: 1.04rem;
+    font-weight: 800;
+}
+
+.wex_portal_repair_context_status--accepted {
+    border-color: #a9d7b5;
+    background: #e9f7ee;
+    color: #165b2a;
+}
+
+.wex_portal_repair_context_status--rejected {
+    border-color: #efb8c1;
+    background: #fdecef;
+    color: #8a2332;
+}
+
+.wex_portal_repair_context_status--pending {
+    border-color: #ead6a4;
+    background: #fff8e7;
+    color: #7a5a14;
+}
+
+.wex_portal_repair_context_actions {
+    flex: 0 0 auto;
+}
+
+.wex_portal_repair_context_cta {
+    min-height: 42px;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 1.04rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 @media (max-width: 767.98px) {
     .wex_portal_filtertabs {
         padding: 0.8rem 0.8rem 0;
@@ -634,6 +757,11 @@
     .wex_portal_image_modal_preview {
         min-height: 260px;
     }
+
+    .wex_portal_repair_context_item {
+        max-width: 100%;
+        width: 100%;
+    }
 }
 
 @media (max-width: 1199.98px) {
@@ -645,6 +773,16 @@
 @media (max-width: 991.98px) {
     .wex_portal_gallery {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wex_portal_repair_context_inner {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .wex_portal_repair_context_actions,
+    .wex_portal_repair_context_cta {
+        width: 100%;
     }
 }
 

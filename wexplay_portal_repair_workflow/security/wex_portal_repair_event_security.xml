@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="rule_wex_portal_repair_event_company" model="ir.rule">
+        <field name="name">Actividad portal SAT por compañía</field>
+        <field name="model_id" ref="model_wex_portal_repair_event"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>

@@ -254,6 +254,33 @@ class RepairOrder(models.Model):
             )
         return values
 
+    def _get_portal_repair_context_bar_values(self):
+        self.ensure_one()
+        return {
+            "repair_name": self.name or "-",
+            "customer_reference": self.x_customer_reference or "",
+            "device_label": (
+                " / ".join(
+                    value
+                    for value in (
+                        self._get_portal_brand_label(),
+                        self._get_portal_model_label(),
+                    )
+                    if value
+                )
+                or self._get_portal_product_label()
+                or self._get_portal_device_type_label()
+                or "-"
+            ),
+            "status": {
+                "key": "service",
+                "label": self._get_portal_status_label(),
+                "message": "",
+            },
+            "action_url": "",
+            "action_label": "",
+        }
+
     def _get_portal_warranty_values(self):
         self.ensure_one()
         if "x_show_warranty_status" not in self._fields or not self.x_show_warranty_status:

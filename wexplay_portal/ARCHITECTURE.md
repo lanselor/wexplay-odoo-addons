@@ -252,6 +252,19 @@ La ficha SAT debe aportar contexto real para cliente empresa:
 - acceso a facturacion relacionada
 - fotografias SAT
 
+La ficha SAT incluye una barra contextual sticky propia del portal base para
+mantener visibles durante el scroll:
+
+- acceso a `Mi cuenta`
+- referencia SAT
+- referencia cliente si existe
+- dispositivo
+- estado principal visible para el cliente
+
+Los modulos puente pueden extender esa barra para anadir acciones especificas,
+pero la barra base no debe depender de flujos concretos como presupuesto,
+imagenes o mantenimiento IT.
+
 ---
 
 ## Facturacion

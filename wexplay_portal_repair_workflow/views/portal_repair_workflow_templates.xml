@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_repair_context_bar_budget_action"
+              inherit_id="wexplay_portal.portal_repair_context_bar"
+              priority="40">
+        <xpath expr="//div[hasclass('wex_portal_repair_context_actions')]" position="replace">
+            <div class="wex_portal_repair_context_actions"
+                 t-if="context_bar.get('show_budget_action') and page_name != 'repair_budget'">
+                <a t-att-href="context_bar['budget_url']"
+                   class="btn btn-primary wex_portal_repair_context_cta">
+                    Revisar presupuesto
+                    <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_repair_billing_extra_quotations"
+              inherit_id="wexplay_portal.portal_repair_billing_extra"
+              priority="45">
+        <xpath expr="." position="inside">
+            <t t-set="quotation_values" t-value="repair._get_portal_related_quotation_values()"/>
+            <div class="wex_portal_related_quotes mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="wex_portal_subsection_title mb-0">
+                        Cotizaciones relacionadas
+                    </h6>
+                </div>
+                <t t-if="quotation_values">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Cotización</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Importe</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="quotation_values" t-as="quotation_item">
+                                    <td class="fw-semibold">
+                                        <t t-out="quotation_item['name']"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="quotation_item['date']">
+                                            <span t-out="quotation_item['date']" t-options="{'widget': 'date'}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                    <td><t t-out="quotation_item['state_label'] or '-'"/></td>
+                                    <td class="text-end">
+                                        <span t-out="quotation_item['amount_total']"
+                                              t-options="{'widget': 'monetary', 'display_currency': quotation_item['currency']}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <a t-att-href="quotation_item['portal_url']" class="btn btn-outline-secondary btn-sm">
+                                            Ver cotización
+                                            <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-light mb-0">
+                        No hay cotizaciones relacionadas visibles desde este SAT.
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_breadcrumbs_repair_budget"
+              inherit_id="portal.portal_breadcrumbs"
+              priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'repair_budget'" class="breadcrumb-item">
+                <a href="/my/repairs">Servicio Técnico</a>
+            </li>
+            <li t-if="page_name == 'repair_budget'" class="breadcrumb-item">
+                <a t-att-href="'/my/repairs/%s' % repair.id">
+                    <t t-out="repair.name"/>
+                </a>
+            </li>
+            <li t-if="page_name == 'repair_budget'" class="breadcrumb-item active">
+                Presupuesto
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_repair_budget_page" name="Resumen de presupuesto SAT">
+        <t t-call="portal.portal_layout">
+            <t t-set="status" t-value="budget_values['status']"/>
+            <div class="o_portal_wrap wex_portal_budget_page">
+                <t t-call="wexplay_portal.portal_repair_context_bar"/>
+
+                <div t-if="result == 'accepted'" class="alert alert-success wex_portal_budget_result" role="status">
+                    Presupuesto aceptado correctamente.
+                </div>
+                <div t-if="result == 'rejected'" class="alert alert-danger wex_portal_budget_result" role="status">
+                    Presupuesto rechazado correctamente.
+                </div>
+                <div t-if="result == 'error'" class="alert alert-warning wex_portal_budget_result" role="alert">
+                    No se ha podido completar la accion. Revisa el estado del presupuesto o contacta con Wexplay.
+                </div>
+
+                <div class="wex_portal_budget_header">
+                    <div>
+                        <span class="wex_portal_budget_eyebrow">Resumen de presupuesto</span>
+                        <h1>Decide sobre la reparacion</h1>
+                        <p>
+                            Revisa los datos principales del SAT y el importe antes de aceptar o rechazar el presupuesto.
+                        </p>
+                    </div>
+                    <span t-att-class="'wex_portal_budget_state wex_portal_budget_state--%s' % status['key']">
+                        <t t-out="status['label']"/>
+                    </span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-xl-4">
+                        <div class="card h-100 wex_portal_budget_card">
+                            <div class="card-body">
+                                <h2>Datos del SAT</h2>
+                                <dl class="wex_portal_budget_dl">
+                                    <dt>Numero de SAT</dt>
+                                    <dd><t t-out="repair.name or '-'"/></dd>
+                                    <dt>Referencia cliente</dt>
+                                    <dd><t t-out="repair.x_customer_reference or '-'"/></dd>
+                                    <dt>Fecha de alta</dt>
+                                    <dd>
+                                        <span t-field="repair.create_date" t-options="{'widget': 'datetime'}"/>
+                                    </dd>
+                                    <dt>Dispositivo</dt>
+                                    <dd><t t-out="budget_values['device_label']"/></dd>
+                                    <dt>IMEI / Serie</dt>
+                                    <dd><t t-out="repair.x_imei or '-'"/></dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-8">
+                        <div class="card h-100 wex_portal_budget_card">
+                            <div class="card-body">
+                                <h2>Piezas y servicios</h2>
+                                <t t-if="budget_values['line_values']">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle wex_portal_budget_table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Concepto</th>
+                                                    <th class="text-end">Cantidad</th>
+                                                    <th class="text-end">Precio</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="budget_values['line_values']" t-as="line">
+                                                    <td>
+                                                        <div class="fw-semibold"><t t-out="line['name'] or '-'"/></div>
+                                                        <div class="small text-muted"><t t-out="line['description'] or '-'"/></div>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-out="line['quantity']"/>
+                                                        <span t-if="line['uom']" class="text-muted"><t t-out="line['uom']"/></span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-out="line['price_unit']"
+                                                              t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/>
+                                                    </td>
+                                                    <td class="text-end fw-semibold">
+                                                        <span t-out="line['subtotal']"
+                                                              t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="wex_portal_budget_totals">
+                                        <div>
+                                            <span>Base imponible</span>
+                                            <strong t-out="budget_values['amount_untaxed']"
+                                                    t-options="{'widget': 'monetary', 'display_currency': budget_values['currency']}"/>
+                                        </div>
+                                        <div>
+                                            <span>Impuestos</span>
+                                            <strong t-out="budget_values['amount_tax']"
+                                                    t-options="{'widget': 'monetary', 'display_currency': budget_values['currency']}"/>
+                                        </div>
+                                        <div class="wex_portal_budget_total_final">
+                                            <span>Total</span>
+                                            <strong t-out="budget_values['amount_total']"
+                                                    t-options="{'widget': 'monetary', 'display_currency': budget_values['currency']}"/>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-light mb-0">
+                                        No hay lineas de presupuesto disponibles.
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-12 col-lg-6">
+                        <div class="card h-100 wex_portal_budget_card">
+                            <div class="card-body">
+                                <h2>Descripcion de la averia</h2>
+                                <div class="wex_portal_budget_text">
+                                    <t t-out="repair.x_reported_issue or 'No hay descripcion de averia indicada.'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="card h-100 wex_portal_budget_card">
+                            <div class="card-body">
+                                <h2>Diagnostico</h2>
+                                <div class="wex_portal_budget_text">
+                                    <t t-if="repair.internal_notes">
+                                        <div t-field="repair.internal_notes"/>
+                                    </t>
+                                    <t t-else="">Pendiente de diagnostico visible.</t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wex_portal_budget_actions">
+                    <a t-att-href="'/my/repairs/%s' % repair.id" class="btn btn-outline-secondary">
+                        Volver al detalle del SAT
+                    </a>
+                    <button t-if="budget_values['can_reject']"
+                            type="button"
+                            class="btn btn-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#wexPortalRejectBudgetModal">
+                        Rechazar presupuesto
+                    </button>
+                    <button t-if="budget_values['can_accept']"
+                            type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#wexPortalAcceptBudgetModal">
+                        Aceptar presupuesto
+                    </button>
+                </div>
+
+                <div class="modal fade" id="wexPortalAcceptBudgetModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content wex_portal_budget_modal">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Aceptar presupuesto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">
+                                Confirmas que aceptas reparar este dispositivo por el importe indicado.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Volver
+                                </button>
+                                <form t-att-action="'/my/repairs/%s/budget/accept' % repair.id" method="post">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <button type="submit" class="btn btn-success">
+                                        Aceptar presupuesto
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="wexPortalRejectBudgetModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content wex_portal_budget_modal">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Rechazar presupuesto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">
+                                Confirmas que rechazas este presupuesto. La cotizacion vinculada sera cancelada.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Volver
+                                </button>
+                                <form t-att-action="'/my/repairs/%s/budget/reject' % repair.id" method="post">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <button type="submit" class="btn btn-danger">
+                                        Rechazar presupuesto
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
