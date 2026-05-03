@@ -133,3 +133,39 @@ class WexImageRecord(models.Model):
                 message_type="comment",
                 subtype_xmlid="mail.mt_note",
             )
+
+    def _build_repair_images_batch_chatter_body(self):
+        images = self.filtered("repair_order_id")
+        if not images:
+            return Markup("")
+
+        item_html = Markup("").join(
+            Markup("<li>%s</li>") % escape(image.name or image.dms_file_name or _("Imagen SAT"))
+            for image in images[:10]
+        )
+        if len(images) > 10:
+            item_html += Markup("<li>%s</li>") % escape(
+                _("Y %(count)s imágenes más.") % {"count": len(images) - 10}
+            )
+
+        return Markup(
+            '<div class="wex_repair_image_chatter">'
+            '<div class="wex_repair_image_chatter__title">%s</div>'
+            '<ul class="mb-0">%s</ul>'
+            "</div>"
+        ) % (
+            escape(
+                _("%(count)s imágenes añadidas al expediente SAT.")
+                % {"count": len(images)}
+            ),
+            item_html,
+        )
+
+    def _post_images_batch_added_to_repair_chatter(self):
+        for repair in self.mapped("repair_order_id"):
+            images = self.filtered(lambda image: image.repair_order_id == repair)
+            repair.message_post(
+                body=images._build_repair_images_batch_chatter_body(),
+                message_type="comment",
+                subtype_xmlid="mail.mt_note",
+            )

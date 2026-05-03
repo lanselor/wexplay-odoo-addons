@@ -28,6 +28,7 @@ class WexRepairImageUploadWizard(models.TransientModel):
         image_model = self.env["wex.image.record"]
         next_sequence = self.repair_order_id._get_next_image_sequence()
         next_index = self.repair_order_id._get_next_image_index()
+        created_images = image_model
 
         for offset, line in enumerate(self.line_ids.sorted(lambda item: (item.sequence, item.id))):
             image_index = next_index + offset
@@ -36,7 +37,9 @@ class WexRepairImageUploadWizard(models.TransientModel):
             filename = self.repair_order_id._build_sat_image_filename(
                 original_filename=line.filename,
             )
-            image_model.create_image_from_binary(
+            created_images |= image_model.with_context(
+                skip_repair_image_chatter=True
+            ).create_image_from_binary(
                 name=display_name,
                 binary_content=line.image_file,
                 directory=directory,
@@ -51,6 +54,7 @@ class WexRepairImageUploadWizard(models.TransientModel):
                     "dms_file_name": filename,
                 },
             )
+        created_images._post_images_batch_added_to_repair_chatter()
         return {"type": "ir.actions.act_window_close"}
 
 

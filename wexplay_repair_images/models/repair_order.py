@@ -17,8 +17,23 @@ class RepairOrder(models.Model):
     x_image_count = fields.Integer(compute="_compute_x_image_count", store=False)
 
     def _compute_x_image_count(self):
+        count_by_repair = {}
+        groups = self.env["wex.image.record"].read_group(
+            [("repair_order_id", "in", self.ids)],
+            ["repair_order_id"],
+            ["repair_order_id"],
+        )
+        for group in groups:
+            repair_group = group.get("repair_order_id")
+            if not repair_group:
+                continue
+            count_by_repair[repair_group[0]] = (
+                group.get("__count")
+                or group.get("repair_order_id_count")
+                or 0
+            )
         for rec in self:
-            rec.x_image_count = len(rec.x_image_ids)
+            rec.x_image_count = count_by_repair.get(rec.id, 0)
 
     def _get_sat_image_directory(self):
         self.ensure_one()
