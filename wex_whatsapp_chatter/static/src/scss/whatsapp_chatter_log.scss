@@ -22,6 +22,18 @@
     margin-bottom: 4px;
 }
 
+.wex-wa-log__badge {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #25d366;
+    color: #063b1f;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
 .wex-wa-log__meta-note {
     display: block;
     font-size: 11px;
@@ -94,4 +106,79 @@
 .wex-wa-log__details strong {
     color: #334155;
     font-weight: 600;
+}
+
+.wex-wa-preview {
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid #d8eadf;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.wex-wa-preview__header {
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #e8f7ef 0%, #f7fbf9 100%);
+    border-bottom: 1px solid #d8eadf;
+}
+
+.wex-wa-preview__title {
+    display: block;
+    color: #0f5132;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.wex-wa-preview__subtitle {
+    display: block;
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.wex-wa-preview__chat {
+    padding: 16px 14px;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 20%),
+        #ece5dd;
+    text-align: right;
+}
+
+.wex-wa-preview__bubble {
+    position: relative;
+    display: inline-block;
+    max-width: 90%;
+    min-width: 120px;
+    padding: 10px 12px 8px;
+    border-radius: 12px;
+    border-top-right-radius: 4px;
+    background: #d9fdd3;
+    color: #111b21;
+    text-align: left;
+    word-break: break-word;
+    box-shadow: 0 1px 0 rgba(17, 27, 33, 0.08);
+}
+
+.wex-wa-preview__bubble:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -8px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #d9fdd3;
+    border-right: 10px solid transparent;
+}
+
+.wex-wa-preview__text {
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+.wex-wa-preview__meta {
+    margin-top: 6px;
+    color: #667781;
+    font-size: 11px;
+    text-align: right;
 }

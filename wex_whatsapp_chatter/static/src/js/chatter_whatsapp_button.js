@@ -12,11 +12,11 @@
  * - `threadModel` y `threadId` son las fuentes más estables del documento actual en este Chatter.
  */
 
-console.warn("WEX_WHATSAPP_CHATTER: loaded Version 10");
-
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
 import { Chatter } from "@mail/chatter/web_portal/chatter";
+
+const SUPPORTED_WHATSAPP_MODELS = ["sale.order", "account.move", "repair.order", "res.partner"];
 
 patch(Chatter.prototype, {
     setup() {
@@ -27,6 +27,10 @@ patch(Chatter.prototype, {
         this.actionService = useService("action");
     },
 
+    isWhatsappSupportedThread() {
+        return SUPPORTED_WHATSAPP_MODELS.includes(this.props.threadModel);
+    },
+
     /**
      * Handler del botón WhatsApp.
      * Abre el wizard con el contexto del documento actual para que el servidor
@@ -35,7 +39,7 @@ patch(Chatter.prototype, {
     onClickWhatsApp() {
         const resModel = this.props.threadModel;
         const resId = this.props.threadId;
-        if (!resModel || !resId) {
+        if (!resModel || !resId || !this.isWhatsappSupportedThread()) {
             return;
         }
 

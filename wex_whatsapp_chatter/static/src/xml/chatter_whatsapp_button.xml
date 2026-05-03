@@ -12,6 +12,7 @@
             <button type="button"
                     class="btn btn-link text-nowrap o-mail-Chatter-topbar-button o_whatsapp_btn d-flex align-items-center"
                     groups="wex_whatsapp_chatter.group_whatsapp_user"
+                    t-if="this.isWhatsappSupportedThread()"
                     t-on-click="() => this.onClickWhatsApp()"
                     style="color: #25D366; font-weight: 500;">
                 <i class="fa fa-whatsapp me-1" style="font-size: 1.2em;"/>

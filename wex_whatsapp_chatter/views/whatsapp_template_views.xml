@@ -72,108 +72,128 @@
                     <!-- Situamos las leyendas y los placeholders de cada uno de los distintos tipos -->
                     
                     <div class="mt-4 p-3 border rounded shadow-sm bg-white">
-                        <div class="alert alert-info mt-2 mb-3 small shadow-sm">
-                            <i class="fa fa-info-circle me-1"/>
-                            <strong>Variables disponibles:</strong>
-                            <div class="mt-2">
-                                
-                                <!-- 1) Directos -->
-                                <div class="mb-2">
-                                    <div class="fw-bold">1) <span class="font-monospace"><h3>Directos</h3></span></div>                             
-                                    <div class="mt-1">
-                                        <code>$&#8203;{portal_url}</code>
-                                        <span class="text-muted">→ Enlace al portal (solo <span class="fw-semibold">sale.order</span> / <span class="fw-semibold">account.move</span>, requiere documento válido).</span>
-                                    </div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{dispositivo}</code>
-                                        <span class="text-muted">→ Tipo · Marca · Modelo (si el documento tiene campos de dispositivo; si no, vacío).</span>
-                                    </div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{importe}</code>
-                                        <span class="text-muted">→ Importe total del SAT (solo <span class="fw-semibold">repair.order</span> / SAT).</span>
+                        <div class="o_horizontal_separator text-uppercase fw-bold mb-3" style="font-size: 0.75rem; color: #714B67;">
+                            <i class="fa fa-info-circle me-2"/> Ayuda de variables
+                        </div>
+                        <div class="alert alert-info mt-2 mb-0 small shadow-sm">
+                            <div class="d-flex align-items-start gap-2 mb-3">
+                                <i class="fa fa-info-circle mt-1"/>
+                                <div>
+                                    <strong>Variables disponibles para el cuerpo del WhatsApp</strong>
+                                    <div class="text-muted mt-1">
+                                        Puedes copiar una variable y pegarla en el mensaje. Se sustituirá al abrir el wizard según el documento, cliente, compañía o usuario activo.
                                     </div>
                                 </div>
-                                
-                                <!-- 2) object.* -->
-                                <div class="mb-2">
-                                    <div class="fw-bold">2) <span class="font-monospace"><h3>Referencias al documento desde donde se envia.*</h3></span></div>
-                                    <div class="text-muted">Campos del documento activo (con dot-path seguro).</div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{object.name}</code>,
-                                        <code>$&#8203;{object.date_order}</code>,
-                                        <code>$&#8203;{object.partner_id.name}</code>,
-                                        <code>$&#8203;{object.partner_id.phone}</code>,
-                                        <code>$&#8203;{object.partner_id.country_id.name}</code>,
-                                        <code>$&#8203;{object.company_id.name}</code>
-                                    </div>
-                                    
-                                    <div class="mt-1 text-muted">
-                                        Importes (solo Sales/Invoices si existe el campo):
-                                        <code>$&#8203;{object.amount_total}</code>
-                                    </div>
-                                    
-                                    <div class="mt-1 text-muted">
-                                        Reparaciones (si existen):
-                                        <code>$&#8203;{object.x_model_id.name}</code>,
-                                        <code>$&#8203;{object.x_brand_id.name}</code>,
-                                        <code>$&#8203;{object.x_device_type}</code>
-                                    </div>
-                                </div>
-                                
-                                <!-- 3) partner.* -->
-                                <div class="mb-2">
-                                    <div class="fw-bold">3) <span class="font-monospace"><h3>Cliente.*</h3></span></div>
-                                    <div class="text-muted">Siempre usa el cliente seleccionado en el wizard.</div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{partner.name}</code>,
-                                        <code>$&#8203;{partner.phone}</code>,
-                                        <code>$&#8203;{partner.mobile}</code>,
-                                        <code>$&#8203;{partner.email}</code>,
-                                        <code>$&#8203;{partner.vat}</code>,
-                                        <code>$&#8203;{partner.country_id.name}</code>,
-                                        <code>$&#8203;{partner.parent_id.name}</code>
-                                    </div>
-                                </div>
-                                
-                                <!-- 4) company.* -->
-                                <div class="mb-2">
-                                    <div class="fw-bold">4) <span class="font-monospace"><h3>Compañía.*</h3></span></div>
-                                    <div class="text-muted">Empresa activa del wizard (o empresa actual).</div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{company.name}</code>,
-                                        <code>$&#8203;{company.email}</code>,
-                                        <code>$&#8203;{company.phone}</code>,
-                                        <code>$&#8203;{company.vat}</code>,
-                                        <code>$&#8203;{company.currency_id.name}</code>,
-                                        <code>$&#8203;{company.partner_id.street}</code>
-                                    </div>
-                                </div>
-                                
-                                <!-- 5) user.* -->
-                                <div class="mb-2">
-                                    <div class="fw-bold">5) <span class="font-monospace"><h3>Empleado.</h3></span></div>
-                                    <div class="text-muted">Usuario/Empleado actual.</div>
-                                    <div class="mt-1">
-                                        <code>$&#8203;{user.name}</code>,
-                                        <code>$&#8203;{user.email}</code>,
-                                        <code>$&#8203;{user.company_id.name}</code>,
-                                        <code>$&#8203;{user.partner_id.mobile}</code>
-                                    </div>
-                                </div>
-                               
-                                <!-- 6) Formateo -->
-                                <div class="mb-1">
-                                    <div class="fw-bold">6) <span class="font-monospace"><h3>Formateo automático</h3></span></div>
-                                    <div class="text-muted">
-                                        Números y moneda se formatean según idioma/moneda si el objeto tiene <span class="fw-semibold">currency_id</span>.
-                                        Fechas (<span class="fw-semibold">date/datetime</span>) se formatean según idioma/zona horaria.
-                                    </div>
-                                </div>
-                                
                             </div>
-                            
-                            <div class="mt-2 text-muted fst-italic">
-                                Escribe las variables tal cual aparecen arriba en tu mensaje.
+
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">Directos</div>
+                                        <div class="mb-2">
+                                            <code><span>$</span>{portal_url}</code>
+                                            <div class="text-muted">Enlace del portal nativo de Odoo. Úsalo para cotizaciones, pedidos o facturas.</div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <code><span>$</span>{dispositivo}</code>
+                                            <div class="text-muted">Tipo, marca y modelo del dispositivo cuando el documento SAT tiene datos de dispositivo.</div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <code><span>$</span>{importe}</code>
+                                            <div class="text-muted">Importe del documento. En SAT usa el campo Total SAT cuando existe cotización asociada.</div>
+                                        </div>
+                                        <div>
+                                            <code><span>$</span>{referencia_cliente}</code>
+                                            <div class="text-muted">Referencia del cliente en la reparación. Usa <code><span>$</span>{object.x_customer_reference}</code> internamente.</div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <code><span>$</span>{notasreparacion}</code>
+                                            <div class="text-muted">Notas de reparación del notebook inferior de SAT. Lee <code><span>$</span>{object.internal_notes}</code> y lo convierte a texto limpio para WhatsApp.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">Documento activo</div>
+                                        <div class="text-muted mb-2">Usa <code><span>$</span>{object.campo}</code> para leer campos del documento desde el que se abre el wizard.</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <code><span>$</span>{object.name}</code>
+                                            <code><span>$</span>{object.partner_id.name}</code>
+                                            <code><span>$</span>{object.partner_id.phone}</code>
+                                            <code><span>$</span>{object.company_id.name}</code>
+                                            <code><span>$</span>{object.amount_total}</code>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">SAT / Reparación</div>
+                                        <div class="text-muted mb-2">Variables útiles para plantillas de <span class="fw-semibold">repair.order</span>.</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <code><span>$</span>{object.name}</code>
+                                            <code><span>$</span>{object.x_customer_reference}</code>
+                                            <code><span>$</span>{object.x_reported_issue}</code>
+                                            <code><span>$</span>{object.x_model_id.name}</code>
+                                            <code><span>$</span>{object.x_brand_id.name}</code>
+                                            <code><span>$</span>{object.x_device_type}</code>
+                                            <code><span>$</span>{dispositivo}</code>
+                                            <code><span>$</span>{importe}</code>
+                                            <code><span>$</span>{referencia_cliente}</code>
+                                            <code><span>$</span>{notasreparacion}</code>
+                                            <code><span>$</span>{object.internal_notes}</code>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">Cliente</div>
+                                        <div class="text-muted mb-2">Siempre usa el cliente seleccionado en el wizard, aunque el documento origen sea otro.</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <code><span>$</span>{partner.name}</code>
+                                            <code><span>$</span>{partner.phone}</code>
+                                            <code><span>$</span>{partner.mobile}</code>
+                                            <code><span>$</span>{partner.email}</code>
+                                            <code><span>$</span>{partner.vat}</code>
+                                            <code><span>$</span>{partner.country_id.name}</code>
+                                            <code><span>$</span>{partner.parent_id.name}</code>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">Compañía</div>
+                                        <div class="text-muted mb-2">Datos de la empresa activa en el wizard.</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <code><span>$</span>{company.name}</code>
+                                            <code><span>$</span>{company.email}</code>
+                                            <code><span>$</span>{company.phone}</code>
+                                            <code><span>$</span>{company.vat}</code>
+                                            <code><span>$</span>{company.currency_id.name}</code>
+                                            <code><span>$</span>{company.partner_id.street}</code>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <div class="p-3 bg-white rounded border h-100">
+                                        <div class="fw-bold text-uppercase text-muted mb-2">Usuario</div>
+                                        <div class="text-muted mb-2">Datos del usuario que está preparando el WhatsApp.</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <code><span>$</span>{user.name}</code>
+                                            <code><span>$</span>{user.email}</code>
+                                            <code><span>$</span>{user.company_id.name}</code>
+                                            <code><span>$</span>{user.partner_id.mobile}</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 text-muted fst-italic">
+                                Los campos vacíos o inexistentes se sustituyen por vacío. Fechas, números y moneda se formatean automáticamente cuando el campo lo permite.
                             </div>
                         </div>
                     </div>
