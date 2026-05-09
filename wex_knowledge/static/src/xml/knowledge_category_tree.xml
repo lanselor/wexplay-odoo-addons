@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="wex_knowledge.KnowledgeCategoryTree">
+    <div class="wex_kb_app wex_kb_cat_manager">
+
+        <t t-if="state.loading">
+            <div class="wex_kb_surface wex_kb_cat_loading">
+                <i class="fa fa-spinner fa-spin me-2"/>Cargando categorías...
+            </div>
+        </t>
+
+        <t t-else="">
+
+            <!-- Header -->
+            <div class="wex_kb_cat_header">
+                <div class="wex_kb_cat_header_left">
+                    <div class="wex_kb_eyebrow">Knowledge · Configuración</div>
+                    <h1>Categorías</h1>
+                    <p class="wex_kb_cat_subtitle">
+                        Arrastra para reorganizar la jerarquía.
+                        Doble clic o <i class="fa fa-pencil"/> para editar una categoría.
+                    </p>
+                </div>
+                <div class="wex_kb_cat_header_actions">
+                    <button type="button" class="btn btn-primary" t-on-click="openNew">
+                        <i class="fa fa-plus me-1"/>Nueva categoría
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tree shell -->
+            <div class="wex_kb_surface wex_kb_cat_tree_shell">
+
+                <t t-if="flatNodes.length === 0">
+                    <div class="wex_kb_empty wex_kb_cat_empty">
+                        <i class="fa fa-folder-open fa-2x mb-3 d-block"/>
+                        <p class="mb-3">No hay categorías todavía.</p>
+                        <button type="button" class="btn btn-outline-primary btn-sm" t-on-click="openNew">
+                            Crear primera categoría
+                        </button>
+                    </div>
+                </t>
+
+                <t t-else="">
+
+                    <!-- Column headers -->
+                    <div class="wex_kb_cat_tree_header">
+                        <span/>
+                        <span/>
+                        <span/>
+                        <span>Nombre</span>
+                        <span>Artículos</span>
+                        <span/>
+                    </div>
+
+                    <!-- Rows -->
+                    <div class="wex_kb_cat_tree">
+                        <t t-foreach="flatNodes" t-as="node" t-key="node.id">
+                            <div
+                                t-att-class="getRowClass(node)"
+                                t-att-data-node-id="node.id"
+                                t-attf-style="--depth: {{ node.depth }}"
+                                draggable="true"
+                                t-on-dragstart="onDragStart"
+                                t-on-dragend="onDragEnd"
+                                t-on-dragover="onDragOver"
+                                t-on-dragleave="onDragLeave"
+                                t-on-drop="onDrop"
+                                t-on-dblclick="openEdit"
+                            >
+                                <!-- Drag handle -->
+                                <span class="wex_kb_cat_drag_handle" title="Arrastrar para mover">
+                                    <i class="fa fa-bars"/>
+                                </span>
+
+                                <!-- Expand / collapse toggle -->
+                                <button
+                                    type="button"
+                                    t-att-class="'wex_kb_cat_toggle' + (node.children.length ? '' : ' is-empty')"
+                                    t-on-click.stop="toggleNode"
+                                    t-att-data-node-id="node.id"
+                                    t-att-title="node.isExpanded ? 'Colapsar' : 'Expandir'"
+                                >
+                                    <t t-if="node.children.length">
+                                        <i t-att-class="'fa fa-chevron-' + (node.isExpanded ? 'down' : 'right')"/>
+                                    </t>
+                                </button>
+
+                                <!-- Category icon -->
+                                <span class="wex_kb_cat_icon">
+                                    <i t-att-class="node.icon"/>
+                                </span>
+
+                                <!-- Name + badges -->
+                                <span class="wex_kb_cat_name">
+                                    <t t-esc="node.name"/>
+                                    <t t-if="node.is_global">
+                                        <span class="wex_kb_chip ms-2">Global</span>
+                                    </t>
+                                </span>
+
+                                <!-- Article count -->
+                                <span class="wex_kb_cat_count">
+                                    <span class="wex_kb_badge is-muted">
+                                        <t t-esc="node.article_count"/>
+                                        <small class="ms-1">art.</small>
+                                    </span>
+                                </span>
+
+                                <!-- Row actions -->
+                                <span class="wex_kb_cat_row_actions">
+                                    <button
+                                        type="button"
+                                        class="wex_kb_cat_edit_btn"
+                                        title="Editar categoría"
+                                        t-att-data-node-id="node.id"
+                                        t-on-click.stop="openEdit"
+                                    >
+                                        <i class="fa fa-pencil"/>
+                                    </button>
+                                </span>
+
+                            </div>
+                        </t>
+                    </div>
+
+                </t>
+            </div>
+
+        </t>
+    </div>
+</t>
+
+</templates>

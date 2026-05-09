@@ -700,6 +700,7 @@ class KnowledgeArticle(models.Model):
                 {
                     "id": article.id,
                     "name": article.name,
+                    "visibility": article.visibility,
                     "child_count": article.child_count,
                     "is_selected": bool(selected_article_id and article.id == selected_article_id),
                     "is_in_selected_path": self._article_contains_selected_descendant(article, selected_article_id),
@@ -728,6 +729,7 @@ class KnowledgeArticle(models.Model):
             "name": category.name,
             "count": self._get_article_count_for_category(category),
             "is_selected": bool(selected_category_id and category.id == selected_category_id),
+            "icon": category.icon or "fa fa-folder-open",
             "children": [
                 self._serialize_category_tree_node(
                     child,
@@ -867,6 +869,11 @@ class KnowledgeArticle(models.Model):
             limit=12,
         )
         people = self._get_explorer_sidebar_people()
+        favorite_articles = self.search(
+            [("favorite_user_ids", "in", self.env.user.id)],
+            limit=6,
+            order="write_date desc, id desc",
+        )
         return {
             "article_tree": self._sidebar_article_tree(
                 tree_roots,
@@ -883,6 +890,11 @@ class KnowledgeArticle(models.Model):
             "owners": people["owners"],
             "collaborators": people["collaborators"],
             "companies": self._get_sidebar_company_data(),
+            "favorites": [
+                {"id": a.id, "name": a.name, "visibility": a.visibility}
+                for a in favorite_articles
+            ],
+            "is_manager": self.env.user.has_group("wex_knowledge.group_knowledge_manager"),
         }
 
     @api.model

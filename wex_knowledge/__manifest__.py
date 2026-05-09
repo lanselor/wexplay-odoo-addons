@@ -35,8 +35,10 @@
     "assets": {
         "web.assets_backend": [
             "wex_knowledge/static/src/js/knowledge_client_actions.js",
+            "wex_knowledge/static/src/js/knowledge_category_tree.js",
             "wex_knowledge/static/src/js/knowledge_icon_picker_field.js",
             "wex_knowledge/static/src/xml/knowledge_client_actions.xml",
+            "wex_knowledge/static/src/xml/knowledge_category_tree.xml",
             "wex_knowledge/static/src/xml/knowledge_icon_picker_field.xml",
             "wex_knowledge/static/src/scss/knowledge.scss",
         ],

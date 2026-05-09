@@ -55,4 +55,9 @@
         <field name="res_model">wex.knowledge.category</field>
         <field name="view_mode">list,form</field>
     </record>
+
+    <record id="action_knowledge_category_tree" model="ir.actions.client">
+        <field name="name">Gestión de Categorías</field>
+        <field name="tag">wex_knowledge_category_tree</field>
+    </record>
 </odoo>

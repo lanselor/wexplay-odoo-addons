@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 
 class KnowledgeBaseClientAction extends Component {
@@ -124,6 +124,8 @@ class KnowledgeBaseClientAction extends Component {
     }
 }
 
+// ── Dashboard ──────────────────────────────────────────────────────────────
+
 class KnowledgeDashboard extends KnowledgeBaseClientAction {
     getInitialState() {
         return {
@@ -169,7 +171,43 @@ class KnowledgeDashboard extends KnowledgeBaseClientAction {
 
 KnowledgeDashboard.template = "wex_knowledge.KnowledgeDashboard";
 
+// ── Explorer ───────────────────────────────────────────────────────────────
+
 class KnowledgeExplorer extends KnowledgeBaseClientAction {
+
+    // ── Lifecycle ────────────────────────────────────────────────────────
+
+    setup() {
+        super.setup();
+        this.notification = useService("notification");
+
+        onMounted(() => {
+            this._onDocClick = (ev) => {
+                if (!this.state.contextMenu.visible) {
+                    return;
+                }
+                const menu = document.querySelector(".wex_kb_ctx_menu");
+                if (!menu || !menu.contains(ev.target)) {
+                    this.closeContextMenu();
+                }
+            };
+            this._onDocKeydown = (ev) => {
+                if (ev.key === "Escape" && this.state.contextMenu.visible) {
+                    this.closeContextMenu();
+                }
+            };
+            document.addEventListener("click", this._onDocClick, true);
+            document.addEventListener("keydown", this._onDocKeydown);
+        });
+
+        onWillUnmount(() => {
+            document.removeEventListener("click", this._onDocClick, true);
+            document.removeEventListener("keydown", this._onDocKeydown);
+        });
+    }
+
+    // ── State ────────────────────────────────────────────────────────────
+
     getDefaultSidebarData() {
         return {
             category_article_tree: [],
@@ -179,6 +217,8 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
             owners: [],
             collaborators: [],
             companies: [],
+            favorites: [],
+            is_manager: false,
         };
     }
 
@@ -209,8 +249,20 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
             expandedCategoryNodes: {},
             viewMode: "grid",
             filters: this.getDefaultFilters(),
+            sidebarCollapsed: localStorage.getItem("wex_kb_sidebar_collapsed") === "1",
+            sidebarSearch: "",
+            contextMenu: {
+                visible: false,
+                x: 0,
+                y: 0,
+                categoryId: null,
+                categoryName: "",
+                isExpanded: false,
+            },
         };
     }
+
+    // ── Init from context ────────────────────────────────────────────────
 
     initializeFromContext() {
         const context = this.props.action?.context || {};
@@ -231,6 +283,8 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
             this.state.filters.category_id = context.explorer_category_id;
         }
     }
+
+    // ── Data loading ─────────────────────────────────────────────────────
 
     async load() {
         this.state.loading = true;
@@ -253,6 +307,8 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
         const nextValue = this.state.filters[key] === value ? emptyValue : value;
         await this.setFilterAndReload(key, nextValue);
     }
+
+    // ── Tree expand / sync ───────────────────────────────────────────────
 
     getExpandedArticleTreeState() {
         const nextExpanded = { ...this.state.expandedNodes };
@@ -305,7 +361,11 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
         return !!this.state.expandedNodes[node.id];
     }
 
+    // Overridden: returns true for all nodes when sidebar search is active
     isCategoryExpanded(node) {
+        if (this.isSearching) {
+            return true;
+        }
         return !!this.state.expandedCategoryNodes[node.id];
     }
 
@@ -320,6 +380,8 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
         const nodeId = Number(ev.currentTarget.dataset.nodeId);
         this.state.expandedCategoryNodes[nodeId] = !this.state.expandedCategoryNodes[nodeId];
     }
+
+    // ── Filters ──────────────────────────────────────────────────────────
 
     async filterByBranch(ev) {
         const nodeId = Number(ev.currentTarget.dataset.nodeId);
@@ -396,13 +458,13 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
         const sidebar = this.state.data.sidebar || {};
 
         if (this.state.filters.search) {
-            chips.push({ key: "search", label: "B?squeda", value: this.state.filters.search, variant: "search" });
+            chips.push({ key: "search", label: "Búsqueda", value: this.state.filters.search, variant: "search" });
         }
         if (this.selectedBranchNode) {
             chips.push({ key: "article_branch_id", label: "Rama", value: this.selectedBranchNode.name, variant: "branch" });
         }
 
-        this.addMappedFilterChip(chips, "category_id", sidebar.categories, "Categor?a");
+        this.addMappedFilterChip(chips, "category_id", sidebar.categories, "Categoría");
         this.addMappedFilterChip(chips, "tag_id", sidebar.tags, "Etiqueta");
         this.addMappedFilterChip(chips, "author_id", sidebar.authors, "Autor");
 
@@ -457,6 +519,200 @@ class KnowledgeExplorer extends KnowledgeBaseClientAction {
 
     setViewMode(ev) {
         this.state.viewMode = ev.currentTarget.dataset.viewMode;
+    }
+
+    // ── Sidebar collapse ─────────────────────────────────────────────────
+
+    toggleSidebar() {
+        this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
+        localStorage.setItem("wex_kb_sidebar_collapsed", this.state.sidebarCollapsed ? "1" : "0");
+    }
+
+    // ── Sidebar tree search ──────────────────────────────────────────────
+
+    onSidebarSearchInput(ev) {
+        this.state.sidebarSearch = ev.target.value;
+    }
+
+    clearSidebarSearch() {
+        this.state.sidebarSearch = "";
+    }
+
+    get isSearching() {
+        return !!(this.state.sidebarSearch || "").trim();
+    }
+
+    get filteredCategoryTree() {
+        const tree = this.state.data.sidebar.category_article_tree || [];
+        const q = (this.state.sidebarSearch || "").toLowerCase().trim();
+        if (!q) {
+            return tree;
+        }
+        const filterNodes = (nodes) => {
+            const result = [];
+            for (const node of nodes || []) {
+                const nameMatch = node.name.toLowerCase().includes(q);
+                const filteredChildren = filterNodes(node.children || []);
+                const filteredArticles = (node.articles || []).filter((a) =>
+                    a.name.toLowerCase().includes(q)
+                );
+                if (nameMatch || filteredChildren.length || filteredArticles.length) {
+                    result.push({
+                        ...node,
+                        children: filteredChildren,
+                        articles: nameMatch ? node.articles : filteredArticles,
+                    });
+                }
+            }
+            return result;
+        };
+        return filterNodes(tree);
+    }
+
+    // ── Favorites section ────────────────────────────────────────────────
+
+    async openFavoriteArticle(ev) {
+        const articleId = Number(ev.currentTarget.dataset.articleId);
+        await this.action.doAction(this.getArticleAction(articleId));
+    }
+
+    // ── Context menu ─────────────────────────────────────────────────────
+
+    openContextMenu(ev, node) {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        const menuHeight = 300;
+        const menuWidth = 252;
+
+        let x, y;
+        if (ev.type === "contextmenu") {
+            x = ev.clientX;
+            y = ev.clientY;
+        } else {
+            const rect = ev.currentTarget.getBoundingClientRect();
+            x = rect.right - menuWidth;
+            y = rect.bottom;
+        }
+
+        x = Math.max(8, Math.min(x, window.innerWidth - menuWidth - 8));
+        y = Math.max(8, Math.min(y, window.innerHeight - menuHeight - 8));
+
+        this.state.contextMenu.visible = true;
+        this.state.contextMenu.x = x;
+        this.state.contextMenu.y = y;
+        this.state.contextMenu.categoryId = node.id;
+        this.state.contextMenu.categoryName = node.name;
+        this.state.contextMenu.isExpanded = !!this.state.expandedCategoryNodes[node.id];
+    }
+
+    closeContextMenu() {
+        this.state.contextMenu.visible = false;
+        this.state.contextMenu.categoryId = null;
+    }
+
+    // ── Context menu actions ─────────────────────────────────────────────
+
+    async ctxNewArticle(categoryId = null) {
+        const catId = categoryId !== null ? categoryId : this.state.contextMenu.categoryId;
+        this.closeContextMenu();
+        await this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "wex.knowledge.article",
+            views: [[false, "form"]],
+            target: "current",
+            context: {
+                default_category_ids: catId ? [[4, catId]] : [],
+                default_state: "draft",
+                wex_kb_explorer_payload: this.getExplorerPayloadContext(),
+            },
+        });
+    }
+
+    async ctxFilterCategory() {
+        const catId = this.state.contextMenu.categoryId;
+        this.closeContextMenu();
+        const nextCategoryId = this.state.filters.category_id === catId ? null : catId;
+        this.state.filters.category_id = nextCategoryId;
+        if (nextCategoryId) {
+            this.state.expandedCategoryNodes[catId] = true;
+        }
+        await this.load();
+    }
+
+    ctxExpandCollapseAll() {
+        const { categoryId } = this.state.contextMenu;
+        const node = this._findCategoryNode(
+            this.state.data.sidebar.category_article_tree,
+            categoryId
+        );
+        this.closeContextMenu();
+        if (!node) {
+            return;
+        }
+        const targetState = !this.state.expandedCategoryNodes[node.id];
+        this.state.expandedCategoryNodes[node.id] = targetState;
+        for (const id of this._getAllDescendantCategoryIds(node)) {
+            this.state.expandedCategoryNodes[id] = targetState;
+        }
+    }
+
+    async ctxEditCategory() {
+        const catId = this.state.contextMenu.categoryId;
+        this.closeContextMenu();
+        await this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "wex.knowledge.category",
+            res_id: catId,
+            views: [[false, "form"]],
+            target: "current",
+        });
+    }
+
+    async ctxGoToCategoryManager() {
+        this.closeContextMenu();
+        await this.action.doAction("wex_knowledge.action_knowledge_category_tree");
+    }
+
+    async ctxNewSubcategory() {
+        const catId = this.state.contextMenu.categoryId;
+        this.closeContextMenu();
+        await this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "wex.knowledge.category",
+            views: [[false, "form"]],
+            target: "current",
+            context: {
+                default_parent_id: catId,
+            },
+        });
+    }
+
+    // ── Private helpers ──────────────────────────────────────────────────
+
+    _findCategoryNode(nodes, id) {
+        for (const node of nodes || []) {
+            if (node.id === id) {
+                return node;
+            }
+            const found = this._findCategoryNode(node.children, id);
+            if (found) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    _getAllDescendantCategoryIds(node) {
+        const ids = [];
+        const walk = (children) => {
+            for (const child of children || []) {
+                ids.push(child.id);
+                walk(child.children);
+            }
+        };
+        walk(node.children || []);
+        return ids;
     }
 }
 

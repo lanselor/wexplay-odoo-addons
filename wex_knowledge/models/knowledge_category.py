@@ -102,3 +102,33 @@ class KnowledgeCategory(models.Model):
     def _check_parent_recursion(self):
         if not self._check_recursion():
             raise ValidationError(_("You cannot create recursive category hierarchies."))
+
+    @api.model
+    def get_category_tree_data(self):
+        domain = [
+            ("active", "=", True),
+            "|",
+            ("is_global", "=", True),
+            ("company_id", "=", self.env.company.id),
+        ]
+        categories = self.search(domain, order="sequence, name, id")
+        nodes = {}
+        for cat in categories:
+            nodes[cat.id] = {
+                "id": cat.id,
+                "name": cat.name,
+                "icon": cat.icon or "fa fa-folder-open",
+                "sequence": cat.sequence,
+                "parent_id": cat.parent_id.id if cat.parent_id else False,
+                "article_count": cat.article_count,
+                "is_global": cat.is_global,
+                "children": [],
+            }
+        roots = []
+        for node in nodes.values():
+            pid = node["parent_id"]
+            if pid and pid in nodes:
+                nodes[pid]["children"].append(node)
+            else:
+                roots.append(node)
+        return roots
