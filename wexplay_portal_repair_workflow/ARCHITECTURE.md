@@ -26,6 +26,9 @@ La cotizacion vinculada sigue siendo el documento comercial real:
 - Prepara el resumen economico y operativo.
 - Ejecuta aceptacion/rechazo delegando en `sale.order` y workflow SAT.
 - Registra eventos internos de portal tras acciones relevantes.
+- Aisla en backend la ejecucion real del workflow comercial cuando el cliente
+  acepta o rechaza desde portal, para no depender del entorno ORM del usuario
+  portal durante cancelaciones, confirmaciones y recomputaciones de `sale.order`.
 
 ### `models/portal_repair_event.py`
 
@@ -73,11 +76,57 @@ Flujo:
 - Solo se actua sobre cotizaciones en `draft` o `sent`.
 - Si la cotizacion ya esta en `sale`, el presupuesto se trata como ya aceptado.
 - Si la cotizacion esta cancelada, se bloquea la accion.
+- Si el workflow SAT marca `not_repairable`, el portal lo muestra como resultado
+  tecnico no accionable por el cliente.
 - Rechazar presupuesto no cancela automaticamente la reparacion.
 - Ver un presupuesto queda registrado como trazabilidad ya atendida.
 - Aceptar o rechazar un presupuesto crea trabajo interno pendiente de revisar.
 - `schedule_date` se muestra como dato de contexto porque actualmente no es una
   fecha fiable para priorizar alertas.
+
+## Incidencia resuelta: rechazo portal con error 403
+
+Se detecto un fallo intermitente al rechazar presupuestos SAT desde portal.
+
+Casuistica observada:
+
+- SAT en `waiting_customer`
+- cotizacion vinculada en `draft`
+- el portal permitia visualmente rechazar
+- al ejecutar la accion, Odoo terminaba en `403` con `AccessError` sobre
+  `sale.order.line`
+
+La causa real no era un problema de visibilidad del boton ni una falta de
+dominio sobre `repair.order`.
+
+El problema aparecia durante el `flush` de la transaccion HTTP del usuario
+portal. Aunque el acceso al SAT y al presupuesto estaba validado, el workflow
+de rechazo acababa ejecutando logica comercial de `sale.order` que hacia que
+Odoo leyera `sale.order.line` en el contexto del usuario portal.
+
+Eso producia un `AccessError` legitimo sobre un modelo que no debe abrirse al
+cliente portal.
+
+### Decision tecnica aplicada
+
+No se ampliaron ACL ni record rules del usuario portal sobre `sale.order.line`.
+
+La accion portal sigue validando primero:
+
+- acceso del usuario portal a la reparacion
+- partner comercial autorizado
+- estado SAT y estado de presupuesto
+- disponibilidad real de la cotizacion para aceptar o rechazar
+
+Solo despues de pasar esas validaciones, la ejecucion del workflow SAT/comercial
+se lanza en una `Environment` aislada de backend y en un cursor separado. Asi:
+
+- la validacion funcional sigue siendo del usuario real del portal
+- la parte sensible de `sale.order` no depende del ORM del portal
+- se evita abrir permisos innecesarios a usuarios externos
+- se reduce el riesgo de estados intermedios incoherentes por errores en `flush`
+
+Este criterio aplica tanto a aceptar como a rechazar presupuesto desde portal.
 
 ## Deuda tecnica pendiente
 
@@ -85,7 +134,7 @@ Flujo:
   rechace desde portal.
 - Evaluar conversacion/notificacion con tecnico o responsable asociado al SAT.
 - Anadir motivo opcional de rechazo.
-- Ampliar la trazabilidad con snapshots mas completos si se necesita auditar
-  importes, estados previos o contenido exacto mostrado al cliente.
+- Revisar y reducir la instrumentacion temporal de debug portal cuando la
+  incidencia quede suficientemente cerrada en entornos reales.
 - Evaluar recordatorios automaticos para aceptaciones pendientes de gestion
   durante varios dias.

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrw_shipping_service_view_list" model="ir.ui.view">
+        <field name="name">mrw.shipping.service.view.list</field>
+        <field name="model">mrw.shipping.service</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code" string="Código"/>
+                <field name="service_type" string="Tipo de servicio"/>
+                <field name="used_in_shipment"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_service_view_form" model="ir.ui.view">
+        <field name="name">mrw.shipping.service.view.form</field>
+        <field name="model">mrw.shipping.service</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active"/>
+                            <field name="sequence"/>
+                            <field name="code" readonly="used_in_shipment"/>
+                            <field name="service_type"/>
+                        </group>
+                        <group>
+                            <field name="used_in_shipment"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_service_view_search" model="ir.ui.view">
+        <field name="name">mrw.shipping.service.view.search</field>
+        <field name="model">mrw.shipping.service</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="active" string="Activo" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_type" string="Tipo" context="{'group_by': 'service_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_service_action" model="ir.actions.act_window">
+        <field name="name">Servicios MRW</field>
+        <field name="res_model">mrw.shipping.service</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

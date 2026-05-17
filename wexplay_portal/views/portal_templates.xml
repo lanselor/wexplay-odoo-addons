@@ -153,11 +153,10 @@
     <template id="portal_my_repairs" name="My Repairs">
         <t t-call="portal.portal_layout">
             <div class="o_portal_wrap">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h3 class="mb-1">Servicio Técnico</h3>
-                        <p class="text-muted mb-0">Listado de reparaciones SAT accesibles para tu empresa.</p>
-                    </div>
+                <div class="wex_portal_list_header mb-4">
+                    <span class="wex_portal_list_eyebrow">Portal B2B · Wexplay</span>
+                    <h3 class="wex_portal_list_title">Servicio Técnico</h3>
+                    <p class="text-muted mb-0">Listado de reparaciones SAT accesibles para tu empresa.</p>
                 </div>
 
                 <div class="wex_portal_repair_toolbar mb-4">
@@ -271,188 +270,404 @@
         </t>
     </template>
 
+    <!--
+        portal_repair_context_bar — renderiza en dos modos:
+        · Hero panel completo en la ficha de reparación (page_name != 'repair_budget')
+        · Barra compacta sticky en la página de revisión de presupuesto
+
+        IMPORTANTE: wex_portal_repair_context_actions existe en ambas ramas
+        para que wexplay_portal_repair_workflow pueda inyectar el botón de presupuesto
+        via xpath sin importar el modo activo en tiempo de ejecución.
+    -->
     <template id="portal_repair_context_bar" name="Repair Context Bar">
         <t t-set="context_bar" t-value="repair._get_portal_repair_context_bar_values()"/>
-        <div class="wex_portal_repair_context_bar">
-            <div class="wex_portal_repair_context_inner">
-                <div class="wex_portal_repair_context_main">
-                    <div class="wex_portal_repair_context_item wex_portal_repair_context_item--strong">
-                        <span>SAT</span>
-                        <strong><t t-out="context_bar['repair_name']"/></strong>
-                    </div>
-                    <div class="wex_portal_repair_context_item" t-if="context_bar['customer_reference']">
-                        <span>Referencia cliente</span>
-                        <strong><t t-out="context_bar['customer_reference']"/></strong>
-                    </div>
-                    <div class="wex_portal_repair_context_item">
-                        <span>Dispositivo</span>
-                        <strong><t t-out="context_bar['device_label']"/></strong>
-                    </div>
-                    <div t-att-class="'wex_portal_repair_context_status wex_portal_repair_context_status--%s' % context_bar['status']['key']">
-                        <span><t t-out="context_bar['status']['label']"/></span>
-                    </div>
-                </div>
-                <div class="wex_portal_repair_context_actions" t-if="context_bar['action_url']">
-                    <a t-att-href="context_bar['action_url']"
-                       class="btn btn-primary wex_portal_repair_context_cta">
-                        <t t-out="context_bar['action_label']"/>
-                        <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </template>
+        <t t-set="status_steps" t-value="repair._get_portal_status_steps()"/>
+        <t t-set="budget_steps" t-value="repair._get_portal_budget_steps()"/>
 
-    <template id="portal_repair_page" name="Repair Detail">
-        <t t-call="portal.portal_layout">
-            <t t-set="status_steps" t-value="repair._get_portal_status_steps()"/>
-            <t t-set="budget_steps" t-value="repair._get_portal_budget_steps()"/>
-            <t t-set="part_lines" t-value="repair._get_portal_part_line_values()"/>
-            <t t-set="service_lines" t-value="repair._get_portal_service_line_values()"/>
-            <t t-set="invoice_values" t-value="repair._get_portal_invoice_values()"/>
-            <t t-set="warranty_data" t-value="repair._get_portal_warranty_values()"/>
-            <t t-set="image_values" t-value="repair._get_portal_image_values(tag_code=image_tag) if 'x_image_ids' in repair._fields else []"/>
+        <t t-if="page_name != 'repair_budget'">
+            <!-- ═══════════════════════════════════════════════════
+                 HERO PANEL — ficha de detalle de SAT
+                 Tres columnas: Identidad | Trackers de estado | Acción
+            ═══════════════════════════════════════════════════ -->
+            <div class="wex_portal_repair_hero">
+                <div class="wex_portal_repair_hero_inner">
 
-            <div class="o_portal_wrap">
-                <t t-call="wexplay_portal.portal_repair_context_bar"/>
-
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div>
-                        <h1 class="mb-2 wex_portal_repair_title">
-                            <t t-out="repair.name"/>
-                        </h1>
-                        <div class="wex_portal_customer_reference mb-2">
-                            <span class="wex_portal_customer_reference_label">Referencia del cliente</span>
-                            <span class="wex_portal_customer_reference_value">
-                                <t t-out="repair.x_customer_reference or 'Sin referencia del cliente'"/>
-                            </span>
+                    <!-- Columna izquierda: identidad del SAT -->
+                    <div class="wex_portal_repair_hero_id">
+                        <span class="wex_portal_repair_hero_eyebrow">Servicio técnico</span>
+                        <div class="wex_portal_repair_hero_sat">
+                            <t t-out="context_bar['repair_name']"/>
                         </div>
-                        <p class="text-muted mb-0">Detalle de la reparación SAT.</p>
+                        <div class="wex_portal_repair_hero_device">
+                            <t t-out="context_bar['device_label']"/>
+                        </div>
+                        <div class="wex_portal_repair_hero_ref">
+                            <span>Ref. cliente</span>
+                            <strong><t t-out="context_bar['customer_reference'] or 'Sin referencia'"/></strong>
+                        </div>
                     </div>
-                    <span class="badge rounded-pill text-bg-light border wex_portal_status_badge">
-                        <t t-out="repair.x_portal_state_label"/>
-                    </span>
-                </div>
 
-                <div class="card mb-4 wex_portal_panel">
-                    <div class="card-body">
-                        <div class="wex_portal_section_title">Estado del servicio</div>
-                        <div class="wex_portal_stepper">
-                            <div t-foreach="status_steps" t-as="step"
-                                 t-att-class="'wex_portal_step ' + ('is-current' if step['is_current'] else '') + (' is-completed' if step['is_completed'] else '')">
-                                <span class="wex_portal_step_label">
-                                    <t t-out="step['label']"/>
-                                </span>
+                    <!-- Columna central: trackers de estado y presupuesto -->
+                    <div class="wex_portal_repair_hero_tracks">
+                        <div class="wex_portal_repair_hero_track">
+                            <div class="wex_portal_repair_hero_track_label">Estado del servicio</div>
+                            <div class="wex_portal_stepper">
+                                <div t-foreach="status_steps" t-as="step"
+                                     t-att-class="'wex_portal_step ' + ('is-current ' if step['is_current'] else '') + ('is-completed' if step['is_completed'] else '')">
+                                    <span class="wex_portal_step_label"><t t-out="step['label']"/></span>
+                                </div>
                             </div>
                         </div>
                         <t t-if="budget_steps">
-                            <div class="wex_portal_section_title mt-4">Estado de presupuesto</div>
-                            <div class="wex_portal_stepper wex_portal_stepper--secondary">
-                                <div t-foreach="budget_steps" t-as="step"
-                                     t-att-class="'wex_portal_step ' + ('is-current' if step['is_current'] else '') + (' is-completed' if step['is_completed'] else '')">
-                                    <span class="wex_portal_step_label">
-                                        <t t-out="step['label']"/>
-                                    </span>
+                            <div class="wex_portal_repair_hero_track">
+                                <div class="wex_portal_repair_hero_track_label">Estado del presupuesto</div>
+                                <div class="wex_portal_stepper wex_portal_stepper--secondary">
+                                    <div t-foreach="budget_steps" t-as="step"
+                                         t-att-class="'wex_portal_step ' + ('is-current ' if step['is_current'] else '') + ('is-completed' if step['is_completed'] else '')">
+                                        <span class="wex_portal_step_label"><t t-out="step['label']"/></span>
+                                    </div>
                                 </div>
                             </div>
                         </t>
                     </div>
-                </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-lg-6">
-                        <div class="card h-100 wex_portal_panel">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fa fa-tablet wex_portal_card_icon" aria-hidden="true"/>
-                                    Información del dispositivo
-                                </h5>
-                                <dl class="row mb-0">
-                                    <dt class="col-sm-5">Fecha de alta</dt>
-                                    <dd class="col-sm-7"><span t-field="repair.create_date" t-options="{'widget': 'datetime'}"/></dd>
-                                    <dt class="col-sm-5">Referencia SAT</dt>
-                                    <dd class="col-sm-7"><t t-out="repair.name or '-'"/></dd>
-                                    <dt class="col-sm-5">Referencia cliente</dt>
-                                    <dd class="col-sm-7">
-                                        <span class="wex_portal_inline_reference">
-                                            <t t-out="repair.x_customer_reference or '-'"/>
-                                        </span>
-                                    </dd>
-                                    <dt class="col-sm-5">IMEI / Serie</dt>
-                                    <dd class="col-sm-7"><t t-out="repair.x_imei or '-'"/></dd>
-                                    <dt class="col-sm-5">Tipo dispositivo</dt>
-                                    <dd class="col-sm-7"><t t-out="repair._get_portal_device_type_label() or '-'"/></dd>
-                                    <dt class="col-sm-5">Marca</dt>
-                                    <dd class="col-sm-7"><t t-out="repair._get_portal_brand_label() or '-'"/></dd>
-                                    <dt class="col-sm-5">Modelo</dt>
-                                    <dd class="col-sm-7"><t t-out="repair._get_portal_model_label() or '-'"/></dd>
-                                    <dt class="col-sm-5">Accesorios</dt>
-                                    <dd class="col-sm-7 text-break"><t t-out="repair.x_accessories or '-'"/></dd>
-                                </dl>
-                            </div>
+                    <!-- Columna derecha: acción principal + estado del presupuesto -->
+                    <div class="wex_portal_repair_hero_actions_col">
+                        <div class="wex_portal_repair_context_actions">
+                            <!-- wexplay_portal_repair_workflow reemplaza este div via xpath -->
                         </div>
+                        <t t-if="'x_budget_stage' in repair._fields and repair.x_budget_stage and repair.x_budget_stage != 'none'">
+                            <div t-att-class="'wex_portal_hero_budget_status wex_portal_hero_budget_status--%s' % repair.x_budget_stage">
+                                <t t-out="dict(repair._fields['x_budget_stage'].selection).get(repair.x_budget_stage, repair.x_budget_stage)"/>
+                            </div>
+                        </t>
                     </div>
 
-                    <div class="col-12 col-lg-6">
-                        <div class="card h-100 wex_portal_panel">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fa fa-lock wex_portal_card_icon" aria-hidden="true"/>
-                                    Acceso del dispositivo
-                                </h5>
-                                <dl class="row mb-0">
-                                    <dt class="col-sm-5">Tipo de acceso</dt>
-                                    <dd class="col-sm-7"><t t-out="repair._get_portal_unlock_type_label() or '-'"/></dd>
-                                    <dt class="col-sm-5">Código / Patrón</dt>
-                                    <dd class="col-sm-7 text-break"><t t-out="repair._get_portal_unlock_description() or '-'"/></dd>
-                                    <dt class="col-sm-5">Notas de acceso</dt>
-                                    <dd class="col-sm-7 text-break"><t t-out="repair.x_unlock_notes or '-'"/></dd>
-                                </dl>
-                            </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-else="">
+            <!-- ═══════════════════════════════════════════════════
+                 BARRA COMPACTA — página de revisión de presupuesto
+            ═══════════════════════════════════════════════════ -->
+            <div class="wex_portal_repair_context_bar">
+                <div class="wex_portal_repair_context_inner">
+                    <div class="wex_portal_repair_context_main">
+                        <div class="wex_portal_repair_context_item wex_portal_repair_context_item--strong">
+                            <span>SAT</span>
+                            <strong><t t-out="context_bar['repair_name']"/></strong>
+                        </div>
+                        <div class="wex_portal_repair_context_item" t-if="context_bar['customer_reference']">
+                            <span>Referencia cliente</span>
+                            <strong><t t-out="context_bar['customer_reference']"/></strong>
+                        </div>
+                        <div class="wex_portal_repair_context_item">
+                            <span>Dispositivo</span>
+                            <strong><t t-out="context_bar['device_label']"/></strong>
+                        </div>
+                        <div t-att-class="'wex_portal_repair_context_status wex_portal_repair_context_status--%s' % context_bar['status']['key']">
+                            <span><t t-out="context_bar['status']['label']"/></span>
                         </div>
                     </div>
+                    <div class="wex_portal_repair_context_actions">
+                        <!-- wexplay_portal_repair_workflow reemplaza este div via xpath -->
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_repair_page" name="Repair Detail">
+        <t t-call="portal.portal_layout">
+            <t t-set="part_lines"     t-value="repair._get_portal_part_line_values()"/>
+            <t t-set="service_lines"  t-value="repair._get_portal_service_line_values()"/>
+            <t t-set="invoice_values" t-value="repair._get_portal_invoice_values()"/>
+            <t t-set="warranty_data"  t-value="repair._get_portal_warranty_values()"/>
+            <t t-set="image_values"   t-value="repair._get_portal_image_values(tag_code=image_tag) if 'x_image_ids' in repair._fields else []"/>
+
+            <div class="o_portal_wrap wex_portal_repair_wrap">
+
+                <!-- Hero panel (o barra compacta en presupuesto) -->
+                <t t-call="wexplay_portal.portal_repair_context_bar"/>
+
+                <!-- ─── Navegador de tabs ─────────────────────────────── -->
+                <div class="wex_portal_tab_nav_wrap">
+                    <ul class="nav wex_portal_tabs" id="repairDetailTabs" role="tablist">
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-ficha-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-ficha"
+                                    type="button" role="tab"
+                                    aria-controls="tab-ficha" aria-selected="true">
+                                <i class="fa fa-tablet me-1" aria-hidden="true"/>
+                                Ficha
+                            </button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-reparacion-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-reparacion"
+                                    type="button" role="tab"
+                                    aria-controls="tab-reparacion" aria-selected="false">
+                                <i class="fa fa-wrench me-1" aria-hidden="true"/>
+                                Reparación
+                                <t t-if="'x_budget_stage' in repair._fields and repair.x_budget_stage == 'waiting_customer'">
+                                    <span class="wex_portal_tab_dot" title="Acción pendiente"/>
+                                </t>
+                            </button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-facturacion-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-facturacion"
+                                    type="button" role="tab"
+                                    aria-controls="tab-facturacion" aria-selected="false">
+                                <i class="fa fa-file-text-o me-1" aria-hidden="true"/>
+                                Facturación
+                            </button>
+                        </li>
+
+                        <t t-if="'x_image_ids' in repair._fields">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-fotos-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-fotos"
+                                        type="button" role="tab"
+                                        aria-controls="tab-fotos" aria-selected="false">
+                                    <i class="fa fa-camera me-1" aria-hidden="true"/>
+                                    Fotografías
+                                    <t t-if="image_values">
+                                        <span class="wex_portal_tab_count"><t t-out="len(image_values)"/></span>
+                                    </t>
+                                </button>
+                            </li>
+                        </t>
+
+                        <t t-if="warranty_data.get('show')">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-garantia-btn"
+                                        data-bs-toggle="tab" data-bs-target="#tab-garantia"
+                                        type="button" role="tab"
+                                        aria-controls="tab-garantia" aria-selected="false">
+                                    <i class="fa fa-shield me-1" aria-hidden="true"/>
+                                    Garantía
+                                </button>
+                            </li>
+                        </t>
+
+                    </ul>
                 </div>
 
-                <div class="row g-3 mt-1">
-                    <div class="col-12">
-                        <div class="card h-100 wex_portal_panel wex_portal_panel--diagnosis">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fa fa-stethoscope wex_portal_card_icon" aria-hidden="true"/>
-                                        Diagnóstico y notas visibles
-                                    </h5>
-                                    <span class="wex_portal_focus_badge">Información clave del SAT</span>
+                <!-- ─── Contenido de tabs ─────────────────────────────── -->
+                <div class="tab-content wex_portal_tab_content" id="repairDetailTabsContent">
+
+                    <!-- ══════════════════════════════════════════
+                         TAB: Ficha — datos del dispositivo y diagnóstico
+                    ══════════════════════════════════════════ -->
+                    <div class="tab-pane fade show active" id="tab-ficha"
+                         role="tabpanel" aria-labelledby="tab-ficha-btn">
+
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-6">
+                                <div class="card h-100 wex_portal_panel">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fa fa-tablet wex_portal_card_icon" aria-hidden="true"/>
+                                            Información del dispositivo
+                                        </h5>
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-5">Fecha de alta</dt>
+                                            <dd class="col-sm-7"><span t-field="repair.create_date" t-options="{'widget': 'datetime'}"/></dd>
+                                            <dt class="col-sm-5">Referencia SAT</dt>
+                                            <dd class="col-sm-7"><t t-out="repair.name or '-'"/></dd>
+                                            <dt class="col-sm-5">Referencia cliente</dt>
+                                            <dd class="col-sm-7">
+                                                <span class="wex_portal_inline_reference">
+                                                    <t t-out="repair.x_customer_reference or '-'"/>
+                                                </span>
+                                            </dd>
+                                            <dt class="col-sm-5">IMEI / Serie</dt>
+                                            <dd class="col-sm-7"><t t-out="repair.x_imei or '-'"/></dd>
+                                            <dt class="col-sm-5">Tipo dispositivo</dt>
+                                            <dd class="col-sm-7"><t t-out="repair._get_portal_device_type_label() or '-'"/></dd>
+                                            <dt class="col-sm-5">Marca</dt>
+                                            <dd class="col-sm-7"><t t-out="repair._get_portal_brand_label() or '-'"/></dd>
+                                            <dt class="col-sm-5">Modelo</dt>
+                                            <dd class="col-sm-7"><t t-out="repair._get_portal_model_label() or '-'"/></dd>
+                                            <dt class="col-sm-5">Accesorios</dt>
+                                            <dd class="col-sm-7 text-break"><t t-out="repair.x_accessories or '-'"/></dd>
+                                        </dl>
+                                    </div>
                                 </div>
-                                <div class="row g-3">
-                                    <div class="col-12 col-lg-4">
-                                        <div class="wex_portal_focus_block">
-                                            <div class="wex_portal_focus_label">Descripción de la avería</div>
-                                            <div class="wex_portal_focus_value text-break">
-                                                <t t-out="repair.x_reported_issue or '-'"/>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div class="card h-100 wex_portal_panel">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fa fa-lock wex_portal_card_icon" aria-hidden="true"/>
+                                            Acceso del dispositivo
+                                        </h5>
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-5">Tipo de acceso</dt>
+                                            <dd class="col-sm-7"><t t-out="repair._get_portal_unlock_type_label() or '-'"/></dd>
+                                            <dt class="col-sm-5">Código / Patrón</dt>
+                                            <dd class="col-sm-7 text-break"><t t-out="repair._get_portal_unlock_description() or '-'"/></dd>
+                                            <dt class="col-sm-5">Notas de acceso</dt>
+                                            <dd class="col-sm-7 text-break"><t t-out="repair.x_unlock_notes or '-'"/></dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-0">
+                            <div class="col-12">
+                                <div class="card wex_portal_panel wex_portal_panel--diagnosis">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fa fa-stethoscope wex_portal_card_icon" aria-hidden="true"/>
+                                                Diagnóstico y notas visibles
+                                            </h5>
+                                            <span class="wex_portal_focus_badge">Información clave del SAT</span>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12 col-lg-4">
+                                                <div class="wex_portal_focus_block">
+                                                    <div class="wex_portal_focus_label">Descripción de la avería</div>
+                                                    <div class="wex_portal_focus_value text-break">
+                                                        <t t-out="repair.x_reported_issue or '-'"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-lg-8">
+                                                <div class="wex_portal_focus_block wex_portal_focus_block--diagnosis">
+                                                    <div class="wex_portal_focus_label">Diagnóstico</div>
+                                                    <div class="wex_portal_focus_value wex_portal_focus_value--rich">
+                                                        <t t-if="repair.internal_notes">
+                                                            <div t-field="repair.internal_notes"/>
+                                                        </t>
+                                                        <t t-else="">-</t>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-12 col-lg-8">
-                                        <div class="wex_portal_focus_block wex_portal_focus_block--diagnosis">
-                                            <div class="wex_portal_focus_label">Diagnóstico</div>
-                                            <div class="wex_portal_focus_value wex_portal_focus_value--rich">
-                                                <t t-if="repair.internal_notes">
-                                                    <div t-field="repair.internal_notes"/>
-                                                </t>
-                                                <t t-else="">-</t>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row g-3 mt-1">
-                    <div class="col-12">
-                        <div class="card h-100 wex_portal_panel">
+                    <!-- ══════════════════════════════════════════
+                         TAB: Reparación — piezas, servicios y cotizaciones
+                    ══════════════════════════════════════════ -->
+                    <div class="tab-pane fade" id="tab-reparacion"
+                         role="tabpanel" aria-labelledby="tab-reparacion-btn">
+
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-6">
+                                <div class="card h-100 wex_portal_panel">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fa fa-cogs wex_portal_card_icon" aria-hidden="true"/>
+                                                Piezas añadidas
+                                            </h5>
+                                            <span class="small text-muted">
+                                                <t t-out="repair.parts_availability or 'Sin estado'"/>
+                                            </span>
+                                        </div>
+                                        <t t-if="part_lines">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm align-middle mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Pieza</th>
+                                                            <th>Cantidad</th>
+                                                            <th class="text-end">Estado</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr t-foreach="part_lines" t-as="part_line">
+                                                            <td>
+                                                                <div class="fw-semibold"><t t-out="part_line['name'] or '-'"/></div>
+                                                                <div class="small text-muted"><t t-out="part_line['description'] or '-'"/></div>
+                                                            </td>
+                                                            <td>
+                                                                <t t-out="part_line['quantity']"/>
+                                                                <span t-if="part_line['uom']"> <t t-out="part_line['uom']"/></span>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <span class="badge rounded-pill text-bg-light border">
+                                                                    <t t-out="part_line['status']"/>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="alert alert-light mb-0">No hay piezas añadidas en esta reparación.</div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div class="card h-100 wex_portal_panel">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">
+                                            <i class="fa fa-wrench wex_portal_card_icon" aria-hidden="true"/>
+                                            Servicios añadidos
+                                        </h5>
+                                        <t t-if="service_lines">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm align-middle mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Servicio</th>
+                                                            <th>Cantidad</th>
+                                                            <th class="text-end">Importe</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr t-foreach="service_lines" t-as="service_line">
+                                                            <td>
+                                                                <div class="fw-semibold"><t t-out="service_line['name'] or '-'"/></div>
+                                                                <div class="small text-muted"><t t-out="service_line['description'] or '-'"/></div>
+                                                            </td>
+                                                            <td><t t-out="service_line['quantity']"/></td>
+                                                            <td class="text-end">
+                                                                <span t-out="service_line['subtotal']" t-options="{'widget': 'monetary', 'display_currency': service_line['currency']}"/>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="alert alert-light mb-0">No hay servicios añadidos en esta reparación.</div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cotizaciones relacionadas — inyectadas por wexplay_portal_repair_workflow -->
+                        <div class="mt-3">
+                            <t t-call="wexplay_portal.portal_repair_billing_extra"/>
+                        </div>
+                    </div>
+
+                    <!-- ══════════════════════════════════════════
+                         TAB: Facturación — facturas emitidas
+                    ══════════════════════════════════════════ -->
+                    <div class="tab-pane fade" id="tab-facturacion"
+                         role="tabpanel" aria-labelledby="tab-facturacion-btn">
+
+                        <div class="card wex_portal_panel">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="card-title mb-0">
@@ -479,9 +694,7 @@
                                             </thead>
                                             <tbody>
                                                 <tr t-foreach="invoice_values" t-as="invoice_item">
-                                                    <td class="fw-semibold">
-                                                        <t t-out="invoice_item['name']"/>
-                                                    </td>
+                                                    <td class="fw-semibold"><t t-out="invoice_item['name']"/></td>
                                                     <td>
                                                         <t t-if="invoice_item['date']">
                                                             <span t-out="invoice_item['date']" t-options="{'widget': 'date'}"/>
@@ -509,170 +722,17 @@
                                         No hay facturas relacionadas visibles desde este SAT.
                                     </div>
                                 </t>
-                                <t t-call="wexplay_portal.portal_repair_billing_extra"/>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-lg-6">
-                        <div class="card h-100 wex_portal_panel">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fa fa-cogs wex_portal_card_icon" aria-hidden="true"/>
-                                        Piezas añadidas
-                                    </h5>
-                                    <span class="small text-muted">
-                                        <t t-out="repair.parts_availability or 'Sin estado'"/>
-                                    </span>
-                                </div>
-                                <t t-if="part_lines">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Pieza</th>
-                                                    <th>Cantidad</th>
-                                                    <th class="text-end">Estado</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr t-foreach="part_lines" t-as="part_line">
-                                                    <td>
-                                                        <div class="fw-semibold"><t t-out="part_line['name'] or '-'"/></div>
-                                                        <div class="small text-muted"><t t-out="part_line['description'] or '-'"/></div>
-                                                    </td>
-                                                    <td>
-                                                        <t t-out="part_line['quantity']"/>
-                                                        <span t-if="part_line['uom']"> <t t-out="part_line['uom']"/></span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <span class="badge rounded-pill text-bg-light border">
-                                                            <t t-out="part_line['status']"/>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <div class="alert alert-light mb-0">No hay piezas añadidas en esta reparación.</div>
-                                </t>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-lg-6">
-                        <div class="card h-100 wex_portal_panel">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">
-                                    <i class="fa fa-wrench wex_portal_card_icon" aria-hidden="true"/>
-                                    Servicios añadidos
-                                </h5>
-                                <t t-if="service_lines">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Servicio</th>
-                                                    <th>Cantidad</th>
-                                                    <th class="text-end">Importe</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr t-foreach="service_lines" t-as="service_line">
-                                                    <td>
-                                                        <div class="fw-semibold"><t t-out="service_line['name'] or '-'"/></div>
-                                                        <div class="small text-muted"><t t-out="service_line['description'] or '-'"/></div>
-                                                    </td>
-                                                    <td><t t-out="service_line['quantity']"/></td>
-                                                    <td class="text-end">
-                                                        <span t-out="service_line['subtotal']" t-options="{'widget': 'monetary', 'display_currency': service_line['currency']}"/>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <div class="alert alert-light mb-0">No hay servicios añadidos en esta reparación.</div>
-                                </t>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <t t-if="warranty_data.get('show')">
-                    <div class="row g-3 mt-1">
-                        <div class="col-12">
-                            <div class="card h-100 wex_portal_panel wex_portal_panel--warranty">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <h5 class="card-title mb-0">
-                                            <i class="fa fa-shield wex_portal_card_icon" aria-hidden="true"/>
-                                            Garantía
-                                        </h5>
-                                        <span t-att-class="'badge rounded-pill wex_portal_warranty_badge ' + ('is-valid' if warranty_data.get('is_valid') else 'is-invalid')">
-                                            <t t-out="warranty_data.get('status') or '-'"/>
-                                        </span>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-12 col-lg-6">
-                                            <dl class="row mb-0">
-                                                <dt class="col-sm-5">Caso de garantía</dt>
-                                                <dd class="col-sm-7">
-                                                    <t t-if="warranty_data.get('is_case')">Sí</t>
-                                                    <t t-else="">No</t>
-                                                </dd>
-                                                <dt class="col-sm-5">SAT origen</dt>
-                                                <dd class="col-sm-7"><t t-out="warranty_data.get('origin_name') or '-'"/></dd>
-                                                <dt class="col-sm-5">Factura base</dt>
-                                                <dd class="col-sm-7"><t t-out="warranty_data.get('source_invoice') or '-'"/></dd>
-                                                <dt class="col-sm-5">Fecha factura</dt>
-                                                <dd class="col-sm-7">
-                                                    <t t-if="warranty_data.get('source_invoice_date')">
-                                                        <span t-out="warranty_data.get('source_invoice_date')" t-options="{'widget': 'date'}"/>
-                                                    </t>
-                                                    <t t-else="">-</t>
-                                                </dd>
-                                            </dl>
-                                        </div>
-                                        <div class="col-12 col-lg-6">
-                                            <dl class="row mb-0">
-                                                <dt class="col-sm-5">Cobertura piezas</dt>
-                                                <dd class="col-sm-7"><t t-out="warranty_data.get('parts_months') or 0"/> meses</dd>
-                                                <dt class="col-sm-5">Límite piezas</dt>
-                                                <dd class="col-sm-7">
-                                                    <t t-if="warranty_data.get('parts_deadline')">
-                                                        <span t-out="warranty_data.get('parts_deadline')" t-options="{'widget': 'date'}"/>
-                                                    </t>
-                                                    <t t-else="">-</t>
-                                                </dd>
-                                                <dt class="col-sm-5">Cobertura mano de obra</dt>
-                                                <dd class="col-sm-7"><t t-out="warranty_data.get('labor_months') or 0"/> meses</dd>
-                                                <dt class="col-sm-5">Límite mano de obra</dt>
-                                                <dd class="col-sm-7">
-                                                    <t t-if="warranty_data.get('labor_deadline')">
-                                                        <span t-out="warranty_data.get('labor_deadline')" t-options="{'widget': 'date'}"/>
-                                                    </t>
-                                                    <t t-else="">-</t>
-                                                </dd>
-                                                <dt class="col-sm-5">Revisión garantía</dt>
-                                                <dd class="col-sm-7"><t t-out="warranty_data.get('budget_status') or '-'"/></dd>
-                                            </dl>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-
-                <t t-if="'x_image_ids' in repair._fields">
-                    <div class="row g-3 mt-1">
-                        <div class="col-12">
-                            <div class="card h-100 wex_portal_panel">
+                    <!-- ══════════════════════════════════════════
+                         TAB: Fotografías (condicional)
+                    ══════════════════════════════════════════ -->
+                    <t t-if="'x_image_ids' in repair._fields">
+                        <div class="tab-pane fade" id="tab-fotos"
+                             role="tabpanel" aria-labelledby="tab-fotos-btn">
+                            <div class="card wex_portal_panel">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="card-title mb-0">
@@ -803,9 +863,78 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </t>
-            </div>
+                    </t>
+
+                    <!-- ══════════════════════════════════════════
+                         TAB: Garantía (condicional)
+                    ══════════════════════════════════════════ -->
+                    <t t-if="warranty_data.get('show')">
+                        <div class="tab-pane fade" id="tab-garantia"
+                             role="tabpanel" aria-labelledby="tab-garantia-btn">
+                            <div class="card wex_portal_panel wex_portal_panel--warranty">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fa fa-shield wex_portal_card_icon" aria-hidden="true"/>
+                                            Garantía
+                                        </h5>
+                                        <span t-att-class="'badge rounded-pill wex_portal_warranty_badge ' + ('is-valid' if warranty_data.get('is_valid') else 'is-invalid')">
+                                            <t t-out="warranty_data.get('status') or '-'"/>
+                                        </span>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-lg-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-5">Caso de garantía</dt>
+                                                <dd class="col-sm-7">
+                                                    <t t-if="warranty_data.get('is_case')">Sí</t>
+                                                    <t t-else="">No</t>
+                                                </dd>
+                                                <dt class="col-sm-5">SAT origen</dt>
+                                                <dd class="col-sm-7"><t t-out="warranty_data.get('origin_name') or '-'"/></dd>
+                                                <dt class="col-sm-5">Factura base</dt>
+                                                <dd class="col-sm-7"><t t-out="warranty_data.get('source_invoice') or '-'"/></dd>
+                                                <dt class="col-sm-5">Fecha factura</dt>
+                                                <dd class="col-sm-7">
+                                                    <t t-if="warranty_data.get('source_invoice_date')">
+                                                        <span t-out="warranty_data.get('source_invoice_date')" t-options="{'widget': 'date'}"/>
+                                                    </t>
+                                                    <t t-else="">-</t>
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-12 col-lg-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-5">Cobertura piezas</dt>
+                                                <dd class="col-sm-7"><t t-out="warranty_data.get('parts_months') or 0"/> meses</dd>
+                                                <dt class="col-sm-5">Límite piezas</dt>
+                                                <dd class="col-sm-7">
+                                                    <t t-if="warranty_data.get('parts_deadline')">
+                                                        <span t-out="warranty_data.get('parts_deadline')" t-options="{'widget': 'date'}"/>
+                                                    </t>
+                                                    <t t-else="">-</t>
+                                                </dd>
+                                                <dt class="col-sm-5">Cobertura mano de obra</dt>
+                                                <dd class="col-sm-7"><t t-out="warranty_data.get('labor_months') or 0"/> meses</dd>
+                                                <dt class="col-sm-5">Límite mano de obra</dt>
+                                                <dd class="col-sm-7">
+                                                    <t t-if="warranty_data.get('labor_deadline')">
+                                                        <span t-out="warranty_data.get('labor_deadline')" t-options="{'widget': 'date'}"/>
+                                                    </t>
+                                                    <t t-else="">-</t>
+                                                </dd>
+                                                <dt class="col-sm-5">Revisión garantía</dt>
+                                                <dd class="col-sm-7"><t t-out="warranty_data.get('budget_status') or '-'"/></dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                </div><!-- /tab-content -->
+            </div><!-- /wex_portal_repair_wrap -->
         </t>
     </template>
 

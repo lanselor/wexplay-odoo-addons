@@ -19,10 +19,12 @@ Incluye:
         "repair",
         "mail",
         "wexplay_repair",
+        "repair_picking_after_done",
     ],
     "data": [
         "security/ir.model.access.csv",
         "views/repair_order_views.xml",
+        "wizard/budget_workflow_confirm_views.xml",
         "wizard/finish_repair_glue_choice_views.xml",
         "wizard/waiting_spare_confirm_views.xml",
     ],

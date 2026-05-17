@@ -54,17 +54,29 @@
                                 class="btn btn-danger"
                                 invisible="not x_is_warranty_case or state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"/>
 
+                        <button name="action_budget_mark_not_repairable"
+                                type="object"
+                                string="No reparable"
+                                class="btn btn-danger"
+                                invisible="state in ('done', 'cancel', 'delivered') or (x_budget_stage != 'estimating' and x_budget_stage != 'waiting_customer')"/>
+
+                        <button name="action_finish_not_repairable_diagnosis"
+                                type="object"
+                                string="Finalizar diagnóstico"
+                                class="btn btn-info"
+                                invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'not_repairable'"/>
+
                         <button name="action_budget_reestimate"
                                 type="object"
                                 string="Volver a presupuestar"
                                 class="btn btn-warning"
-                                invisible="x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
+                                invisible="x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'not_repairable') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
 
                         <button name="action_budget_reestimate"
                                 type="object"
                                 string="Volver a revisar"
                                 class="btn btn-warning"
-                                invisible="not x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
+                                invisible="not x_is_warranty_case or state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'not_repairable') or (x_budget_stage == 'rejected' and state != 'cancel'))"/>
 
                         <button name="action_mark_ready_for_pickup_from_glue"
                                 type="object"
@@ -82,11 +94,11 @@
                     <div class="wex_repair_workflow_status">
                         <field name="x_budget_stage"
                                widget="statusbar"
-                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected,not_repairable"
                                invisible="x_is_warranty_case"/>
                         <field name="x_warranty_budget_stage"
                                widget="statusbar"
-                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                               statusbar_visible="none,estimating,waiting_customer,accepted,rejected,not_repairable"
                                invisible="not x_is_warranty_case"/>
                     </div>
                 </div>

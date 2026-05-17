@@ -129,6 +129,7 @@ patch(AppsMenu.prototype, {
         onWillUnmount(() => {
             this._destroyCustomizerSortable();
             this._clearCustomizerLongPress();
+            this._closeCustomizerPatchNoteModal();
             document.removeEventListener("pointermove", this._customizerPointerMoveHandler);
             document.removeEventListener("pointerup", this._customizerPointerUpHandler);
             document.removeEventListener("pointercancel", this._customizerPointerUpHandler);
@@ -164,6 +165,7 @@ patch(AppsMenu.prototype, {
         this._applyStoredCustomizerOrder(container);
         this._applyCustomizerIconSize(container);
         this._applyCustomizerItemStates(container);
+        this._applyCustomizerPatchNote(container);
         this._bindCustomizerEvents(container);
         this._setupCustomizerSortable(container);
     },
@@ -190,6 +192,86 @@ patch(AppsMenu.prototype, {
 
     _applyCustomizerIconSize(container) {
         container.dataset.iconSize = getIconSize();
+    },
+
+    _applyCustomizerPatchNote(container) {
+        const patchNote = session.apps_menu && session.apps_menu.patch_note;
+        const noteHtml = patchNote && (patchNote.html || patchNote.text);
+        if (!noteHtml) {
+            container.querySelector(".o_app_menu_patch_note")?.remove();
+            return;
+        }
+        let note = container.querySelector(".o_app_menu_patch_note");
+        if (!note) {
+            note = document.createElement("section");
+            note.className = "o_app_menu_patch_note";
+            const header = document.createElement("div");
+            header.className = "o_app_menu_patch_note_header";
+            const title = document.createElement("span");
+            title.className = "o_app_menu_patch_note_title";
+            title.replaceChildren(
+                buildIcon("fa fa-info-circle"),
+                document.createTextNode("Notas de actualizacion")
+            );
+            const date = document.createElement("span");
+            date.className = "o_app_menu_patch_note_date";
+            header.append(title, date);
+            const body = document.createElement("div");
+            body.className = "o_app_menu_patch_note_body";
+            const readMore = document.createElement("button");
+            readMore.type = "button";
+            readMore.className = "o_app_menu_patch_note_more";
+            readMore.dataset.appMenuPatchNoteAction = "open";
+            readMore.textContent = "Ver más";
+            note.append(header, body, readMore);
+            container.append(note);
+        }
+        const date = note.querySelector(".o_app_menu_patch_note_date");
+        const body = note.querySelector(".o_app_menu_patch_note_body");
+        date.textContent = patchNote.date || "";
+        body.innerHTML = noteHtml;
+    },
+
+    _openCustomizerPatchNoteModal() {
+        const patchNote = session.apps_menu && session.apps_menu.patch_note;
+        const noteHtml = patchNote && (patchNote.html || patchNote.text);
+        if (!noteHtml) {
+            return;
+        }
+        this._closeCustomizerPatchNoteModal();
+        const modal = document.createElement("div");
+        modal.className = "o_app_menu_patch_note_modal";
+        modal.innerHTML = `
+            <div class="o_app_menu_patch_note_modal_dialog" role="dialog" aria-modal="true">
+                <header class="o_app_menu_patch_note_modal_header">
+                    <div>
+                        <strong>Notas de actualizacion</strong>
+                        <span>${patchNote.date || ""}</span>
+                    </div>
+                    <button type="button" class="o_app_menu_patch_note_modal_close" aria-label="Cerrar">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </header>
+                <div class="o_app_menu_patch_note_modal_body"></div>
+            </div>
+        `;
+        modal.querySelector(".o_app_menu_patch_note_modal_body").innerHTML = noteHtml;
+        modal.addEventListener("click", (event) => {
+            if (
+                event.target === modal ||
+                event.target.closest(".o_app_menu_patch_note_modal_close")
+            ) {
+                event.preventDefault();
+                this._closeCustomizerPatchNoteModal();
+            }
+        });
+        document.body.append(modal);
+        this._customizerPatchNoteModal = modal;
+    },
+
+    _closeCustomizerPatchNoteModal() {
+        this._customizerPatchNoteModal?.remove();
+        this._customizerPatchNoteModal = null;
     },
 
     _applyCustomizerItemStates(container) {
@@ -537,6 +619,15 @@ patch(AppsMenu.prototype, {
     },
 
     _onCustomizerClick(event) {
+        const patchNoteButton = event.target.closest("[data-app-menu-patch-note-action]");
+        if (patchNoteButton) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (patchNoteButton.dataset.appMenuPatchNoteAction === "open") {
+                this._openCustomizerPatchNoteModal();
+            }
+            return;
+        }
         const actionButton = event.target.closest("[data-app-menu-customizer-action]");
         if (actionButton) {
             event.preventDefault();

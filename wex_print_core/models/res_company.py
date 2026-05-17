@@ -5,6 +5,10 @@ from odoo import fields, models
 class ResCompany(models.Model):
     _inherit = "res.company"
 
+    wex_qz_label_device_id = fields.Many2one("wex.print.device", string="Label device (QZ)")
+    wex_qz_thermal_device_id = fields.Many2one("wex.print.device", string="Thermal device (QZ)")
+    wex_qz_a4_device_id = fields.Many2one("wex.print.device", string="A4 device (QZ)")
+
     wex_qz_label_printer = fields.Char(string="Impresora etiquetas (QZ)")
     wex_qz_thermal_printer = fields.Char(string="Impresora térmica (QZ)")
     wex_qz_a4_printer = fields.Char(string="Impresora A4 (QZ)")

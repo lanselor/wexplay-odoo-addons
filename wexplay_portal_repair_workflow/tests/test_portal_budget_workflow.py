@@ -102,6 +102,20 @@ class TestPortalBudgetWorkflow(SavepointCase):
         self.assertEqual(event.handled_state, "pending")
         self.assertEqual(event.sale_order_id, sale_order)
 
+    def test_portal_reject_after_reestimate_resets_budget_consistently(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+
+        repair.with_user(self.portal_user).action_portal_accept_budget(user=self.portal_user)
+        repair.with_context(
+            skip_budget_reestimate_quote_reset_confirm=True
+        ).action_budget_reestimate()
+        repair.action_budget_wait_customer()
+
+        repair.with_user(self.portal_user).action_portal_reject_budget(user=self.portal_user)
+
+        self.assertEqual(sale_order.state, "cancel")
+        self.assertEqual(repair.x_budget_stage, "rejected")
+
     def test_portal_user_cannot_accept_foreign_budget(self):
         repair, _sale_order = self._create_budget_repair(self.other_partner)
 
@@ -121,3 +135,28 @@ class TestPortalBudgetWorkflow(SavepointCase):
         self.assertEqual(event.repair_id, repair)
         self.assertEqual(event.sale_order_id, sale_order)
         self.assertEqual(event.handled_state, "done")
+
+    def test_portal_budget_summary_after_reject_uses_prepared_values(self):
+        repair, _sale_order = self._create_budget_repair(self.company_partner)
+
+        repair.with_user(self.portal_user).action_portal_reject_budget(user=self.portal_user)
+        values = repair.with_user(self.portal_user)._get_portal_budget_summary_values()
+
+        self.assertEqual(values["status"]["key"], "rejected")
+        self.assertFalse(values["can_accept"])
+        self.assertFalse(values["can_reject"])
+        self.assertEqual(len(values["line_values"]), 1)
+
+    def test_portal_budget_debug_values_include_state_snapshot(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+
+        debug_values = repair.with_user(self.portal_user)._get_portal_budget_debug_values(
+            user=self.portal_user
+        )
+
+        self.assertEqual(debug_values["repair_id"], repair.id)
+        self.assertEqual(debug_values["sale_order_id"], sale_order.id)
+        self.assertEqual(debug_values["sale_order_state"], "draft")
+        self.assertTrue(debug_values["can_portal_access"])
+        self.assertTrue(debug_values["can_portal_review_budget"])
+        self.assertTrue(debug_values["can_portal_reject_budget"])

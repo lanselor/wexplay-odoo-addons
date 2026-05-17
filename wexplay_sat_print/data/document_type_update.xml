@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vincula los document types del core con los reportes y paperformats de este módulo -->
+    <record id="wex_print_core.wex_print_document_type_sat_label_main" model="wex.print.document.type">
+        <field name="report_action_id" ref="wexplay_sat_print.report_repair_label_29x90"/>
+        <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_label_29x90"/>
+    </record>
+
+    <record id="wex_print_core.wex_print_document_type_sat_label_accessory" model="wex.print.document.type">
+        <field name="report_action_id" ref="wexplay_sat_print.report_repair_label_29x42"/>
+        <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_label_29x42"/>
+    </record>
+
+    <record id="wex_print_core.wex_print_document_type_sat_ticket" model="wex.print.document.type">
+        <field name="report_action_id" ref="wexplay_sat_print.report_repair_ticket_80x170"/>
+        <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_ticket_80x170"/>
+    </record>
+</odoo>

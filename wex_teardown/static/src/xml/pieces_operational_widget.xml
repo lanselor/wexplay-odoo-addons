@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_teardown.PiecesOperationalWidget">
+        <div class="wex_td_pieces_operational">
+            <t t-if="state.loading">
+                <div class="text-muted">Cargando piezas...</div>
+            </t>
+            <t t-elif="!state.rows.length">
+                <div class="text-muted">No hay piezas pendientes o aptas.</div>
+            </t>
+            <t t-else="">
+                <div class="wex_td_pieces_table">
+                    <div class="wex_td_pieces_header">
+                        <span>Componente</span>
+                        <span>Part number</span>
+                        <span>Cantidad</span>
+                        <span>Nombre sugerido</span>
+                        <span>Estado</span>
+                        <span>Acciones</span>
+                    </div>
+                    <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                        <div class="wex_td_piece_row"
+                             t-att-class="{
+                                'is-exact': row.duplicate_status === 'exact',
+                                'is-partial': row.duplicate_status === 'partial',
+                                'is-model': row.duplicate_status === 'model',
+                             }">
+                            <div class="wex_td_piece_summary">
+                                <span t-esc="row.component_name"/>
+                                <span t-esc="row.part_number || '-'"/>
+                                <span t-esc="row.quantity"/>
+                                <span t-esc="row.name_suggested || '-'"/>
+                                <span t-esc="row.state_label"/>
+                                <span class="wex_td_piece_actions">
+                                    <button type="button" class="btn btn-link p-0"
+                                            t-att-data-row-id="row.id"
+                                            t-on-click="toggleExpand"
+                                            title="Editar">
+                                        <i class="fa fa-pencil"/>
+                                    </button>
+                                    <button type="button" class="btn btn-link p-0 text-success"
+                                            t-att-data-row-id="row.id"
+                                            t-on-click="markOk"
+                                            title="Marcar apta">
+                                        <i class="fa fa-check"/>
+                                    </button>
+                                    <button type="button" class="btn btn-link p-0 text-danger"
+                                            t-att-data-row-id="row.id"
+                                            t-on-click="openReject"
+                                            title="Rechazar pieza">
+                                        <i class="fa fa-times"/>
+                                    </button>
+                                </span>
+                            </div>
+                            <t t-if="isExpanded(row.id)">
+                                    <div class="wex_td_piece_editor">
+                                        <div class="wex_td_piece_editor_grid">
+                                            <label>
+                                                <span>Part number</span>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   t-att-value="getDraft(row).part_number"
+                                                   t-att-data-row-id="row.id"
+                                                   t-on-input="handlePartNumberInput"/>
+                                            <label class="wex_td_inline_check">
+                                                <input type="checkbox"
+                                                       t-att-checked="getDraft(row).missing_part_number_confirmed"
+                                                       t-att-data-row-id="row.id"
+                                                       t-on-change="handleMissingPartNumberToggle"/>
+                                                <span>Confirmo que esta pieza seguirá sin part number</span>
+                                            </label>
+                                        </label>
+                                        <label>
+                                            <span>Cantidad</span>
+                                            <input type="number"
+                                                   step="0.01"
+                                                   class="form-control"
+                                                   t-att-value="getDraft(row).quantity"
+                                                   t-att-data-row-id="row.id"
+                                                   t-on-input="handleQuantityInput"/>
+                                        </label>
+                                        <label class="is-wide">
+                                            <span>Nombre sugerido</span>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   t-att-value="getDraft(row).name_final"
+                                                   t-att-data-row-id="row.id"
+                                                   t-on-input="handleNameInput"/>
+                                        </label>
+                                    </div>
+                                    <div class="wex_td_piece_editor_meta">
+                                        <div class="wex_td_piece_match_panel">
+                                            <div class="wex_td_piece_match_header">
+                                                <strong>Coincidencias</strong>
+                                                <t t-if="row.decision === 'use_existing' and row.existing_product_name">
+                                                    <div class="wex_td_piece_selected_context">
+                                                        <span class="badge text-bg-success">Producto seleccionado</span>
+                                                        <strong t-esc="row.existing_product_name"/>
+                                                    </div>
+                                                    <t t-if="row.existing_product_update_name">
+                                                        <span class="badge text-bg-warning">
+                                                            Se actualizará el nombre
+                                                        </span>
+                                                    </t>
+                                                </t>
+                                            </div>
+                                            <t t-if="row.primary_candidate">
+                                                <div class="wex_td_piece_candidate is-primary"
+                                                     t-att-class="{
+                                                        'is-exact': row.primary_candidate.status === 'exact',
+                                                        'is-partial': row.primary_candidate.status === 'partial',
+                                                        'is-model': row.primary_candidate.status === 'model',
+                                                        'is-selected': row.primary_candidate.is_selected,
+                                                     }">
+                                                    <div class="wex_td_piece_candidate_main">
+                                                        <div class="wex_td_piece_candidate_title">
+                                                            <span class="badge text-bg-light"
+                                                                  t-esc="row.primary_candidate.status_label"/>
+                                                            <span t-if="row.primary_candidate.is_selected"
+                                                                  class="badge text-bg-success">
+                                                                Seleccionado
+                                                            </span>
+                                                            <strong t-esc="row.primary_candidate.name"/>
+                                                        </div>
+                                                        <div class="wex_td_piece_candidate_meta">
+                                                            <t t-if="row.primary_candidate.part_number">
+                                                                <span>Part number: <t t-esc="row.primary_candidate.part_number"/></span>
+                                                            </t>
+                                                            <t t-if="row.primary_candidate.model_name">
+                                                                <span>Modelo: <t t-esc="row.primary_candidate.model_name"/></span>
+                                                            </t>
+                                                            <span>RF <t t-esc="row.primary_candidate.score"/></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="wex_td_piece_candidate_actions">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                                t-att-data-row-id="row.id"
+                                                                t-att-data-product-id="row.primary_candidate.id"
+                                                                t-att-data-update-name="0"
+                                                                t-on-click="chooseExisting">
+                                                            Usar este producto
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm"
+                                                                t-att-data-row-id="row.id"
+                                                                t-att-data-product-id="row.primary_candidate.id"
+                                                                t-att-data-update-name="1"
+                                                                t-on-click="chooseExisting">
+                                                            Usar y actualizar nombre
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                                t-att-data-row-id="row.id"
+                                                                t-att-data-product-id="row.primary_candidate.id"
+                                                                t-on-click="openProduct">
+                                                            Ver ficha
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                            <t t-if="row.secondary_candidates.length">
+                                                <div class="wex_td_piece_candidate_list">
+                                                    <div class="wex_td_piece_candidate_list_title">Otras coincidencias</div>
+                                                    <t t-foreach="row.secondary_candidates" t-as="candidate" t-key="candidate.id">
+                                                        <div class="wex_td_piece_candidate is-secondary"
+                                                             t-att-class="{'is-selected': candidate.is_selected}">
+                                                            <div class="wex_td_piece_candidate_main">
+                                                                <div class="wex_td_piece_candidate_title">
+                                                                    <span class="badge text-bg-light"
+                                                                          t-esc="candidate.status_label"/>
+                                                                    <span t-if="candidate.is_selected"
+                                                                          class="badge text-bg-success">
+                                                                        Seleccionado
+                                                                    </span>
+                                                                    <span t-esc="candidate.name"/>
+                                                                </div>
+                                                                <div class="wex_td_piece_candidate_meta">
+                                                                    <t t-if="candidate.part_number">
+                                                                        <span>Part number: <t t-esc="candidate.part_number"/></span>
+                                                                    </t>
+                                                                    <span>RF <t t-esc="candidate.score"/></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="wex_td_piece_candidate_actions">
+                                                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                                                        t-att-data-row-id="row.id"
+                                                                        t-att-data-product-id="candidate.id"
+                                                                        t-att-data-update-name="0"
+                                                                        t-on-click="chooseExisting">
+                                                                    Elegir este
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-warning btn-sm"
+                                                                        t-att-data-row-id="row.id"
+                                                                        t-att-data-product-id="candidate.id"
+                                                                        t-att-data-update-name="1"
+                                                                        t-on-click="chooseExisting">
+                                                                    Elegir y actualizar nombre
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                                        t-att-data-row-id="row.id"
+                                                                        t-att-data-product-id="candidate.id"
+                                                                        t-on-click="openProduct">
+                                                                    Ver ficha
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                            <t t-if="!row.primary_candidate">
+                                                <div class="text-muted">Sin coincidencias relevantes.</div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="wex_td_piece_editor_footer">
+                                        <button type="button" class="btn btn-secondary"
+                                                t-att-data-row-id="row.id"
+                                                t-on-click="cancelEdit">
+                                            Cancelar
+                                        </button>
+                                        <button type="button" class="btn btn-primary"
+                                                t-att-data-row-id="row.id"
+                                                t-att-disabled="state.savingId === row.id"
+                                                t-on-click="saveRow">
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+                <div class="wex_td_match_legend">
+                    <span class="wex_td_match_legend_item">
+                        <span class="wex_td_match_legend_swatch is-exact"/>
+                        <span>Verde: coincidencia exacta</span>
+                    </span>
+                    <span class="wex_td_match_legend_item">
+                        <span class="wex_td_match_legend_swatch is-partial"/>
+                        <span>Amarillo: coincidencia parcial, revisar</span>
+                    </span>
+                    <span class="wex_td_match_legend_item">
+                        <span class="wex_td_match_legend_swatch is-model"/>
+                        <span>Azul: coincidencia por modelo, revisar con cuidado</span>
+                    </span>
+                    <span class="wex_td_match_legend_item">
+                        <span class="wex_td_match_legend_swatch is-none"/>
+                        <span>Blanco: sin coincidencias relevantes</span>
+                    </span>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

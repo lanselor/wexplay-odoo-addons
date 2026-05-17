@@ -7,7 +7,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">wexplay_product_print.report_product_label_ql700_62x29</field>
         <field name="report_file">wexplay_product_print.report_product_label_ql700_62x29</field>
-        <!-- binding_* es opcional: úsalo si quieres que aparezca en Imprimir del formulario -->
+        <field name="paperformat_id" ref="wexplay_product_print.paperformat_product_label_42x29"/>
         <field name="binding_model_id" ref="product.model_product_template"/>
         <field name="binding_type">report</field>
     </record>

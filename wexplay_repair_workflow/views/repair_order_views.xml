@@ -42,13 +42,29 @@
                             class="btn btn-danger"
                             invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'waiting_customer'"
                             />
+
+                        <button
+                            name="action_budget_mark_not_repairable"
+                            type="object"
+                            string="No reparable"
+                            class="btn btn-danger"
+                            invisible="state in ('done', 'cancel', 'delivered') or (x_budget_stage != 'estimating' and x_budget_stage != 'waiting_customer')"
+                            />
+
+                        <button
+                            name="action_finish_not_repairable_diagnosis"
+                            type="object"
+                            string="Finalizar diagnóstico"
+                            class="btn btn-info"
+                            invisible="state in ('done', 'cancel', 'delivered') or x_budget_stage != 'not_repairable'"
+                            />
                         
                         <button
                             name="action_budget_reestimate"
                             type="object"
                             string="Volver a revisar"
                             class="btn btn-warning"
-                            invisible="state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'rejected' and state != 'cancel'))"
+                            invisible="state in ('done', 'delivered') or not ((x_budget_stage == 'waiting_customer') or (x_budget_stage == 'accepted') or (x_budget_stage == 'not_repairable') or (x_budget_stage == 'rejected' and state != 'cancel'))"
                             />
                         
                         <button
@@ -60,11 +76,11 @@
                             />
                     </div>
                     
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end flex-grow-1 overflow-auto">
                         <field
                             name="x_budget_stage"
                             widget="statusbar"
-                            statusbar_visible="none,estimating,waiting_customer,accepted,rejected"
+                            statusbar_visible="none,estimating,waiting_customer,accepted,rejected,not_repairable"
                             />
                     </div>
                     
@@ -100,7 +116,18 @@
                     </group>
                 </group>
             </xpath>
-            
+
+        </field>
+    </record>
+
+    <record id="view_repair_order_form_hide_transfer_not_repairable" model="ir.ui.view">
+        <field name="name">repair.order.form.hide.transfer.not.repairable</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair_picking_after_done.repair_type_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_transfer_done_moves']" position="attributes">
+                <attribute name="invisible">state != 'done' or remaining_quantity == 0 or not product_id or x_budget_stage == 'not_repairable'</attribute>
+            </xpath>
         </field>
     </record>
     

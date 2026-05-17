@@ -9,8 +9,9 @@
     "website": "https://github.com/OCA/web",
     "author": "Wexplay, Odoo Community Association (OCA)",
     "license": "AGPL-3",
-    "depends": ["web_responsive"],
+    "depends": ["base_setup", "web_responsive"],
     "data": [
+        "views/res_config_settings_views.xml",
         "views/res_users_views.xml",
     ],
     "assets": {

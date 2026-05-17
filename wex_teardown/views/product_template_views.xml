@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_wex_teardown" model="ir.ui.view">
+        <field name="name">product.template.form.wex.teardown</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="wex_condition" string="Estado Wexplay"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <group string="Reacondicionamiento"
+                       invisible="wex_condition != 'refurbished' and not wex_teardown_component_id and not wex_teardown_part_number and not wex_teardown_model_id">
+                    <group>
+                        <field name="wex_teardown_component_id"/>
+                        <field name="wex_teardown_part_number"/>
+                        <field name="wex_teardown_model_id"/>
+                    </group>
+                    <group>
+                        <field name="wex_teardown_brand_id"/>
+                        <field name="wex_teardown_device_type"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

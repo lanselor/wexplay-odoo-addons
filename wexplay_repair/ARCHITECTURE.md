@@ -8,6 +8,7 @@ It extends `repair.order` with:
 - device identification data
 - customer reception data
 - SAT-oriented search helpers
+- a SAT-wide operational label for `state = done` as `Finalizado`
 - SAT settings on company/configuration
 - DMS helper methods for SAT folders
 - invoice/report integrations used by the SAT workflow
@@ -21,6 +22,9 @@ This module is currently both:
 
 ### `models/repair_order.py`
 - Adds SAT fields to `repair.order`
+- Keeps Odoo's technical `done` state, but labels it as `Finalizado` for SAT
+  because a repair order can close due to successful repair, diagnostic closure,
+  customer rejection or non-repairable diagnosis.
 - Computes customer summary and SAT totals
 - Adds phone/mobile search helper
 - Handles basic device-history navigation
@@ -84,6 +88,7 @@ Those belong in extender modules.
   - profile `A4 Prod`
   - assignment `SAT A4 Default`
   - duplex mode `Double-sided (long edge)`
+- SAT invoice printing should continue to be treated as a functional SAT document owned by `account.move`, not as a detached PDF with no business area
 
 ## Notes For Next Phases
 
@@ -91,3 +96,8 @@ Those belong in extender modules.
 - Revisit the SAT invoice report so repair resolution is prepared in Python.
 - Reduce fragility in the large form inheritance only when there is a concrete business reason to touch it.
 - Do not start the print-variant refactor until hybrid behavior is considered stable enough.
+- When the configurable-document phase starts, SAT invoice A4 should be modeled as a formal printable document linked to:
+  - Odoo model `account.move`
+  - SAT functional area
+  - its report action
+  - its paperformat

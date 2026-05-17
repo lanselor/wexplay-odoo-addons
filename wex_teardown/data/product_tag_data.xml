@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="product_tag_refurbished" model="product.tag">
+        <field name="name">Reacondicionado</field>
+    </record>
+    <record id="product_tag_teardown" model="product.tag">
+        <field name="name">Despiece</field>
+    </record>
+</odoo>

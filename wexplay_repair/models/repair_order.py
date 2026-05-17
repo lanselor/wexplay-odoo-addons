@@ -11,6 +11,11 @@ from .device_constants import DEVICE_TYPE_SELECTION
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
+    state = fields.Selection(
+        selection_add=[("done", "Finalizado")],
+        ondelete={"done": "set default"},
+    )
+
     x_device_type = fields.Selection(
         DEVICE_TYPE_SELECTION,
         string="Tipo de dispositivo",

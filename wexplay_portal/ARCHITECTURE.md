@@ -179,6 +179,13 @@ Las rutas del portal buscan siempre dentro del dominio visible del usuario.
 
 Un acceso manual a registros ajenos debe responder `404`.
 
+Si una accion portal valida necesita despues disparar workflow interno o logica
+comercial sensible, el controlador no debe resolverlo abriendo permisos al
+usuario portal sobre modelos de backend. La validacion sigue siendo del usuario
+portal, pero la ejecucion tecnica sensible debe quedar encapsulada en modelo y
+aislada del entorno ORM del cliente cuando haga falta tocar modelos como
+`sale.order` o sus lineas.
+
 #### 4. Exposicion de imagenes
 
 Las fotos SAT no se sirven desde rutas genericas de DMS.
@@ -251,6 +258,11 @@ La ficha SAT debe aportar contexto real para cliente empresa:
 - piezas y servicios
 - acceso a facturacion relacionada
 - fotografias SAT
+
+El recorrido de presupuesto puede mostrar `No reparable` cuando el diagnostico
+interno determina que no hay solucion tecnica viable. Ese estado se consume del
+workflow SAT y no implica cancelacion de la reparacion ni exposicion de notas
+internas.
 
 La ficha SAT incluye una barra contextual sticky propia del portal base para
 mantener visibles durante el scroll:
@@ -375,6 +387,9 @@ Puntos detectados para sanear en futuras iteraciones, sin bloquear el MVP actual
   centradas en renderizar.
 - Formalizar para futuras refactorizaciones el flujo de diagnostico, plan,
   fases pequenas y documentacion tecnica antes de tocar codigo.
+- Revisar periodicamente que las acciones portal que disparan workflow interno
+  sigan ejecutandose con el menor privilegio posible sin introducir ACL
+  peligrosas en modelos comerciales o logistico-financieros.
 
 ---
 

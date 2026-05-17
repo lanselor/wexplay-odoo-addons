@@ -19,6 +19,13 @@ class TestPortalRepairSecurity(SavepointCase):
         )
         cls.other_partner = cls.env["res.partner"].create({"name": "Otra Empresa"})
         cls.product = cls.env["product.product"].create({"name": "Equipo Portal"})
+        cls.service_product = cls.env["product.product"].create(
+            {
+                "name": "Servicio Portal",
+                "type": "service",
+                "list_price": 42.0,
+            }
+        )
 
         cls.portal_user = cls.env["res.users"].with_context(no_reset_password=True).create(
             {
@@ -57,6 +64,25 @@ class TestPortalRepairSecurity(SavepointCase):
                 "x_reported_issue": "Bateria agotada",
             }
         )
+        cls.sale_order = cls.env["sale.order"].create(
+            {
+                "partner_id": cls.company_partner.id,
+                "order_line": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": cls.service_product.id,
+                            "name": "Mano de obra portal",
+                            "product_uom_qty": 1.0,
+                            "product_uom": cls.service_product.uom_id.id,
+                            "price_unit": 42.0,
+                        },
+                    )
+                ],
+            }
+        )
+        cls.own_repair.sale_order_id = cls.sale_order
 
     def test_portal_visible_domain_uses_commercial_partner(self):
         domain = self.env["repair.order"]._get_portal_visible_domain(self.portal_user)
@@ -95,3 +121,9 @@ class TestPortalRepairSecurity(SavepointCase):
 
         with self.assertRaises(AccessError):
             foreign_repair._get_portal_invoice_values()
+
+    def test_portal_user_can_read_prepared_service_lines_from_own_repair(self):
+        values = self.own_repair.with_user(self.portal_user)._get_portal_service_line_values()
+
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0]["name"], self.service_product.display_name)

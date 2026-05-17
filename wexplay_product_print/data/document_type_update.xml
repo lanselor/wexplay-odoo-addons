@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vincula el document type del core con el reporte y paperformat de este módulo -->
+    <record id="wex_print_core.wex_print_document_type_product_label" model="wex.print.document.type">
+        <field name="report_action_id" ref="wexplay_product_print.action_report_product_label_ql700_62x29"/>
+        <field name="paperformat_id" ref="wexplay_product_print.paperformat_product_label_42x29"/>
+    </record>
+</odoo>

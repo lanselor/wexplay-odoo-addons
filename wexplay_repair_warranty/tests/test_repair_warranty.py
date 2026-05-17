@@ -206,3 +206,51 @@ class TestRepairWarranty(TransactionCase):
         self.assertTrue(wizard.is_out_of_warranty)
         self.assertTrue(child_repair.exists())
         self.assertEqual(child_repair.x_warranty_origin_repair_id, repair)
+
+    def test_warranty_case_accept_does_not_require_sale_order(self):
+        sale_order = self._create_sale_order()
+        self._create_posted_invoice(sale_order, fields.Date.to_date("2026-04-01"))
+
+        repair = self._create_repair(sale_order, [self.service_product_premium])
+        warranty_repair = repair._create_warranty_child_repair()
+        warranty_repair.write({"x_budget_stage": "waiting_customer"})
+
+        warranty_repair.action_budget_accept()
+
+        self.assertEqual(warranty_repair.x_budget_stage, "accepted")
+        self.assertEqual(warranty_repair.state, "confirmed")
+        self.assertFalse(warranty_repair.sale_order_id)
+
+    def test_warranty_case_reject_does_not_require_or_cancel_sale_order(self):
+        sale_order = self._create_sale_order()
+        self._create_posted_invoice(sale_order, fields.Date.to_date("2026-04-01"))
+
+        repair = self._create_repair(sale_order, [self.service_product_premium])
+        warranty_repair = repair._create_warranty_child_repair()
+        warranty_repair.write({"x_budget_stage": "waiting_customer"})
+
+        action = warranty_repair.action_budget_reject()
+
+        self.assertEqual(action["res_model"], "wex.budget.workflow.confirm.wizard")
+        self.assertIn("garantia", action["context"]["default_message"].lower())
+
+        wizard = self.env["wex.budget.workflow.confirm.wizard"].with_context(
+            action["context"]
+        ).create({})
+        wizard.action_confirm()
+
+        self.assertEqual(warranty_repair.x_budget_stage, "rejected")
+        self.assertFalse(warranty_repair.sale_order_id)
+
+    def test_warranty_case_reestimate_does_not_try_to_reset_sale_order(self):
+        sale_order = self._create_sale_order()
+        self._create_posted_invoice(sale_order, fields.Date.to_date("2026-04-01"))
+
+        repair = self._create_repair(sale_order, [self.service_product_premium])
+        warranty_repair = repair._create_warranty_child_repair()
+        warranty_repair.write({"x_budget_stage": "accepted"})
+
+        result = warranty_repair.action_budget_reestimate()
+
+        self.assertTrue(result)
+        self.assertEqual(warranty_repair.x_budget_stage, "estimating")

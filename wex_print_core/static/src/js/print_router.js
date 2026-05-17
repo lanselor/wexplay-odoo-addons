@@ -12,13 +12,7 @@ async function getPrintMode(env) {
 
 async function getDocumentType(env, documentCode) {
     const orm = env?.services?.orm;
-    const rows =
-        (await orm?.searchRead(
-            DOCUMENT_TYPE_MODEL,
-            [["code", "=", documentCode]],
-            ["id", "name", "code", "legacy_kind", "report_name"]
-        )) || [];
-    return rows[0] || null;
+    return (await orm?.call(DOCUMENT_TYPE_MODEL, "get_document_payload", [documentCode])) || null;
 }
 
 export async function resolvePrintRoute(documentCode, env, opts = {}) {

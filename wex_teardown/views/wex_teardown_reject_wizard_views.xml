@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wex_teardown_reject_wizard_form" model="ir.ui.view">
+        <field name="name">wex.teardown.reject.wizard.form</field>
+        <field name="model">wex.teardown.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rechazar pieza">
+                <sheet>
+                    <group>
+                        <field name="line_id" readonly="1"/>
+                        <field name="qc_state" string="Resultado del control"/>
+                        <field name="discard_reason" string="Motivo de descarte"/>
+                        <field name="qc_notes" string="Notas de control de calidad"
+                               placeholder="Describe el problema encontrado en la pieza..."/>
+                        <field name="discard_notes" string="Notas de descarte"
+                               placeholder="Añade detalles útiles para trazabilidad..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_rejection" type="object" string="Confirmar rechazo"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

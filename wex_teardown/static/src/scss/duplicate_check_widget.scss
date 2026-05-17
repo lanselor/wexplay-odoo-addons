@@ -1,0 +1,79 @@
+.wex_td_duplicate_check {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 34rem;
+}
+
+.wex_td_duplicate_check_meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.wex_td_duplicate_check_message {
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.wex_td_duplicate_check_percent {
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.wex_td_duplicate_check .progress {
+    height: 1rem;
+}
+
+.wex_td_duplicate_check .progress-bar {
+    min-width: 3rem;
+    white-space: nowrap;
+}
+
+.wex_td_match_legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.85rem;
+    margin: 0.75rem 0 1rem;
+    font-size: 0.9rem;
+}
+
+.wex_td_match_legend_item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.wex_td_match_legend_swatch {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    flex: 0 0 auto;
+}
+
+.wex_td_match_legend_swatch.is-exact {
+    background: #d7f5df;
+}
+
+.wex_td_match_legend_swatch.is-partial {
+    background: #fff1c9;
+}
+
+.wex_td_match_legend_swatch.is-model {
+    background: #dcecff;
+}
+
+.wex_td_match_legend_swatch.is-none {
+    background: #ffffff;
+}
+
+.o_form_view .o_list_view .o_data_row .o_list_button[name="action_mark_qc_ok"] {
+    color: #198754 !important;
+}
+
+.o_form_view .o_list_view .o_data_row .o_list_button[name="action_open_reject_wizard"] {
+    color: #dc3545 !important;
+}

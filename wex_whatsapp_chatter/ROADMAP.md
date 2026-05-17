@@ -4,6 +4,8 @@
 
 Objetivo: dejar el modulo entendible y limpiar artefactos sin alterar comportamiento funcional.
 
+Estado: completada.
+
 Tareas:
 
 - Documentar objetivo, alcance y limites.
@@ -16,7 +18,7 @@ Tareas:
 
 Objetivo: asegurar que el modulo funciona de forma clara solo en modelos soportados y que Contactos esta incluido correctamente.
 
-Estado: implementada, pendiente de validacion funcional en Odoo.
+Estado: completada y validada funcionalmente.
 
 Tareas:
 
@@ -29,7 +31,7 @@ Tareas:
 
 Objetivo: corregir el bug detectado al cambiar entre `mobile`, `phone` y `custom`.
 
-Estado: implementada, pendiente de validacion funcional en Odoo.
+Estado: completada y validada funcionalmente.
 
 Tareas:
 
@@ -45,7 +47,7 @@ Tareas:
 
 Objetivo: reducir riesgo y mejorar mantenibilidad sin cambiar UX.
 
-Estado: implementada, pendiente de validacion funcional en Odoo.
+Estado: completada.
 
 Tareas:
 
@@ -59,18 +61,22 @@ Tareas:
 
 Objetivo: hacer las vistas mas mantenibles.
 
+Estado: completada parcialmente.
+
 Tareas:
 
-- Reducir estilos inline.
-- Mover ayuda larga de variables a documentacion o bloque mas mantenible.
-- Alinear variables documentadas con variables realmente soportadas.
-- Revisar si `${importe}` debe implementarse o retirarse de la ayuda.
+- Alinear variables documentadas con variables realmente soportadas. Completado.
+- Implementar `${importe}` como alias real. Completado.
+- Anadir `${referencia_cliente}` para SAT. Completado.
+- Anadir `${notasreparacion}` para `repair.order.internal_notes`. Completado.
+- Reducir estilos inline. Pendiente.
+- Mover ayuda larga de variables a un componente o estructura mas mantenible si crece. Pendiente.
 
 ## Fase 5 - Enlaces de portal seguros
 
 Objetivo: evitar envio accidental de enlaces de documentos de otro cliente y separar portal nativo de portal B2B Wexplay.
 
-Estado: implementada, pendiente de validacion funcional en Odoo.
+Estado: completada y validada funcionalmente.
 
 Tareas:
 
@@ -84,7 +90,7 @@ Tareas:
 
 Objetivo: reducir errores humanos antes de abrir WhatsApp.
 
-Estado: implementada, pendiente de validacion funcional en Odoo.
+Estado: completada y validada funcionalmente.
 
 Tareas:
 
@@ -93,3 +99,15 @@ Tareas:
 - Reforzar la trazabilidad visual del chatter con etiqueta reconocible.
 - Implementar `${importe}` y posicionamiento de enlaces por placeholder.
 - Mantener `${portal_url}` para portal nativo y `${enlaceportalB2B}` en modulo puente.
+
+## Siguiente iteracion recomendada
+
+Objetivo: mejorar mantenibilidad sin aumentar acoplamiento ni convertir el modulo en una API de mensajeria.
+
+Tareas propuestas:
+
+- Separar la ayuda de variables en una estructura mas facil de mantener si sigue creciendo.
+- Revisar convergencia entre `whatsapp.template.render_body()` y `whatsapp.compose.wizard._render_text()`.
+- Evaluar historial/estadisticas internas de mensajes preparados sin afirmar envio real.
+- Revisar permisos granulares si en el futuro hay plantillas sensibles por area o equipo.
+- Mantener cualquier integracion nueva de portal, SAT u otros modulos mediante puente opcional cuando la dependencia no sea obligatoria.

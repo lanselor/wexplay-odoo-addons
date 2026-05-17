@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form_apps_menu_patch_note" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.apps.menu.patch.note</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='general_settings']/block[@id='pwa_settings']" position="after">
+                <block title="Notas del Parche" name="apps_menu_customizer_settings">
+                    <setting
+                        string="Notas de actualizacion"
+                        help="Se muestra en el menu de aplicaciones durante dos dias desde la fecha indicada."
+                    >
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label
+                                    for="apps_menu_patch_note_date"
+                                    string="Fecha de publicacion"
+                                    class="col-lg-3 o_light_label"
+                                />
+                                <field name="apps_menu_patch_note_date" />
+                            </div>
+                            <div class="row mt16">
+                                <label
+                                    for="apps_menu_patch_note_text"
+                                    string="Notas"
+                                    class="col-lg-3 o_light_label"
+                                />
+                                <field
+                                    name="apps_menu_patch_note_text"
+                                    widget="html"
+                                    class="w-100"
+                                    placeholder="Ej.: Reparaciones: nueva vista de ordenes, mejoras en impresion y ajustes del menu."
+                                />
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

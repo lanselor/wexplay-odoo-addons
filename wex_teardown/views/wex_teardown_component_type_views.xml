@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wex_teardown_component_type_list" model="ir.ui.view">
+        <field name="name">wex.teardown.component.type.list</field>
+        <field name="model">wex.teardown.component.type</field>
+        <field name="arch" type="xml">
+            <list string="Componentes">
+                <field name="sequence" widget="handle"/>
+                <field name="device_type" string="Tipo de dispositivo"/>
+                <field name="name" string="Nombre"/>
+                <field name="code" string="Código"/>
+                <field name="product_category_id" string="Categoría"/>
+                <field name="active" string="Activo"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_teardown_component_type_form" model="ir.ui.view">
+        <field name="name">wex.teardown.component.type.form</field>
+        <field name="model">wex.teardown.component.type</field>
+        <field name="arch" type="xml">
+            <form string="Componente">
+                <sheet>
+                    <group>
+                        <field name="device_type" string="Tipo de dispositivo"/>
+                        <field name="name" string="Nombre"/>
+                        <field name="code" string="Código"/>
+                        <field name="product_category_id" string="Categoría"/>
+                        <field name="sequence" string="Secuencia"/>
+                        <field name="active" string="Activo"/>
+                    </group>
+                    <group string="Nombre de producto">
+                        <field name="name_pattern" string="Patrón de nombre"/>
+                        <div class="text-muted" colspan="2">
+                            Variables permitidas:
+                            <code>{component}</code>,
+                            <code>{part_number}</code>,
+                            <code>{device_type}</code>,
+                            <code>{brand}</code>,
+                            <code>{model}</code>.
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_teardown_component_types" model="ir.actions.act_window">
+        <field name="name">Componentes</field>
+        <field name="res_model">wex.teardown.component.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_wex_teardown_component_types"
+              name="Componentes"
+              parent="wex_teardown.menu_wex_teardown_configuration"
+              action="action_wex_teardown_component_types"
+              sequence="10"/>
+</odoo>

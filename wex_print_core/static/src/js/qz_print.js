@@ -10,6 +10,62 @@ const WEX_QZ_DEBUG_TAG = "[WEX_QZ_BYKIND]";
 
 let _securityConfigured = false;
 
+async function configureQzSecurity(qz) {
+    if (_securityConfigured || !qz?.security) {
+        return;
+    }
+
+    let mode = "unsigned";
+    try {
+        const resp = await fetch("/web/dataset/call_kw", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {
+                    model: "ir.config_parameter",
+                    method: "get_param",
+                    args: ["wex_print_core.qz_security_mode", "unsigned"],
+                    kwargs: {},
+                },
+            }),
+        });
+        const data = await resp.json();
+        mode = data?.result || "unsigned";
+    } catch {
+        mode = "unsigned";
+    }
+
+    if (mode === "signed") {
+        qz.security.setCertificatePromise((resolve, reject) => {
+            fetch("/wexplay/qz/certificate")
+                .then((r) => r.text())
+                .then(resolve)
+                .catch(reject);
+        });
+        qz.security.setSignatureAlgorithm("SHA512");
+        qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
+            fetch("/wexplay/qz/sign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "call",
+                    params: { to_sign: toSign },
+                }),
+            })
+                .then((r) => r.json())
+                .then((data) => resolve(data?.result || ""))
+                .catch(reject);
+        });
+    } else {
+        qz.security.setCertificatePromise(() => Promise.resolve(""));
+    }
+
+    _securityConfigured = true;
+}
+
 function loadScriptOnce(src) {
     return new Promise((resolve, reject) => {
         const existing = [...document.getElementsByTagName("script")].find((script) => script.src === src);
@@ -36,14 +92,14 @@ function configureUnsignedSecurity(qz) {
 
 export async function ensureQz() {
     if (window.qz) {
-        configureUnsignedSecurity(window.qz);
+        await configureQzSecurity(window.qz);
         return window.qz;
     }
     await loadScriptOnce(QZ_JS_URL);
     if (!window.qz) {
         throw new Error("QZ Tray no disponible");
     }
-    configureUnsignedSecurity(window.qz);
+    await configureQzSecurity(window.qz);
     return window.qz;
 }
 
@@ -111,10 +167,14 @@ export async function testQzConnection() {
 
 export function buildQlLabelConfig(printer, opts = {}) {
     const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+    const size = { width: 29 };
+    if (opts.height && opts.height > 0) {
+        size.height = opts.height;
+    }
 
     return window.qz.configs.create(printer, {
         units: "mm",
-        size: { width: 29 },
+        size,
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
         orientation: "landscape",
         scaleContent: false,
@@ -243,16 +303,22 @@ export async function resolvePrinterName(kind, env) {
     const orm = env?.services?.orm;
     const get = (key, defaultValue = "") => orm?.call("ir.config_parameter", "get_param", [key, defaultValue]);
     const userOverrides = (await orm?.call("res.users", "get_wex_qz_printer_overrides", [])) || {};
-    const userPrinterName = userOverrides[kind] || "";
+    const companyDefaults = (await orm?.call("res.users", "get_wex_qz_company_printer_defaults", [])) || {};
+    const userPrinterInfo = userOverrides[kind] || {};
+    const companyPrinterInfo = companyDefaults[kind] || {};
+    const userPrinterName = userPrinterInfo.printer_name || "";
 
     const companyPrinterName = await get(`wexplay_sat_print.wex_qz_${kind}_printer`, "");
     const allowFallback = (await get("wexplay_sat_print.wex_qz_allow_fallback", "true")) !== "false";
     const debug = (await get("wexplay_sat_print.wex_qz_debug", "false")) === "true";
+    const resolvedCompanyPrinterName = companyPrinterInfo.printer_name || companyPrinterName;
 
     return {
-        printerName: userPrinterName || companyPrinterName,
+        printerName: userPrinterName || resolvedCompanyPrinterName,
+        userDeviceId: userPrinterInfo.device_id || false,
+        companyDeviceId: companyPrinterInfo.device_id || false,
         userPrinterName,
-        companyPrinterName,
+        companyPrinterName: resolvedCompanyPrinterName,
         allowFallback,
         debug,
     };
@@ -331,9 +397,10 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
 
     try {
         if (useNewResolution) {
+            const labelHeight = route.documentType?.paperformat_label_length || 0;
             const buildConfigFn = (printer) => {
                 if (route.kind === "label") {
-                    return buildQlLabelConfig(printer, { copies });
+                    return buildQlLabelConfig(printer, { copies, height: labelHeight || undefined });
                 }
                 if (route.kind === "thermal") {
                     return buildThermalConfig(printer);

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wex_teardown.DuplicateCheckWidget">
+        <div class="wex_td_duplicate_check">
+            <button type="button"
+                    class="btn btn-secondary"
+                    t-att-disabled="state.running || !canRun"
+                    t-on-click="onRunDuplicateCheck">
+                <i class="fa fa-search me-1"/>
+                <span>Buscar coincidencias</span>
+            </button>
+            <t t-if="state.message">
+                <div class="wex_td_duplicate_check_meta">
+                    <div class="wex_td_duplicate_check_message">
+                        <span t-esc="state.message"/>
+                        <t t-if="counterLabel">
+                            <span class="text-muted"> (<t t-esc="counterLabel"/>)</span>
+                        </t>
+                        <span class="wex_td_duplicate_check_percent text-muted ms-2"
+                              t-esc="progressLabel"/>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             t-att-class="progressClass"
+                             t-att-style="'width:' + progressValue + '%'"
+                             t-att-aria-valuenow="progressValue"
+                             aria-valuemin="0"
+                             aria-valuemax="100"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

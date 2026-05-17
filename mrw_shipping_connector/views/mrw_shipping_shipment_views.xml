@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrw_shipping_package_view_list_inline" model="ir.ui.view">
+        <field name="name">mrw.shipping.package.view.list.inline</field>
+        <field name="model">mrw.shipping.package</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence"/>
+                <field name="weight"/>
+                <field name="height"/>
+                <field name="width"/>
+                <field name="length"/>
+                <field name="dimension_code"/>
+                <field name="internal_reference"/>
+                <field name="notes"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_shipment_view_list" model="ir.ui.view">
+        <field name="name">mrw.shipping.shipment.view.list</field>
+        <field name="model">mrw.shipping.shipment</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="state"/>
+                <field name="movement_type"/>
+                <field name="shipment_type"/>
+                <field name="source"/>
+                <field name="picking_id"/>
+                <field name="partner_id"/>
+                <field name="reference"/>
+                <field name="service_id"/>
+                <field name="mrw_shipment_number"/>
+                <field name="shipping_date"/>
+                <field name="company_id" string="Compañía"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_shipment_view_form" model="ir.ui.view">
+        <field name="name">mrw.shipping.shipment.view.form</field>
+        <field name="model">mrw.shipping.shipment</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="action_prepare"
+                        type="object"
+                        string="Preparar"
+                        class="btn-primary"
+                        icon="fa-check-circle"
+                        invisible="state not in ('draft', 'error')"
+                    />
+                    <button
+                        name="action_preview_create_request"
+                        type="object"
+                        string="Previsualizar petición MRW"
+                        class="btn-secondary"
+                        icon="fa-eye"
+                        invisible="state in ('sent', 'label_ready')"
+                    />
+                    <button
+                        name="action_create_mrw_shipment"
+                        type="object"
+                        string="Enviar a MRW"
+                        class="btn-success"
+                        icon="fa-paper-plane"
+                        invisible="state != 'ready' or mrw_shipment_number"
+                        confirm="Se enviará una petición real de envío de PRUEBAS a MRW. ¿Continuar?"
+                    />
+                    <button
+                        name="action_get_mrw_label"
+                        type="object"
+                        string="Obtener / actualizar etiqueta"
+                        class="btn-info"
+                        icon="fa-tag"
+                        invisible="state not in ('sent', 'label_ready')"
+                        confirm="Se solicitará la etiqueta real de PRUEBAS a MRW. ¿Continuar?"
+                    />
+                    <button
+                        name="action_open_tracking_url"
+                        type="object"
+                        string="Abrir tracking MRW"
+                        class="btn-secondary"
+                        icon="fa-external-link"
+                        invisible="not mrw_shipment_number"
+                    />
+                    <button
+                        name="action_cancel_internal"
+                        type="object"
+                        string="Cancelar"
+                        class="btn-danger"
+                        icon="fa-times-circle"
+                        invisible="state not in ('draft', 'ready', 'error')"
+                    />
+                    <button
+                        name="action_request_external_cancellation"
+                        type="object"
+                        string="Solicitar cancelación"
+                        class="btn-danger"
+                        icon="fa-ban"
+                        invisible="not mrw_shipment_number or state in ('draft', 'cancel_pending', 'cancelled')"
+                        confirm="Se enviará una petición real de cancelación de PRUEBAS a MRW. ¿Continuar?"
+                    />
+                    <button
+                        name="action_reset_to_draft"
+                        type="object"
+                        string="Restablecer a borrador"
+                        class="btn-warning"
+                        icon="fa-undo"
+                        invisible="state not in ('ready', 'error', 'cancelled')"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,ready,sent,label_ready,cancel_pending,cancelled"
+                    />
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert" invisible="source != 'manual'">
+                        Este envio puede gestionarse manualmente desde MRW sin depender
+                        de ventas o albaranes. Si no indicas referencia, se generara
+                        automaticamente al guardar.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="movement_type != 'pickup'">
+                        Recogida en cliente: MRW recogera en la direccion del cliente y
+                        entregara en la direccion configurada en la compania MRW.
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_open_logs"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-list"
+                            groups="mrw_shipping_connector.group_mrw_shipping_administrator"
+                            invisible="not log_count"
+                        >
+                            <field name="log_count" widget="statinfo" string="Logs"/>
+                        </button>
+                        <button
+                            name="action_open_stock_picking"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-exchange"
+                            invisible="not picking_id"
+                        >
+                            <field name="picking_id" widget="statinfo" string="Albarán"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Operacion MRW">
+                            <field name="company_id" string="Compañía"/>
+                            <field name="source"/>
+                            <field name="picking_id" invisible="not picking_id"/>
+                            <field name="carrier_id" invisible="not carrier_id"/>
+                            <field name="config_id" string="Configuración"/>
+                            <field name="movement_type"/>
+                            <field name="shipment_type"/>
+                            <field
+                                name="service_id"
+                                string="Servicio"
+                                domain="['|', ('service_type', '=', shipment_type), ('service_type', '=', 'both')]"
+                            />
+                            <field name="reference" placeholder="Se autogenera al guardar"/>
+                            <field name="shipping_date"/>
+                        </group>
+                        <group string="Resultado y trazabilidad">
+                            <field name="mrw_shipment_number"/>
+                            <field name="mrw_request_number"/>
+                            <field name="mrw_effective_shipping_date"/>
+                            <field name="mrw_response_url"/>
+                            <field name="package_count"/>
+                            <field name="label_attachment_id"/>
+                            <field name="label_generated_at"/>
+                            <button
+                                name="action_extract_mrw_effective_date_from_logs"
+                                type="object"
+                                string="Actualizar fecha MRW"
+                                class="btn-secondary"
+                                icon="fa-calendar"
+                                invisible="state != 'sent' or mrw_effective_shipping_date"
+                            />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Cliente / dirección">
+                            <group>
+                                <group>
+                                    <field name="partner_id"/>
+                                    <field name="recipient_name"/>
+                                    <field name="recipient_phone"/>
+                                    <field name="recipient_vat"/>
+                                </group>
+                                <group>
+                                    <field name="street"/>
+                                    <field name="street2"/>
+                                    <field name="zip"/>
+                                    <field name="city"/>
+                                    <field name="state_id" string="Provincia/Estado"/>
+                                    <field name="country_id" string="País"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Opciones de servicio">
+                            <group string="Opciones MRW">
+                                <group string="Entrega y retorno">
+                                    <field name="delivery_to_franchise"/>
+                                    <field name="saturday_delivery"/>
+                                    <field name="return_enabled"/>
+                                    <field name="time_slot"/>
+                                </group>
+                                <group string="Reembolso">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="cash_on_delivery_type"/>
+                                    <field name="cash_on_delivery_amount"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Bultos">
+                            <div class="alert alert-light mb-3" role="alert">
+                                Se crea por defecto 1 bulto de 1 kg para acelerar el alta
+                                manual. Ajusta peso y medidas solo si hace falta.
+                            </div>
+                            <field name="package_ids" context="{'default_shipment_id': id}">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="weight"/>
+                                    <field name="height"/>
+                                    <field name="width"/>
+                                    <field name="length"/>
+                                    <field name="dimension_code"/>
+                                    <field name="internal_reference"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Inventario" invisible="movement_type != 'pickup'">
+                            <group string="Recepcion esperada">
+                                <group string="Producto a recibir">
+                                    <field name="stock_product_id"/>
+                                    <field name="stock_product_uom_qty"/>
+                                    <field name="stock_product_uom_id"/>
+                                </group>
+                                <group string="Albaran entrante">
+                                    <field name="picking_id" readonly="1"/>
+                                    <button
+                                        name="action_create_incoming_picking"
+                                        type="object"
+                                        string="Crear albarán entrante"
+                                        class="btn-primary"
+                                        icon="fa-sign-in"
+                                        invisible="movement_type != 'pickup' or picking_id"
+                                    />
+                                    <button
+                                        name="action_open_stock_picking"
+                                        type="object"
+                                        string="Ver albarán"
+                                        class="btn-secondary"
+                                        icon="fa-exchange"
+                                        invisible="not picking_id"
+                                    />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Etiqueta">
+                            <group>
+                                <field name="label_attachment_id"/>
+                                <field name="label_filename"/>
+                                <field name="label_mimetype"/>
+                                <field name="label_generated_at"/>
+                            </group>
+                            <group string="Acciones de etiqueta">
+                                <button
+                                    name="action_preview_label_request"
+                                    type="object"
+                                    string="Previsualizar petición de etiqueta"
+                                    class="btn-secondary"
+                                    icon="fa-file-text-o"
+                                    invisible="not mrw_shipment_number"
+                                />
+                            </group>
+                            <group string="Archivo de etiqueta" invisible="not label_attachment_id">
+                                <button
+                                    name="action_open_label_attachment"
+                                    type="object"
+                                    string="Abrir etiqueta"
+                                    class="btn-secondary"
+                                    icon="fa-external-link"
+                                />
+                                <button
+                                    name="action_download_label_attachment"
+                                    type="object"
+                                    string="Descargar etiqueta"
+                                    class="btn-secondary"
+                                    icon="fa-download"
+                                />
+                            </group>
+                        </page>
+                        <page string="Último error" invisible="not last_error">
+                            <field name="last_error" nolabel="1"/>
+                        </page>
+                        <page string="Previsualización MRW">
+                            <group>
+                                <field name="last_preview_operation"/>
+                                <field name="last_preview_at"/>
+                            </group>
+                            <group string="Acciones de revisión">
+                                <button
+                                    name="action_preview_cancel_request"
+                                    type="object"
+                                    string="Previsualizar cancelación"
+                                    class="btn-secondary"
+                                    icon="fa-eye"
+                                    invisible="not mrw_shipment_number or state in ('draft', 'cancel_pending', 'cancelled')"
+                                />
+                            </group>
+                            <separator string="Previsualización XML SOAP"/>
+                            <field name="last_preview_soap_xml" nolabel="1"/>
+                            <separator string="Previsualización payload Python"/>
+                            <field name="last_preview_payload" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_shipment_view_search" model="ir.ui.view">
+        <field name="name">mrw.shipping.shipment.view.search</field>
+        <field name="model">mrw.shipping.shipment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="reference"/>
+                <field name="mrw_shipment_number"/>
+                <filter name="active" string="Activo" domain="[('active', '=', True)]"/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <filter name="ready" string="Preparado" domain="[('state', '=', 'ready')]"/>
+                <filter name="label_ready" string="Etiqueta lista" domain="[('state', '=', 'label_ready')]"/>
+                <filter name="error" string="Error" domain="[('state', '=', 'error')]"/>
+                <filter name="pickup" string="Recogidas" domain="[('movement_type', '=', 'pickup')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_movement_type" string="Tipo de operación" context="{'group_by': 'movement_type'}"/>
+                    <filter name="group_type" string="Tipo" context="{'group_by': 'shipment_type'}"/>
+                    <filter name="group_service" string="Servicio" context="{'group_by': 'service_id'}"/>
+                    <filter name="group_company" string="Compañía" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_shipment_action" model="ir.actions.act_window">
+        <field name="name">Envíos MRW</field>
+        <field name="res_model">mrw.shipping.shipment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+</odoo>

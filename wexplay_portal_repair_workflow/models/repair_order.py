@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from odoo import _, models
+import logging
+
+from odoo import SUPERUSER_ID, _, api, models
 from odoo.exceptions import AccessError, UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class RepairOrder(models.Model):
@@ -9,9 +13,78 @@ class RepairOrder(models.Model):
 
     _PORTAL_BUDGET_QUOTATION_STATES = ("draft", "sent")
 
+    def _run_portal_budget_workflow_action(self, method_name, user=None, event_type=None, **context_flags):
+        self.ensure_one()
+        with self.env.registry.cursor() as new_cr:
+            sudo_env = api.Environment(
+                new_cr,
+                SUPERUSER_ID,
+                dict(self.env.context, **context_flags),
+            )
+            sudo_repair = sudo_env[self._name].browse(self.id)
+            action = getattr(sudo_repair, method_name)()
+            if isinstance(action, dict):
+                raise UserError(
+                    _("La accion del presupuesto requiere una confirmacion no esperada.")
+                )
+            if event_type:
+                sudo_repair._create_portal_repair_event(event_type, user=user)
+            sudo_repair._log_portal_budget_debug_snapshot(
+                "isolated_%s_done" % method_name,
+                user=user,
+            )
+            new_cr.commit()
+        return True
+
     def _get_portal_budget_sale_order(self):
         self.ensure_one()
         return self.sudo().sale_order_id
+
+    def _get_portal_budget_debug_values(self, user=None):
+        self.ensure_one()
+        user = user or self.env.user
+        repair = self.sudo()
+        sale_order = repair._get_portal_budget_sale_order().sudo()
+        partner = user.partner_id
+        commercial_partner = partner.commercial_partner_id
+        debug_values = {
+            "repair_id": repair.id,
+            "repair_name": repair.name or "",
+            "repair_state": repair.state or "",
+            "budget_stage": repair.x_budget_stage or "",
+            "sale_order_id": sale_order.id if sale_order else False,
+            "sale_order_name": sale_order.name if sale_order else "",
+            "sale_order_state": sale_order.state if sale_order else "",
+            "sale_order_line_count": len(sale_order.order_line) if sale_order else 0,
+            "portal_user_id": user.id,
+            "portal_user_login": user.login or "",
+            "portal_partner_id": partner.id,
+            "portal_partner_name": partner.display_name or "",
+            "commercial_partner_id": commercial_partner.id,
+            "commercial_partner_name": commercial_partner.display_name or "",
+            "repair_partner_id": repair.partner_id.id,
+            "repair_partner_name": repair.partner_id.display_name or "",
+            "can_portal_access": repair._can_portal_user_access(user),
+            "has_sale_order": bool(sale_order),
+            "is_waiting_customer": repair._is_portal_budget_waiting_customer(),
+            "is_sale_order_accept_ready": repair._is_portal_budget_sale_order_accept_ready(),
+            "is_sale_order_already_accepted": (
+                repair._is_portal_budget_sale_order_already_accepted()
+            ),
+            "is_sale_order_cancelled": repair._is_portal_budget_sale_order_cancelled(),
+            "can_portal_review_budget": repair._can_portal_review_budget(),
+            "can_portal_accept_budget": repair._can_portal_accept_budget(),
+            "can_portal_reject_budget": repair._can_portal_reject_budget(),
+        }
+        return debug_values
+
+    def _log_portal_budget_debug_snapshot(self, stage, user=None, extra=None):
+        self.ensure_one()
+        debug_values = self._get_portal_budget_debug_values(user=user)
+        if extra:
+            debug_values.update(extra)
+        _logger.info("Portal budget debug [%s]: %s", stage, debug_values)
+        return debug_values
 
     def _has_portal_budget_sale_order(self):
         self.ensure_one()
@@ -120,6 +193,12 @@ class RepairOrder(models.Model):
                 "label": _("Presupuesto rechazado"),
                 "message": _("Este presupuesto no esta disponible para aceptacion."),
             }
+        if self.x_budget_stage == "not_repairable":
+            return {
+                "key": "rejected",
+                "label": _("No reparable"),
+                "message": _("Esta reparacion no tiene una solucion tecnica viable."),
+            }
         if self.x_budget_stage == "waiting_customer":
             return {
                 "key": "pending",
@@ -133,7 +212,9 @@ class RepairOrder(models.Model):
         }
 
     def _prepare_portal_budget_line_values(self, line):
+        line = line.sudo()
         line.ensure_one()
+        currency = line.currency_id.sudo()
         return {
             "name": line.product_id.display_name or line.name,
             "description": line.name or "",
@@ -141,30 +222,34 @@ class RepairOrder(models.Model):
             "uom": line.product_uom.display_name if line.product_uom else "",
             "price_unit": line.price_unit,
             "subtotal": line.price_subtotal,
-            "currency": line.currency_id,
+            "currency": currency,
         }
 
     def _get_portal_budget_line_values(self):
         self.ensure_one()
-        sale_order = self.sudo()._get_portal_budget_sale_order()
+        sale_order = self.sudo()._get_portal_budget_sale_order().sudo()
         if not sale_order:
             return []
-        lines = sale_order.order_line.filtered(lambda line: not line.display_type)
+        lines = sale_order.order_line.sudo().filtered(lambda line: not line.display_type)
         return [self._prepare_portal_budget_line_values(line) for line in lines]
 
     def _get_portal_budget_summary_values(self):
         self.ensure_one()
         self._check_portal_related_read_access()
-        sale_order = self.sudo()._get_portal_budget_sale_order()
-        currency = sale_order.currency_id if sale_order else self.company_id.currency_id
+        repair = self.sudo()
+        sale_order = repair._get_portal_budget_sale_order().sudo()
+        currency = (
+            sale_order.currency_id.sudo()
+            if sale_order
+            else repair.company_id.currency_id.sudo()
+        )
         return {
-            "repair": self,
-            "sale_order": sale_order,
-            "status": self._get_portal_budget_status_values(),
-            "can_accept": self._can_portal_accept_budget(),
-            "can_reject": self._can_portal_reject_budget(),
-            "device_label": self._get_portal_budget_device_label() or "-",
-            "line_values": self._get_portal_budget_line_values(),
+            "repair": repair,
+            "status": repair._get_portal_budget_status_values(),
+            "can_accept": repair._can_portal_accept_budget(),
+            "can_reject": repair._can_portal_reject_budget(),
+            "device_label": repair._get_portal_budget_device_label() or "-",
+            "line_values": repair._get_portal_budget_line_values(),
             "amount_untaxed": sale_order.amount_untaxed if sale_order else 0.0,
             "amount_tax": sale_order.amount_tax if sale_order else 0.0,
             "amount_total": sale_order.amount_total if sale_order else 0.0,
@@ -256,22 +341,31 @@ class RepairOrder(models.Model):
         self.ensure_one()
         self._check_can_portal_accept_budget(user=user)
         repair = self.sudo()
-        sale_order = repair._get_portal_budget_sale_order()
-        if sale_order.state in self._PORTAL_BUDGET_QUOTATION_STATES:
-            sale_order.action_confirm()
+        repair._log_portal_budget_debug_snapshot("before_accept", user=user)
         if repair.x_budget_stage != "accepted":
-            repair.action_budget_accept()
-        repair._create_portal_repair_event("budget_accepted", user=user)
+            repair._run_portal_budget_workflow_action(
+                "action_budget_accept",
+                user=user,
+                event_type="budget_accepted",
+            )
+        else:
+            repair._create_portal_repair_event("budget_accepted", user=user)
+        self.browse(self.id)._log_portal_budget_debug_snapshot("after_accept", user=user)
         return True
 
     def action_portal_reject_budget(self, user=None):
         self.ensure_one()
         self._check_can_portal_reject_budget(user=user)
         repair = self.sudo()
-        sale_order = repair._get_portal_budget_sale_order()
-        if sale_order.state in self._PORTAL_BUDGET_QUOTATION_STATES:
-            sale_order.action_cancel()
+        repair._log_portal_budget_debug_snapshot("before_reject", user=user)
         if repair.x_budget_stage != "rejected":
-            repair.action_budget_reject()
-        repair._create_portal_repair_event("budget_rejected", user=user)
+            repair._run_portal_budget_workflow_action(
+                "action_budget_reject",
+                user=user,
+                event_type="budget_rejected",
+                skip_budget_reject_confirm=True,
+            )
+        else:
+            repair._create_portal_repair_event("budget_rejected", user=user)
+        self.browse(self.id)._log_portal_budget_debug_snapshot("after_reject", user=user)
         return True

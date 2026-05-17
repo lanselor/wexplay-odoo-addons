@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrw_shipping_config_user,mrw.shipping.config user,model_mrw_shipping_config,group_mrw_shipping_user,1,0,0,0
+access_mrw_shipping_config_admin,mrw.shipping.config administrator,model_mrw_shipping_config,group_mrw_shipping_administrator,1,1,1,1
+access_mrw_shipping_service_user,mrw.shipping.service user,model_mrw_shipping_service,group_mrw_shipping_user,1,0,0,0
+access_mrw_shipping_service_manager,mrw.shipping.service manager,model_mrw_shipping_service,group_mrw_shipping_manager,1,1,1,0
+access_mrw_shipping_service_admin,mrw.shipping.service administrator,model_mrw_shipping_service,group_mrw_shipping_administrator,1,1,1,1
+access_mrw_shipping_shipment_user,mrw.shipping.shipment user,model_mrw_shipping_shipment,group_mrw_shipping_user,1,1,1,0
+access_mrw_shipping_shipment_manager,mrw.shipping.shipment manager,model_mrw_shipping_shipment,group_mrw_shipping_manager,1,1,1,1
+access_mrw_shipping_package_user,mrw.shipping.package user,model_mrw_shipping_package,group_mrw_shipping_user,1,1,1,1
+access_mrw_shipping_log_admin,mrw.shipping.log administrator,model_mrw_shipping_log,group_mrw_shipping_administrator,1,0,0,0
+

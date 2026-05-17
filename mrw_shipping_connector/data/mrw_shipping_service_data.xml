@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="mrw_shipping_service_bag_19" model="mrw.shipping.service">
+        <field name="name">Bag 19</field>
+        <field name="code">0230</field>
+        <field name="service_type">national</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_19_expedition" model="mrw.shipping.service">
+        <field name="name">Urgente 19 Expedicion</field>
+        <field name="code">0205</field>
+        <field name="service_type">national</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_10" model="mrw.shipping.service">
+        <field name="name">Urgente 10</field>
+        <field name="code">0000</field>
+        <field name="service_type">national</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_10_expedition" model="mrw.shipping.service">
+        <field name="name">Urgente 10 Expedicion</field>
+        <field name="code">0015</field>
+        <field name="service_type">national</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_12" model="mrw.shipping.service">
+        <field name="name">Urgente 12</field>
+        <field name="code">0100</field>
+        <field name="service_type">national</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_14" model="mrw.shipping.service">
+        <field name="name">Urgente 14</field>
+        <field name="code">0110</field>
+        <field name="service_type">national</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_14_expedition" model="mrw.shipping.service">
+        <field name="name">Urgente 14 Expedicion</field>
+        <field name="code">0115</field>
+        <field name="service_type">national</field>
+        <field name="sequence">70</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_19" model="mrw.shipping.service">
+        <field name="name">Urgente 19</field>
+        <field name="code">0200</field>
+        <field name="service_type">national</field>
+        <field name="sequence">80</field>
+    </record>
+
+    <record id="mrw_shipping_service_urgent_19_portugal" model="mrw.shipping.service">
+        <field name="name">Urgente 19 Portugal</field>
+        <field name="code">0220</field>
+        <field name="service_type">national</field>
+        <field name="sequence">90</field>
+    </record>
+
+    <record id="mrw_shipping_service_bag_14" model="mrw.shipping.service">
+        <field name="name">Bag 14</field>
+        <field name="code">0235</field>
+        <field name="service_type">national</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <record id="mrw_shipping_service_economico" model="mrw.shipping.service">
+        <field name="name">Economico</field>
+        <field name="code">0300</field>
+        <field name="service_type">national</field>
+        <field name="sequence">110</field>
+    </record>
+
+    <record id="mrw_shipping_service_economico_interinsular" model="mrw.shipping.service">
+        <field name="name">Economico Interinsular</field>
+        <field name="code">0350</field>
+        <field name="service_type">national</field>
+        <field name="sequence">120</field>
+    </record>
+
+    <record id="mrw_shipping_service_ecommerce" model="mrw.shipping.service">
+        <field name="name">eCommerce</field>
+        <field name="code">0800</field>
+        <field name="service_type">national</field>
+        <field name="sequence">130</field>
+    </record>
+
+    <record id="mrw_shipping_service_ecommerce_exchange" model="mrw.shipping.service">
+        <field name="name">eCommerce Canje</field>
+        <field name="code">0810</field>
+        <field name="service_type">national</field>
+        <field name="sequence">140</field>
+    </record>
+
+    <record id="mrw_shipping_service_maritimo_baleares" model="mrw.shipping.service">
+        <field name="name">Maritimo Baleares</field>
+        <field name="code">0370</field>
+        <field name="service_type">national</field>
+        <field name="sequence">150</field>
+    </record>
+
+    <record id="mrw_shipping_service_maritimo_canarias" model="mrw.shipping.service">
+        <field name="name">Maritimo Canarias</field>
+        <field name="code">0385</field>
+        <field name="service_type">national</field>
+        <field name="sequence">160</field>
+    </record>
+
+    <record id="mrw_shipping_service_maritimo_interinsular" model="mrw.shipping.service">
+        <field name="name">Maritimo Interinsular</field>
+        <field name="code">0390</field>
+        <field name="service_type">national</field>
+        <field name="sequence">170</field>
+    </record>
+
+    <record id="mrw_shipping_service_ecobox_25" model="mrw.shipping.service">
+        <field name="name">Ecobox 25</field>
+        <field name="code">BOX25</field>
+        <field name="service_type">international</field>
+        <field name="sequence">200</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_documents" model="mrw.shipping.service">
+        <field name="name">Documentos</field>
+        <field name="code">DOC</field>
+        <field name="service_type">international</field>
+        <field name="sequence">210</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_ecommerce" model="mrw.shipping.service">
+        <field name="name">Ecommerce</field>
+        <field name="code">ECOMM</field>
+        <field name="service_type">international</field>
+        <field name="sequence">220</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_economy" model="mrw.shipping.service">
+        <field name="name">Economy</field>
+        <field name="code">ECOP</field>
+        <field name="service_type">international</field>
+        <field name="sequence">230</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_euro_2kg" model="mrw.shipping.service">
+        <field name="name">Euro 2 Kg</field>
+        <field name="code">EURO2</field>
+        <field name="service_type">international</field>
+        <field name="sequence">240</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_packages" model="mrw.shipping.service">
+        <field name="name">Paquetes</field>
+        <field name="code">PAC</field>
+        <field name="service_type">international</field>
+        <field name="sequence">250</field>
+    </record>
+
+    <record id="mrw_shipping_service_international_supercity" model="mrw.shipping.service">
+        <field name="name">SuperCity</field>
+        <field name="code">SC</field>
+        <field name="service_type">international</field>
+        <field name="sequence">260</field>
+    </record>
+</odoo>

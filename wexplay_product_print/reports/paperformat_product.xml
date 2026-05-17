@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Etiqueta Brother QL cinta 62mm · alto de corte 29mm
+         El template QWeb usa @page { size: 42mm 29mm } — dimensión real de impresión -->
+    <record id="paperformat_product_label_42x29" model="report.paperformat">
+        <field name="name">Product Label 42x29 (Brother QL)</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">42</field>
+        <field name="page_height">29</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+</odoo>

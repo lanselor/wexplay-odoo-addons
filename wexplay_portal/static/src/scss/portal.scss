@@ -213,7 +213,8 @@
     border-color: var(--wex-portal-secondary-border) !important;
 }
 
-.wex_portal_budget_badge--rejected {
+.wex_portal_budget_badge--rejected,
+.wex_portal_budget_badge--not_repairable {
     color: #8a5d67;
     background: #f9eef1;
     border-color: #ebcfd7 !important;
@@ -619,14 +620,40 @@
     color: #243746;
 }
 
+/* ─── Header de la vista lista ──────────────────────────────────── */
+
+.wex_portal_list_header {
+    padding: 1.5rem 0 1.25rem;
+    border-bottom: 1px solid var(--wex-portal-panel-border);
+}
+
+.wex_portal_list_eyebrow {
+    display: inline-block;
+    margin-bottom: 0.4rem;
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.wex_portal_list_title {
+    margin: 0 0 0.3rem;
+    color: var(--wex-portal-ink);
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+/* ─── Barra compacta sticky (página de presupuesto) ─────────────── */
+
 .wex_portal_repair_context_bar {
     position: sticky;
     top: var(--wex-portal-sticky-top);
     z-index: 20;
     width: 100vw;
     margin: 0 0 1rem calc(50% - 50vw);
-    border-top: 1px solid #e8e1f0;
-    border-bottom: 1px solid #d9cdea;
+    border-top: 3px solid var(--wex-portal-primary);
+    border-bottom: 1px solid var(--wex-portal-primary-border);
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 12px 22px -22px rgba(49, 78, 102, 0.7);
 }
@@ -1101,5 +1128,381 @@
 
     .wex_portal_home_image {
         height: 10rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REPAIR DETAIL — contenedor ampliado
+   Anula el max-width estrecho del portal Odoo en la ficha de SAT
+═══════════════════════════════════════════════════════════════════ */
+
+.wex_portal_repair_wrap.o_portal_wrap {
+    max-width: 1380px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO PANEL — cabecera de la ficha de reparación
+   Tres columnas: Identidad | Trackers de estado | Acción
+═══════════════════════════════════════════════════════════════════ */
+
+.wex_portal_repair_hero {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    padding: 2rem 0 1.85rem;
+    background:
+        linear-gradient(105deg,
+            rgba(166, 143, 205, 0.08) 0%,
+            transparent 42%),
+        linear-gradient(255deg,
+            rgba(115, 199, 153, 0.07) 0%,
+            transparent 38%),
+        #fff;
+    border-top: 3px solid var(--wex-portal-primary);
+    border-bottom: 1px solid var(--wex-portal-panel-border);
+    margin-bottom: 0;
+}
+
+.wex_portal_repair_hero_inner {
+    display: grid;
+    grid-template-columns: 17rem 1fr auto;
+    gap: 0;
+    align-items: start;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Columna izquierda: identidad */
+.wex_portal_repair_hero_id {
+    padding-right: 2.25rem;
+    border-right: 1px solid var(--wex-portal-panel-border);
+}
+
+.wex_portal_repair_hero_eyebrow {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.wex_portal_repair_hero_sat {
+    margin-bottom: 0.25rem;
+    color: var(--wex-portal-ink);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.wex_portal_repair_hero_device {
+    margin-bottom: 0.65rem;
+    color: #5a6e7e;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.wex_portal_repair_hero_ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.7rem;
+    border: 1px solid var(--wex-portal-primary-border);
+    border-radius: 999px;
+    background: var(--wex-portal-primary-soft);
+    font-size: 0.82rem;
+}
+
+.wex_portal_repair_hero_ref > span {
+    color: #6a7b8b;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.wex_portal_repair_hero_ref > strong {
+    color: var(--wex-portal-primary-dark);
+    font-weight: 700;
+}
+
+/* Columna central: trackers de estado */
+.wex_portal_repair_hero_tracks {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 0 2.25rem;
+}
+
+.wex_portal_repair_hero_track_label {
+    margin-bottom: 0.45rem;
+    color: #6c757d;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Columna derecha: wrapper con borde separador */
+.wex_portal_repair_hero_actions_col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-left: 2.25rem;
+    border-left: 1px solid var(--wex-portal-panel-border);
+    min-width: 186px;
+}
+
+/* El div de acciones (botón inyectado por workflow) */
+.wex_portal_repair_hero .wex_portal_repair_context_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+/* Badge de estado del presupuesto bajo el botón */
+.wex_portal_hero_budget_status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.75rem;
+    border: 1.5px solid var(--wex-portal-primary-border);
+    border-radius: 6px;
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+.wex_portal_hero_budget_status--accepted {
+    border-color: var(--wex-portal-secondary-border);
+    background: var(--wex-portal-secondary-soft);
+    color: var(--wex-portal-secondary-dark);
+}
+
+.wex_portal_hero_budget_status--rejected,
+.wex_portal_hero_budget_status--not_repairable {
+    border-color: #efb8c1;
+    background: #fdecef;
+    color: #8a2332;
+}
+
+.wex_portal_hero_budget_status--waiting_customer,
+.wex_portal_hero_budget_status--estimating {
+    border-color: #ead6a4;
+    background: #fff8e7;
+    color: #7a5a14;
+}
+
+.wex_portal_repair_hero .wex_portal_repair_context_cta {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--wex-portal-primary) 0%, var(--wex-portal-primary-dark) 100%);
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(140, 117, 182, 0.28);
+    transition: box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.wex_portal_repair_hero .wex_portal_repair_context_cta:hover,
+.wex_portal_repair_hero .wex_portal_repair_context_cta:focus {
+    box-shadow: 0 12px 26px rgba(140, 117, 182, 0.38);
+    transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TAB NAVIGATOR — barra de pestañas sticky
+═══════════════════════════════════════════════════════════════════ */
+
+.wex_portal_tab_nav_wrap {
+    position: sticky;
+    top: var(--wex-portal-sticky-top);
+    z-index: 15;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    background: #fff;
+    border-bottom: 2px solid var(--wex-portal-panel-border);
+    margin-bottom: 1.5rem;
+}
+
+.wex_portal_tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.wex_portal_tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.wex_portal_tabs .nav-item {
+    flex: 0 0 auto;
+}
+
+.wex_portal_tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.95rem 1.1rem;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    color: #6c757d;
+    font-size: 0.92rem;
+    font-weight: 700;
+    white-space: nowrap;
+    background: transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    margin-bottom: -2px;
+}
+
+.wex_portal_tabs .nav-link:hover {
+    color: var(--wex-portal-primary-dark);
+    border-bottom-color: var(--wex-portal-primary-border);
+}
+
+.wex_portal_tabs .nav-link.active {
+    color: var(--wex-portal-primary-dark);
+    border-bottom-color: var(--wex-portal-primary-dark);
+    background: transparent;
+}
+
+/* Dot de acción pendiente (presupuesto en espera de cliente) */
+.wex_portal_tab_dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    margin-left: 0.4rem;
+    border-radius: 50%;
+    background: var(--wex-portal-secondary);
+    position: relative;
+    top: -1px;
+    box-shadow: 0 0 0 2px rgba(115, 199, 153, 0.25);
+}
+
+/* Badge de conteo de imágenes */
+.wex_portal_tab_count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    margin-left: 0.4rem;
+    padding: 0 0.28rem;
+    border-radius: 999px;
+    background: var(--wex-portal-primary-soft);
+    color: var(--wex-portal-primary-dark);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.wex_portal_tabs .nav-link.active .wex_portal_tab_count {
+    background: rgba(140, 117, 182, 0.15);
+}
+
+/* Área de contenido de tabs */
+.wex_portal_tab_content {
+    min-height: 280px;
+}
+
+.wex_portal_tab_content .tab-pane {
+    padding-bottom: 2.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — hero y tab nav
+═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1199.98px) {
+    .wex_portal_repair_hero_inner {
+        grid-template-columns: 15rem 1fr auto;
+    }
+
+    .wex_portal_repair_hero_id {
+        padding-right: 1.75rem;
+    }
+
+    .wex_portal_repair_hero_tracks {
+        padding: 0 1.75rem;
+    }
+
+    .wex_portal_repair_hero_actions_col {
+        padding-left: 1.75rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .wex_portal_repair_hero_inner {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .wex_portal_repair_hero_id {
+        padding-right: 0;
+        border-right: 0;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--wex-portal-panel-border);
+    }
+
+    .wex_portal_repair_hero_tracks {
+        padding: 0;
+    }
+
+    .wex_portal_repair_hero_actions_col {
+        padding-left: 0;
+        border-left: 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .wex_portal_repair_hero .wex_portal_repair_context_actions {
+        flex: 1 1 auto;
+    }
+
+    .wex_portal_repair_hero .wex_portal_repair_context_cta {
+        width: 100%;
+    }
+
+    .wex_portal_hero_budget_status {
+        flex: 0 0 auto;
+        align-self: center;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .wex_portal_repair_hero {
+        padding: 1.5rem 0 1.35rem;
+    }
+
+    .wex_portal_repair_hero_sat {
+        font-size: 1.65rem;
+    }
+
+    .wex_portal_tabs .nav-link {
+        padding: 0.8rem 0.85rem;
+        font-size: 0.88rem;
     }
 }

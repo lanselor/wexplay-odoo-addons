@@ -7,7 +7,10 @@
 | `repair` | Base `repair.order` model and inherited search/form views |
 | `account` | Extends invoice and payment register flows |
 | `stock` | Delivery readiness depends on SAT stock locations |
+| `delivery` | Provides native `delivery.carrier` transport methods |
+| `stock_delivery` | Links carriers, labels, and tracking behavior to `stock.picking` |
 | `mail` | Uses `discuss.channel`, `mail.mt_comment` and channel message posting |
+| `mrw_shipping_connector` | Provides MRW pickup requests and MRW shipment audit records |
 | `wexplay_repair` | Reuses SAT base fields, helpers and company SAT settings |
 | `wexplay_repair_workflow` | Depends on workflow location behavior and inherits its repair form extension |
 
@@ -24,6 +27,8 @@
 | `company_id.x_repair_state_location_done_id` and `x_repair_state_location_delivered_id` | Pending-delivery logic and delivery completion depend on these locations |
 | Workflow module location synchronization | Marking a repair as delivered relies on the broader repair workflow to keep locations aligned |
 | `discuss.channel` named SAT channel | Notification logic assumes a channel with one of the configured names exists |
+| `delivery.carrier` | Repair logistics operations delegate carrier behavior to Odoo's native carrier model |
+| `mrw.shipping.shipment` | Customer pickup operations create MRW pickup requests when the selected carrier is MRW |
 
 ## External Python Dependencies
 
@@ -36,5 +41,7 @@ Note:
 ## Risks If Dependencies Are Missing
 
 - Missing `mail` breaks SAT discuss channel lookup and posting.
+- Missing `delivery` or `stock_delivery` breaks carrier-based shipment actions.
+- Missing `mrw_shipping_connector` breaks customer pickup requests through MRW.
 - Missing workflow module breaks the inherited form view and delivery assumptions.
 - Missing SAT channel does not block install, but the notification is silently degraded to logs.

@@ -1,127 +1,184 @@
-# Wex Print Core Architecture
+# Wex Print Core — Arquitectura
 
-## Purpose
+## Propósito
 
-`wex_print_core` is the shared technical printing module for the Wexplay stack.
+`wex_print_core` es el módulo técnico compartido de impresión para el stack Wexplay.
 
-It centralizes:
-- QZ Tray integration
-- shared printer configuration
-- print routing
-- print traces
-- profiles and assignments
-- printer diagnostics snapshots
+Centraliza:
+- Integración con QZ Tray
+- Catálogo de dispositivos de impresión
+- Configuración de perfiles y asignaciones
+- Enrutamiento de impresión (legacy / híbrido / nuevo)
+- Trazas de auditoría
+- Diagnóstico de impresoras
 
-It must stay free from product-only or SAT-only business logic.
+No contiene lógica de negocio de SAT ni de producto.
 
-## Current Responsibilities
+---
 
-### QZ integration
-- Loads and manages QZ Tray client-side integration
-- Resolves printer settings with this priority:
-  - user override
-  - company fallback
-- Executes PDF printing through QZ
+## Modelos
 
-### Routing
-- Provides the shared print router
-- Supports:
-  - `legacy`
-  - `hybrid`
-  - `new_only`
-- `Hybrid` can execute the new path only when an assignment explicitly enables `Pilot new resolution`
-- If the new path fails in `Hybrid`, it falls back to `legacy`
+### `wex.print.device`
+Impresora física registrada en el sistema.
 
-### Profiles and assignments
-- `wex.print.profile`
-  - stores printer target and advanced output options
-  - currently includes `duplex_mode` for A4
-- `wex.print.assignment`
-  - links document types to profiles
-  - can enable `Pilot new resolution`
+Campos relevantes:
+- `qz_printer_name` — nombre exacto en QZ Tray / Windows
+- `device_kind` — `Etiqueta`, `Térmica`, `A4`
+- `model_hint` — texto libre, solo informativo (ej: "Brother QL-710W")
+- `paperformat_ids` — formatos de papel que acepta (Many2many → `report.paperformat`)
+- `report_action_ids` — reportes compatibles (Many2many → `ir.actions.report`)
 
-### Tracing
-- `wex.print.trace` stores technical evidence of:
-  - requested mode
-  - execution mode
-  - resolution source
-  - next profile/printer
-  - duplex mode
-  - pilot activation
-  - fallback behavior
+Las capacidades (`paperformat_ids`, `report_action_ids`) son opcionales. Si están configuradas, el resolver las valida y registra warnings en la traza si hay incompatibilidad. No bloquean la impresión.
 
-### Diagnostics
-- `wex.print.device.snapshot` stores snapshots loaded from `qz.printers.details()`
-- This is meant for investigation and capability discovery, not for changing the live print flow
+### `wex.print.device.snapshot`
+Captura de estado de impresoras cargada desde QZ Tray.
 
-## Validated Production State
+- Solo lectura. Se crea desde `Cargar diagnóstico desde QZ`.
+- Campo computed `existing_device_id`: detecta si ya existe un `wex.print.device` con ese nombre.
+- Método `action_save_as_device()`: crea un dispositivo pre-rellenado y abre su formulario. Si ya existe, abre el existente sin duplicar.
 
-The following has been validated in production:
-- `Hybrid` mode
-- product label printing
-- SAT label printing
-- SAT ticket printing
-- SAT A4 printing
-- A4 duplex through `Double-sided (long edge)`
-- rollback back to `legacy`
+### `wex.print.document.type`
+Tipo de documento imprimible.
 
-## Production Configuration Baseline
+Campos relevantes:
+- `code` — identificador único usado por el router JS
+- `legacy_kind` — `Etiqueta`, `Térmica`, `A4` (fuente de verdad para el path Legacy)
+- `report_action_id` — Many2one a `ir.actions.report` (fuente de verdad para el path nuevo)
+- `paperformat_id` — Many2one a `report.paperformat`
+- `report_name` — Char legacy, fallback si `report_action_id` no está poblado
+- `paperformat_page_height` / `paperformat_page_width` — devueltos en `get_document_payload()` para que el cliente JS pueda configurar el tamaño correcto en QZ
 
-### Active profiles
-- `A4 Prod`
-- `Product Label Prod`
-- `SAT Accessory Label Prod`
-- `SAT Main Label Prod`
-- `SAT Ticket Prod`
+El método `get_document_payload()` devuelve todo lo necesario para el router JS incluyendo las dimensiones del paperformat.
 
-### Active assignments with pilot enabled
-- `Product Label Default`
-- `SAT Main Label Default`
-- `SAT Accessory Label Default`
-- `SAT Ticket Default`
-- `SAT A4 Default`
+### `wex.print.profile`
+Configuración de salida para un dispositivo.
 
-### Validated printers
-- labels: `Brother QL-710W`
-- thermal: `PRP-300 (Copiar 1)`
-- A4: `Brother MFC-L2800DW Printer`
+- Apunta a un `wex.print.device` (o nombre directo para legacy)
+- Parámetros: copias, modo dúplex, permitir fallback
 
-## Resolution Priority
+### `wex.print.assignment`
+Tabla de routing: tipo de documento → perfil.
 
-Current legacy-compatible printer resolution is:
-- user printer override on `res.users`
-- company-level fallback from shared QZ settings
+- Puede restringirse por usuario (+20 score) y/o empresa (+10 score)
+- `pilot_use_new_resolution`: activa el path nuevo en modo Híbrido para esta asignación
+- El resolver `resolve_shadow()` selecciona el candidato de mayor score entre los que cumplen los filtros
 
-This keeps the old configuration valid while allowing progressive per-user rollout.
+### `wex.print.trace`
+Registro de auditoría de cada decisión de impresión. Solo lectura.
 
-## Boundaries
+---
 
-This module should contain:
-- shared QZ helpers
-- shared settings
-- routing and fallback logic
-- diagnostics and traces
-- technical profile/assignment models
+## Enrutamiento
 
-This module should not contain:
-- product report definitions
-- SAT-only QWeb reports
-- repair-specific business calculations
+### Modos
 
-## Known Debt
+| Modo | Comportamiento |
+|------|----------------|
+| `legacy` | Solo path antiguo. Ignora perfiles y asignaciones. |
+| `hybrid` | Usa path nuevo si la asignación tiene `pilot_use_new_resolution=True`. Fallback automático a legacy si falla. |
+| `new_only` | Solo path nuevo. Sin fallback. Para pruebas controladas. |
 
-- Legacy printer resolution still relies on company config parameters keyed by `kind`
-- Report selection is still partially hardcoded by report name
-- There is still no formal print variant layer separating:
-  - logical document
-  - QWeb variant
-  - physical medium/size
+Configurado en: `Ajustes → Wexplay Print / QZ → Modo de Resolución` (parámetro `wex_print_core.print_mode`).
 
-## Next Recommended Direction
+### Path Legacy
 
-Do not open the print-variant refactor until hybrid behavior is considered stable enough.
+```
+res.users.wex_qz_{kind}_device_id  →  qz_printer_name
+res.users.wex_qz_{kind}_printer    →  nombre directo
+res.company  →  fallback
+ir.config_parameter  →  fallback final
+```
 
-Once resumed, the next serious architectural step should be:
-- introduce print variants
-- decouple `document_type` from hardcoded `report_name`
-- keep coexistence with legacy during migration
+El `device_kind` (label/thermal/a4) es la clave de selección. El height del paperformat NO se pasa en este path.
+
+### Path Nuevo
+
+```
+document_code  →  WexPrintAssignment.resolve_shadow()
+             →  profile_id  →  device_id  →  qz_printer_name
+             →  paperformat_page_height (para etiquetas)
+```
+
+El height del paperformat se pasa a `buildQlLabelConfig` para que QZ informe al driver del tamaño de corte correcto. Solo activo cuando `useNewResolution = true`.
+
+### Resolución de score en assignments
+
+```
+Sin usuario ni empresa  →  score 0
+Con empresa             →  score 10
+Con usuario             →  score 20
+Con usuario + empresa   →  score 30
+```
+
+Se selecciona el candidato con mayor score entre los que cumplen: documento correcto + usuario/empresa coinciden o están vacíos.
+
+### Validación de compatibilidad de dispositivo
+
+`resolve_shadow()` comprueba si el dispositivo asignado tiene el reporte del documento en su `report_action_ids`. Si no lo tiene (y la lista no está vacía), añade un warning en el campo `message` de la resolución. No bloquea la impresión. Aparece en el trace.
+
+---
+
+## Assets JavaScript
+
+| Archivo | Propósito |
+|---------|-----------|
+| `print_router.js` | Determina el modo y el path de ejecución |
+| `qz_print.js` | Conexión QZ, config builders, función principal `printOdooDocument` |
+| `printer_diagnostics_action.js` | Acción cliente de diagnóstico |
+| `qz_settings_widget.js` | Widget de estado en Ajustes |
+| `qz-tray.js` | Librería oficial QZ Tray (carga local) |
+
+### `buildQlLabelConfig(printer, opts)`
+
+Construye la configuración QZ para impresoras de etiquetas Brother QL.
+
+- `opts.copies` — número de copias
+- `opts.height` — altura en mm del paperformat. Si se pasa, se incluye en `size.height` para que el driver corte a la medida correcta. El path Legacy nunca lo pasa (comportamiento sin cambios).
+
+---
+
+## Estado de producción validado
+
+- Modo Híbrido operativo
+- Impresión de etiquetas de producto
+- Impresión de etiquetas SAT (29x90 y 29x42)
+- Impresión de tickets SAT (80x170)
+- Impresión A4 con dúplex (borde largo)
+- Rollback a Legacy verificado
+
+### Impresoras validadas en producción
+
+| Tipo | Dispositivo | Nombre en QZ |
+|------|-------------|--------------|
+| Etiqueta | Brother QL-710W | `Brother QL-710W` |
+| Térmica | PRP-300 | `PRP-300 Copiar 1` |
+| A4 | Brother MFC-L2800DW | `Brother MFC-L2800DW Printer` |
+
+---
+
+## Límites del módulo
+
+**Debe contener:**
+- Helpers QZ compartidos
+- Ajustes compartidos
+- Modelos de device, profile, assignment, document type
+- Router y lógica de fallback
+- Diagnósticos y trazas
+
+**No debe contener:**
+- Definiciones de reportes QWeb de producto o SAT
+- Lógica de negocio de SAT ni de producto
+
+---
+
+## Deuda técnica conocida
+
+- El path Legacy todavía usa `device_kind` (label/thermal/a4) como clave, no el documento concreto
+- QZ sigue en modo sin firma (unsigned), se esperan prompts en navegadores con seguridad estricta
+- No existe todavía una capa formal de variantes de impresión que relacione documento → reporte → paperformat → dispositivo de forma completa
+
+---
+
+## Documentación relacionada
+
+- [MANUAL_CONFIGURACION_QZ.md](MANUAL_CONFIGURACION_QZ.md) — Guía paso a paso de configuración desde cero

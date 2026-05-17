@@ -7,10 +7,12 @@
 | `repair` | Base `repair.order` model and inherited form view |
 | `mail` | Tracking fields on workflow timestamps and budget stage |
 | `wexplay_repair` | Provides SAT base fields, SAT settings and shared repair extension context |
+| `repair_picking_after_done` | Provides the OCA transfer button that must be hidden for not-repairable diagnostic closures |
 
 ## XML/View Dependencies
 
 - Inherits `repair.view_repair_order_form`
+- Inherits `repair_picking_after_done.repair_type_form_inherit`
 - Uses wizard views defined inside the module itself
 
 ## Functional Couplings

@@ -1,5 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_wex_print_device_tree" model="ir.ui.view">
+        <field name="name">wex.print.device.tree</field>
+        <field name="model">wex.print.device</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="backend"/>
+                <field name="device_kind"/>
+                <field name="qz_printer_name"/>
+                <field name="company_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_print_device_form" model="ir.ui.view">
+        <field name="name">wex.print.device.form</field>
+        <field name="model">wex.print.device</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Identificación">
+                        <field name="name"/>
+                        <field name="model_hint" placeholder="Ej: Brother QL-710W"/>
+                        <field name="backend"/>
+                        <field name="device_kind"/>
+                        <field name="qz_printer_name"/>
+                        <field name="company_id"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="Capacidades">
+                        <field name="paperformat_ids" widget="many2many_tags"/>
+                        <field name="report_action_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Notas">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_print_document_type_tree" model="ir.ui.view">
+        <field name="name">wex.print.document.type.tree</field>
+        <field name="model">wex.print.document.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="domain_area"/>
+                <field name="model_name"/>
+                <field name="legacy_kind"/>
+                <field name="report_action_id"/>
+                <field name="paperformat_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_print_document_type_form" model="ir.ui.view">
+        <field name="name">wex.print.document.type.form</field>
+        <field name="model">wex.print.document.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="domain_area"/>
+                        <field name="model_name"/>
+                        <field name="legacy_kind"/>
+                        <field name="report_action_id"/>
+                        <field name="paperformat_id"/>
+                        <field name="report_name"/>
+                        <field name="active"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="view_wex_print_profile_tree" model="ir.ui.view">
         <field name="name">wex.print.profile.tree</field>
         <field name="model">wex.print.profile</field>
@@ -8,6 +90,7 @@
                 <field name="name"/>
                 <field name="code"/>
                 <field name="legacy_kind"/>
+                <field name="device_id"/>
                 <field name="printer_name"/>
                 <field name="duplex_mode"/>
                 <field name="company_id"/>
@@ -28,6 +111,7 @@
                         <field name="code"/>
                         <field name="duplex_mode" invisible="legacy_kind != 'a4'"/>
                         <field name="legacy_kind"/>
+                        <field name="device_id"/>
                         <field name="printer_name"/>
                         <field name="company_id"/>
                         <field name="allow_fallback"/>
@@ -62,17 +146,56 @@
         <field name="model">wex.print.assignment</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_open_resolution_test" type="object"
+                            string="Probar resolución" class="btn-secondary"/>
+                </header>
                 <sheet>
                     <group>
                         <field name="name"/>
                         <field name="priority"/>
                         <field name="pilot_use_new_resolution"/>
                         <field name="document_type_id"/>
+                        <field name="report_action_id"/>
+                        <field name="paperformat_id"/>
                         <field name="profile_id"/>
                         <field name="user_id"/>
                         <field name="company_id"/>
                         <field name="active"/>
                         <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_print_resolution_test_form" model="ir.ui.view">
+        <field name="name">wex.print.resolution.test.form</field>
+        <field name="model">wex.print.resolution.test</field>
+        <field name="arch" type="xml">
+            <form string="Simulador de resolución">
+                <sheet>
+                    <group string="Parámetros de simulación">
+                        <field name="document_type_id"/>
+                        <field name="user_id"/>
+                        <field name="company_id"/>
+                    </group>
+                    <footer>
+                        <button name="action_simulate" type="object"
+                                string="Simular" class="btn-primary"/>
+                        <button special="cancel" string="Cerrar"/>
+                    </footer>
+                    <group string="Resultado" invisible="not simulated">
+                        <field name="result_found" widget="boolean_toggle"/>
+                        <field name="result_assignment_name" invisible="not result_found"/>
+                        <field name="result_profile_name" invisible="not result_found"/>
+                        <field name="result_device_name" invisible="not result_found"/>
+                        <field name="result_printer_name" invisible="not result_found"/>
+                        <field name="result_legacy_kind" invisible="not result_found"/>
+                        <field name="result_duplex_mode" invisible="not result_found"/>
+                        <field name="result_allow_fallback" invisible="not result_found"/>
+                        <field name="result_pilot" invisible="not result_found"/>
+                        <field name="result_message"/>
                     </group>
                 </sheet>
             </form>
@@ -99,20 +222,32 @@
         </field>
     </record>
 
+    <record id="action_wex_print_devices" model="ir.actions.act_window">
+        <field name="name">Dispositivos de impresión</field>
+        <field name="res_model">wex.print.device</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_wex_print_document_types" model="ir.actions.act_window">
+        <field name="name">Tipos de documento</field>
+        <field name="res_model">wex.print.document.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <record id="action_wex_print_profiles" model="ir.actions.act_window">
-        <field name="name">Print Profiles</field>
+        <field name="name">Perfiles de impresión</field>
         <field name="res_model">wex.print.profile</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="action_wex_print_assignments" model="ir.actions.act_window">
-        <field name="name">Print Assignments</field>
+        <field name="name">Asignaciones</field>
         <field name="res_model">wex.print.assignment</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="action_wex_print_traces" model="ir.actions.act_window">
-        <field name="name">Print Traces</field>
+        <field name="name">Trazas de impresión</field>
         <field name="res_model">wex.print.trace</field>
         <field name="view_mode">list</field>
     </record>
@@ -130,7 +265,14 @@
                 <field name="is_default"/>
                 <field name="is_physical"/>
                 <field name="printer_type"/>
+                <field name="existing_device_id"/>
                 <field name="user_id"/>
+                <button name="action_save_as_device" type="object" string="Guardar como dispositivo" icon="fa-floppy-o"
+                        invisible="existing_device_id != False"
+                        class="btn-sm btn-primary"/>
+                <button name="action_save_as_device" type="object" string="Abrir dispositivo" icon="fa-external-link"
+                        invisible="existing_device_id == False"
+                        class="btn-sm btn-secondary"/>
             </list>
         </field>
     </record>
@@ -140,10 +282,18 @@
         <field name="model">wex.print.device.snapshot</field>
         <field name="arch" type="xml">
             <form create="0" edit="0">
+                <header>
+                    <button name="action_save_as_device" type="object" string="Guardar como dispositivo"
+                            class="btn-primary"
+                            invisible="existing_device_id != False"/>
+                    <button name="action_save_as_device" type="object" string="Abrir dispositivo guardado"
+                            invisible="existing_device_id == False"/>
+                </header>
                 <sheet>
                     <group>
                         <field name="snapshot_at"/>
                         <field name="printer_name"/>
+                        <field name="existing_device_id"/>
                         <field name="driver"/>
                         <field name="density"/>
                         <field name="trays_text"/>
@@ -162,20 +312,22 @@
     </record>
 
     <record id="action_wex_print_device_snapshots" model="ir.actions.act_window">
-        <field name="name">Printer Diagnostics</field>
+        <field name="name">Diagnóstico de impresoras</field>
         <field name="res_model">wex.print.device.snapshot</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="action_wex_print_load_printer_diagnostics" model="ir.actions.client">
-        <field name="name">Load Printer Diagnostics</field>
+        <field name="name">Cargar diagnóstico desde QZ</field>
         <field name="tag">wex_print_core.load_printer_diagnostics</field>
     </record>
 
     <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin" web_icon="wex_print_core,static/description/icon.png"/>
-    <menuitem id="menu_wex_print_profiles" name="Profiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="10" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_assignments" name="Assignments" parent="menu_wex_print_root" action="action_wex_print_assignments" sequence="20" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_traces" name="Traces" parent="menu_wex_print_root" action="action_wex_print_traces" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_device_snapshots" name="Printer Diagnostics" parent="menu_wex_print_root" action="action_wex_print_device_snapshots" sequence="40" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_load_printer_diagnostics" name="Load Diagnostics from QZ" parent="menu_wex_print_root" action="action_wex_print_load_printer_diagnostics" sequence="50" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_devices" name="Dispositivos" parent="menu_wex_print_root" action="action_wex_print_devices" sequence="10" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_document_types" name="Tipos de documento" parent="menu_wex_print_root" action="action_wex_print_document_types" sequence="20" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_profiles" name="Perfiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_assignments" name="Asignaciones" parent="menu_wex_print_root" action="action_wex_print_assignments" sequence="40" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_traces" name="Trazas" parent="menu_wex_print_root" action="action_wex_print_traces" sequence="50" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_device_snapshots" name="Diagnóstico de impresoras" parent="menu_wex_print_root" action="action_wex_print_device_snapshots" sequence="60" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_load_printer_diagnostics" name="Cargar diagnóstico desde QZ" parent="menu_wex_print_root" action="action_wex_print_load_printer_diagnostics" sequence="70" groups="wex_print_core.group_wex_print_core_admin"/>
 </odoo>

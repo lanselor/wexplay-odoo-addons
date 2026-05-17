@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_picking_form_repair_delivery_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.form.repair.delivery.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="x_repair_delivery_order_id" readonly="1" invisible="not x_repair_delivery_order_id"/>
+                <field name="x_repair_shipping_operation_id" readonly="1" invisible="not x_repair_shipping_operation_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

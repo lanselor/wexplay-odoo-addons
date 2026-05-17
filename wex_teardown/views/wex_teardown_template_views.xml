@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wex_teardown_template_list" model="ir.ui.view">
+        <field name="name">wex.teardown.template.list</field>
+        <field name="model">wex.teardown.template</field>
+        <field name="arch" type="xml">
+            <list string="Plantillas">
+                <field name="name" string="Nombre"/>
+                <field name="device_type" string="Tipo de dispositivo"/>
+                <field name="active" string="Activa"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_teardown_template_form" model="ir.ui.view">
+        <field name="name">wex.teardown.template.form</field>
+        <field name="model">wex.teardown.template</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de despiece">
+                <sheet>
+                    <group>
+                        <field name="name" string="Nombre"/>
+                        <field name="active" string="Activa"/>
+                    </group>
+                    <group>
+                        <field name="device_type" string="Tipo de dispositivo"/>
+                        <field name="default_missing_part_number_confirmed"
+                               string="Marcar piezas sin part number por defecto"/>
+                    </group>
+                    <notebook>
+                        <page string="Piezas">
+                            <field name="line_ids">
+                                <list editable="bottom" string="Piezas de plantilla">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="device_type" column_invisible="1"/>
+                                    <field name="component_type_id" string="Componente" domain="[('device_type', '=', device_type)]"/>
+                                    <field name="default_quantity" string="Cantidad"/>
+                                    <field name="required" string="Requerida"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_teardown_templates" model="ir.actions.act_window">
+        <field name="name">Plantillas</field>
+        <field name="res_model">wex.teardown.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_wex_teardown_templates"
+              name="Plantillas"
+              parent="wex_teardown.menu_wex_teardown_configuration"
+              action="action_wex_teardown_templates"
+              sequence="40"/>
+</odoo>

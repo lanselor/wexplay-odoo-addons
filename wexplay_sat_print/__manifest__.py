@@ -37,6 +37,8 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
         "reports/repair_ticket_80x170.xml",
 
         #"reports/report_invoice_inherit.xml",
+
+        "data/document_type_update.xml",
     ],
     "assets": {
         "web.assets_backend": [

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_wex_teardown_root"
+              name="Despieces"
+              sequence="45"
+              groups="wex_teardown.group_wex_teardown_user"/>
+
+    <menuitem id="menu_wex_teardown_operations"
+              name="Operaciones"
+              parent="menu_wex_teardown_root"
+              sequence="10"
+              groups="wex_teardown.group_wex_teardown_user"/>
+
+    <menuitem id="menu_wex_teardown_configuration"
+              name="Configuración"
+              parent="menu_wex_teardown_root"
+              sequence="90"
+              groups="wex_teardown.group_wex_teardown_manager"/>
+</odoo>

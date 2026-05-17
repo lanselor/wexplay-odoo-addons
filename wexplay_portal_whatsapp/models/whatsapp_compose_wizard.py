@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 PORTAL_B2B_PLACEHOLDER = "${enlaceportalB2B}"
 
@@ -52,6 +53,21 @@ class WhatsappComposeWizard(models.TransientModel):
         )
         return bool(portal_users)
 
+    def _get_repair_b2b_budget_link_issues(self):
+        self.ensure_one()
+        repair = self._get_repair_b2b_record()
+        if not repair:
+            return [_("Abre el WhatsApp desde una reparación para insertar el enlace B2B.")]
+
+        issues = []
+        if not repair.x_budget_started_at:
+            issues.append(_("El presupuesto no ha sido iniciado."))
+        if repair.x_budget_stage != "waiting_customer":
+            issues.append(_("La reparación no está en estado de presupuesto 'Espera cliente'."))
+        if not repair.sale_order_id:
+            issues.append(_("La cotización vinculada todavía no está creada."))
+        return issues
+
     def _check_repair_b2b_allowed(self):
         self.ensure_one()
         repair = self._get_repair_b2b_record()
@@ -60,6 +76,8 @@ class WhatsappComposeWizard(models.TransientModel):
         if not self._check_record_belongs_to_partner(repair):
             return False
         if not self._partner_has_active_b2b_portal():
+            return False
+        if self._get_repair_b2b_budget_link_issues():
             return False
         return True
 
@@ -87,7 +105,23 @@ class WhatsappComposeWizard(models.TransientModel):
             return _("La reparación no pertenece al cliente seleccionado."), False
         if not self._partner_has_active_b2b_portal():
             return _("Portal B2B no activo para este cliente. No se puede insertar el enlace."), False
+        budget_issues = self._get_repair_b2b_budget_link_issues()
+        if budget_issues:
+            return "\n".join(budget_issues), False
         return _("Portal B2B activo. Enlace privado de la reparación listo para insertar."), True
+
+    def action_insert_portal_link(self):
+        self.ensure_one()
+        if self._is_b2b_portal_link_type():
+            budget_issues = self._get_repair_b2b_budget_link_issues()
+            if budget_issues:
+                raise UserError(
+                    _(
+                        "No se puede insertar el enlace B2B porque no se cumplen estas condiciones:\n%(issues)s"
+                    )
+                    % {"issues": "\n".join(f"- {issue}" for issue in budget_issues)}
+                )
+        return super().action_insert_portal_link()
 
     def _render_placeholder(self, expr, render_context):
         self.ensure_one()

@@ -11,8 +11,11 @@
                         Si se define una impresora aquí, tendrá prioridad sobre la configuración general por empresa.
                     </div>
                     <group>
+                        <field name="wex_qz_label_device_id" options="{'no_create': False}"/>
                         <field name="wex_qz_label_printer" placeholder="Ej: Brother QL-710W"/>
+                        <field name="wex_qz_thermal_device_id" options="{'no_create': False}"/>
                         <field name="wex_qz_thermal_printer" placeholder="Ej: PRP-300 (Copiar 1)"/>
+                        <field name="wex_qz_a4_device_id" options="{'no_create': False}"/>
                         <field name="wex_qz_a4_printer" placeholder="Ej: Brother MFC-L2800DW Printer"/>
                     </group>
                 </group>
@@ -31,8 +34,11 @@
                         Estas impresoras personales tienen prioridad sobre la configuración general por empresa.
                     </div>
                     <group>
+                        <field name="wex_qz_label_device_id" readonly="0" options="{'no_create': False}"/>
                         <field name="wex_qz_label_printer" readonly="0" placeholder="Ej: Brother QL-710W"/>
+                        <field name="wex_qz_thermal_device_id" readonly="0" options="{'no_create': False}"/>
                         <field name="wex_qz_thermal_printer" readonly="0" placeholder="Ej: PRP-300 (Copiar 1)"/>
+                        <field name="wex_qz_a4_device_id" readonly="0" options="{'no_create': False}"/>
                         <field name="wex_qz_a4_printer" readonly="0" placeholder="Ej: Brother MFC-L2800DW Printer"/>
                     </group>
                 </group>

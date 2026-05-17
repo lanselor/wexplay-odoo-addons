@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
+<odoo>
     <record id="wex_print_document_type_product_label" model="wex.print.document.type">
         <field name="name">Product Label</field>
         <field name="code">product_label</field>
+        <field name="domain_area">product</field>
+        <field name="model_name">product.template</field>
         <field name="legacy_kind">label</field>
         <field name="report_name">wexplay_product_print.report_product_label_ql700_62x29</field>
         <field name="description">Etiqueta estándar de producto.</field>
@@ -11,6 +13,8 @@
     <record id="wex_print_document_type_sat_label_main" model="wex.print.document.type">
         <field name="name">SAT Main Label</field>
         <field name="code">sat_label_main</field>
+        <field name="domain_area">sat</field>
+        <field name="model_name">repair.order</field>
         <field name="legacy_kind">label</field>
         <field name="report_name">wexplay_sat_print.report_repair_label_29x90</field>
         <field name="description">Etiqueta principal de SAT para repair.order.</field>
@@ -19,6 +23,8 @@
     <record id="wex_print_document_type_sat_label_accessory" model="wex.print.document.type">
         <field name="name">SAT Accessory Label</field>
         <field name="code">sat_label_accessory</field>
+        <field name="domain_area">sat</field>
+        <field name="model_name">repair.order</field>
         <field name="legacy_kind">label</field>
         <field name="report_name">wexplay_sat_print.report_repair_label_29x42</field>
         <field name="description">Etiqueta de accesorios de SAT.</field>
@@ -27,6 +33,8 @@
     <record id="wex_print_document_type_sat_ticket" model="wex.print.document.type">
         <field name="name">SAT Thermal Ticket</field>
         <field name="code">sat_ticket</field>
+        <field name="domain_area">sat</field>
+        <field name="model_name">repair.order</field>
         <field name="legacy_kind">thermal</field>
         <field name="report_name">wexplay_sat_print.report_repair_ticket_80x170</field>
         <field name="description">Ticket térmico de resguardo SAT.</field>
@@ -35,6 +43,8 @@
     <record id="wex_print_document_type_sat_a4" model="wex.print.document.type">
         <field name="name">SAT A4 Document</field>
         <field name="code">sat_a4</field>
+        <field name="domain_area">sat</field>
+        <field name="model_name">account.move</field>
         <field name="legacy_kind">a4</field>
         <field name="description">Documento A4 de SAT para evolución futura.</field>
     </record>

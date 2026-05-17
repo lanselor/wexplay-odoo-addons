@@ -93,6 +93,18 @@ Separar claramente:
 - Añadir tests para lógica crítica cuando proceda
 - No cambiar arquitectura sin explicarlo primero
 
+## Registro de cambios del proyecto
+- El archivo de gestión de cambios del proyecto es `C:\odoo18\WEXPLAY_CHANGELOG.md`
+- Cuando el usuario pida actualizar el registro de cambios, añadir una nueva entrada sin sustituir las anteriores
+- Cada entrada debe usar formato de tabla con estas columnas:
+  - `Fecha`
+  - `Módulo(s) modificados`
+  - `Descripción larga de los cambios`
+  - `Decisiones de negocio`
+- La descripción larga debe tener al menos 200 caracteres y explicar con claridad qué se ha cambiado
+- Si durante el trabajo se ha hablado, aclarado o decidido lógica de negocio, incluir en `Decisiones de negocio` las decisiones tomadas
+- Las entradas deben quedar identificadas por fecha y ser útiles para reconstruir por qué se hizo cada cambio, no solo qué archivos se tocaron
+
 ## Seguridad
 - Crear grupos específicos del módulo cuando tenga sentido
 - Restringir datos sensibles por grupos
@@ -316,3 +328,197 @@ Debe incluir:
 - Priorizar refactorizaciones que hagan más honestas las dependencias y más claro el reparto de responsabilidades
 - No adelantar una reorganización masiva del ecosistema SAT si antes no está saneada la base actual
 - Si una deuda afecta a instalación, envío de documentos o trazabilidad, priorizarla por encima de mejoras estéticas o estructurales menores
+
+---
+
+# Contexto específico: portal B2B clientes
+
+## Arquitectura portal consolidada
+- `wexplay_portal` es la capa puente entre portal/website y los modulos de negocio Wexplay
+- no debe integrarse la logica portal directamente dentro de `wexplay_repair`
+- el portal actual es solo B2B autenticado para clientes empresa
+- `website` es dependencia obligatoria real del portal
+
+## Limites funcionales del portal actual
+- reutiliza el portal nativo de facturas de `account`
+- expone SAT basados en `repair.order`
+- prepara solo una entrada futura para mantenimiento IT
+- no implementa portal B2C
+- no implementa acceso por token
+- no expone SAT en vistas publicas
+
+## Reglas de seguridad portal ya decididas
+- el usuario portal solo puede ver datos de su `commercial_partner_id`
+- no confiar en filtros visuales; la seguridad debe vivir en ACL, record rules, dominios y controladores
+- acceso manual por URL a SAT ajeno debe fallar
+- no exponer chatter, followers, adjuntos genericos ni relaciones indirectas peligrosas
+- no exponer DMS de forma directa en portal
+- cualquier `sudo()` puntual debe estar encapsulado en modelo y solo tras validar acceso al SAT
+
+## Reglas de datos SAT en portal
+- `x_internal_notes` nunca debe mostrarse en portal
+- `internal_notes` es el campo valido para diagnostico visible al cliente
+- el detalle SAT puede mostrar informacion operativa util al cliente, pero no notas tecnicas internas ni datos pensados solo para backend
+
+## Imagenes SAT en portal
+- las fotografias del SAT se sirven por ruta segura ligada al SAT autorizado, no por rutas genericas de DMS
+- el portal puede mostrar miniaturas, etiquetas, descripcion, modal y descarga
+- no debe abrirse navegacion de carpetas DMS ni exponer ids genericos de repositorio
+
+## Facturacion en portal
+- el portal de facturas debe seguir siendo el nativo de Odoo `account`
+- desde la ficha SAT solo se debe enlazar o contextualizar la facturacion relacionada
+- no crear portal de facturas paralelo
+
+## Integracion futura con mantenimiento IT
+- la entrada de mantenimiento IT solo debe aparecer si el partner tiene `x_is_it_maintenance_customer = True`
+- en esta fase no se debe acoplar funcionalidad real de mantenimiento IT dentro de `wexplay_portal`
+
+## UX portal ya decidida
+- el portal debe mantener una estetica Odoo reconocible, pero mas cuidada y profesional
+- la home publica no debe quedar en blanco
+- un usuario portal que entre en `/` debe terminar en `/my`
+- `Activos` es el filtro por defecto del listado SAT
+- la busqueda del listado SAT debe ser controlada por selector previo, no por dominios demasiado ambiciosos y fragiles
+
+## Referencias de documentacion
+- `wexplay_portal/ARCHITECTURE.md` debe tratarse como fuente principal de decisiones del portal
+- si una iteracion cambia reglas de acceso, alcance B2B/B2C, exposicion de imagenes o diagnostico visible, debe actualizarse esa arquitectura
+
+---
+
+# Contexto específico: Wex Print
+
+## Arquitectura actual consolidada
+- `wex_print_core` es el núcleo técnico compartido de impresión local/QZ
+- `wexplay_product_print` contiene exclusivamente impresión de etiquetas de producto
+- `wexplay_sat_print` contiene exclusivamente impresión SAT (labels, ticket y acciones SAT reutilizables)
+- `wexplay_repair` mantiene el reporte QWeb de factura SAT y dispara acciones QZ para A4 desde `account.move`
+
+## Responsabilidades ya separadas
+- `wex_print_core` concentra:
+  - integración QZ Tray
+  - assets y helpers JS comunes
+  - configuración compartida QZ
+  - router de impresión
+  - trazas técnicas
+  - perfiles y asignaciones
+  - snapshots de diagnóstico de impresoras (`qz.printers.details()`)
+- `wexplay_product_print` debe concentrar:
+  - reportes/etiquetas de producto
+  - modal y acciones de producto
+  - controladores específicos de producto
+- `wexplay_sat_print` debe concentrar:
+  - reportes SAT de etiquetas/ticket
+  - acciones cliente SAT
+  - modal/centro de impresión SAT
+- `wexplay_repair` mantiene:
+  - reporte QWeb de factura SAT (`account.move`)
+  - integración funcional de impresión A4 SAT desde factura
+
+## Estado validado en producción
+- El modo `Hybrid` está validado en producción
+- La impresión SAT y producto sigue funcionando
+- El camino híbrido con `Pilot new resolution` está probado
+- La impresión A4 SAT a doble cara está validada en producción
+- La resolución de impresora por usuario además de por empresa está implementada
+- Existe ya un catálogo inicial de impresoras guardadas (`wex.print.device`)
+- El rollback operativo sigue siendo:
+  - cambiar `Modo de Resolución` a `Legacy`
+  - o desactivar `Pilot new resolution` en la asignación concreta
+
+## Configuración de producción validada
+- Profiles activos:
+  - `A4 Prod`
+  - `Product Label Prod`
+  - `SAT Accessory Label Prod`
+  - `SAT Main Label Prod`
+  - `SAT Ticket Prod`
+- Assignments activos con `Pilot new resolution`:
+  - `Product Label Default`
+  - `SAT Main Label Default`
+  - `SAT Accessory Label Default`
+  - `SAT Ticket Default`
+  - `SAT A4 Default`
+- `duplex_mode` validado en A4:
+  - `Double-sided (long edge)`
+- Impresoras de producción validadas:
+  - etiquetas: `Brother QL-710W`
+  - térmica: `PRP-300 (Copiar 1)`
+  - A4: `Brother MFC-L2800DW Printer`
+
+## Fase actual del proyecto Wex Print
+- La Fase 1 de separación arquitectónica está completada:
+  - `wex_print_core` como núcleo técnico
+  - `wexplay_product_print` como capa de producto
+  - `wexplay_sat_print` como capa SAT
+- La Fase 2 está en estado intermedio y funcional:
+  - `Hybrid` validado
+  - trazas y diagnósticos operativos
+  - A4 SAT con duplex validado
+  - configuración por usuario y por empresa operativa
+  - catálogo inicial de impresoras guardadas introducido
+- La siguiente gran fase pendiente sigue siendo la de configurabilidad documental:
+  - variantes de impresión
+  - relación formal entre documento lógico, QWeb, `ir.actions.report`, `report.paperformat` y medio físico
+
+## Reglas de diseño ya decididas para Wex Print
+- No introducir nuevas capacidades rompiendo el fallback a `legacy`
+- En producción, probar primero mediante:
+  - `Hybrid`
+  - `Pilot new resolution`
+- No activar de golpe nuevas rutas reales para muchos documentos a la vez si no hay motivo fuerte
+- Las mejoras nuevas deben poder revertirse desde configuración sin migraciones destructivas
+- Los perfiles de impresión son el sitio correcto para opciones avanzadas como `duplex_mode`
+- La selección real de impresora no debe seguir creciendo con hardcodes por `kind`
+
+## Diagnóstico y observabilidad
+- `wex.print.trace` es la fuente de verdad para validar:
+  - `requested_mode`
+  - `execution_mode`
+  - `resolution_source`
+  - `shadow_matches_legacy`
+  - `pilot_use_new_resolution`
+  - `next_duplex_mode`
+- `wex.print.device.snapshot` permite guardar snapshots técnicos desde `qz.printers.details()`
+- Los snapshots sirven para investigar diferencias de driver/capacidades sin tocar el flujo real de impresión
+
+## Estado actual de QZ
+- `wex_print_core` encapsula la integración QZ compartida
+- La comprobación desde Ajustes usa conexión websocket y lectura de versión
+- Linux ya se ha investigado a nivel operativo:
+  - si QZ está arrancado y escucha en `8181/8182`, el problema más probable ya no es de versión
+  - en ese escenario, el foco de diagnóstico debe ponerse en navegador/certificado/websocket local seguro
+- La firma/certificado de confianza de QZ sigue descartada por ahora como prioridad de proyecto
+
+## Deuda técnica reconocida y no resuelta todavía
+- Aún existe hardcoding fuerte entre:
+  - tipo documental
+  - nombre de reporte QWeb
+  - tamaño/medio físico
+- La selección de reporte sigue siendo parcialmente hardcodeada aunque ya existe metadata más rica en `wex.print.document.type`
+- La resolución legacy sigue conviviendo con valores manuales por texto para mantener compatibilidad
+- El catálogo de impresoras guardadas existe, pero todavía no gobierna toda la resolución documental final
+- Falta una capa formal de variantes de impresión:
+  - documento lógico
+  - variante QWeb
+  - medio/tamaño físico
+  - tipo de salida
+- Falta cerrar completamente la relación entre:
+  - documento imprimible
+  - modelo Odoo propietario
+  - área funcional (`sat`, `product`, `sales`, `purchase`, `stock`, `project`, etc.)
+  - `ir.actions.report`
+  - `report.paperformat`
+  - impresora/perfil/asignación
+- Esa deuda no debe atacarse hasta que el modo híbrido esté suficientemente estable
+- No abrir a la vez:
+  - nuevas rutas reales
+  - variantes de impresión
+  - resolución por usuario/puesto
+
+## Siguiente fase recomendada cuando se retome
+- Diseñar la capa de variantes de impresión sin romper lo ya validado:
+  - desacoplar `document_type` de `report_name`
+  - modelar variante física/tamaño
+  - mantener convivencia con el sistema actual durante la migración

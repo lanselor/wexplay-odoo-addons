@@ -37,15 +37,39 @@
                         </div>
                         <div class="row mt-2">
                             <setting string="Etiquetas (ZPL/EPL)" help="Usada para etiquetas Brother o Zebra.">
+                                <field name="wex_qz_label_device_id" options="{'no_create': False}"/>
                                 <field name="wex_qz_label_printer" placeholder="Ej: Brother_QL_800"/>
                             </setting>
 
                             <setting string="Térmica (Ticket)" help="Para tickets de resguardo de 80mm.">
+                                <field name="wex_qz_thermal_device_id" options="{'no_create': False}"/>
                                 <field name="wex_qz_thermal_printer" placeholder="Ej: EPSON_TM_T20"/>
                             </setting>
 
                             <setting string="A4 Estándar" help="Impresora de oficina convencional.">
+                                <field name="wex_qz_a4_device_id" options="{'no_create': False}"/>
                                 <field name="wex_qz_a4_printer" placeholder="Ej: HP_LaserJet_Pro"/>
+                            </setting>
+                        </div>
+                    </block>
+
+                    <block title="Seguridad QZ" name="wexplay_security_block">
+                        <setting string="Modo de seguridad"
+                                 help="'Sin certificado' usa el modo sin firma de QZ (puede mostrar prompts en el navegador). 'Con certificado' requiere un certificado RSA configurado abajo.">
+                            <field name="wex_qz_security_mode"/>
+                        </setting>
+                        <div invisible="wex_qz_security_mode != 'signed'" class="mt-2">
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fa fa-lock me-1"/>
+                                La clave privada se almacena en la base de datos. Asegúrate de que el acceso a Odoo está protegido adecuadamente.
+                            </div>
+                            <setting string="Certificado público (.crt)"
+                                     help="Pega aquí el contenido del archivo .crt generado con keytool. Empieza por -----BEGIN CERTIFICATE-----.">
+                                <field name="wex_qz_certificate" widget="text" style="font-family: monospace; font-size: 0.8rem;"/>
+                            </setting>
+                            <setting string="Clave privada (.pem)"
+                                     help="Pega aquí el contenido de la clave privada en formato PEM. Empieza por -----BEGIN RSA PRIVATE KEY-----.">
+                                <field name="wex_qz_private_key" widget="text" style="font-family: monospace; font-size: 0.8rem;" password="True"/>
                             </setting>
                         </div>
                     </block>

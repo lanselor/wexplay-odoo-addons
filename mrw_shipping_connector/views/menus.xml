@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="mrw_shipping_menu_root"
+        name="Envíos MRW"
+        sequence="80"
+        groups="mrw_shipping_connector.group_mrw_shipping_user"
+        web_icon="mrw_shipping_connector,static/description/icon.png"
+    />
+
+    <menuitem
+        id="mrw_shipping_shipment_menu"
+        name="Envíos"
+        parent="mrw_shipping_menu_root"
+        action="mrw_shipping_shipment_action"
+        sequence="10"
+        groups="mrw_shipping_connector.group_mrw_shipping_user"
+    />
+
+    <menuitem
+        id="mrw_shipping_service_menu"
+        name="Servicios"
+        parent="mrw_shipping_menu_root"
+        action="mrw_shipping_service_action"
+        sequence="20"
+        groups="mrw_shipping_connector.group_mrw_shipping_manager"
+    />
+
+    <menuitem
+        id="mrw_shipping_configuration_menu"
+        name="Configuración"
+        parent="mrw_shipping_menu_root"
+        sequence="90"
+        groups="mrw_shipping_connector.group_mrw_shipping_administrator"
+    />
+
+    <menuitem
+        id="mrw_shipping_config_menu"
+        name="Configuraciones MRW"
+        parent="mrw_shipping_configuration_menu"
+        action="mrw_shipping_config_action"
+        sequence="10"
+        groups="mrw_shipping_connector.group_mrw_shipping_administrator"
+    />
+
+    <menuitem
+        id="mrw_shipping_log_menu"
+        name="Logs técnicos"
+        parent="mrw_shipping_configuration_menu"
+        action="mrw_shipping_log_action"
+        sequence="20"
+        groups="mrw_shipping_connector.group_mrw_shipping_administrator"
+    />
+</odoo>

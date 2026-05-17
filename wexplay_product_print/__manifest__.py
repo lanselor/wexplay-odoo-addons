@@ -4,10 +4,11 @@
     "category": "Wexplay",
     "depends": ["web", "product", "wex_print_core"],
     "data": [
-        "views/product_print_views.xml",
+        "reports/paperformat_product.xml",
+        "reports/report_actions.xml",
         "reports/report_product_label_ql700.xml",
-        #"reports/report_actions.xml",    
-
+        "data/document_type_update.xml",
+        "views/product_print_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

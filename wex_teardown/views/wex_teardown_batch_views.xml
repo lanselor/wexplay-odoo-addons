@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wex_teardown_line_form" model="ir.ui.view">
+        <field name="name">wex.teardown.line.form</field>
+        <field name="model">wex.teardown.line</field>
+        <field name="arch" type="xml">
+            <form string="Pieza de despiece">
+                <header>
+                    <button name="action_mark_qc_ok" type="object" string="Marcar apta"
+                            invisible="qc_state == 'ok'"/>
+                    <button name="action_mark_qc_pending" type="object" string="Marcar pendiente"
+                            invisible="qc_state == 'pending'"/>
+                    <button name="action_mark_qc_fail" type="object" string="Marcar no apta"
+                            invisible="qc_state == 'fail'"/>
+                    <button name="action_mark_qc_not_applicable" type="object" string="No recuperada / no aplica"
+                            invisible="qc_state == 'not_applicable'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Identificación">
+                            <field name="batch_id" readonly="1"/>
+                            <field name="device_type" readonly="1"/>
+                            <field name="component_type_id" readonly="state in ('created', 'discarded')"/>
+                            <field name="product_category_id"/>
+                            <field name="part_number"/>
+                            <field name="quantity"/>
+                        </group>
+                        <group string="Precio">
+                            <field name="list_price"/>
+                            <field name="pvp_tax_included"/>
+                            <field name="tax_ids" widget="many2many_tags"/>
+                            <field name="standard_price"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Control de calidad">
+                            <field name="qc_state"/>
+                            <field name="qc_notes"/>
+                            <field name="reviewed_by"/>
+                            <field name="reviewed_at"/>
+                        </group>
+                        <group string="Descarte">
+                            <field name="discard_reason"/>
+                            <field name="discard_notes"/>
+                        </group>
+                    </group>
+                    <group string="Nombre de producto">
+                        <field name="name_suggested"/>
+                        <field name="name_final"/>
+                        <field name="name_manual_locked"/>
+                        <button name="action_unlock_manual_name" type="object" string="Editar manualmente"/>
+                        <button name="action_regenerate_name" type="object" string="Regenerar nombre"/>
+                    </group>
+                    <group>
+                        <group string="Coincidencias">
+                            <field name="duplicate_status"/>
+                            <field name="duplicate_message"/>
+                            <field name="decision"/>
+                            <field name="existing_product_id"/>
+                        </group>
+                        <group string="Producto y stock">
+                            <field name="product_tmpl_id"/>
+                            <field name="stock_move_id"/>
+                            <field name="stock_ref"/>
+                            <field name="validation_status"/>
+                            <field name="validation_message"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_wex_teardown_batch_list" model="ir.ui.view">
+        <field name="name">wex.teardown.batch.list</field>
+        <field name="model">wex.teardown.batch</field>
+        <field name="arch" type="xml">
+            <list string="Despieces">
+                <field name="name" string="Referencia"/>
+                <field name="state" string="Estado"/>
+                <field name="device_type" string="Tipo"/>
+                <field name="brand_id" string="Marca"/>
+                <field name="model_id" string="Modelo"/>
+                <field name="technician_id" string="Técnico"/>
+                <field name="line_count" string="Piezas"/>
+                <field name="created_count" string="Creadas"/>
+                <field name="error_count" string="Errores"/>
+                <field name="company_id" string="Compañía" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_teardown_batch_form" model="ir.ui.view">
+        <field name="name">wex.teardown.batch.form</field>
+        <field name="model">wex.teardown.batch</field>
+        <field name="arch" type="xml">
+            <form string="Despiece">
+                <header>
+                    <button name="action_load_template" type="object" string="Cargar plantilla"
+                            class="btn-primary" invisible="state not in ('draft', 'template_loaded')"/>
+                    <button name="action_mark_review" type="object" string="Pasar a revisión"
+                            invisible="state != 'template_loaded'"/>
+                    <button name="action_validate_teardown" type="object" string="Validar"
+                            class="btn-primary" invisible="state not in ('review', 'template_loaded')"/>
+                    <button name="action_create_or_update_products" type="object" string="Crear / actualizar productos"
+                            class="btn-primary" invisible="state not in ('validated', 'partial_created')"/>
+                    <button name="action_reset_to_review" type="object" string="Volver a revisión"
+                            invisible="state not in ('validated', 'partial_created')"/>
+                    <button name="action_cancel" type="object" string="Cancelar"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,template_loaded,review,validated,partial_created,done"/>
+                </header>
+                <sheet>
+                    <field name="workflow_focus" invisible="1"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Resumen">
+                            <field name="line_count" string="Piezas"/>
+                            <field name="created_count" string="Creadas"/>
+                            <field name="discarded_count" string="Descartadas"/>
+                        </group>
+                        <group string="Pendiente">
+                            <field name="pending_count" string="Pendientes"/>
+                            <field name="warning_count" string="Advertencias"/>
+                            <field name="error_count" string="Errores"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Dispositivo" name="device">
+                            <group>
+                                <field name="device_type" string="Tipo de dispositivo"
+                                       readonly="state not in ('draft', 'template_loaded')"/>
+                                <field name="model_id" string="Modelo"
+                                       readonly="state not in ('draft', 'template_loaded')"/>
+                                <field name="brand_id" string="Marca"/>
+                                <field name="template_id" string="Plantilla"
+                                       readonly="state not in ('draft', 'template_loaded')"/>
+                                <field name="technician_id" string="Técnico"/>
+                                <field name="company_id" string="Compañía" groups="base.group_multi_company"/>
+                            </group>
+                            <group>
+                                <field name="notes" string="Notas"/>
+                            </group>
+                        </page>
+                        <page string="Piezas" name="pieces">
+                            <group>
+                                <field name="duplicate_check_progress"
+                                       widget="wex_teardown_duplicate_check"
+                                       nolabel="1"/>
+                                <field name="duplicate_check_state" invisible="1"/>
+                                <field name="duplicate_check_processed" invisible="1"/>
+                                <field name="duplicate_check_total" invisible="1"/>
+                                <field name="duplicate_check_message" invisible="1"/>
+                            </group>
+                            <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                                <div class="fw-bold text-uppercase">Piezas pendientes / aptas</div>
+                                <div class="d-flex gap-2">
+                                    <button name="action_mark_all_qc_ok" type="object" string="Marcar revisadas"
+                                            class="btn btn-secondary"
+                                            invisible="state not in ('template_loaded', 'review')"/>
+                                    <button name="action_focus_data_completion" type="object" string="Pasar a completar datos"
+                                            class="btn btn-primary"
+                                            invisible="state != 'review' or workflow_focus == 'data_completion'"/>
+                                </div>
+                            </div>
+                            <field name="pieces_operational_anchor"
+                                   widget="wex_teardown_pieces_operational"
+                                   nolabel="1"/>
+                            <separator string="No aptas / control de calidad fallido"/>
+                            <field name="failed_line_ids" context="{'default_batch_id': id}">
+                                <list string="No aptas / control de calidad fallido" create="0" delete="0">
+                                    <field name="component_type_id" string="Componente"/>
+                                    <field name="part_number" string="Part number"/>
+                                    <field name="quantity" string="Cantidad"/>
+                                    <field name="qc_state" string="Control calidad"/>
+                                    <field name="discard_reason" string="Motivo"/>
+                                    <field name="discard_notes" string="Notas"/>
+                                    <field name="state" string="Estado"/>
+                                    <button name="action_open_edit_form" type="object" icon="fa-pencil" title="Revisar pieza"/>
+                                    <button name="action_mark_qc_pending" type="object" icon="fa-undo" title="Marcar pendiente"/>
+                                    <button name="action_mark_qc_ok" type="object" icon="fa-check" title="Marcar apta"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Coincidencias" name="coincidences">
+                            <field name="line_ids" domain="[('qc_state', '=', 'ok'), ('state', '!=', 'discarded')]">
+                                <list string="Coincidencias"
+                                      decoration-success="duplicate_status == 'exact'"
+                                      decoration-warning="duplicate_status == 'partial'"
+                                      decoration-info="duplicate_status == 'model'">
+                                    <field name="component_type_id" string="Componente"/>
+                                    <field name="part_number" string="Part number"/>
+                                    <field name="name_final" string="Nombre final"/>
+                                    <field name="duplicate_status" string="Coincidencia"/>
+                                    <field name="duplicate_message" string="Detalle"/>
+                                    <field name="decision" string="Decisión"/>
+                                    <field name="existing_product_id" string="Producto existente"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Completar datos" name="data_completion">
+                            <group>
+                                <field name="validation_message" string="Mensaje de validación" nolabel="1"/>
+                            </group>
+                            <field name="data_completion_anchor"
+                                   widget="wex_teardown_data_completion"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="Productos" name="products">
+                            <field name="line_ids">
+                                <list string="Productos">
+                                    <field name="component_type_id" string="Componente"/>
+                                    <field name="decision" string="Decisión"/>
+                                    <field name="existing_product_id" string="Producto existente"/>
+                                    <field name="product_tmpl_id" string="Producto creado"/>
+                                    <field name="stock_move_id" string="Movimiento stock"/>
+                                    <field name="stock_ref" string="Referencia stock"/>
+                                    <field name="state" string="Estado"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Etiquetas" name="labels">
+                            <field name="line_ids">
+                                <list string="Etiquetas">
+                                    <field name="component_type_id" string="Componente"/>
+                                    <field name="product_tmpl_id" string="Producto"/>
+                                    <field name="label_printed" string="Etiqueta impresa"/>
+                                    <field name="label_printed_at" string="Fecha impresión"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Resumen" name="summary">
+                            <group>
+                                <field name="processed_at" string="Procesado el"/>
+                                <field name="processed_by" string="Procesado por"/>
+                            </group>
+                            <field name="line_ids">
+                                <list string="Resumen de piezas">
+                                    <field name="component_type_id" string="Componente"/>
+                                    <field name="quantity" string="Cantidad"/>
+                                    <field name="product_tmpl_id" string="Producto"/>
+                                    <field name="state" string="Estado"/>
+                                    <field name="discard_reason" string="Motivo descarte"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_teardown_batches" model="ir.actions.act_window">
+        <field name="name">Despieces</field>
+        <field name="res_model">wex.teardown.batch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_wex_teardown_batches"
+              name="Despieces"
+              parent="wex_teardown.menu_wex_teardown_operations"
+              action="action_wex_teardown_batches"
+              sequence="10"/>
+</odoo>

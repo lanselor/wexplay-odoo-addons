@@ -10,6 +10,7 @@
     "depends": [
         "wex_whatsapp_chatter",
         "wexplay_portal",
+        "wexplay_repair_workflow",
     ],
     "data": [
         "views/whatsapp_compose_wizard_views.xml",

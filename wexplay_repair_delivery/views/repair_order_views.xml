@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    
     <record id="view_repair_order_form_delivery_status_inherit" model="ir.ui.view">
         <field name="name">repair.order.form.delivery.status.inherit</field>
         <field name="model">repair.order</field>
@@ -20,11 +19,138 @@
                 />
             </xpath>
 
+            <xpath expr="//notebook[hasclass('wex_repair_form_technical_notebook')]/page[1]" position="after">
+                <page name="wex_repair_shipping_page" string="Envíos">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="wex_repair_form_card">
+                                <div class="wex_repair_form_eyebrow">Configuración</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-truck"/>
+                                    <span>Envío / recogida</span>
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                                    <span class="text-muted">Requiere envío / recogida</span>
+                                    <field name="x_requires_shipping" nolabel="1"/>
+                                </div>
+                                <div class="alert alert-light mb-0" role="alert" invisible="x_requires_shipping or x_shipping_operation_ids">
+                                    Activa "Requiere envío / recogida" para configurar recogidas, entregas, albaranes, etiquetas y gastos.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card h-100">
+                                <div class="wex_repair_form_eyebrow">Recogida</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-arrow-circle-down"/>
+                                    <span>Recogida del cliente</span>
+                                </div>
+                                <group col="1" class="wex_repair_form_group" invisible="not x_pickup_operation_id">
+                                    <field name="x_pickup_operation_id" readonly="1"/>
+                                </group>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <button
+                                        name="action_create_pickup_operation"
+                                        type="object"
+                                        string="Crear recogida"
+                                        class="btn btn-primary"
+                                        invisible="not x_requires_shipping or x_has_pickup"
+                                    />
+                                    <button
+                                        name="action_open_pickup_operation"
+                                        type="object"
+                                        string="Ver recogida"
+                                        class="btn btn-secondary"
+                                        invisible="not x_has_pickup"
+                                    />
+                                </div>
+                                <div class="alert alert-light mb-0 mt-3" role="alert" invisible="x_requires_shipping or x_has_pickup">
+                                    Bloqueado hasta activar "Requiere envío / recogida".
+                                </div>
+                                <div class="alert alert-light mb-0 mt-3" role="alert" invisible="x_has_pickup or not x_requires_shipping">
+                                    Crea una recogida cuando el equipo debe viajar desde el cliente hacia Wexplay.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="wex_repair_form_card h-100">
+                                <div class="wex_repair_form_eyebrow">Entrega</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-arrow-circle-up"/>
+                                    <span>Entrega al cliente</span>
+                                </div>
+                                <group col="1" class="wex_repair_form_group" invisible="not x_delivery_operation_id">
+                                    <field name="x_delivery_operation_id" readonly="1"/>
+                                </group>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <button
+                                        name="action_create_delivery_operation"
+                                        type="object"
+                                        string="Crear entrega"
+                                        class="btn btn-primary"
+                                        invisible="not x_requires_shipping or x_has_delivery"
+                                    />
+                                    <button
+                                        name="action_open_delivery_operation"
+                                        type="object"
+                                        string="Ver entrega"
+                                        class="btn btn-secondary"
+                                        invisible="not x_has_delivery"
+                                    />
+                                </div>
+                                <div class="alert alert-light mb-0 mt-3" role="alert" invisible="x_requires_shipping or x_has_delivery">
+                                    Bloqueado hasta activar "Requiere envío / recogida".
+                                </div>
+                                <div class="alert alert-light mb-0 mt-3" role="alert" invisible="x_has_delivery or not x_requires_shipping">
+                                    Crea una entrega cuando el equipo debe salir desde Wexplay hacia el cliente.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="wex_repair_form_card">
+                                <div class="wex_repair_form_eyebrow">Resultado</div>
+                                <div class="wex_repair_form_heading">
+                                    <i class="fa fa-map-signs"/>
+                                    <span>Seguimiento logístico</span>
+                                </div>
+                                <field name="x_shipping_operation_ids" nolabel="1" readonly="not x_requires_shipping">
+                                    <list>
+                                        <field name="operation_type"/>
+                                        <field name="state"/>
+                                        <field name="partner_id"/>
+                                        <field name="carrier_id"/>
+                                        <field name="picking_id"/>
+                                        <field name="picking_state"/>
+                                        <field name="mrw_shipment_id"/>
+                                        <field name="tracking_ref"/>
+                                        <field name="tracking_url" widget="url" optional="show" string="Tracking"/>
+                                        <field name="label_attachment_id"/>
+                                        <field name="invoice_policy"/>
+                                        <field name="invoice_id"/>
+                                        <button
+                                            name="action_open_tracking_url"
+                                            type="object"
+                                            icon="fa-external-link"
+                                            title="Abrir tracking"
+                                            invisible="not tracking_url"
+                                        />
+                                    </list>
+                                </field>
+                            </div>
+                        </div>
+                    </div>
+                </page>
+            </xpath>
+
             <xpath expr="//sheet" position="inside">
                 <field name="x_pending_delivery_filter" invisible="1"/>
                 <field name="x_can_mark_delivered" invisible="1"/>
+                <field name="x_has_pickup" invisible="1"/>
+                <field name="x_has_delivery" invisible="1"/>
             </xpath>
         </field>
     </record>
-    
 </odoo>

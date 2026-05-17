@@ -7,13 +7,18 @@ from odoo.exceptions import UserError
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
+    _BUDGET_SALE_ORDER_ACCEPT_READY_STATES = ("draft", "sent")
+    _BUDGET_SALE_ORDER_ACCEPTED_STATES = ("sale",)
+    _BUDGET_SALE_ORDER_REJECT_READY_STATES = ("draft", "sent")
+
     x_budget_stage = fields.Selection(
         [
             ("none", "Sin presupuesto"),
             ("estimating", "Revision"),
-            ("waiting_customer", "Esperando cliente"),
+            ("waiting_customer", "Espera Cliente"),
             ("accepted", "Aceptado"),
             ("rejected", "Rechazado"),
+            ("not_repairable", "No reparable"),
         ],
         string="Estado presupuesto",
         default="none",
@@ -56,10 +61,11 @@ class RepairOrder(models.Model):
 
     _BUDGET_TRANSITIONS = {
         "none": {"estimating"},
-        "estimating": {"waiting_customer"},
-        "waiting_customer": {"accepted", "rejected", "estimating"},
+        "estimating": {"waiting_customer", "not_repairable"},
+        "waiting_customer": {"accepted", "rejected", "estimating", "not_repairable"},
         "accepted": {"estimating"},
         "rejected": {"estimating"},
+        "not_repairable": {"estimating"},
     }
 
     @api.depends(
@@ -90,6 +96,109 @@ class RepairOrder(models.Model):
     # Helpers de flujo
     # ---------------------------------------------------------
 
+    def _get_budget_sale_order(self):
+        self.ensure_one()
+        return self.sale_order_id
+
+    def _should_confirm_wait_customer_without_sale_order(self):
+        self.ensure_one()
+        return True
+
+    def _requires_budget_sale_order_for_accept(self):
+        self.ensure_one()
+        return True
+
+    def _should_confirm_budget_sale_order_on_accept(self):
+        self.ensure_one()
+        return True
+
+    def _should_manage_sale_order_on_budget_reject(self):
+        self.ensure_one()
+        return True
+
+    def _should_reset_sale_order_on_budget_reestimate(self):
+        self.ensure_one()
+        return True
+
+    def _get_budget_wait_customer_without_sale_order_message(self):
+        self.ensure_one()
+        return _(
+            "Estas intentando cambiar el estado a espera cliente sin una cotizacion creada."
+        )
+
+    def _get_budget_reject_confirm_message(self):
+        self.ensure_one()
+        return _(
+            "Vas a rechazar este presupuesto. Se cancelara la cotizacion vinculada si esta disponible. ¿Deseas continuar?"
+        )
+
+    def _get_budget_reestimate_quote_reset_confirm_message(self):
+        self.ensure_one()
+        return _(
+            "Si vas a volver a presupuestar, la cotizacion debe establecerse a borrador. ¿Deseas continuar?"
+        )
+
+    def _has_budget_sale_order(self):
+        self.ensure_one()
+        return bool(self._get_budget_sale_order())
+
+    def _is_budget_sale_order_accept_ready(self):
+        self.ensure_one()
+        sale_order = self._get_budget_sale_order()
+        return bool(
+            sale_order and sale_order.state in self._BUDGET_SALE_ORDER_ACCEPT_READY_STATES
+        )
+
+    def _is_budget_sale_order_already_accepted(self):
+        self.ensure_one()
+        sale_order = self._get_budget_sale_order()
+        return bool(
+            sale_order and sale_order.state in self._BUDGET_SALE_ORDER_ACCEPTED_STATES
+        )
+
+    def _is_budget_sale_order_reject_ready(self):
+        self.ensure_one()
+        sale_order = self._get_budget_sale_order()
+        return bool(
+            sale_order and sale_order.state in self._BUDGET_SALE_ORDER_REJECT_READY_STATES
+        )
+
+    def _check_budget_sale_order_available_for_accept(self):
+        self.ensure_one()
+        sale_order = self._get_budget_sale_order()
+        if not sale_order:
+            if self._requires_budget_sale_order_for_accept():
+                raise UserError(
+                    _("No se puede aceptar el presupuesto sin una cotizacion.")
+                )
+            return self.env["sale.order"]
+        if not self._should_confirm_budget_sale_order_on_accept():
+            return sale_order
+        if self._is_budget_sale_order_accept_ready():
+            return sale_order
+        if self._is_budget_sale_order_already_accepted():
+            return sale_order
+        raise UserError(
+            _(
+                "No se puede aceptar el presupuesto porque la cotizacion vinculada no esta disponible."
+            )
+        )
+
+    def _check_budget_sale_order_available_for_reject(self):
+        self.ensure_one()
+        if not self._should_manage_sale_order_on_budget_reject():
+            return self.env["sale.order"]
+        sale_order = self._get_budget_sale_order()
+        if not sale_order:
+            return self.env["sale.order"]
+        if self._is_budget_sale_order_reject_ready() or sale_order.state == "cancel":
+            return sale_order
+        raise UserError(
+            _(
+                "No se puede rechazar el presupuesto porque la cotizacion vinculada no se puede cancelar."
+            )
+        )
+
     def _get_budget_stage_label(self, stage):
         self.ensure_one()
         return dict(self._fields["x_budget_stage"].selection).get(stage, stage)
@@ -103,7 +212,7 @@ class RepairOrder(models.Model):
             return False
 
         return not (
-            current_stage == "rejected"
+            current_stage in ("rejected", "not_repairable")
             and new_stage == "estimating"
             and self.state == "cancel"
         )
@@ -125,7 +234,7 @@ class RepairOrder(models.Model):
         vals = {"x_budget_stage": new_stage}
         if new_stage == "estimating" and not self.x_budget_started_at:
             vals["x_budget_started_at"] = fields.Datetime.now()
-        if new_stage in ("accepted", "rejected"):
+        if new_stage in ("accepted", "rejected", "not_repairable"):
             vals["x_budget_resolved_at"] = fields.Datetime.now()
         return vals
 
@@ -133,6 +242,54 @@ class RepairOrder(models.Model):
         for repair in self:
             repair.write(repair._prepare_budget_stage_vals(new_stage))
         return True
+
+    def _confirm_repair_if_needed(self):
+        self.ensure_one()
+        if self.state == "draft":
+            self.action_validate()
+        return True
+
+    def _confirm_budget_sale_order_if_needed(self):
+        self.ensure_one()
+        sale_order = self._check_budget_sale_order_available_for_accept()
+        if not sale_order or not self._should_confirm_budget_sale_order_on_accept():
+            return sale_order
+        if sale_order.state in self._BUDGET_SALE_ORDER_ACCEPT_READY_STATES:
+            sale_order.action_confirm()
+        return sale_order
+
+    def _cancel_budget_sale_order_if_needed(self):
+        self.ensure_one()
+        if not self._should_manage_sale_order_on_budget_reject():
+            return self.env["sale.order"]
+        sale_order = self._check_budget_sale_order_available_for_reject()
+        if sale_order and sale_order.state in self._BUDGET_SALE_ORDER_REJECT_READY_STATES:
+            sale_order.action_cancel()
+        return sale_order
+
+    def _needs_budget_reestimate_sale_order_reset(self):
+        self.ensure_one()
+        if not self._should_reset_sale_order_on_budget_reestimate():
+            return False
+        sale_order = self._get_budget_sale_order()
+        return bool(sale_order and sale_order.state == "sale")
+
+    def _reopen_budget_sale_order_for_reestimate(self):
+        self.ensure_one()
+        sale_order = self._get_budget_sale_order()
+        if not sale_order or sale_order.state != "sale":
+            return sale_order
+
+        sale_order.with_context(disable_cancel_warning=True).action_cancel()
+        sale_order.action_draft()
+
+        if sale_order.state != "draft":
+            raise UserError(
+                _(
+                    "No se ha podido devolver la cotizacion a borrador para volver a presupuestar."
+                )
+            )
+        return sale_order
 
     # ---------------------------------------------------------
     # Helpers de ubicacion SAT
@@ -209,6 +366,21 @@ class RepairOrder(models.Model):
             "context": {"default_repair_id": self.id},
         }
 
+    def _open_budget_workflow_confirm_wizard(self, action_key, message):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Confirmar accion"),
+            "res_model": "wex.budget.workflow.confirm.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_repair_id": self.id,
+                "default_action_key": action_key,
+                "default_message": message,
+            },
+        }
+
     def _get_waiting_spare_location(self):
         self.ensure_one()
         waiting_location = self.company_id.x_repair_state_location_waiting_spare_id
@@ -263,13 +435,39 @@ class RepairOrder(models.Model):
     def _can_reestimate_budget(self):
         self.ensure_one()
         return (
-            self.state not in ("done", "delivered")
+            self.state not in ("done", "cancel", "delivered")
             and (
                 self.x_budget_stage == "waiting_customer"
                 or self.x_budget_stage == "accepted"
                 or (self.x_budget_stage == "rejected" and self.state != "cancel")
+                or self.x_budget_stage == "not_repairable"
             )
         )
+
+    def _can_mark_not_repairable(self):
+        self.ensure_one()
+        return (
+            self.state not in ("done", "cancel", "delivered")
+            and self.x_budget_stage in ("estimating", "waiting_customer")
+        )
+
+    def _can_finish_not_repairable_diagnosis(self):
+        self.ensure_one()
+        return (
+            self.state not in ("done", "cancel", "delivered")
+            and self.x_budget_stage == "not_repairable"
+        )
+
+    def _get_not_repairable_finish_location(self):
+        self.ensure_one()
+        done_location = self.company_id.x_repair_state_location_done_id
+        if not done_location:
+            raise UserError(
+                _(
+                    "Configura primero la ubicacion 'Finalizada' en Ajustes > Wexplay SAT."
+                )
+            )
+        return done_location
 
     def _check_can_set_waiting_spare(self):
         self.ensure_one()
@@ -307,6 +505,15 @@ class RepairOrder(models.Model):
                         "Solo se puede pasar a espera de cliente desde 'Revision'."
                     )
                 )
+            if (
+                repair._should_confirm_wait_customer_without_sale_order()
+                and not repair._has_budget_sale_order()
+                and not self.env.context.get("skip_budget_wait_customer_quote_confirm")
+            ):
+                return repair._open_budget_workflow_confirm_wizard(
+                    "wait_customer_without_quote",
+                    repair._get_budget_wait_customer_without_sale_order_message(),
+                )
         result = self._set_budget_stage("waiting_customer")
         self._sync_location_for_budget_stage()
         return result
@@ -319,6 +526,8 @@ class RepairOrder(models.Model):
                         "Solo se puede aceptar un presupuesto que este esperando al cliente."
                     )
                 )
+            repair._confirm_budget_sale_order_if_needed()
+            repair._confirm_repair_if_needed()
         result = self._set_budget_stage("accepted")
         self._sync_location_for_budget_stage()
         return result
@@ -331,9 +540,44 @@ class RepairOrder(models.Model):
                         "Solo se puede rechazar un presupuesto que este esperando al cliente."
                     )
                 )
+            repair._check_budget_sale_order_available_for_reject()
+            if not self.env.context.get("skip_budget_reject_confirm"):
+                return repair._open_budget_workflow_confirm_wizard(
+                    "reject_budget",
+                    repair._get_budget_reject_confirm_message(),
+                )
+            repair._cancel_budget_sale_order_if_needed()
         result = self._set_budget_stage("rejected")
         self._sync_location_for_budget_stage()
         return result
+
+    def action_budget_mark_not_repairable(self):
+        for repair in self:
+            if not repair._can_mark_not_repairable():
+                raise UserError(
+                    _(
+                        "Solo se puede marcar como no reparable desde revision o espera cliente."
+                    )
+                )
+        return self._set_budget_stage("not_repairable")
+
+    def action_finish_not_repairable_diagnosis(self):
+        for repair in self:
+            if not repair._can_finish_not_repairable_diagnosis():
+                raise UserError(
+                    _(
+                        "Solo se puede finalizar el diagnostico desde el estado 'No reparable'."
+                    )
+                )
+            repair.write(
+                {
+                    "state": "done",
+                    "product_location_src_id": (
+                        repair._get_not_repairable_finish_location().id
+                    ),
+                }
+            )
+        return True
 
     def action_budget_reestimate(self):
         for repair in self:
@@ -343,6 +587,17 @@ class RepairOrder(models.Model):
                         "No se puede volver a presupuestar en el estado actual."
                     )
                 )
+            if (
+                repair._needs_budget_reestimate_sale_order_reset()
+                and not self.env.context.get(
+                    "skip_budget_reestimate_quote_reset_confirm"
+                )
+            ):
+                return repair._open_budget_workflow_confirm_wizard(
+                    "reestimate_budget_reset_quote",
+                    repair._get_budget_reestimate_quote_reset_confirm_message(),
+                )
+            repair._reopen_budget_sale_order_for_reestimate()
         result = self._set_budget_stage("estimating")
         self._sync_location_for_budget_stage()
         return result
@@ -387,10 +642,14 @@ class RepairOrder(models.Model):
 
     def action_repair_start(self):
         for repair in self:
-            if repair.x_budget_stage in ("estimating", "waiting_customer"):
+            if repair.x_budget_stage in (
+                "estimating",
+                "waiting_customer",
+                "not_repairable",
+            ):
                 raise UserError(
                     _(
-                        "No se puede iniciar la reparacion mientras el presupuesto este abierto."
+                        "No se puede iniciar la reparacion mientras el diagnostico o presupuesto no permita reparar."
                     )
                 )
         return super().action_repair_start()
@@ -408,7 +667,9 @@ class RepairOrder(models.Model):
     # ---------------------------------------------------------
 
     def _mark_budget_rejected_on_cancel(self):
-        to_reject = self.filtered(lambda repair: repair.x_budget_stage != "rejected")
+        to_reject = self.filtered(
+            lambda repair: repair.x_budget_stage not in ("rejected", "not_repairable")
+        )
         if to_reject:
             now = fields.Datetime.now()
             to_reject.write(

@@ -119,6 +119,7 @@ class RepairOrder(models.Model):
             ("waiting_customer", budget_labels.get("waiting_customer", "Waiting customer")),
             ("accepted", budget_labels.get("accepted", "Accepted")),
             ("rejected", budget_labels.get("rejected", "Rejected")),
+            ("not_repairable", budget_labels.get("not_repairable", "Not repairable")),
         ]
         return self._prepare_portal_steps("x_budget_stage", steps)
 
@@ -129,6 +130,9 @@ class RepairOrder(models.Model):
         current_index = ordered_keys.index(current_value) if current_value in ordered_keys else -1
         is_cancel_flow = field_name == "state" and current_value == "cancel"
         is_rejected_flow = field_name == "x_budget_stage" and current_value == "rejected"
+        is_not_repairable_flow = (
+            field_name == "x_budget_stage" and current_value == "not_repairable"
+        )
 
         steps = []
         for index, (key, label) in enumerate(ordered_steps):
@@ -136,10 +140,18 @@ class RepairOrder(models.Model):
             is_completed = current_index > index and not (
                 (is_cancel_flow and key == "delivered")
                 or (is_rejected_flow and key == "accepted")
+                or (
+                    is_not_repairable_flow
+                    and key in ("waiting_customer", "accepted", "rejected")
+                )
             )
             is_visible = not (
                 (is_cancel_flow and key == "delivered")
                 or (is_rejected_flow and key == "accepted")
+                or (
+                    is_not_repairable_flow
+                    and key in ("waiting_customer", "accepted", "rejected")
+                )
             )
             steps.append(
                 {
@@ -158,15 +170,16 @@ class RepairOrder(models.Model):
 
     def _get_portal_service_lines(self):
         self.ensure_one()
-        if not self.sale_order_id:
+        repair = self.sudo()
+        if not repair.sale_order_id:
             return self.env["sale.order.line"]
 
-        part_sale_lines = self._get_portal_part_lines().mapped("sale_line_id")
-        return self.sale_order_id.order_line.filtered(
+        part_sale_lines = repair._get_portal_part_lines().mapped("sale_line_id").sudo()
+        return repair.sale_order_id.order_line.sudo().filtered(
             lambda line: not line.display_type
             and line.product_id
             and line.product_id.type == "service"
-            and line != self.sale_order_line_id
+            and line != repair.sale_order_line_id
             and line not in part_sale_lines
         )
 
@@ -202,7 +215,8 @@ class RepairOrder(models.Model):
         self.ensure_one()
         self._check_portal_related_read_access()
         values = []
-        for line in self.sudo()._get_portal_service_lines():
+        for line in self.sudo()._get_portal_service_lines().sudo():
+            line = line.sudo()
             values.append(
                 {
                     "name": line.product_id.display_name or line.name,

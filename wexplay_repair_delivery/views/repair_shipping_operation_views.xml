@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_repair_shipping_operation_list" model="ir.ui.view">
+        <field name="name">wex.repair.shipping.operation.list</field>
+        <field name="model">wex.repair.shipping.operation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="repair_id"/>
+                <field name="operation_type"/>
+                <field name="state"/>
+                <field name="partner_id"/>
+                <field name="carrier_id"/>
+                <field name="picking_id"/>
+                <field name="mrw_shipment_id"/>
+                <field name="tracking_ref"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_repair_shipping_operation_form" model="ir.ui.view">
+        <field name="name">wex.repair.shipping.operation.form</field>
+        <field name="model">wex.repair.shipping.operation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="action_create_picking"
+                        type="object"
+                        string="Crear albarán"
+                        class="btn-primary"
+                        invisible="not repair_requires_shipping or picking_id"
+                    />
+                    <button
+                        name="action_send_to_carrier"
+                        type="object"
+                        string="Solicitar al transportista"
+                        class="btn-secondary"
+                        invisible="not repair_requires_shipping or state in ('sent', 'label_ready', 'cancelled') or (state == 'done' and operation_type != 'pickup') or (operation_type == 'pickup' and mrw_shipment_id)"
+                        confirm="Se enviará la solicitud al transportista configurado. ¿Continuar?"
+                    />
+                    <button
+                        name="action_get_label"
+                        type="object"
+                        string="Obtener etiqueta"
+                        class="btn-secondary"
+                        invisible="not repair_requires_shipping or label_attachment_id or not mrw_shipment_id"
+                    />
+                    <button
+                        name="action_open_picking"
+                        type="object"
+                        string="Ver albarán"
+                        invisible="not picking_id"
+                    />
+                    <button
+                        name="action_open_mrw_shipment"
+                        type="object"
+                        string="Ver MRW"
+                        invisible="not mrw_shipment_id"
+                    />
+                    <button
+                        name="action_open_tracking_url"
+                        type="object"
+                        string="Abrir tracking"
+                        invisible="not tracking_url"
+                    />
+                    <button
+                        name="action_open_label"
+                        type="object"
+                        string="Abrir etiqueta"
+                        invisible="not label_attachment_id"
+                    />
+                    <button
+                        name="action_download_label"
+                        type="object"
+                        string="Descargar etiqueta"
+                        invisible="not label_attachment_id"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,picking_ready,sent,label_ready,done"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="operation_type"/>
+                        </h1>
+                    </div>
+                    <div class="alert alert-light" role="alert" invisible="repair_requires_shipping">
+                        Activa "Requiere envío / recogida" en la reparación para editar o ejecutar esta operación.
+                    </div>
+                    <notebook>
+                        <page string="Configuración">
+                            <group>
+                                <group string="Operación">
+                                    <field name="repair_id" readonly="1"/>
+                                    <field name="repair_requires_shipping" invisible="1"/>
+                                    <field name="operation_type" readonly="1"/>
+                                    <field name="partner_id" readonly="not repair_requires_shipping"/>
+                                    <field name="carrier_id" readonly="not repair_requires_shipping"/>
+                                </group>
+                                <group string="Producto">
+                                    <field name="product_id" readonly="not repair_requires_shipping"/>
+                                    <field name="quantity" readonly="not repair_requires_shipping"/>
+                                    <field name="uom_id" readonly="not repair_requires_shipping"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Operación">
+                            <group>
+                                <group string="Albarán">
+                                    <field name="picking_id" readonly="1"/>
+                                    <field name="picking_state" readonly="1"/>
+                                    <field name="effective_carrier_id" readonly="1"/>
+                                </group>
+                                <group string="Acciones">
+                                    <button
+                                        name="action_create_picking"
+                                        type="object"
+                                        string="Crear albarán"
+                                        class="btn-primary"
+                                        invisible="not repair_requires_shipping or picking_id"
+                                    />
+                                    <button
+                                        name="action_open_picking"
+                                        type="object"
+                                        string="Ver albarán"
+                                        invisible="not picking_id"
+                                    />
+                                    <button
+                                        name="action_send_to_carrier"
+                                        type="object"
+                                        string="Solicitar al transportista"
+                                        invisible="not repair_requires_shipping or state in ('sent', 'label_ready', 'cancelled') or (state == 'done' and operation_type != 'pickup') or (operation_type == 'pickup' and mrw_shipment_id)"
+                                    />
+                                    <button
+                                        name="action_get_label"
+                                        type="object"
+                                        string="Obtener etiqueta"
+                                        invisible="not repair_requires_shipping or label_attachment_id or not mrw_shipment_id"
+                                    />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Resultado">
+                            <group>
+                                <group string="Seguimiento">
+                                    <field name="tracking_ref" readonly="1"/>
+                                    <field name="tracking_url" readonly="1" widget="url"/>
+                                    <field name="label_attachment_id" readonly="1"/>
+                                    <button
+                                        name="action_open_tracking_url"
+                                        type="object"
+                                        string="Abrir tracking"
+                                        invisible="not tracking_url"
+                                    />
+                                    <button
+                                        name="action_open_label"
+                                        type="object"
+                                        string="Abrir etiqueta"
+                                        invisible="not label_attachment_id"
+                                    />
+                                    <button
+                                        name="action_download_label"
+                                        type="object"
+                                        string="Descargar etiqueta"
+                                        invisible="not label_attachment_id"
+                                    />
+                                </group>
+                                <group string="MRW" invisible="not mrw_shipment_id">
+                                    <field name="mrw_shipment_id" readonly="1"/>
+                                    <field name="mrw_state" readonly="1"/>
+                                    <field name="mrw_shipment_number" readonly="1"/>
+                                    <field name="mrw_request_number" readonly="1"/>
+                                    <field name="mrw_last_error" readonly="1" invisible="not mrw_last_error"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Coste">
+                            <group>
+                                <group string="Facturación">
+                                    <field name="invoice_policy" readonly="not repair_requires_shipping"/>
+                                    <field name="charge_product_id" readonly="not repair_requires_shipping"/>
+                                    <field name="price" readonly="not repair_requires_shipping"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                                <group string="Resultado">
+                                    <field name="sale_line_id" readonly="1"/>
+                                    <field name="invoice_id" readonly="1"/>
+                                    <button
+                                        name="action_add_cost_to_sale"
+                                        type="object"
+                                        string="Añadir coste a la venta"
+                                        invisible="not repair_requires_shipping or invoice_policy != 'sale_if_editable' or sale_line_id"
+                                    />
+                                    <button
+                                        name="action_create_invoice"
+                                        type="object"
+                                        string="Crear factura de gastos"
+                                        invisible="not repair_requires_shipping or invoice_policy != 'separate_invoice' or invoice_id"
+                                    />
+                                    <button
+                                        name="action_open_invoice"
+                                        type="object"
+                                        string="Ver factura"
+                                        invisible="not invoice_id"
+                                    />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Error" invisible="not last_error and not mrw_last_error">
+                            <field name="last_error" nolabel="1" invisible="not last_error"/>
+                            <field name="mrw_last_error" nolabel="1" invisible="not mrw_last_error"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_repair_shipping_operation" model="ir.actions.act_window">
+        <field name="name">Operaciones logísticas SAT</field>
+        <field name="res_model">wex.repair.shipping.operation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -116,9 +116,10 @@ class RepairOrder(models.Model):
         [
             ("none", "Sin revisión"),
             ("estimating", "Revisión"),
-            ("waiting_customer", "Esperando cliente"),
+            ("waiting_customer", "Espera Cliente"),
             ("accepted", "Garantía aprobada"),
             ("rejected", "Garantía rechazada"),
+            ("not_repairable", "No reparable"),
         ],
         string="Estado de revisión de garantía",
         compute="_compute_x_warranty_budget_stage",
@@ -329,6 +330,42 @@ class RepairOrder(models.Model):
         if self._is_manually_forced_no_warranty():
             return False
         return self._has_warranty_snapshot()
+
+    def _should_confirm_wait_customer_without_sale_order(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return False
+        return super()._should_confirm_wait_customer_without_sale_order()
+
+    def _requires_budget_sale_order_for_accept(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return False
+        return super()._requires_budget_sale_order_for_accept()
+
+    def _should_confirm_budget_sale_order_on_accept(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return False
+        return super()._should_confirm_budget_sale_order_on_accept()
+
+    def _should_manage_sale_order_on_budget_reject(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return False
+        return super()._should_manage_sale_order_on_budget_reject()
+
+    def _should_reset_sale_order_on_budget_reestimate(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return False
+        return super()._should_reset_sale_order_on_budget_reestimate()
+
+    def _get_budget_reject_confirm_message(self):
+        self.ensure_one()
+        if self.x_is_warranty_case:
+            return _("Vas a rechazar esta garantia. ¿Deseas continuar?")
+        return super()._get_budget_reject_confirm_message()
 
     def _get_budget_stage_location_setting_field(self, stage):
         self.ensure_one()

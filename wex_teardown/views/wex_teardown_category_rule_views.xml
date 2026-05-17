@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_wex_teardown_category_rules" model="ir.actions.act_window">
+        <field name="name">Reglas de categoria obsoletas</field>
+        <field name="res_model">wex.teardown.category.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_wex_teardown_category_rules"
+              name="Reglas de categoria obsoletas"
+              parent="wex_teardown.menu_wex_teardown_configuration"
+              action="action_wex_teardown_category_rules"
+              groups="base.group_no_one"
+              sequence="98"/>
+</odoo>
