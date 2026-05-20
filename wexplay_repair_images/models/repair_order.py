@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import base64
+import io
+import logging
 import mimetypes
 import os
 from uuid import uuid4
 
+from PIL import Image, ImageOps
+
 from odoo import _, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class RepairOrder(models.Model):
@@ -61,6 +68,63 @@ class RepairOrder(models.Model):
         unique_token = uuid4().hex
         return "imagen-%s%s" % (unique_token, extension)
 
+    def _compress_sat_image(self, binary_content, filename):
+        """Redimensiona y recomprime la imagen si la compresión SAT está activa.
+
+        Devuelve el binary procesado (base64). Si está desactivada, el formato
+        no es comprimible (GIF) o falla cualquier paso, devuelve el original.
+        """
+        self.ensure_one()
+        company = self.company_id
+        if not company.x_sat_image_compress_enabled:
+            return binary_content
+
+        mimetype, _ = mimetypes.guess_type(filename or "")
+        if not mimetype or not mimetype.startswith("image/"):
+            return binary_content
+        if mimetype == "image/gif":
+            return binary_content
+
+        max_px = max(company.x_sat_image_max_px or 1920, 320)
+        quality = min(max(company.x_sat_image_quality or 85, 1), 95)
+
+        try:
+            raw = base64.b64decode(binary_content)
+            img = Image.open(io.BytesIO(raw))
+
+            needs_resize = max(img.size) > max_px
+
+            # PNG lossless sin resize: no hay nada que ganar re-encodando
+            if not needs_resize and mimetype not in ("image/jpeg", "image/webp"):
+                return binary_content
+
+            img = ImageOps.exif_transpose(img)
+
+            if needs_resize:
+                img.thumbnail((max_px, max_px), Image.LANCZOS)
+
+            out = io.BytesIO()
+            if mimetype == "image/jpeg":
+                if img.mode in ("RGBA", "P", "LA"):
+                    img = img.convert("RGB")
+                img.save(out, format="JPEG", quality=quality, optimize=True)
+            elif mimetype == "image/webp":
+                img.save(out, format="WEBP", quality=quality)
+            else:
+                img.save(out, format=img.format or "PNG", optimize=True)
+
+            processed = out.getvalue()
+            if len(processed) >= len(raw):
+                return binary_content
+
+            return base64.b64encode(processed)
+
+        except Exception:
+            _logger.warning(
+                "SAT image compress failed for '%s', using original", filename, exc_info=True
+            )
+            return binary_content
+
     def _collect_sat_report_images(self):
         self.ensure_one()
         images = []
@@ -87,6 +151,7 @@ class RepairOrder(models.Model):
         mimetype, _ = mimetypes.guess_type(filename or "")
         if not mimetype or not mimetype.startswith("image/"):
             raise UserError(_("Solo se admiten archivos de imagen (JPG, PNG, WebP, GIF)."))
+        binary_content = self._compress_sat_image(binary_content, filename)
         directory = self._get_sat_image_directory()
         image_index = self._get_next_image_index()
         sequence = self._get_next_image_sequence()

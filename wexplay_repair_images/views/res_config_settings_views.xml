@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_wexplay_repair_images" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wexplay.repair.images</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="wexplay_repair.res_config_settings_view_form_wexplay_repair"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='wexplay_sat_dms_settings']" position="after">
+                <block title="Imágenes SAT" name="wexplay_sat_image_settings">
+                    <setting string="Comprimir imágenes al subir"
+                             help="Redimensiona y recomprime cada imagen antes de guardarla en DMS.">
+                        <field name="x_sat_image_compress_enabled"/>
+                    </setting>
+                    <setting string="Resolución máxima (px)"
+                             help="Lado más largo en píxeles. Las imágenes más pequeñas no se modifican."
+                             invisible="not x_sat_image_compress_enabled">
+                        <field name="x_sat_image_max_px"/>
+                    </setting>
+                    <setting string="Calidad JPEG / WebP"
+                             help="Valor entre 1 y 95. 85 es el equilibrio recomendado."
+                             invisible="not x_sat_image_compress_enabled">
+                        <field name="x_sat_image_quality"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

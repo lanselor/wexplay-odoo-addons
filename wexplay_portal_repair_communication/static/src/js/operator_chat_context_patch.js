@@ -36,6 +36,14 @@ patch(ChatWindow.prototype, {
         return Boolean(this.state.wexPortalRepairSidebar?.enabled);
     },
 
+    getWexPortalRepairPartitionedActions() {
+        const partition = this.threadActions.partition;
+        if (!this.isWexPortalRepairOperatorThread()) {
+            return partition;
+        }
+        return this.getWexPortalRepairFilteredPartition(partition);
+    },
+
     async loadWexPortalRepairSidebar(force = false) {
         if (!this.isWexPortalRepairOperatorThread()) {
             this.state.wexPortalRepairSidebar = null;
@@ -60,6 +68,21 @@ patch(ChatWindow.prototype, {
         this.state.wexPortalRepairSidebarOpen = !this.state.wexPortalRepairSidebarOpen;
     },
 
+    getWexPortalRepairFilteredPartition(partition) {
+        // Estas acciones RTC se ocultan solo en chats SAT portal.
+        // Para revertirlo en el futuro, basta con quitar estos ids del filtro.
+        const excludedActionIds = new Set(["call", "camera-call", "settings"]);
+        const filterActionList = (actions) =>
+            actions.filter((action) => !excludedActionIds.has(action.id));
+        return {
+            quick: filterActionList(partition.quick),
+            group: partition.group
+                .map((actions) => filterActionList(actions))
+                .filter((actions) => actions.length > 0),
+            other: filterActionList(partition.other),
+        };
+    },
+
     async openWexPortalRepairRecord() {
         if (!this.isWexPortalRepairOperatorThread()) {
             return;
@@ -81,6 +104,20 @@ patch(ChatWindow.prototype, {
         const action = await this.orm.call(
             "discuss.channel",
             "action_open_wex_portal_customer",
+            [[this.thread.id]]
+        );
+        if (action) {
+            this.action.doAction(action);
+        }
+    },
+
+    async openWexPortalRepairScheduleActivity() {
+        if (!this.isWexPortalRepairOperatorThread()) {
+            return;
+        }
+        const action = await this.orm.call(
+            "discuss.channel",
+            "action_open_wex_portal_repair_schedule_activity",
             [[this.thread.id]]
         );
         if (action) {

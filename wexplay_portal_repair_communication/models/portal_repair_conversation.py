@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import _, api, fields, models
 from odoo.tools import plaintext2html
+
+_logger = logging.getLogger(__name__)
 
 
 class WexPortalRepairConversation(models.Model):
@@ -146,6 +150,22 @@ class WexPortalRepairConversation(models.Model):
             "visible_to_customer": visible_to_customer,
         }
 
+    def _post_operator_channel_note(self, body):
+        self.ensure_one()
+        if not (body or "").strip():
+            return False
+        channel = self._get_or_create_operator_channel()
+        self._sync_operator_channel_members()
+        channel.with_context(
+            wex_portal_repair_skip_discuss_sync=True,
+        ).sudo().message_post(
+            author_id=self.env.user.partner_id.id if self.env.user.partner_id else False,
+            body=plaintext2html(body, with_paragraph=False),
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
+        return True
+
     def _get_expected_operator_partners(self):
         self.ensure_one()
         partners = self.env["res.partner"]
@@ -168,12 +188,98 @@ class WexPortalRepairConversation(models.Model):
             if not channel:
                 continue
             expected_partners = conversation._get_expected_operator_partners()
-            channel.sudo().write(
+            channel = channel.sudo()
+            current_members = channel.channel_member_ids
+            _logger.info(
+                "SAT portal conversation %s syncing operator channel %s. Expected partners=%s, current partners=%s, acting user=%s.",
+                conversation.id,
+                channel.id,
+                expected_partners.ids,
+                current_members.partner_id.ids,
+                self.env.user.partner_id.id if self.env.user.partner_id else False,
+            )
+            members_to_remove = current_members.filtered(
+                lambda member: member.partner_id not in expected_partners
+            )
+            if members_to_remove:
+                for member in members_to_remove:
+                    member.write(
+                        {
+                            "custom_notifications": "no_notif",
+                            "fold_state": "closed",
+                            "unpin_dt": fields.Datetime.now(),
+                        }
+                    )
+                    _logger.info(
+                        "SAT portal conversation %s archived partner %s in operator channel %s instead of unlinking to avoid discuss UI race conditions.",
+                        conversation.id,
+                        member.partner_id.id if member.partner_id else False,
+                        channel.id,
+                    )
+            members_to_activate = current_members.filtered(
+                lambda member: member.partner_id in expected_partners
+            )
+            if members_to_activate:
+                members_to_activate.write(
+                    {
+                        "custom_notifications": False,
+                        "fold_state": "open",
+                        "unpin_dt": False,
+                        "last_interest_dt": fields.Datetime.now(),
+                    }
+                )
+            existing_partner_ids = current_members.filtered(
+                lambda member: member.partner_id in expected_partners
+            ).partner_id.ids
+            missing_partners = expected_partners.filtered(
+                lambda partner: partner.id not in existing_partner_ids
+            )
+            if missing_partners:
+                _logger.info(
+                    "SAT portal conversation %s adding missing partners %s to operator channel %s.",
+                    conversation.id,
+                    missing_partners.ids,
+                    channel.id,
+                )
+                channel.add_members(
+                    partner_ids=missing_partners.ids,
+                    open_chat_window=False,
+                    post_joined_message=False,
+                )
+            channel.write(
                 {
-                    "channel_partner_ids": [(6, 0, expected_partners.ids)],
                     "name": conversation._prepare_operator_channel_name(),
                 }
             )
+            _logger.info(
+                "SAT portal conversation %s finished sync for operator channel %s. Final partners=%s.",
+                conversation.id,
+                channel.id,
+                channel.channel_member_ids.partner_id.ids,
+            )
+
+    def _handle_responsible_user_reassignment(self, previous_user, new_user):
+        for conversation in self:
+            if previous_user == new_user:
+                continue
+            _logger.info(
+                "SAT portal conversation %s responsible reassignment on repair %s. Previous user=%s, new user=%s, acting user=%s.",
+                conversation.id,
+                conversation.repair_id.id,
+                previous_user.id if previous_user else False,
+                new_user.id if new_user else False,
+                self.env.user.id,
+            )
+            conversation._sync_operator_channel_members()
+            if new_user:
+                conversation._post_operator_channel_note(
+                    _(
+                        "Responsable SAT actualizado a %(user)s."
+                    )
+                    % {"user": new_user.display_name},
+                )
+                if conversation.state == "pending_customer_reply":
+                    conversation._open_operator_channel_for_user(new_user)
 
     def _get_or_create_operator_channel(self):
         self.ensure_one()

@@ -15,10 +15,14 @@
                     var chatStatusBadge = document.getElementById("wexPortalChatPopupStatusBadge");
                     var chatResponsible = document.getElementById("wexPortalChatPopupResponsible");
                     var chatStream = document.getElementById("wexPortalChatPopupStream");
+                    var chatSyncState = document.getElementById("wexPortalChatPopupSyncState");
+                    var chatJumpButton = document.getElementById("wexPortalChatPopupJump");
+                    var chatComposer = document.getElementById("portal_popup_conversation_body");
                     var chatCloseButtons = document.querySelectorAll("[data-wex-portal-chat-close]");
                     var debugNode = document.getElementById("wexPortalChatJsDebug");
                     var pollTimer = null;
                     var lastConversationSignature = "";
+                    var lastKnownScrollHeight = 0;
 
                     function debug(message) {
                         if (debugNode) {
@@ -42,10 +46,42 @@
                         ].join("|");
                     }
 
-                    function renderPopupMessages(payload) {
+                    function setSyncState(message) {
+                        if (chatSyncState) {
+                            chatSyncState.textContent = message || "";
+                        }
+                    }
+
+                    function isNearBottom() {
+                        if (!chatStream) {
+                            return true;
+                        }
+                        var threshold = 72;
+                        return chatStream.scrollHeight - chatStream.scrollTop - chatStream.clientHeight &lt;= threshold;
+                    }
+
+                    function setJumpButtonVisible(visible) {
+                        if (!chatJumpButton) {
+                            return;
+                        }
+                        chatJumpButton.classList.toggle("is-visible", Boolean(visible));
+                    }
+
+                    function scrollConversationToBottom() {
                         if (!chatStream) {
                             return;
                         }
+                        chatStream.scrollTop = chatStream.scrollHeight;
+                        lastKnownScrollHeight = chatStream.scrollHeight;
+                        setJumpButtonVisible(false);
+                    }
+
+                    function renderPopupMessages(payload, options) {
+                        options = options || {};
+                        if (!chatStream) {
+                            return;
+                        }
+                        var shouldStickToBottom = options.force || isNearBottom();
                         var html = "";
                         var messages = payload.messages || [];
                         if (!messages.length) {
@@ -86,7 +122,12 @@
                             });
                         }
                         chatStream.innerHTML = html;
-                        chatStream.scrollTop = chatStream.scrollHeight;
+                        if (shouldStickToBottom) {
+                            scrollConversationToBottom();
+                        } else {
+                            setJumpButtonVisible(chatStream.scrollHeight > lastKnownScrollHeight);
+                            lastKnownScrollHeight = chatStream.scrollHeight;
+                        }
                     }
 
                     function renderPopupHeader(payload) {
@@ -96,7 +137,14 @@
                         }
                         if (chatResponsible) {
                             if (payload.responsible_name) {
-                                chatResponsible.innerHTML = "<strong>" + escapeHtml(payload.responsible_name) + "</strong>";
+                                var avatarHtml = payload.responsible_avatar_url
+                                    ? '<img class="wex_portal_chat_responsible_avatar" src="' + escapeHtml(payload.responsible_avatar_url) + '" alt="' + escapeHtml(payload.responsible_name) + '"/>'
+                                    : '<span class="wex_portal_chat_responsible_avatar wex_portal_chat_responsible_avatar--fallback">' + escapeHtml(payload.responsible_initial || "?") + "</span>";
+                                chatResponsible.innerHTML =
+                                    avatarHtml +
+                                    '<span class="wex_portal_chat_responsible_identity">' +
+                                    "<strong>" + escapeHtml(payload.responsible_name) + "</strong>" +
+                                    "</span>";
                                 chatResponsible.style.display = "";
                             } else {
                                 chatResponsible.innerHTML = "";
@@ -109,11 +157,13 @@
                         options = options || {};
                         var signature = buildConversationSignature(payload);
                         if (!options.force &amp;&amp; signature === lastConversationSignature) {
+                            setSyncState("Sin cambios recientes");
                             return;
                         }
                         lastConversationSignature = signature;
                         renderPopupHeader(payload);
-                        renderPopupMessages(payload);
+                        renderPopupMessages(payload, options);
+                        setSyncState(options.force ? "Conversación actualizada" : "Nuevo mensaje recibido");
                         debug(options.force ? "popup sincronizado" : "popup actualizado");
                     }
 
@@ -121,6 +171,9 @@
                         options = options || {};
                         if (!chatPopup || !chatPopup.dataset.liveUrl) {
                             return Promise.resolve();
+                        }
+                        if (options.force) {
+                            setSyncState("Actualizando conversación...");
                         }
                         return window.fetch(chatPopup.dataset.liveUrl, {
                             headers: {
@@ -135,6 +188,7 @@
                         }).then(function (payload) {
                             applyPopupPayload(payload, options);
                         }).catch(function (error) {
+                            setSyncState("No se pudo actualizar ahora mismo");
                             debug("error sync: " + error.message);
                         });
                     }
@@ -144,10 +198,10 @@
                             return;
                         }
                         pollTimer = window.setInterval(function () {
-                            if (chatPopup &amp;&amp; chatPopup.classList.contains("is-open")) {
+                        if (chatPopup &amp;&amp; chatPopup.classList.contains("is-open")) {
                                 refreshPopupConversation();
                             }
-                        }, 5000);
+                        }, 2500);
                         debug("polling activo");
                     }
 
@@ -194,6 +248,8 @@
                         }
                         window.history.replaceState({}, "", url.toString());
                         stopPopupPolling();
+                        setJumpButtonVisible(false);
+                        setSyncState("");
                         debug("popup cerrado");
                     }
 
@@ -215,6 +271,23 @@
                         chatPopup.addEventListener("click", function (event) {
                             if (event.target === chatPopup) {
                                 closePopup();
+                            }
+                        });
+                    }
+
+                    if (chatStream) {
+                        chatStream.addEventListener("scroll", function () {
+                            if (isNearBottom()) {
+                                setJumpButtonVisible(false);
+                            }
+                        });
+                    }
+
+                    if (chatJumpButton) {
+                        chatJumpButton.addEventListener("click", function () {
+                            scrollConversationToBottom();
+                            if (chatComposer) {
+                                chatComposer.focus();
                             }
                         });
                     }
@@ -401,8 +474,23 @@
                id="wexPortalChatBubble"
                class="wex_portal_repair_chat_bubble"
                aria-label="Abrir conversación con el técnico">
-                <i class="fa fa-comments" aria-hidden="true"/>
-                <span>Hablar con el técnico</span>
+                <span class="wex_portal_repair_chat_bubble_icon">
+                    <i class="fa fa-comments" aria-hidden="true"/>
+                </span>
+                <span class="wex_portal_repair_chat_bubble_content">
+                    <span class="wex_portal_repair_chat_bubble_label">Hablar con el técnico</span>
+                    <span class="wex_portal_repair_chat_bubble_name" t-if="portal_conversation['responsible_name']">
+                        <t t-out="portal_conversation['responsible_name']"/>
+                    </span>
+                </span>
+                <span class="wex_portal_repair_chat_bubble_avatar" t-if="portal_conversation['responsible_avatar_url']">
+                    <img t-att-src="portal_conversation['responsible_avatar_url']"
+                         t-att-alt="portal_conversation['responsible_name'] or 'Técnico asignado'"/>
+                </span>
+                <span class="wex_portal_repair_chat_bubble_avatar wex_portal_repair_chat_bubble_avatar--fallback"
+                      t-elif="portal_conversation['responsible_initial']">
+                    <t t-out="portal_conversation['responsible_initial']"/>
+                </span>
             </a>
 
             <div t-attf-class="wex_portal_chat_popup#{' is-open' if portal_chat_popup_open else ''}"
@@ -427,7 +515,22 @@
                         <span id="wexPortalChatPopupResponsible"
                               class="wex_portal_chat_popup_responsible"
                               t-att-style="'display:none;' if not portal_conversation['responsible_name'] else ''">
-                            <strong><t t-out="portal_conversation['responsible_name'] or ''"/></strong>
+                            <t t-if="portal_conversation['responsible_avatar_url']">
+                                <img class="wex_portal_chat_responsible_avatar"
+                                     t-att-src="portal_conversation['responsible_avatar_url']"
+                                     t-att-alt="portal_conversation['responsible_name'] or 'Técnico asignado'"/>
+                            </t>
+                            <t t-elif="portal_conversation['responsible_initial']">
+                                <span class="wex_portal_chat_responsible_avatar wex_portal_chat_responsible_avatar--fallback">
+                                    <t t-out="portal_conversation['responsible_initial']"/>
+                                </span>
+                            </t>
+                            <span class="wex_portal_chat_responsible_identity">
+                                <strong><t t-out="portal_conversation['responsible_name'] or ''"/></strong>
+                            </span>
+                        </span>
+                        <span class="wex_portal_chat_popup_sync_state" id="wexPortalChatPopupSyncState">
+                            Conversación lista
                         </span>
                     </div>
 
@@ -469,6 +572,12 @@
                         </t>
                     </div>
 
+                    <button type="button"
+                            class="wex_portal_chat_popup_jump"
+                            id="wexPortalChatPopupJump">
+                        Ver últimos mensajes
+                    </button>
+
                     <div class="wex_portal_chat_popup_footer">
                         <t t-if="portal_conversation['can_customer_write']">
                             <form t-att-action="'/my/repairs/%s/conversation/message' % repair.id"
@@ -479,6 +588,8 @@
                                           name="body"
                                           class="form-control wex_portal_conversation_textarea"
                                           rows="3"
+                                          maxlength="4000"
+                                          autocomplete="off"
                                           placeholder="Escribe aquí tu mensaje sobre esta reparación..."
                                           required="required"/>
                                 <div class="wex_portal_chat_popup_actions">

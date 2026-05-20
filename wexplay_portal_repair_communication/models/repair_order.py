@@ -4,7 +4,7 @@ from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import format_amount, format_date
+from odoo.tools import format_amount, format_date, html2plaintext
 
 
 class RepairOrder(models.Model):
@@ -91,12 +91,14 @@ class RepairOrder(models.Model):
         for repair in self:
             conversation = repair._get_portal_conversation()
             if conversation:
+                previous_user = conversation.responsible_user_id
+                new_user = repair._resolve_portal_conversation_responsible_user()
                 conversation.write(
                     {
-                        "responsible_user_id": repair._resolve_portal_conversation_responsible_user().id,
+                        "responsible_user_id": new_user.id,
                     }
                 )
-                conversation._sync_operator_channel_members()
+                conversation._handle_responsible_user_reassignment(previous_user, new_user)
 
     def _can_portal_customer_write_conversation(self):
         self.ensure_one()
@@ -194,12 +196,28 @@ class RepairOrder(models.Model):
             return _("Hoy")
         return format_date(self.env, message_date)
 
+    def _get_portal_conversation_responsible_avatar_values(self, conversation):
+        self.ensure_one()
+        user = conversation.responsible_user_id if conversation else self.env["res.users"]
+        if not user:
+            return {
+                "responsible_avatar_url": "",
+                "responsible_initial": "",
+            }
+        return {
+            "responsible_avatar_url": "/web/image/res.users/%s/avatar_128" % user.id,
+            "responsible_initial": (user.display_name or "?")[:1].upper(),
+        }
+
     def _get_portal_repair_conversation_values(self, customer_view=True):
         self.ensure_one()
         conversation = self._get_portal_conversation()
         last_message = conversation.message_ids[-1] if conversation and conversation.message_ids else self.env[
             "wex.portal.repair.message"
         ]
+        responsible_avatar_values = self._get_portal_conversation_responsible_avatar_values(
+            conversation
+        )
         is_active_sat = bool(
             hasattr(self, "_is_portal_repair_active") and self._is_portal_repair_active()
         )
@@ -222,6 +240,8 @@ class RepairOrder(models.Model):
             "last_message_id": last_message.id if last_message else False,
             "last_message_date": last_message.create_date.isoformat() if last_message else "",
             "responsible_name": conversation.responsible_user_id.display_name if conversation and conversation.responsible_user_id else "",
+            "responsible_avatar_url": responsible_avatar_values["responsible_avatar_url"],
+            "responsible_initial": responsible_avatar_values["responsible_initial"],
             "status_badge_class": self._get_portal_conversation_status_badge_class(
                 conversation.state if conversation else "answered"
             ),
@@ -362,6 +382,32 @@ class RepairOrder(models.Model):
             "is_valid": bool(getattr(repair, "x_is_any_warranty_valid", False)),
         }
 
+    def _get_portal_chat_repair_notes(self):
+        self.ensure_one()
+        repair = self.sudo()
+        raw_notes = repair.internal_notes or getattr(repair, "x_internal_notes", False) or ""
+        return html2plaintext(raw_notes).strip() if raw_notes else ""
+
+    def action_open_portal_chat_schedule_activity(self):
+        self.ensure_one()
+        return {
+            "name": _("Programar actividad"),
+            "type": "ir.actions.act_window",
+            "res_model": "mail.activity.schedule",
+            "view_mode": "form",
+            "views": [(False, "form")],
+            "target": "new",
+            "context": {
+                "active_id": self.id,
+                "active_ids": [self.id],
+                "active_model": "repair.order",
+                "default_res_model": "repair.order",
+                "default_res_ids": str([self.id]),
+                "default_activity_type_id": self.env.ref("mail.mail_activity_data_todo").id,
+                "default_summary": _("Seguimiento SAT portal"),
+            },
+        }
+
     def _get_portal_chat_sidebar_values(self):
         self.ensure_one()
         repair = self.sudo()
@@ -379,7 +425,7 @@ class RepairOrder(models.Model):
             "serial_number": getattr(repair, "x_imei", False) or "",
             "device_description": getattr(repair, "x_device_description", False) or "",
             "reported_issue": getattr(repair, "x_reported_issue", False) or "",
-            "repair_notes": repair.internal_notes or getattr(repair, "x_internal_notes", False) or "",
+            "repair_notes": repair._get_portal_chat_repair_notes(),
             "budget_summary": repair._get_portal_chat_budget_summary(),
             "warranty_summary": repair._get_portal_chat_warranty_summary(),
         }

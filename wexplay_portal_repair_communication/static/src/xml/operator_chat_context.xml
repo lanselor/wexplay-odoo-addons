@@ -2,6 +2,12 @@
 <templates xml:space="preserve">
 
     <t t-inherit="mail.ChatWindow" t-inherit-mode="extension">
+        <xpath expr="//t[@t-set='partitionedActions']" position="attributes">
+            <attribute name="t-value">this.getWexPortalRepairPartitionedActions()</attribute>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.ChatWindow" t-inherit-mode="extension">
         <xpath expr="//t[@name='thread content']" position="inside">
             <div
                 t-if="state.wexPortalRepairSidebarLoading or this.hasWexPortalRepairSidebar()"
@@ -35,51 +41,92 @@
                     <div class="wex-portal-chat-context__actions">
                         <button
                             type="button"
-                            class="btn btn-secondary btn-sm"
+                            class="wex-portal-chat-context__action btn btn-light btn-sm"
                             t-on-click="openWexPortalRepairRecord"
-                        >Abrir SAT</button>
+                        >
+                            <i class="fa fa-wrench"/>
+                            <span>Abrir SAT</span>
+                        </button>
                         <button
                             type="button"
-                            class="btn btn-secondary btn-sm"
+                            class="wex-portal-chat-context__action btn btn-light btn-sm"
                             t-on-click="openWexPortalRepairCustomer"
-                        >Abrir cliente</button>
+                        >
+                            <i class="fa fa-user"/>
+                            <span>Abrir cliente</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="wex-portal-chat-context__action btn btn-warning btn-sm"
+                            t-on-click="openWexPortalRepairScheduleActivity"
+                        >
+                            <i class="fa fa-tasks"/>
+                            <span>Crear tarea</span>
+                        </button>
                     </div>
 
                     <div class="wex-portal-chat-context__grid">
                         <div class="wex-portal-chat-context__item">
-                            <div class="wex-portal-chat-context__label">Cliente</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-building-o"/>
+                                <span>Cliente</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.customer_name || '-'"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.status_label">
-                            <div class="wex-portal-chat-context__label">Estado</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-flag-o"/>
+                                <span>Estado</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.status_label"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.device_label">
-                            <div class="wex-portal-chat-context__label">Dispositivo</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-mobile"/>
+                                <span>Dispositivo</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.device_label"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.serial_number">
-                            <div class="wex-portal-chat-context__label">IMEI / Serie</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-hashtag"/>
+                                <span>IMEI / Serie</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.serial_number"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.customer_reference">
-                            <div class="wex-portal-chat-context__label">Referencia cliente</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-bookmark-o"/>
+                                <span>Referencia cliente</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.customer_reference"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.responsible_name">
-                            <div class="wex-portal-chat-context__label">Responsable</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-user-circle-o"/>
+                                <span>Responsable</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.responsible_name"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.budget_summary and state.wexPortalRepairSidebar.budget_summary.label">
-                            <div class="wex-portal-chat-context__label">Presupuesto</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-file-text-o"/>
+                                <span>Presupuesto</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.budget_summary.label"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.budget_summary and state.wexPortalRepairSidebar.budget_summary.amount_total_label">
-                            <div class="wex-portal-chat-context__label">Total SAT</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-eur"/>
+                                <span>Total SAT</span>
+                            </div>
                             <div class="wex-portal-chat-context__value" t-esc="state.wexPortalRepairSidebar.budget_summary.amount_total_label"/>
                         </div>
                         <div class="wex-portal-chat-context__item" t-if="state.wexPortalRepairSidebar.warranty_summary and state.wexPortalRepairSidebar.warranty_summary.label">
-                            <div class="wex-portal-chat-context__label">Garantía</div>
+                            <div class="wex-portal-chat-context__label">
+                                <i class="fa fa-shield"/>
+                                <span>Garantía</span>
+                            </div>
                             <div class="wex-portal-chat-context__value">
                                 <span t-esc="state.wexPortalRepairSidebar.warranty_summary.label"/>
                                 <span
@@ -91,17 +138,26 @@
                     </div>
 
                     <div class="wex-portal-chat-context__section" t-if="state.wexPortalRepairSidebar.device_description">
-                        <div class="wex-portal-chat-context__label">Descripción del dispositivo</div>
+                        <div class="wex-portal-chat-context__label">
+                            <i class="fa fa-info-circle"/>
+                            <span>Descripción del dispositivo</span>
+                        </div>
                         <div class="wex-portal-chat-context__text" t-esc="state.wexPortalRepairSidebar.device_description"/>
                     </div>
 
                     <div class="wex-portal-chat-context__section" t-if="state.wexPortalRepairSidebar.reported_issue">
-                        <div class="wex-portal-chat-context__label">Avería reportada</div>
+                        <div class="wex-portal-chat-context__label">
+                            <i class="fa fa-exclamation-triangle"/>
+                            <span>Avería reportada</span>
+                        </div>
                         <div class="wex-portal-chat-context__text" t-esc="state.wexPortalRepairSidebar.reported_issue"/>
                     </div>
 
                     <div class="wex-portal-chat-context__section" t-if="state.wexPortalRepairSidebar.repair_notes">
-                        <div class="wex-portal-chat-context__label">Notas SAT</div>
+                        <div class="wex-portal-chat-context__label">
+                            <i class="fa fa-sticky-note-o"/>
+                            <span>Notas SAT</span>
+                        </div>
                         <div class="wex-portal-chat-context__text" t-esc="state.wexPortalRepairSidebar.repair_notes"/>
                     </div>
                 </div>

@@ -92,9 +92,9 @@
 
 .wex_portal_chat_responsible {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
   color: #3b4752;
   font-size: 0.9rem;
   text-align: right;
@@ -106,6 +106,32 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.wex_portal_chat_responsible_identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wex_portal_chat_responsible_avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #dbe3eb;
+  box-shadow: 0 6px 14px rgba(21, 53, 40, 0.16);
+}
+
+.wex_portal_chat_responsible_avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e5a43, #2f7b5e);
+  color: #fff;
+  font-weight: 700;
 }
 
 .wex_portal_chat_timeline {
@@ -293,7 +319,7 @@
   gap: 0.65rem;
   border: 0;
   border-radius: 999px;
-  padding: 0.95rem 1.2rem;
+  padding: 0.85rem 1rem 0.85rem 0.9rem;
   background: linear-gradient(135deg, #174f3a, #247457);
   color: #fff;
   text-decoration: none;
@@ -305,6 +331,65 @@
   background: linear-gradient(135deg, #133d2d, #205f49);
   color: #fff;
   text-decoration: none;
+}
+
+.wex_portal_repair_chat_bubble_icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.wex_portal_repair_chat_bubble_content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.wex_portal_repair_chat_bubble_label {
+  font-weight: 700;
+}
+
+.wex_portal_repair_chat_bubble_name {
+  margin-top: 0.1rem;
+  max-width: 10rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.76rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wex_portal_repair_chat_bubble_avatar {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.wex_portal_repair_chat_bubble_avatar--fallback {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-weight: 700;
 }
 
 body.wex-portal-chat-open {
@@ -327,6 +412,7 @@ body.wex-portal-chat-open {
 }
 
 .wex_portal_chat_popup_panel {
+  position: relative;
   width: calc(100vw - 2rem);
   max-width: 30rem;
   height: calc(100vh - 2rem);
@@ -371,7 +457,20 @@ body.wex-portal-chat-open {
   background: transparent;
   color: #60707d;
   font-size: 1rem;
-  padding: 0.2rem 0.25rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.wex_portal_chat_popup_close:hover,
+.wex_portal_chat_popup_close:focus {
+  background: #eef3f7;
+  color: #30404d;
 }
 
 .wex_portal_chat_popup_status {
@@ -388,9 +487,19 @@ body.wex-portal-chat-open {
   font-size: 0.85rem;
 }
 
+.wex_portal_chat_popup_sync_state {
+  margin-left: auto;
+  color: #70808e;
+  font-size: 0.76rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #f2f5f8;
+}
+
 .wex_portal_chat_popup_stream {
   flex: 1 1 auto;
   overflow: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 0.95rem;
@@ -400,10 +509,30 @@ body.wex-portal-chat-open {
     linear-gradient(180deg, #fafbfd 0%, #f4f7fa 100%);
 }
 
+.wex_portal_chat_popup_jump {
+  position: absolute;
+  right: 1rem;
+  bottom: 7.25rem;
+  z-index: 2;
+  display: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  background: rgba(23, 79, 58, 0.94);
+  color: #fff;
+  font-size: 0.82rem;
+  box-shadow: 0 10px 24px rgba(18, 53, 40, 0.22);
+
+  &.is-visible {
+    display: inline-flex;
+  }
+}
+
 .wex_portal_chat_popup_footer {
   padding: 0.9rem 1rem 1rem;
   border-top: 1px solid #e6ecf2;
   background: #fff;
+  box-shadow: 0 -10px 20px rgba(26, 41, 52, 0.04);
 }
 
 .wex_portal_chat_popup_actions {
@@ -458,6 +587,10 @@ body.wex-portal-chat-open {
     justify-content: center;
   }
 
+  .wex_portal_repair_chat_bubble_name {
+    max-width: 7.5rem;
+  }
+
   .wex_portal_chat_popup {
     padding: 0;
     align-items: stretch;
@@ -470,5 +603,29 @@ body.wex-portal-chat-open {
     max-width: none;
     max-height: none;
     border-radius: 0;
+  }
+
+  .wex_portal_chat_popup_jump {
+    right: 1rem;
+    left: 1rem;
+    justify-content: center;
+  }
+
+  .wex_portal_chat_popup_status {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .wex_portal_chat_popup_sync_state {
+    margin-left: 0;
+  }
+
+  .wex_portal_chat_popup_actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .wex_portal_chat_popup_actions .btn {
+    width: 100%;
   }
 }

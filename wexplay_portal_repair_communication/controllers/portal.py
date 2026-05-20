@@ -16,7 +16,10 @@ class WexplayPortalRepairCommunication(WexplayCustomerPortal):
     def portal_repair_conversation_live(self, repair_id, **_kwargs):
         repair = self._get_portal_repair_or_404(repair_id)
         payload = repair._get_portal_repair_conversation_values(customer_view=True)
-        return request.make_json_response(payload)
+        response = request.make_json_response(payload)
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        return response
 
     @http.route(
         ["/my/repairs/<int:repair_id>/conversation/message"],

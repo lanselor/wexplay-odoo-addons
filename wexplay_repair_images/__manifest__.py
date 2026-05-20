@@ -22,6 +22,7 @@ Integración SAT del core de imágenes para repair.order.
         "data/wex_image_tag_data.xml",
         "views/wex_repair_image_upload_wizard_views.xml",
         "views/repair_order_views.xml",
+        "views/res_config_settings_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

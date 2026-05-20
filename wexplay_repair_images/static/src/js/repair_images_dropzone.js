@@ -8,8 +8,10 @@ function parsePositiveId(value) {
 }
 
 function getRepairOrderId() {
-    // Odoo 18 usa rutas tipo /odoo/repairs/653
-    const match = window.location.pathname.match(/\/repairs\/(\d+)(?:$|[/?#])/);
+    const pathname = window.location.pathname;
+    const match =
+        pathname.match(/\/repairs\/(\d+)/) ||
+        pathname.match(/\/repair\.order\/(\d+)/);
     return match ? parsePositiveId(match[1]) : null;
 }
 

@@ -36,6 +36,7 @@ class DiscussChannel(models.Model):
             "res_model": "repair.order",
             "res_id": repair.id,
             "view_mode": "form",
+            "views": [(False, "form")],
             "target": "current",
         }
 
@@ -50,8 +51,15 @@ class DiscussChannel(models.Model):
             "res_model": "res.partner",
             "res_id": partner.id,
             "view_mode": "form",
+            "views": [(False, "form")],
             "target": "current",
         }
+
+    def action_open_wex_portal_repair_schedule_activity(self):
+        self.ensure_one()
+        if not self._is_wex_portal_repair_operator_channel():
+            return False
+        return self.x_wex_portal_repair_conversation_id.repair_id.action_open_portal_chat_schedule_activity()
 
     def message_post(self, **kwargs):
         message = super().message_post(**kwargs)

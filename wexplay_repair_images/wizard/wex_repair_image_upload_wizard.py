@@ -37,11 +37,14 @@ class WexRepairImageUploadWizard(models.TransientModel):
             filename = self.repair_order_id._build_sat_image_filename(
                 original_filename=line.filename,
             )
+            binary_content = self.repair_order_id._compress_sat_image(
+                line.image_file, line.filename or ""
+            )
             created_images |= image_model.with_context(
                 skip_repair_image_chatter=True
             ).create_image_from_binary(
                 name=display_name,
-                binary_content=line.image_file,
+                binary_content=binary_content,
                 directory=directory,
                 res_model="repair.order",
                 res_id=self.repair_order_id.id,
