@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="rule_wex_portal_repair_conversation_company" model="ir.rule">
+        <field name="name">Wex portal repair conversation multi-company</field>
+        <field name="model_id" ref="model_wex_portal_repair_conversation"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="rule_wex_portal_repair_message_company" model="ir.rule">
+        <field name="name">Wex portal repair message multi-company</field>
+        <field name="model_id" ref="model_wex_portal_repair_message"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>

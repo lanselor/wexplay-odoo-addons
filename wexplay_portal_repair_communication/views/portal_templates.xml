@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="portal_repair_conversation_tab"
+              inherit_id="wexplay_portal.portal_repair_page"
+              priority="40">
+        <xpath expr="//div[hasclass('o_portal_wrap') and hasclass('wex_portal_repair_wrap')]" position="inside">
+            <t t-set="portal_chat_tab_param" t-value="request.httprequest.args.get('tab') or ''"/>
+            <t t-set="portal_chat_debug" t-value="request.httprequest.args.get('debug_portal_chat') == '1'"/>
+            <t t-set="portal_chat_popup_open" t-value="request.httprequest.args.get('open_portal_chat') == '1'"/>
+            <script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function () {
+                    var chatBubble = document.getElementById("wexPortalChatBubble");
+                    var chatPopup = document.getElementById("wexPortalChatPopup");
+                    var chatPopupPanel = document.getElementById("wexPortalChatPopupPanel");
+                    var chatStatusBadge = document.getElementById("wexPortalChatPopupStatusBadge");
+                    var chatResponsible = document.getElementById("wexPortalChatPopupResponsible");
+                    var chatStream = document.getElementById("wexPortalChatPopupStream");
+                    var chatCloseButtons = document.querySelectorAll("[data-wex-portal-chat-close]");
+                    var debugNode = document.getElementById("wexPortalChatJsDebug");
+                    var pollTimer = null;
+                    var lastConversationSignature = "";
+
+                    function debug(message) {
+                        if (debugNode) {
+                            debugNode.textContent = "estado js: " + message;
+                        }
+                    }
+
+                    function escapeHtml(value) {
+                        var node = document.createElement("div");
+                        node.textContent = value || "";
+                        return node.innerHTML;
+                    }
+
+                    function buildConversationSignature(payload) {
+                        return [
+                            payload.message_count || 0,
+                            payload.last_message_id || 0,
+                            payload.last_message_date || "",
+                            payload.state || "",
+                            payload.responsible_name || "",
+                        ].join("|");
+                    }
+
+                    function renderPopupMessages(payload) {
+                        if (!chatStream) {
+                            return;
+                        }
+                        var html = "";
+                        var messages = payload.messages || [];
+                        if (!messages.length) {
+                            html = [
+                                '<div class="wex_portal_conversation_empty">',
+                                '  <div class="wex_portal_conversation_empty_icon"><i class="fa fa-comments-o" aria-hidden="true"></i></div>',
+                                '  <div class="wex_portal_conversation_empty_title">Aún no hay mensajes en esta conversación</div>',
+                                "</div>",
+                            ].join("");
+                        } else {
+                            messages.forEach(function (item) {
+                                if (item.type === "date_separator") {
+                                    html += [
+                                        '<div class="wex_portal_conversation_date">',
+                                        "  <span>" + escapeHtml(item.label) + "</span>",
+                                        "</div>",
+                                    ].join("");
+                                    return;
+                                }
+                                if (item.type !== "message") {
+                                    return;
+                                }
+                                var rowClass = item.is_customer ? "is-customer" : "is-technician";
+                                var authorName = escapeHtml(item.author_name || "?");
+                                var authorInitial = escapeHtml((item.author_name || "?").slice(0, 1));
+                                html += [
+                                    '<div class="wex_portal_conversation_row ' + rowClass + '">',
+                                    '  <div class="wex_portal_conversation_avatar"><span>' + authorInitial + "</span></div>",
+                                    '  <div class="wex_portal_conversation_entry ' + rowClass + '">',
+                                    '    <div class="wex_portal_conversation_meta">',
+                                    "      <strong>" + authorName + "</strong>",
+                                    "      <span>" + escapeHtml(item.created_at_label || "") + "</span>",
+                                    "    </div>",
+                                    '    <div class="wex_portal_conversation_text text-break">' + escapeHtml(item.body || "") + "</div>",
+                                    "  </div>",
+                                    "</div>",
+                                ].join("");
+                            });
+                        }
+                        chatStream.innerHTML = html;
+                        chatStream.scrollTop = chatStream.scrollHeight;
+                    }
+
+                    function renderPopupHeader(payload) {
+                        if (chatStatusBadge) {
+                            chatStatusBadge.className = "wex_portal_chat_badge " + (payload.status_badge_class || "is-muted");
+                            chatStatusBadge.textContent = payload.state_label || "";
+                        }
+                        if (chatResponsible) {
+                            if (payload.responsible_name) {
+                                chatResponsible.innerHTML = "<strong>" + escapeHtml(payload.responsible_name) + "</strong>";
+                                chatResponsible.style.display = "";
+                            } else {
+                                chatResponsible.innerHTML = "";
+                                chatResponsible.style.display = "none";
+                            }
+                        }
+                    }
+
+                    function applyPopupPayload(payload, options) {
+                        options = options || {};
+                        var signature = buildConversationSignature(payload);
+                        if (!options.force &amp;&amp; signature === lastConversationSignature) {
+                            return;
+                        }
+                        lastConversationSignature = signature;
+                        renderPopupHeader(payload);
+                        renderPopupMessages(payload);
+                        debug(options.force ? "popup sincronizado" : "popup actualizado");
+                    }
+
+                    function refreshPopupConversation(options) {
+                        options = options || {};
+                        if (!chatPopup || !chatPopup.dataset.liveUrl) {
+                            return Promise.resolve();
+                        }
+                        return window.fetch(chatPopup.dataset.liveUrl, {
+                            headers: {
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                            credentials: "same-origin",
+                        }).then(function (response) {
+                            if (!response.ok) {
+                                throw new Error("HTTP " + response.status);
+                            }
+                            return response.json();
+                        }).then(function (payload) {
+                            applyPopupPayload(payload, options);
+                        }).catch(function (error) {
+                            debug("error sync: " + error.message);
+                        });
+                    }
+
+                    function startPopupPolling() {
+                        if (pollTimer) {
+                            return;
+                        }
+                        pollTimer = window.setInterval(function () {
+                            if (chatPopup &amp;&amp; chatPopup.classList.contains("is-open")) {
+                                refreshPopupConversation();
+                            }
+                        }, 5000);
+                        debug("polling activo");
+                    }
+
+                    function stopPopupPolling() {
+                        if (!pollTimer) {
+                            return;
+                        }
+                        window.clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+
+                    function openPopup() {
+                        if (!chatPopup) {
+                            debug("popup no encontrado");
+                            return;
+                        }
+                        chatPopup.classList.add("is-open");
+                        document.body.classList.add("wex-portal-chat-open");
+                        var url = new URL(window.location.href);
+                        url.searchParams.set("open_portal_chat", "1");
+                        url.hash = "portalRepairChatPopup";
+                        window.history.replaceState({}, "", url.toString());
+                        var composer = document.getElementById("portal_popup_conversation_body");
+                        if (composer) {
+                            window.setTimeout(function () {
+                                composer.focus();
+                            }, 120);
+                        }
+                        refreshPopupConversation({ force: true });
+                        startPopupPolling();
+                        debug("popup abierto");
+                    }
+
+                    function closePopup() {
+                        if (!chatPopup) {
+                            return;
+                        }
+                        chatPopup.classList.remove("is-open");
+                        document.body.classList.remove("wex-portal-chat-open");
+                        var url = new URL(window.location.href);
+                        url.searchParams.delete("open_portal_chat");
+                        if (url.hash === "#portalRepairChatPopup") {
+                            url.hash = "";
+                        }
+                        window.history.replaceState({}, "", url.toString());
+                        stopPopupPolling();
+                        debug("popup cerrado");
+                    }
+
+                    if (chatBubble) {
+                        chatBubble.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            openPopup();
+                        });
+                    }
+
+                    chatCloseButtons.forEach(function (button) {
+                        button.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            closePopup();
+                        });
+                    });
+
+                    if (chatPopup) {
+                        chatPopup.addEventListener("click", function (event) {
+                            if (event.target === chatPopup) {
+                                closePopup();
+                            }
+                        });
+                    }
+
+                    document.addEventListener("keydown", function (event) {
+                        if (event.key === "Escape" &amp;&amp; chatPopup &amp;&amp; chatPopup.classList.contains("is-open")) {
+                            closePopup();
+                        }
+                    });
+
+                    if (
+                        new URLSearchParams(window.location.search).get("open_portal_chat") === "1" ||
+                        window.location.hash === "#portalRepairChatPopup"
+                    ) {
+                        openPopup();
+                    } else if (debugNode) {
+                        debug("js inline inicializado");
+                    }
+                });
+            </script>
+            <t t-if="portal_chat_debug">
+                <div class="alert alert-info wex_portal_chat_debug" role="alert">
+                    <strong>Debug portal chat</strong>
+                    <div>tab query: <t t-out="portal_chat_tab_param or '(vacío)'"/></div>
+                    <div>hash esperado: #portalRepairConversation o #portalRepairConversationComposer</div>
+                    <div>conversación activa en servidor: <t t-out="'sí' if portal_chat_tab_param == 'conversation' else 'no'"/></div>
+                    <div id="wexPortalChatJsDebug">estado js: pendiente</div>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//button[@id='tab-ficha-btn']" position="attributes">
+            <attribute name="t-attf-class">nav-link#{'' if request.httprequest.args.get('tab') == 'conversation' else ' active'}</attribute>
+            <attribute name="t-att-aria-selected">"false" if request.httprequest.args.get('tab') == 'conversation' else "true"</attribute>
+        </xpath>
+
+        <xpath expr="//div[@id='tab-ficha']" position="attributes">
+            <attribute name="t-attf-class">tab-pane fade#{'' if request.httprequest.args.get('tab') == 'conversation' else ' show active'}</attribute>
+        </xpath>
+
+        <xpath expr="//ul[@id='repairDetailTabs']" position="inside">
+            <li class="nav-item" role="presentation">
+                <t t-set="portal_conversation" t-value="repair._get_portal_repair_conversation_values()"/>
+                <button t-attf-class="nav-link#{' active' if request.httprequest.args.get('tab') == 'conversation' else ''}"
+                        id="tab-conversacion-btn"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-conversacion"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-conversacion"
+                        t-att-aria-selected="'true' if request.httprequest.args.get('tab') == 'conversation' else 'false'">
+                    <i class="fa fa-comments-o me-1" aria-hidden="true"/>
+                    Conversación
+                    <t t-if="portal_conversation['message_count']">
+                        <span class="wex_portal_tab_count"><t t-out="portal_conversation['message_count']"/></span>
+                    </t>
+                </button>
+            </li>
+        </xpath>
+
+        <xpath expr="//div[@id='repairDetailTabsContent']" position="inside">
+            <t t-set="portal_conversation" t-value="repair._get_portal_repair_conversation_values()"/>
+            <div t-attf-class="tab-pane fade#{' show active' if request.httprequest.args.get('tab') == 'conversation' else ''}"
+                 id="tab-conversacion"
+                 role="tabpanel"
+                 aria-labelledby="tab-conversacion-btn">
+                <div class="card wex_portal_panel wex_portal_panel--conversation" id="portalRepairConversation">
+                    <div class="card-body p-0">
+                        <div class="wex_portal_chat_shell">
+                            <div class="wex_portal_chat_header">
+                                <div class="wex_portal_chat_header_main">
+                                    <div class="wex_portal_chat_eyebrow">Canal SAT directo</div>
+                                    <h5 class="wex_portal_chat_title mb-1">
+                                        <i class="fa fa-comments-o wex_portal_card_icon" aria-hidden="true"/>
+                                        Conversación con tu técnico
+                                    </h5>
+                                    <p class="wex_portal_chat_intro mb-0">
+                                        <t t-out="portal_conversation['entry_message']"/>
+                                    </p>
+                                </div>
+                                <div class="wex_portal_chat_header_side">
+                                    <span t-att-class="'wex_portal_chat_badge %s' % portal_conversation['status_badge_class']">
+                                        <t t-out="portal_conversation['state_label']"/>
+                                    </span>
+                                    <div class="wex_portal_chat_responsible" t-if="portal_conversation['responsible_name']">
+                                        <span class="wex_portal_chat_responsible_label">Responsable</span>
+                                        <strong><t t-out="portal_conversation['responsible_name']"/></strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wex_portal_chat_timeline">
+                                <div class="wex_portal_chat_timeline_line"/>
+                                <div class="wex_portal_chat_timeline_text">
+                                    <t t-out="portal_conversation['availability_message']"/>
+                                </div>
+                            </div>
+
+                            <div class="wex_portal_conversation_stream">
+                                <t t-if="portal_conversation['messages']">
+                                    <t t-foreach="portal_conversation['messages']" t-as="item">
+                                        <t t-if="item['type'] == 'date_separator'">
+                                            <div class="wex_portal_conversation_date">
+                                                <span><t t-out="item['label']"/></span>
+                                            </div>
+                                        </t>
+                                        <t t-if="item['type'] == 'message'">
+                                            <div t-att-class="'wex_portal_conversation_row %s' % ('is-customer' if item['is_customer'] else 'is-technician')">
+                                                <div class="wex_portal_conversation_avatar">
+                                                    <span>
+                                                        <t t-out="(item['author_name'] or '?')[:1]"/>
+                                                    </span>
+                                                </div>
+                                                <div t-att-class="'wex_portal_conversation_entry %s' % ('is-customer' if item['is_customer'] else 'is-technician')">
+                                                    <div class="wex_portal_conversation_meta">
+                                                        <strong><t t-out="item['author_name']"/></strong>
+                                                        <span>
+                                                            <t t-out="item['created_at_label']"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="wex_portal_conversation_text text-break">
+                                                        <t t-out="item['body']"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="wex_portal_conversation_empty">
+                                        <div class="wex_portal_conversation_empty_icon">
+                                            <i class="fa fa-comments-o" aria-hidden="true"/>
+                                        </div>
+                                        <div class="wex_portal_conversation_empty_title">
+                                            Aún no hay mensajes en esta conversación
+                                        </div>
+                                        <div class="wex_portal_conversation_empty_text">
+                                            Cuando escribas aquí, el mensaje quedará vinculado directamente a este SAT.
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div class="wex_portal_conversation_composer" id="portalRepairConversationComposer">
+                                <t t-if="portal_conversation['can_customer_write']">
+                                    <form t-att-action="'/my/repairs/%s/conversation/message' % repair.id"
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <label class="form-label fw-semibold" for="portal_conversation_body">
+                                            Escribe al técnico
+                                        </label>
+                                        <textarea id="portal_conversation_body"
+                                                  name="body"
+                                                  class="form-control wex_portal_conversation_textarea"
+                                                  rows="4"
+                                                  placeholder="Escribe aquí tu mensaje sobre esta reparación..."
+                                                  required="required"/>
+                                        <div class="d-flex justify-content-between align-items-center mt-3 gap-3 flex-wrap">
+                                            <span class="small text-muted">
+                                                <t t-out="portal_conversation['availability_message']"/>
+                                            </span>
+                                            <button type="submit" class="btn btn-primary">
+                                                Enviar mensaje
+                                            </button>
+                                        </div>
+                                    </form>
+                                </t>
+                                <t t-else="">
+                                    <div class="wex_portal_conversation_notice">
+                                        <i class="fa fa-info-circle me-2" aria-hidden="true"/>
+                                        <span><t t-out="portal_conversation['availability_message']"/></span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[hasclass('wex_portal_repair_wrap')]" position="inside">
+            <t t-set="portal_conversation" t-value="repair._get_portal_repair_conversation_values()"/>
+            <a t-att-href="'/my/repairs/%s?tab=conversation#portalRepairConversation' % repair.id"
+               id="wexPortalChatBubble"
+               class="wex_portal_repair_chat_bubble"
+               aria-label="Abrir conversación con el técnico">
+                <i class="fa fa-comments" aria-hidden="true"/>
+                <span>Hablar con el técnico</span>
+            </a>
+
+            <div t-attf-class="wex_portal_chat_popup#{' is-open' if portal_chat_popup_open else ''}"
+                 id="wexPortalChatPopup"
+                 t-att-data-live-url="'/my/repairs/%s/conversation/live' % repair.id">
+                <div class="wex_portal_chat_popup_panel" id="wexPortalChatPopupPanel" role="dialog" aria-modal="true" aria-labelledby="wexPortalChatPopupTitle">
+                    <div class="wex_portal_chat_popup_header">
+                        <div>
+                            <div class="wex_portal_chat_popup_eyebrow">SAT <t t-out="repair.name or ''"/></div>
+                            <h5 class="wex_portal_chat_popup_title" id="wexPortalChatPopupTitle">Chat con tu técnico</h5>
+                        </div>
+                        <button type="button" class="wex_portal_chat_popup_close" data-wex-portal-chat-close="1" aria-label="Cerrar chat">
+                            <i class="fa fa-times" aria-hidden="true"/>
+                        </button>
+                    </div>
+
+                    <div class="wex_portal_chat_popup_status">
+                        <span id="wexPortalChatPopupStatusBadge"
+                              t-att-class="'wex_portal_chat_badge %s' % portal_conversation['status_badge_class']">
+                            <t t-out="portal_conversation['state_label']"/>
+                        </span>
+                        <span id="wexPortalChatPopupResponsible"
+                              class="wex_portal_chat_popup_responsible"
+                              t-att-style="'display:none;' if not portal_conversation['responsible_name'] else ''">
+                            <strong><t t-out="portal_conversation['responsible_name'] or ''"/></strong>
+                        </span>
+                    </div>
+
+                    <div class="wex_portal_chat_popup_stream" id="wexPortalChatPopupStream">
+                        <t t-if="portal_conversation['messages']">
+                            <t t-foreach="portal_conversation['messages']" t-as="item">
+                                <t t-if="item['type'] == 'date_separator'">
+                                    <div class="wex_portal_conversation_date">
+                                        <span><t t-out="item['label']"/></span>
+                                    </div>
+                                </t>
+                                <t t-if="item['type'] == 'message'">
+                                    <div t-att-class="'wex_portal_conversation_row %s' % ('is-customer' if item['is_customer'] else 'is-technician')">
+                                        <div class="wex_portal_conversation_avatar">
+                                            <span><t t-out="(item['author_name'] or '?')[:1]"/></span>
+                                        </div>
+                                        <div t-att-class="'wex_portal_conversation_entry %s' % ('is-customer' if item['is_customer'] else 'is-technician')">
+                                            <div class="wex_portal_conversation_meta">
+                                                <strong><t t-out="item['author_name']"/></strong>
+                                                <span><t t-out="item['created_at_label']"/></span>
+                                            </div>
+                                            <div class="wex_portal_conversation_text text-break">
+                                                <t t-out="item['body']"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="wex_portal_conversation_empty">
+                                <div class="wex_portal_conversation_empty_icon">
+                                    <i class="fa fa-comments-o" aria-hidden="true"/>
+                                </div>
+                                <div class="wex_portal_conversation_empty_title">
+                                    Aún no hay mensajes en esta conversación
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="wex_portal_chat_popup_footer">
+                        <t t-if="portal_conversation['can_customer_write']">
+                            <form t-att-action="'/my/repairs/%s/conversation/message' % repair.id"
+                                  method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="return_mode" value="popup"/>
+                                <textarea id="portal_popup_conversation_body"
+                                          name="body"
+                                          class="form-control wex_portal_conversation_textarea"
+                                          rows="3"
+                                          placeholder="Escribe aquí tu mensaje sobre esta reparación..."
+                                          required="required"/>
+                                <div class="wex_portal_chat_popup_actions">
+                                    <a t-att-href="'/my/repairs/%s?tab=conversation#portalRepairConversation' % repair.id"
+                                       class="btn btn-outline-secondary btn-sm">
+                                        Ver conversación completa
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        Enviar mensaje
+                                    </button>
+                                </div>
+                            </form>
+                        </t>
+                        <t t-else="">
+                            <div class="wex_portal_conversation_notice">
+                                <i class="fa fa-info-circle me-2" aria-hidden="true"/>
+                                <span><t t-out="portal_conversation['availability_message']"/></span>
+                            </div>
+                            <div class="wex_portal_chat_popup_actions">
+                                <a t-att-href="'/my/repairs/%s?tab=conversation#portalRepairConversation' % repair.id"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Ver conversación completa
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

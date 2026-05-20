@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import mimetypes
 import os
 from uuid import uuid4
 
 from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 
 class RepairOrder(models.Model):
@@ -58,6 +60,57 @@ class RepairOrder(models.Model):
         extension = extension.lower() or ".jpg"
         unique_token = uuid4().hex
         return "imagen-%s%s" % (unique_token, extension)
+
+    def _collect_sat_report_images(self):
+        self.ensure_one()
+        images = []
+        for rec in self.x_image_ids.filtered("x_include_in_sat_report").sorted(
+            lambda r: (r.sequence, r.id)
+        ):
+            img_data = rec.dms_file_id.image_1920
+            if not img_data:
+                continue
+            mimetype = rec.dms_file_id.mimetype or "image/jpeg"
+            data_b64 = img_data.decode("utf-8") if isinstance(img_data, bytes) else img_data
+            images.append({
+                "name": rec.name or "",
+                "src": "data:%s;base64,%s" % (mimetype, data_b64),
+                "description": rec.description or "",
+                "tags": ", ".join(rec._get_repair_image_tag_names()),
+            })
+        return images
+
+    def upload_repair_image_from_dropzone(self, filename, binary_content):
+        self.ensure_one()
+        if not binary_content:
+            raise UserError(_("La imagen está vacía."))
+        mimetype, _ = mimetypes.guess_type(filename or "")
+        if not mimetype or not mimetype.startswith("image/"):
+            raise UserError(_("Solo se admiten archivos de imagen (JPG, PNG, WebP, GIF)."))
+        directory = self._get_sat_image_directory()
+        image_index = self._get_next_image_index()
+        sequence = self._get_next_image_sequence()
+        display_name = self._build_sat_image_display_name(image_index)
+        safe_filename = self._build_sat_image_filename(original_filename=filename)
+        image = self.env["wex.image.record"].with_context(
+            skip_repair_image_chatter=True
+        ).create_image_from_binary(
+            name=display_name,
+            binary_content=binary_content,
+            directory=directory,
+            res_model="repair.order",
+            res_id=self.id,
+            description=False,
+            tag_ids=[],
+            sequence=sequence,
+            company_id=self.company_id.id,
+            extra_vals={
+                "repair_order_id": self.id,
+                "dms_file_name": safe_filename,
+            },
+        )
+        image._post_images_batch_added_to_repair_chatter()
+        return {"image_id": image.id, "image_name": image.name}
 
     def action_open_image_upload_wizard(self):
         self.ensure_one()

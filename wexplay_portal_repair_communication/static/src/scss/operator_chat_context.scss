@@ -1,0 +1,87 @@
+.wex-portal-chat-context {
+    flex-shrink: 0;
+
+    &__toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.875rem;
+    }
+
+    &__title {
+        font-weight: 600;
+        color: #3d2f1f;
+    }
+
+    &__subtitle {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #6c757d;
+        font-size: 0.8125rem;
+    }
+
+    &__loading {
+        padding: 0 0.85rem 0.85rem;
+        color: #6c757d;
+        font-size: 0.8125rem;
+    }
+
+    &__body {
+        padding: 0 0.85rem 0.85rem;
+        font-size: 0.8125rem;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem 0.85rem;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    &__item,
+    &__section {
+        min-width: 0;
+    }
+
+    &__label {
+        margin-bottom: 0.1rem;
+        color: #8a6d3b;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    &__value,
+    &__text {
+        color: #212529;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    &__section {
+        margin-top: 0.7rem;
+        padding-top: 0.7rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__pill {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.35rem;
+        padding: 0.05rem 0.35rem;
+        border-radius: 999px;
+        background: #dff3e5;
+        color: #2d6a4f;
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_repair_order_form_portal_repair_conversation_button" model="ir.ui.view">
+        <field name="name">repair.order.form.portal.repair.conversation.button</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_open_or_create_portal_conversation"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-comments-o">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Conversación cliente</span>
+                        <span class="o_stat_value">
+                            <field name="x_portal_conversation_message_count"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

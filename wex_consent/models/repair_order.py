@@ -84,6 +84,30 @@ class RepairOrder(models.Model):
         )
         return document.action_open_request_modal()
 
+    def _collect_sat_report_consents(self):
+        self.ensure_one()
+        consents = []
+        type_labels = dict(
+            self.env["wex.consent.document"]._fields["document_type"].selection
+        )
+        for doc in self.x_consent_document_ids.filtered(
+            lambda d: d.state == "signed"
+        ).sorted(lambda d: (d.signed_at or d.create_date, d.id)):
+            sig_data = doc.signature_image
+            signature_src = False
+            if sig_data:
+                data_b64 = sig_data.decode("utf-8") if isinstance(sig_data, bytes) else sig_data
+                signature_src = "data:image/png;base64,%s" % data_b64
+            consents.append({
+                "type_label": type_labels.get(doc.document_type, doc.document_type),
+                "signer_name": doc.signer_name or "",
+                "signer_vat": doc.signer_vat or "",
+                "signed_at": doc.signed_at,
+                "signature_src": signature_src,
+                "dms_file_id": doc.dms_file_id,
+            })
+        return consents
+
     def action_request_reception_signature(self):
         return self._open_signature_request("reception")
 

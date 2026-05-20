@@ -252,8 +252,50 @@
                                 </page>
 
                                 <page name="wex_sat_documents_page" string="Documentos">
+                                    <!-- wexplay_sat_print reemplaza este div con sus botones de etiquetas -->
                                     <div class="alert alert-light mb-0" role="alert">
-                                        Espacio reservado para documentos SAT relacionados con la reparación.
+                                        Espacio reservado para etiquetas e impresiones SAT.
+                                    </div>
+
+                                    <!-- Informe de servicio técnico -->
+                                    <div class="mt-3">
+                                        <p class="fw-semibold text-muted mb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;">
+                                            Informe de servicio técnico
+                                        </p>
+                                        <field name="x_sat_report_dms_file_id" invisible="1"/>
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <span class="badge text-bg-secondary d-inline-flex align-items-center gap-1"
+                                                  invisible="x_sat_report_dms_file_id">
+                                                <i class="fa fa-circle-o"/>
+                                                Sin generar
+                                            </span>
+                                            <span class="badge text-bg-success d-inline-flex align-items-center gap-1"
+                                                  invisible="not x_sat_report_dms_file_id">
+                                                <i class="fa fa-check-circle"/>
+                                                Archivado en DMS
+                                            </span>
+                                            <button name="action_generate_sat_report"
+                                                    type="object"
+                                                    class="btn btn-primary d-inline-flex align-items-center gap-2"
+                                                    invisible="x_sat_report_dms_file_id">
+                                                <i class="fa fa-file-text-o"/>
+                                                Generar informe
+                                            </button>
+                                            <button name="action_download_sat_report"
+                                                    type="object"
+                                                    class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+                                                    invisible="not x_sat_report_dms_file_id">
+                                                <i class="fa fa-download"/>
+                                                Descargar
+                                            </button>
+                                            <button name="action_generate_sat_report"
+                                                    type="object"
+                                                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                                                    invisible="not x_sat_report_dms_file_id">
+                                                <i class="fa fa-refresh"/>
+                                                Regenerar
+                                            </button>
+                                        </div>
                                     </div>
                                 </page>
                             </notebook>

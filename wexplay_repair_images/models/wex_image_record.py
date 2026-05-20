@@ -16,6 +16,12 @@ class WexImageRecord(models.Model):
         index=True,
     )
 
+    x_include_in_sat_report = fields.Boolean(
+        string="Incluir en informe",
+        default=False,
+        help="Incluir esta imagen en el informe de servicio técnico SAT.",
+    )
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:

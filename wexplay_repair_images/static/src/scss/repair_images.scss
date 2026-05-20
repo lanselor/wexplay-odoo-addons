@@ -2,6 +2,68 @@
     padding: 8px 4px 0;
 }
 
+.wex_repair_images_dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding: 20px 24px;
+    min-height: 72px;
+    border: 2px dashed #c6cedd;
+    border-radius: 12px;
+    background: #f8f9fc;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    outline: none;
+
+    &:hover,
+    &:focus-visible {
+        border-color: #7065aa;
+        background: #f2f0f9;
+    }
+
+    &.is-dragover {
+        border-color: #5f5aa2;
+        background: #eceaf6;
+    }
+
+    &.is-loading {
+        pointer-events: none;
+        opacity: 0.65;
+    }
+
+    &.is-loading .wex_repair_images_dropzone__label,
+    &.is-loading .wex_repair_images_dropzone__hint {
+        display: none;
+    }
+
+    .wex_repair_images_dropzone__loading {
+        display: none;
+        font-size: 0.875rem;
+        color: #5f5aa2;
+        font-weight: 600;
+    }
+
+    &.is-loading .wex_repair_images_dropzone__loading {
+        display: block;
+    }
+}
+
+.wex_repair_images_dropzone__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #445064;
+    pointer-events: none;
+}
+
+.wex_repair_images_dropzone__hint {
+    font-size: 0.78rem;
+    color: #8a93a4;
+    pointer-events: none;
+}
+
 .wex_repair_images_panel__toolbar {
     align-items: center;
 }

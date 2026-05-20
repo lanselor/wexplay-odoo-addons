@@ -36,6 +36,7 @@ consolas y otros dispositivos electrÃƒÂ³nicos).
         "views/repair_order_search.xml",
         "views/account_move_view_inherit.xml",
         "reports/report_invoice_sat.xml",
+        "reports/sat_service_report.xml",
     ],
     "assets": {
         "web.assets_backend": [

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_portal_repair_conversation_user,wex.portal.repair.conversation user,model_wex_portal_repair_conversation,base.group_user,1,1,1,0
+access_wex_portal_repair_message_user,wex.portal.repair.message user,model_wex_portal_repair_message,base.group_user,1,1,1,0
+access_wex_portal_repair_reply_wizard_user,wex.portal.repair.reply.wizard user,model_wex_portal_repair_reply_wizard,base.group_user,1,1,1,1

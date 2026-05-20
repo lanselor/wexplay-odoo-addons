@@ -1,0 +1,474 @@
+.wex_portal_panel--conversation {
+  scroll-margin-top: 120px;
+  overflow: hidden;
+}
+
+.wex_portal_chat_debug {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.wex_portal_chat_shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 38rem;
+  background:
+    radial-gradient(circle at top right, rgba(37, 103, 79, 0.08), transparent 24rem),
+    linear-gradient(180deg, #fbfcfd 0%, #f5f7fa 100%);
+}
+
+.wex_portal_chat_header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e3e8ee;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.wex_portal_chat_header_main {
+  min-width: 0;
+}
+
+.wex_portal_chat_eyebrow {
+  margin-bottom: 0.35rem;
+  color: #2c6b54;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wex_portal_chat_title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.wex_portal_chat_intro {
+  max-width: 44rem;
+  color: #61707d;
+  line-height: 1.5;
+}
+
+.wex_portal_chat_header_side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+  min-width: 12rem;
+}
+
+.wex_portal_chat_badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+
+  &.is-pending {
+    background: #fff1d8;
+    border-color: #f0cb7a;
+    color: #7a5812;
+  }
+
+  &.is-answered {
+    background: #e6f5eb;
+    border-color: #b9dfc7;
+    color: #215d45;
+  }
+
+  &.is-muted {
+    background: #eff2f5;
+    border-color: #d7dee6;
+    color: #5f6d7b;
+  }
+}
+
+.wex_portal_chat_responsible {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  color: #3b4752;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.wex_portal_chat_responsible_label {
+  color: #7b8894;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.wex_portal_chat_timeline {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.5rem;
+  border-bottom: 1px solid #e8edf2;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.wex_portal_chat_timeline_line {
+  width: 2.2rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2a6f57, #6fa48f);
+  flex-shrink: 0;
+}
+
+.wex_portal_chat_timeline_text {
+  color: #5f6c79;
+  font-size: 0.88rem;
+}
+
+.wex_portal_conversation_stream {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 1.4rem 1.5rem 1.2rem;
+  flex: 1 1 auto;
+}
+
+.wex_portal_conversation_date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.2rem 0;
+  color: #73808d;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  span {
+    padding: 0.1rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid #dce3ea;
+  }
+}
+
+.wex_portal_conversation_row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.7rem;
+
+  &.is-customer {
+    justify-content: flex-end;
+  }
+
+  &.is-customer .wex_portal_conversation_avatar {
+    order: 2;
+    background: #25674f;
+    color: #fff;
+  }
+
+  &.is-customer .wex_portal_conversation_entry {
+    order: 1;
+  }
+}
+
+.wex_portal_conversation_avatar {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e7eef5;
+  color: #526170;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.wex_portal_conversation_entry {
+  width: calc(100% - 3.2rem);
+  max-width: 54rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1.1rem;
+  border: 1px solid #d7dfe8;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(28, 43, 58, 0.04);
+
+  &.is-customer {
+    background: #edf8f2;
+    border-color: #bfdcc8;
+  }
+
+  &.is-technician {
+    background: #f8fafc;
+    border-color: #dbe3eb;
+  }
+}
+
+.wex_portal_conversation_meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.wex_portal_conversation_text {
+  white-space: pre-wrap;
+  line-height: 1.55;
+  color: #1f2a33;
+}
+
+.wex_portal_conversation_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed #d3dde6;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.wex_portal_conversation_empty_icon {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf3f7;
+  color: #62727f;
+  font-size: 1.25rem;
+}
+
+.wex_portal_conversation_empty_title {
+  font-weight: 700;
+  color: #30404d;
+}
+
+.wex_portal_conversation_empty_text {
+  max-width: 30rem;
+  color: #6a7782;
+}
+
+.wex_portal_conversation_composer {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid #e3e9ef;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.wex_portal_conversation_textarea {
+  min-height: 8.25rem;
+  resize: vertical;
+  border-radius: 1rem;
+  border-color: #cfd8e3;
+  background: #fff;
+}
+
+.wex_portal_conversation_notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid #f0d6a0;
+  border-radius: 1rem;
+  background: #fff6df;
+  color: #7a5a17;
+}
+
+.wex_portal_repair_chat_bubble {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.95rem 1.2rem;
+  background: linear-gradient(135deg, #174f3a, #247457);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 18px 40px rgba(19, 58, 43, 0.24);
+}
+
+.wex_portal_repair_chat_bubble:hover,
+.wex_portal_repair_chat_bubble:focus {
+  background: linear-gradient(135deg, #133d2d, #205f49);
+  color: #fff;
+  text-decoration: none;
+}
+
+body.wex-portal-chat-open {
+  overflow: hidden;
+}
+
+.wex_portal_chat_popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: none;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1.25rem;
+  background: rgba(13, 22, 30, 0.16);
+
+  &.is-open {
+    display: flex;
+  }
+}
+
+.wex_portal_chat_popup_panel {
+  width: calc(100vw - 2rem);
+  max-width: 30rem;
+  height: calc(100vh - 2rem);
+  max-height: 44rem;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(14, 27, 34, 0.28);
+  border: 1px solid rgba(123, 136, 148, 0.16);
+}
+
+.wex_portal_chat_popup_header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.85rem;
+  border-bottom: 1px solid #e6ecf2;
+  background: linear-gradient(180deg, #fcfdfe 0%, #f5f7fb 100%);
+}
+
+.wex_portal_chat_popup_eyebrow {
+  margin-bottom: 0.2rem;
+  color: #6e7b88;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.wex_portal_chat_popup_title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #24313b;
+}
+
+.wex_portal_chat_popup_close {
+  border: 0;
+  background: transparent;
+  color: #60707d;
+  font-size: 1rem;
+  padding: 0.2rem 0.25rem;
+}
+
+.wex_portal_chat_popup_status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #edf2f6;
+  background: #fafbfd;
+}
+
+.wex_portal_chat_popup_responsible {
+  color: #51606c;
+  font-size: 0.85rem;
+}
+
+.wex_portal_chat_popup_stream {
+  flex: 1 1 auto;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at top right, rgba(37, 103, 79, 0.06), transparent 16rem),
+    linear-gradient(180deg, #fafbfd 0%, #f4f7fa 100%);
+}
+
+.wex_portal_chat_popup_footer {
+  padding: 0.9rem 1rem 1rem;
+  border-top: 1px solid #e6ecf2;
+  background: #fff;
+}
+
+.wex_portal_chat_popup_actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 991px) {
+  .wex_portal_chat_header {
+    flex-direction: column;
+  }
+
+  .wex_portal_chat_header_side {
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .wex_portal_chat_responsible {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 768px) {
+  .wex_portal_chat_shell {
+    min-height: auto;
+  }
+
+  .wex_portal_chat_header,
+  .wex_portal_chat_timeline,
+  .wex_portal_conversation_stream,
+  .wex_portal_conversation_composer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .wex_portal_conversation_row {
+    gap: 0.55rem;
+  }
+
+  .wex_portal_conversation_entry {
+    max-width: calc(100% - 2.9rem);
+  }
+
+  .wex_portal_repair_chat_bubble {
+    right: 1rem;
+    left: 1rem;
+    bottom: 1rem;
+    justify-content: center;
+  }
+
+  .wex_portal_chat_popup {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .wex_portal_chat_popup_panel {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+  }
+}

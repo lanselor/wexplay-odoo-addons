@@ -25,6 +25,7 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
         "repair",
         "base",
         "wex_print_core",
+        "wexplay_repair",
     ],
     "data": [
         "views/repair_print_actions.xml",

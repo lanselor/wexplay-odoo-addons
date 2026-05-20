@@ -25,6 +25,7 @@ Integración SAT del core de imágenes para repair.order.
     ],
     "assets": {
         "web.assets_backend": [
+            "wexplay_repair_images/static/src/js/repair_images_dropzone.js",
             "wexplay_repair_images/static/src/scss/repair_images.scss",
         ],
     },

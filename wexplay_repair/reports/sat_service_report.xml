@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_sat_service" model="ir.actions.report">
+        <field name="name">Informe de Servicio Técnico SAT</field>
+        <field name="model">repair.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wexplay_repair.report_sat_service</field>
+        <field name="report_file">wexplay_repair.report_sat_service</field>
+        <field name="print_report_name">'Informe_SAT_%s' % (object.name or '')</field>
+    </record>
+
+    <template id="report_sat_service">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="wexplay_repair.report_sat_service_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_sat_service_document">
+        <t t-call="web.external_layout">
+            <t t-set="ctx" t-value="o._prepare_sat_report_context()"/>
+
+            <style>
+                .page {
+                    position: relative;
+                    width: 100%;
+                    color: #1f2937;
+                    font-family: 'Roboto', sans-serif;
+                    font-size: 9pt;
+                    line-height: 1.4;
+                    padding-top: 6px;
+                }
+
+                /* ── Layout ── */
+                .wex_row2 {
+                    width: 100%;
+                    display: table;
+                    table-layout: fixed;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                }
+                .wex_cell {
+                    display: table-cell;
+                    vertical-align: top;
+                }
+                .wex_cell--half   { width: 50%; }
+                .wex_cell--third  { width: 33.33%; }
+                .wex_cell--gap-r  { padding-right: 10px; }
+                .wex_cell--gap-l  { padding-left: 10px; }
+
+                /* ── Cabecera del documento ── */
+                .wex_hdr {
+                    width: 100%;
+                    border-bottom: 3px solid #7b68b5;
+                    padding-bottom: 8px;
+                    margin-bottom: 14px;
+                }
+                .wex_hdr_title {
+                    margin: 0;
+                    color: #7b68b5;
+                    font-size: 15.5pt;
+                    font-weight: 900;
+                    letter-spacing: 0.1px;
+                    text-transform: uppercase;
+                    line-height: 1.1;
+                }
+                .wex_hdr_sub {
+                    color: #667085;
+                    font-size: 7.5pt;
+                    margin-top: 3px;
+                    line-height: 1.3;
+                }
+                .wex_hdr_ref {
+                    text-align: right;
+                    font-family: monospace;
+                    font-size: 12.5pt;
+                    font-weight: 800;
+                    color: #1f2937;
+                    line-height: 1.1;
+                }
+                .wex_hdr_meta {
+                    text-align: right;
+                    font-size: 8pt;
+                    color: #4d5b72;
+                    margin-top: 3px;
+                    line-height: 1.5;
+                }
+                .wex_hdr_meta_label {
+                    color: #9ca3af;
+                    font-size: 7.2pt;
+                    text-transform: uppercase;
+                    letter-spacing: .4px;
+                    font-weight: 700;
+                }
+
+                /* ── Badge de prioridad ── */
+                .wex_badge {
+                    display: inline-block;
+                    padding: 1px 7px;
+                    border-radius: 2px;
+                    font-size: 7pt;
+                    font-weight: 700;
+                    letter-spacing: 0.6px;
+                    text-transform: uppercase;
+                }
+                .wex_badge--priority {
+                    background: #fef3c7;
+                    border: 1px solid #fcd34d;
+                    color: #92400e;
+                }
+                .wex_badge--warranty {
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                    color: #1e40af;
+                }
+                .wex_badge--company {
+                    background: #f0fdf4;
+                    border: 1px solid #bbf7d0;
+                    color: #166534;
+                }
+
+                /* ── Sección ── */
+                .wex_sec {
+                    margin-bottom: 13px;
+                    page-break-inside: avoid;
+                }
+                .wex_sec_title {
+                    display: block;
+                    margin-bottom: 6px;
+                    padding-bottom: 4px;
+                    border-bottom: 2px solid #7b68b5;
+                    color: #7b68b5;
+                    font-size: 7.8pt;
+                    font-weight: 800;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
+
+                /* ── Tarjeta de datos ── */
+                .wex_card {
+                    padding: 7px 10px;
+                    border: 1px solid #dde4ef;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                    height: 100%;
+                    box-sizing: border-box;
+                }
+                .wex_fl {
+                    display: block;
+                    margin-bottom: 5px;
+                }
+                .wex_fl:last-child { margin-bottom: 0; }
+                .wex_lbl {
+                    display: block;
+                    color: #9ca3af;
+                    font-size: 7pt;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    margin-bottom: 1px;
+                }
+                .wex_val {
+                    color: #111827;
+                    font-size: 8.8pt;
+                    font-weight: 600;
+                    line-height: 1.3;
+                }
+                .wex_val--mono {
+                    font-family: monospace;
+                    font-weight: 800;
+                    font-size: 8.5pt;
+                }
+                .wex_val--large {
+                    font-size: 9.5pt;
+                    font-weight: 700;
+                }
+
+                /* ── Subsección (dentro de Trabajo) ── */
+                .wex_sub {
+                    margin-bottom: 10px;
+                }
+                .wex_sub_label {
+                    display: block;
+                    font-size: 7.5pt;
+                    font-weight: 800;
+                    color: #4d5b72;
+                    text-transform: uppercase;
+                    letter-spacing: .5px;
+                    margin-bottom: 4px;
+                    padding-left: 7px;
+                    border-left: 2px solid #b9c6d8;
+                }
+
+                /* ── Tablas ── */
+                .wex_table {
+                    width: 100%;
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                    border: 1px solid #dde4ef;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                    font-size: 8.5pt;
+                }
+                .wex_table thead th {
+                    padding: 6px 9px;
+                    border-bottom: 1px solid #c2cddd;
+                    background: #f3f1fa;
+                    color: #4d5b72;
+                    font-size: 7.3pt;
+                    font-weight: 800;
+                    letter-spacing: 0.6px;
+                    text-transform: uppercase;
+                    text-align: left;
+                }
+                .wex_table tbody td {
+                    padding: 6px 9px;
+                    border-bottom: 1px solid #edf0f7;
+                    color: #1f2937;
+                    word-wrap: break-word;
+                    text-align: left;
+                    vertical-align: middle;
+                }
+                .wex_table tbody tr:nth-child(even) td { background: #fafbfd; }
+                .wex_table tbody tr:last-child td { border-bottom: 0; }
+                .wex_tr  { text-align: right !important; }
+                .wex_tmono { font-family: monospace; font-weight: 800; font-size: 8.3pt; }
+
+                /* ── Bloque de texto libre ── */
+                .wex_textblock {
+                    padding: 6px 10px;
+                    border-left: 2px solid #7b68b5;
+                    background: #fafbfd;
+                    font-size: 8.8pt;
+                    color: #374151;
+                    line-height: 1.5;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                }
+                .wex_empty {
+                    color: #9ca3af;
+                    font-style: italic;
+                    font-size: 8pt;
+                }
+
+                /* ── Totales ── */
+                .wex_totals {
+                    width: 46%;
+                    margin-left: auto;
+                    margin-top: 6px;
+                    border: 1px solid #dde4ef;
+                    border-top: 2px solid #7b68b5;
+                    background: #ffffff;
+                    page-break-inside: avoid;
+                }
+                .wex_trow {
+                    display: table;
+                    width: 100%;
+                    padding: 5px 12px;
+                    border-bottom: 1px solid #edf0f7;
+                    box-sizing: border-box;
+                }
+                .wex_trow:last-child { border-bottom: 0; }
+                .wex_tlbl {
+                    display: table-cell;
+                    color: #667085;
+                    font-size: 8.2pt;
+                    font-weight: 600;
+                }
+                .wex_tamt {
+                    display: table-cell;
+                    text-align: right;
+                    font-family: monospace;
+                    font-weight: 800;
+                    color: #1f2937;
+                    font-size: 8.2pt;
+                }
+                .wex_trow--total {
+                    background: #f3f1fa;
+                }
+                .wex_trow--total .wex_tlbl,
+                .wex_trow--total .wex_tamt {
+                    font-size: 10pt;
+                    font-weight: 900;
+                    color: #7b68b5;
+                    padding-top: 6px;
+                    padding-bottom: 6px;
+                }
+
+                /* ── Imágenes ── */
+                .wex_img_table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 7px;
+                    margin: -3px;
+                }
+                .wex_img_cell {
+                    width: 50%;
+                    vertical-align: top;
+                }
+                .wex_img_box {
+                    border: 1px solid #dde4ef;
+                    background: #f8f9fb;
+                    padding: 5px;
+                    border-top: 2px solid #b9c6d8;
+                }
+                .wex_img_box img {
+                    width: 100%;
+                    max-height: 185px;
+                    object-fit: contain;
+                    display: block;
+                    background: #ffffff;
+                }
+                .wex_img_cap {
+                    margin-top: 4px;
+                    padding-top: 4px;
+                    border-top: 1px solid #edf0f7;
+                }
+                .wex_img_cap_name {
+                    display: block;
+                    font-size: 7.8pt;
+                    font-weight: 700;
+                    color: #1f2937;
+                    line-height: 1.3;
+                }
+                .wex_img_cap_desc {
+                    display: block;
+                    font-size: 7pt;
+                    color: #667085;
+                    margin-top: 1px;
+                    line-height: 1.3;
+                }
+                .wex_img_cap_tags {
+                    display: block;
+                    font-size: 6.8pt;
+                    color: #9ca3af;
+                    margin-top: 1px;
+                }
+
+                /* ── Firmas ── */
+                .wex_consent_block {
+                    margin-bottom: 10px;
+                    padding: 8px 10px;
+                    border: 1px solid #dde4ef;
+                    border-left: 3px solid #7b68b5;
+                    background: #fafbfd;
+                }
+                .wex_consent_grid {
+                    width: 100%;
+                    display: table;
+                    table-layout: fixed;
+                    border-collapse: separate;
+                    border-spacing: 10px 0;
+                    margin-bottom: 6px;
+                }
+                .wex_consent_cell { display: table-cell; vertical-align: top; }
+                .wex_sig_wrap {
+                    margin-top: 6px;
+                    padding: 5px;
+                    border: 1px dashed #c2cddd;
+                    background: #ffffff;
+                    display: inline-block;
+                }
+                .wex_sig_wrap img {
+                    max-height: 56px;
+                    max-width: 220px;
+                    display: block;
+                }
+
+                /* ── Pie ── */
+                .wex_foot {
+                    margin-top: 16px;
+                    padding-top: 6px;
+                    border-top: 1px solid #dde4ef;
+                    font-size: 7pt;
+                    color: #9ca3af;
+                    display: table;
+                    width: 100%;
+                    table-layout: fixed;
+                }
+                .wex_foot_l { display: table-cell; vertical-align: middle; }
+                .wex_foot_r { display: table-cell; vertical-align: middle; text-align: right; }
+            </style>
+
+            <div class="page">
+
+                <!-- ════ CABECERA ════ -->
+                <div class="wex_hdr">
+                    <div class="wex_row2">
+                        <div class="wex_cell wex_cell--half wex_cell--gap-r">
+                            <h2 class="wex_hdr_title">Informe de Servicio Técnico</h2>
+                            <div class="wex_hdr_sub">
+                                <t t-esc="ctx['company'].name"/>
+                                <!-- Badge solo para prioridades relevantes (no "Normal") -->
+                                <t t-if="ctx['repair'].x_sat_priority == 'urgent'">
+                                    &#160;&#160;<span class="wex_badge wex_badge--priority">Urgente</span>
+                                </t>
+                                <t t-if="ctx['repair'].x_sat_priority == 'company'">
+                                    &#160;&#160;<span class="wex_badge wex_badge--company">Empresa</span>
+                                </t>
+                                <t t-if="ctx['repair'].x_sat_priority == 'warranty'">
+                                    &#160;&#160;<span class="wex_badge wex_badge--warranty">Garantía</span>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="wex_cell wex_cell--half wex_cell--gap-l">
+                            <div class="wex_hdr_ref">
+                                <t t-esc="ctx['repair'].name"/>
+                            </div>
+                            <div class="wex_hdr_meta">
+                                <t t-if="ctx['repair'].create_date">
+                                    <span class="wex_hdr_meta_label">Entrada&#160;</span>
+                                    <t t-esc="ctx['repair'].create_date.strftime('%d/%m/%Y')"/>
+                                    &#160;&#160;
+                                </t>
+                                <span class="wex_hdr_meta_label">Informe&#160;</span>
+                                <t t-esc="ctx['generated_at'].strftime('%d/%m/%Y') if ctx['generated_at'] else ''"/>
+                                <t t-if="ctx['budget_stage_label']">
+                                    <br/>
+                                    <span class="wex_hdr_meta_label">Estado&#160;</span>
+                                    <t t-esc="ctx['budget_stage_label']"/>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════ CLIENTE ════ -->
+                <div class="wex_sec">
+                    <span class="wex_sec_title">Cliente</span>
+                    <div class="wex_row2">
+                        <div class="wex_cell wex_cell--half wex_cell--gap-r">
+                            <div class="wex_card">
+                                <div class="wex_fl">
+                                    <span class="wex_lbl">Nombre</span>
+                                    <span class="wex_val wex_val--large">
+                                        <t t-esc="ctx['partner'].name or ''"/>
+                                    </span>
+                                </div>
+                                <t t-if="ctx['partner'].vat">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">NIF / DNI</span>
+                                        <span class="wex_val wex_val--mono">
+                                            <t t-esc="ctx['partner'].vat"/>
+                                        </span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['customer_reference']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Referencia del cliente</span>
+                                        <span class="wex_val wex_val--mono">
+                                            <t t-esc="ctx['customer_reference']"/>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="wex_cell wex_cell--half wex_cell--gap-l">
+                            <div class="wex_card">
+                                <t t-if="ctx['partner'].phone or ctx['partner'].mobile">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Teléfono / Móvil</span>
+                                        <span class="wex_val">
+                                            <t t-esc="ctx['partner'].phone or ctx['partner'].mobile"/>
+                                        </span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['partner'].email">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Correo electrónico</span>
+                                        <span class="wex_val">
+                                            <t t-esc="ctx['partner'].email"/>
+                                        </span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['partner'].street or ctx['partner'].city">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Dirección</span>
+                                        <span class="wex_val">
+                                            <t t-esc="', '.join(filter(None, [ctx['partner'].street, ctx['partner'].city, ctx['partner'].country_id.name]))"/>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════ DISPOSITIVO ════ -->
+                <div class="wex_sec">
+                    <span class="wex_sec_title">Dispositivo</span>
+                    <div class="wex_row2">
+                        <div class="wex_cell wex_cell--half wex_cell--gap-r">
+                            <div class="wex_card">
+                                <t t-if="ctx['device_type_label']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Tipo</span>
+                                        <span class="wex_val"><t t-esc="ctx['device_type_label']"/></span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['brand']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Marca</span>
+                                        <span class="wex_val"><t t-esc="ctx['brand']"/></span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['model']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Modelo</span>
+                                        <span class="wex_val wex_val--large"><t t-esc="ctx['model']"/></span>
+                                    </div>
+                                </t>
+                                <div class="wex_fl">
+                                    <span class="wex_lbl">IMEI / Nº de serie</span>
+                                    <span class="wex_val wex_val--mono">
+                                        <t t-esc="ctx['imei'] or '—'"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wex_cell wex_cell--half wex_cell--gap-l">
+                            <div class="wex_card">
+                                <t t-if="ctx['accessories']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Accesorios entregados</span>
+                                        <span class="wex_val"><t t-esc="ctx['accessories']"/></span>
+                                    </div>
+                                </t>
+                                <t t-if="ctx['unlock_type_label']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Tipo de desbloqueo</span>
+                                        <span class="wex_val"><t t-esc="ctx['unlock_type_label']"/></span>
+                                    </div>
+                                </t>
+                                <div class="wex_fl">
+                                    <span class="wex_lbl">Técnico responsable</span>
+                                    <span class="wex_val">
+                                        <t t-esc="ctx['responsible'].name if ctx['responsible'] else '—'"/>
+                                    </span>
+                                </div>
+                                <t t-if="ctx['reception_employee']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Recepcionó</span>
+                                        <span class="wex_val">
+                                            <t t-esc="ctx['reception_employee'].name"/>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════ AVERÍA ════ -->
+                <div class="wex_sec">
+                    <span class="wex_sec_title">Avería reportada por el cliente</span>
+                    <t t-if="ctx['reported_issue']">
+                        <div class="wex_textblock"><t t-esc="ctx['reported_issue']"/></div>
+                    </t>
+                    <t t-else="">
+                        <span class="wex_empty">No se indicó avería de entrada.</span>
+                    </t>
+                </div>
+
+                <!-- ════ TRABAJO REALIZADO ════ -->
+                <div class="wex_sec">
+                    <span class="wex_sec_title">Trabajo realizado</span>
+
+                    <t t-if="ctx['parts']">
+                        <div class="wex_sub">
+                            <span class="wex_sub_label">Repuestos utilizados</span>
+                            <table class="wex_table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:54%;">Producto</th>
+                                        <th class="wex_tr" style="width:23%;">Cantidad solicitada</th>
+                                        <th class="wex_tr" style="width:23%;">Cantidad usada</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="ctx['parts']" t-as="part">
+                                        <tr>
+                                            <td><t t-esc="part['product_name']"/></td>
+                                            <td class="wex_tr">
+                                                <t t-esc="'%.2f' % part['qty_demand']"/>
+                                                <t t-if="part['uom']">&#160;<t t-esc="part['uom']"/></t>
+                                            </td>
+                                            <td class="wex_tr">
+                                                <t t-esc="'%.2f' % part['qty_done']"/>
+                                                <t t-if="part['uom']">&#160;<t t-esc="part['uom']"/></t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+
+                    <t t-if="ctx['services']">
+                        <div class="wex_sub">
+                            <span class="wex_sub_label">Servicios y mano de obra</span>
+                            <table class="wex_table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:44%;">Descripción</th>
+                                        <th class="wex_tr" style="width:11%;">Cant.</th>
+                                        <th class="wex_tr" style="width:9%;">Ud.</th>
+                                        <th class="wex_tr" style="width:18%;">P. unitario</th>
+                                        <th class="wex_tr" style="width:18%;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="ctx['services']" t-as="svc">
+                                        <tr>
+                                            <td><t t-esc="svc['name']"/></td>
+                                            <td class="wex_tr"><t t-esc="svc['qty']"/></td>
+                                            <td class="wex_tr"><t t-esc="svc['uom']"/></td>
+                                            <td class="wex_tr wex_tmono"><t t-esc="svc['price_unit_fmt']"/></td>
+                                            <td class="wex_tr wex_tmono"><t t-esc="svc['price_subtotal_fmt']"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+
+                    <t t-if="ctx['internal_notes']">
+                        <div class="wex_sub" style="margin-bottom:0;">
+                            <span class="wex_sub_label">Notas técnicas</span>
+                            <div class="wex_textblock"><t t-esc="ctx['internal_notes']"/></div>
+                        </div>
+                    </t>
+
+                    <t t-if="not ctx['parts'] and not ctx['services'] and not ctx['internal_notes']">
+                        <span class="wex_empty">Sin detalle de trabajo registrado.</span>
+                    </t>
+                </div>
+
+                <!-- ════ RESUMEN ECONÓMICO ════ -->
+                <t t-if="ctx['has_sale']">
+                    <div class="wex_sec">
+                        <span class="wex_sec_title">Resumen económico</span>
+                        <div class="wex_totals">
+                            <div class="wex_trow">
+                                <span class="wex_tlbl">Base imponible</span>
+                                <span class="wex_tamt"><t t-esc="ctx['amount_untaxed_fmt']"/></span>
+                            </div>
+                            <div class="wex_trow">
+                                <span class="wex_tlbl">IVA</span>
+                                <span class="wex_tamt"><t t-esc="ctx['amount_tax_fmt']"/></span>
+                            </div>
+                            <div class="wex_trow wex_trow--total">
+                                <span class="wex_tlbl">Total</span>
+                                <span class="wex_tamt"><t t-esc="ctx['amount_total_fmt']"/></span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ════ EVIDENCIA FOTOGRÁFICA ════ -->
+                <!-- page-break-before: always → texto + totales en pág 1, fotos en pág 2 -->
+                <t t-if="ctx.get('image_pairs')">
+                    <div class="wex_sec" style="page-break-before: always;">
+                        <span class="wex_sec_title">Evidencia fotográfica</span>
+                        <table class="wex_img_table">
+                            <t t-foreach="ctx['image_pairs']" t-as="pair">
+                                <tr>
+                                    <t t-foreach="pair" t-as="img">
+                                        <td class="wex_img_cell">
+                                            <div class="wex_img_box">
+                                                <img t-att-src="img['src']" alt=""/>
+                                                <div class="wex_img_cap">
+                                                    <span class="wex_img_cap_name">
+                                                        <t t-esc="img['name']"/>
+                                                    </span>
+                                                    <t t-if="img.get('description')">
+                                                        <span class="wex_img_cap_desc">
+                                                            <t t-esc="img['description']"/>
+                                                        </span>
+                                                    </t>
+                                                    <t t-if="img.get('tags')">
+                                                        <span class="wex_img_cap_tags">
+                                                            <t t-esc="img['tags']"/>
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </t>
+                                    <t t-if="len(pair) == 1">
+                                        <td class="wex_img_cell"/>
+                                    </t>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                </t>
+
+                <!-- ════ FIRMAS Y CONSENTIMIENTOS ════ -->
+                <t t-if="ctx.get('consents')">
+                    <div class="wex_sec">
+                        <span class="wex_sec_title">Firmas y consentimientos</span>
+                        <t t-foreach="ctx['consents']" t-as="consent">
+                            <div class="wex_consent_block">
+                                <div class="wex_consent_grid">
+                                    <div class="wex_consent_cell">
+                                        <span class="wex_lbl">Tipo</span>
+                                        <span class="wex_val"><t t-esc="consent['type_label']"/></span>
+                                    </div>
+                                    <div class="wex_consent_cell">
+                                        <span class="wex_lbl">Firmante</span>
+                                        <span class="wex_val"><t t-esc="consent['signer_name'] or '—'"/></span>
+                                    </div>
+                                    <div class="wex_consent_cell">
+                                        <span class="wex_lbl">DNI / NIF</span>
+                                        <span class="wex_val wex_val--mono"><t t-esc="consent['signer_vat'] or '—'"/></span>
+                                    </div>
+                                    <div class="wex_consent_cell">
+                                        <span class="wex_lbl">Firmado el</span>
+                                        <span class="wex_val">
+                                            <t t-esc="consent['signed_at'].strftime('%d/%m/%Y %H:%M') if consent.get('signed_at') else '—'"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <t t-if="consent.get('signature_src')">
+                                    <span class="wex_lbl" style="display:block;margin-bottom:3px;">Firma</span>
+                                    <div class="wex_sig_wrap">
+                                        <img t-att-src="consent['signature_src']" alt="Firma"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- ════ PIE ════ -->
+                <div class="wex_foot">
+                    <div class="wex_foot_l">
+                        Orden:&#160;<strong><t t-esc="ctx['repair'].name"/></strong>
+                        &#160;·&#160;<t t-esc="ctx['company'].name"/>
+                    </div>
+                    <div class="wex_foot_r">
+                        Generado el
+                        <t t-esc="ctx['generated_at'].strftime('%d/%m/%Y') if ctx['generated_at'] else ''"/>
+                        <t t-if="ctx['responsible']">
+                            &#160;por&#160;<t t-esc="ctx['responsible'].name"/>
+                        </t>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -21,6 +21,12 @@
                                 <field name="x_image_count" nolabel="1" readonly="1"/> imágenes registradas
                             </div>
                         </div>
+                        <div class="wex_repair_images_dropzone" tabindex="0" role="button"
+                             aria-label="Zona de arrastre de imágenes">
+                            <span class="wex_repair_images_dropzone__label">Arrastra imágenes aquí o haz clic para seleccionar</span>
+                            <span class="wex_repair_images_dropzone__hint">JPG · PNG · WebP · GIF</span>
+                            <span class="wex_repair_images_dropzone__loading">Subiendo...</span>
+                        </div>
 
                         <field name="x_image_ids"
                                nolabel="1"
@@ -32,6 +38,7 @@
                                 <field name="name" string="Nombre"/>
                                 <field name="description" string="Descripción"/>
                                 <field name="tag_ids" string="Etiquetas" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                <field name="x_include_in_sat_report" string="Informe" widget="boolean_toggle"/>
                                 <button name="action_open_preview" type="object" string="Vista previa" class="btn btn-link"/>
                                 <button name="action_open_dms_file" type="object" string="DMS" class="btn btn-link"/>
                             </list>
@@ -43,6 +50,7 @@
                                             <field name="description"/>
                                             <field name="sequence"/>
                                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                            <field name="x_include_in_sat_report"/>
                                             <field name="dms_file_name" readonly="1"/>
                                             <field name="dms_file_id" readonly="1"/>
                                         </group>

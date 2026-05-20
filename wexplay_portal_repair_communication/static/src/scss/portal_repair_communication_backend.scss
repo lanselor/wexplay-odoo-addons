@@ -1,0 +1,115 @@
+.wex-portal-conversation-page {
+  min-height: 18rem;
+  padding: 1rem 0 0;
+}
+
+.wex-portal-conversation-page__header {
+  padding: 0 1rem 1rem;
+  border-bottom: 1px solid #dbe1e7;
+}
+
+.wex-portal-conversation-page__eyebrow {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.wex-portal-conversation-page__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #233142;
+}
+
+.wex-portal-conversation-page__loading,
+.wex-portal-conversation-page__empty {
+  padding: 1.25rem 1rem;
+  color: #6b7280;
+}
+
+.wex-portal-conversation-page__stream {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.wex-portal-conversation-page__date {
+  align-self: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.wex-portal-conversation-page__message {
+  max-width: 78%;
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid #dde3ea;
+  background: #f7f8fb;
+}
+
+.wex-portal-conversation-page__message.is-customer {
+  align-self: flex-end;
+  background: #edf8f0;
+  border-color: #c7e0ce;
+}
+
+.wex-portal-conversation-page__message.is-technician {
+  align-self: flex-start;
+}
+
+.wex-portal-conversation-page__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  color: #5f6d7b;
+}
+
+.wex-portal-conversation-page__body {
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.wex-portal-conversation-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.7rem 0.8rem 0.8rem;
+  border-top: 1px solid #dbe1e7;
+  background: linear-gradient(180deg, rgba(249, 250, 251, 0.96), rgba(241, 244, 247, 0.98));
+}
+
+.wex-portal-conversation-footer__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #d3dae3;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.9rem;
+  background: #ffffff;
+  color: #3a4a59;
+  font-weight: 600;
+}
+
+.wex-portal-conversation-footer__tab.is-active {
+  border-color: #7d5d86;
+  background: #7d5d86;
+  color: #ffffff;
+}
+
+.wex-portal-conversation-footer__count {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  font-size: 0.76rem;
+}

@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "Wexplay Portal Repair Communication",
+    "version": "18.0.1.0.0",
+    "summary": "Canal prioritario de comunicacion SAT B2B entre cliente empresa y tecnico.",
+    "category": "Website/Portal",
+    "author": "Wexplay",
+    "license": "LGPL-3",
+    "depends": [
+        "mail",
+        "hr",
+        "portal",
+        "website",
+        "wexplay_portal",
+        "wexplay_repair",
+        "wexplay_portal_repair_workflow",
+        "wexplay_repair_warranty",
+    ],
+    "data": [
+        "security/portal_repair_communication_security.xml",
+        "security/ir.model.access.csv",
+        "views/portal_repair_conversation_views.xml",
+        "views/repair_order_views.xml",
+        "views/portal_templates.xml",
+        "wizard/portal_repair_reply_wizard_views.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "wexplay_portal_repair_communication/static/src/js/chatter_portal_conversation_patch.js",
+            "wexplay_portal_repair_communication/static/src/js/operator_chat_bridge.js",
+            "wexplay_portal_repair_communication/static/src/js/operator_chat_context_patch.js",
+            "wexplay_portal_repair_communication/static/src/xml/chatter_portal_conversation.xml",
+            "wexplay_portal_repair_communication/static/src/xml/operator_chat_context.xml",
+            "wexplay_portal_repair_communication/static/src/scss/portal_repair_communication_backend.scss",
+            "wexplay_portal_repair_communication/static/src/scss/operator_chat_context.scss",
+        ],
+        "web.assets_frontend": [
+            "wexplay_portal_repair_communication/static/src/js/portal_repair_conversation_portal.js",
+            "wexplay_portal_repair_communication/static/src/scss/portal_repair_communication_portal.scss",
+        ],
+    },
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+}
