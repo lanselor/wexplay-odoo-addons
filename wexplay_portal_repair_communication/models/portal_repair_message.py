@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class WexPortalRepairMessage(models.Model):
@@ -122,7 +126,7 @@ class WexPortalRepairMessage(models.Model):
                     }
                 )
                 conversation.write(update_vals)
-                conversation.repair_id._notify_responsible_about_portal_message(message)
+                message._safe_notify_responsible_about_portal_message()
             elif message.source == "technician":
                 update_vals.update(
                     {
@@ -137,4 +141,26 @@ class WexPortalRepairMessage(models.Model):
                 conversation.write(update_vals)
 
             if not self.env.context.get("wex_portal_repair_skip_operator_channel_projection"):
-                conversation._post_message_to_operator_channel(message)
+                message._safe_post_to_operator_channel()
+
+    def _safe_notify_responsible_about_portal_message(self):
+        self.ensure_one()
+        try:
+            self.conversation_id.repair_id._notify_responsible_about_portal_message(self)
+        except Exception:
+            _logger.exception(
+                "Portal repair message %s could not notify responsible user for repair %s.",
+                self.id,
+                self.repair_id.id,
+            )
+
+    def _safe_post_to_operator_channel(self):
+        self.ensure_one()
+        try:
+            self.conversation_id._post_message_to_operator_channel(self)
+        except Exception:
+            _logger.exception(
+                "Portal repair message %s could not be projected to operator channel for repair %s.",
+                self.id,
+                self.repair_id.id,
+            )
