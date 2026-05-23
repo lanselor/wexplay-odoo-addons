@@ -15,8 +15,11 @@ En esta fase el alcance queda limitado a:
 - dashboard resumen del periodo
 - hero superior con separacion `Ventas / Compras`
 - filtros por periodo y rango personalizado
+- filtros finos por estado (`pendiente`, `vencido`, `pagado`)
 - busqueda por numero, cliente o proveedor, NIF y referencia
 - selector de compañia para entornos multi-company
+- detalle independiente por partner
+- bloque separado de KPIs de salud financiera
 - exportacion CSV
 - exportacion XLSX
 - descarga individual de PDF de factura
@@ -127,9 +130,13 @@ combina:
 - hero conmutador entre `Ventas` y `Compras`
 - tarjetas de resumen
 - filtros por tipo de documento
+- filtros finos por estado
 - busqueda y selector de compañia
 - filtros por periodo
+- bloque separado de salud financiera
+- bloque separado de tendencia y distribucion visual
 - listado detallado del periodo seleccionado
+- ruta separada de detalle por partner
 
 Ademas, el mismo modulo publica una capa interna de analitica para backend:
 
@@ -201,6 +208,25 @@ monolitico. Primero presenta un `Hero + secciones` con dos accesos claros:
 Cada seccion mantiene sus propios filtros, resumenes y tabla de detalle, aunque
 comparten infraestructura de periodo, compañia, busqueda y exportacion.
 
+La home no intenta absorber todo el analisis detallado. Cuando hace falta bajar
+al nivel de cliente o proveedor, se usa una pantalla separada de partner para
+evitar convertir el panel principal en un expediente monolitico.
+
+El bloque de `Salud financiera` tambien vive separado del resumen principal para
+no mezclar:
+
+- lectura economica base del periodo
+- lectura ejecutiva transversal ventas/compras
+- exploracion documental
+
+La capa de `Tendencia y distribucion` tambien se mantiene aparte y evita meter
+graficos dentro del resumen base. En esta fase usa barras HTML/CSS sencillas,
+sin librerias JS adicionales, para mostrar:
+
+- evolucion del periodo
+- composicion actual de la seccion activa
+- top clientes o proveedores
+
 ### Ventas
 
 El dashboard de ventas muestra varias magnitudes separadas para evitar lecturas
@@ -209,13 +235,13 @@ engañosas:
 - ventas facturadas
 - abonos
 - neto facturado
-- base imponible operativa
-- IVA operativo
-- POS no facturado
-- POS ya facturado
+- base neta total
+- IVA total asociado
+- tickets POS sin factura
+- tickets POS con factura
 - pendiente de cobro
 - vencido
-- total operativo
+- total del periodo
 
 Tambien expone un bloque fiscal simple orientado a gestoría:
 
@@ -225,11 +251,11 @@ Tambien expone un bloque fiscal simple orientado a gestoría:
 
 ### Regla de negocio importante
 
-El `total operativo` se calcula como:
+El `total del periodo` se calcula como:
 
-- `neto facturado + POS no facturado`
+- `neto facturado + tickets POS sin factura`
 
-No suma aparte el `POS ya facturado`, porque eso podria duplicar ventas que ya
+No suma aparte el `ticket POS con factura`, porque eso podria duplicar ventas que ya
 han terminado convertidas en factura.
 
 ### Criterio actual
@@ -237,8 +263,8 @@ han terminado convertidas en factura.
 - `ventas facturadas`: suma de `out_invoice`
 - `abonos`: suma absoluta de `out_refund`
 - `neto facturado`: ventas facturadas menos abonos
-- `POS no facturado`: POS en estados `paid` y `done`
-- `POS ya facturado`: POS en estado `invoiced`
+- `tickets POS sin factura`: POS en estados `paid` y `done`
+- `tickets POS con factura`: POS en estado `invoiced`
 
 Para lectura operativa de cobro:
 
@@ -246,6 +272,17 @@ Para lectura operativa de cobro:
 - el listado muestra vencimiento y saldo pendiente
 - el detalle intenta mostrar metodos de pago detectables
 - POS muestra estado simplificado y metodos de pago cuando existen
+
+### Regla de nomenclatura POS
+
+En la interfaz del portal evitamos hablar de `POS facturado / no facturado`
+como etiqueta principal, porque en Odoo POS existe siempre el ticket/receipt y
+la factura es una accion adicional.
+
+Por eso la lectura visible queda como:
+
+- `tickets POS sin factura`
+- `tickets POS con factura`
 
 ### Compras
 

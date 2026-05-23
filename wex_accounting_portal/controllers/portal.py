@@ -18,6 +18,7 @@ _EXPORT_RECORD_LIMIT = 5_000
 _PERIOD_KEYS = ("all", "day", "month", "quarter", "year", "custom")
 _SEARCH_KEYS = ("all", "number", "partner", "vat")
 _SECTION_KEYS = ("sales", "purchases")
+_STATUS_KEYS = ("all", "pending", "overdue", "paid")
 _MONTH_LABELS = {
     1: "Enero",
     2: "Febrero",
@@ -108,6 +109,15 @@ class WexAccountingPortal(CustomerPortal):
             "quarter": {"label": _("Trimestre")},
             "year": {"label": _("Año")},
             "custom": {"label": _("Rango personalizado")},
+        }
+
+    def _get_accounting_status_filters(self, section="sales"):
+        paid_label = _("Cerrado / pagado") if section == "sales" else _("Pagado")
+        return {
+            "all": {"label": _("Todos los estados")},
+            "pending": {"label": _("Pendientes")},
+            "overdue": {"label": _("Vencidos")},
+            "paid": {"label": paid_label},
         }
 
     def _get_accounting_searchbar_inputs(self, section="sales"):
@@ -206,6 +216,7 @@ class WexAccountingPortal(CustomerPortal):
         self,
         section,
         filterby,
+        filter_state,
         period_values,
         search_values=None,
         company_values=None,
@@ -213,6 +224,8 @@ class WexAccountingPortal(CustomerPortal):
         args = self._get_accounting_filter_url_args(filterby, section=section) | self._get_accounting_period_url_args(
             period_values
         )
+        if filter_state and filter_state != "all":
+            args["status"] = filter_state
         search_values = search_values or {}
         company_values = company_values or {}
         if search_values.get("search"):
@@ -353,6 +366,8 @@ class WexAccountingPortal(CustomerPortal):
         period_values,
         search_values=None,
         company_values=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         search_values = search_values or {}
         company_values = company_values or {}
@@ -363,6 +378,8 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values.get("search_in"),
             search=search_values.get("search"),
             company_ids=company_values.get("selected_company_ids"),
+            filter_state=filter_state,
+            partner_ids=partner_ids,
         )
         pos_summary = request.env["pos.order"]._get_wex_accounting_portal_summary_values(
             user,
@@ -371,6 +388,8 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values.get("search_in"),
             search=search_values.get("search"),
             company_ids=company_values.get("selected_company_ids"),
+            filter_state=filter_state,
+            partner_ids=partner_ids,
         )
         currency = user.company_id.currency_id
         return {
@@ -425,6 +444,8 @@ class WexAccountingPortal(CustomerPortal):
         period_values,
         search_values=None,
         company_values=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         search_values = search_values or {}
         company_values = company_values or {}
@@ -436,6 +457,8 @@ class WexAccountingPortal(CustomerPortal):
             search=search_values.get("search"),
             company_ids=company_values.get("selected_company_ids"),
             scope="purchase",
+            filter_state=filter_state,
+            partner_ids=partner_ids,
         )
         currency = user.company_id.currency_id
         return {
@@ -462,12 +485,27 @@ class WexAccountingPortal(CustomerPortal):
             "document_count": purchase_summary["document_count"],
         }
 
-    def _get_accounting_hero_values(self, user, period_values, search_values=None, company_values=None):
+    def _get_accounting_hero_values(
+        self,
+        user,
+        period_values,
+        search_values=None,
+        company_values=None,
+        filter_state=None,
+    ):
         sales = self._get_accounting_sales_dashboard_values(
-            user, period_values, search_values=search_values, company_values=company_values
+            user,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+            filter_state=filter_state,
         )
         purchases = self._get_accounting_purchase_dashboard_values(
-            user, period_values, search_values=search_values, company_values=company_values
+            user,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+            filter_state=filter_state,
         )
         return {
             "sales": {
@@ -490,8 +528,404 @@ class WexAccountingPortal(CustomerPortal):
             },
         }
 
+    def _get_accounting_summary_groups(self, section, dashboard):
+        if section == "purchases":
+            return [
+                {
+                    "title": _("Vista general"),
+                    "description": _("Magnitudes principales de compras y abonos del periodo."),
+                    "cards": [
+                        {
+                            "title": _("Base neta de compras"),
+                            "amount": dashboard["net_purchase_untaxed_total"],
+                            "note": _("Base neta de facturas proveedor menos abonos."),
+                        },
+                        {
+                            "title": _("IVA soportado neto"),
+                            "amount": dashboard["net_purchase_tax_total"],
+                            "note": _("IVA neto asociado a compras y abonos."),
+                        },
+                        {
+                            "title": _("Neto de compras"),
+                            "amount": dashboard["net_purchase_total"],
+                            "note": _("Total de facturas proveedor menos abonos."),
+                        },
+                    ],
+                },
+                {
+                    "title": _("Pagos"),
+                    "description": _("Seguimiento operativo de pagos pendientes a proveedor."),
+                    "cards": [
+                        {
+                            "title": _("Abonos proveedor"),
+                            "amount": dashboard["purchase_refund_total"],
+                            "note": _("%s abono(s) del periodo.") % dashboard["refund_count"],
+                        },
+                        {
+                            "title": _("Pendiente de pago"),
+                            "amount": dashboard["outstanding_total"],
+                            "note": _("Facturas proveedor con saldo pendiente."),
+                        },
+                        {
+                            "title": _("Vencido"),
+                            "amount": dashboard["overdue_total"],
+                            "note": _("Pagos vencidos a proveedores."),
+                        },
+                    ],
+                },
+                {
+                    "title": _("Fiscal"),
+                    "description": _("Lectura fiscal básica para gestoría sobre compras."),
+                    "cards": [
+                        {
+                            "title": _("Compras facturadas"),
+                            "amount": dashboard["purchase_total"],
+                            "note": _("%s factura(s) proveedor.") % dashboard["bill_count"],
+                        },
+                        {
+                            "title": _("Base fiscal de compras"),
+                            "amount": dashboard["taxable_base_total"],
+                            "note": _("Base neta deducible del periodo."),
+                        },
+                        {
+                            "title": _("IVA reducido por abonos"),
+                            "amount": dashboard["refund_vat_reduction_total"],
+                            "note": _("Impacto fiscal de abonos proveedor."),
+                        },
+                    ],
+                },
+            ]
+
+        return [
+            {
+                "title": _("Vista general"),
+                "description": _("Magnitudes principales de facturación y tickets POS del periodo."),
+                "cards": [
+                    {
+                        "title": _("Base neta total"),
+                        "amount": dashboard["operating_untaxed_total"],
+                        "note": _("Base neta de facturas y tickets POS sin factura."),
+                    },
+                    {
+                        "title": _("IVA total asociado"),
+                        "amount": dashboard["operating_tax_total"],
+                        "note": _("IVA neto de ventas y tickets POS sin factura."),
+                    },
+                    {
+                        "title": _("Neto facturado"),
+                        "amount": dashboard["net_invoiced_total"],
+                        "note": _("Ventas facturadas menos abonos."),
+                    },
+                ],
+            },
+            {
+                "title": _("Cobro y actividad"),
+                "description": _("Seguimiento de cobro y volumen visible dentro del periodo."),
+                "cards": [
+                    {
+                        "title": _("Abonos"),
+                        "amount": dashboard["refund_total"],
+                        "note": _("%s abono(s) del periodo.") % dashboard["refund_count"],
+                    },
+                    {
+                        "title": _("Pendiente de cobro"),
+                        "amount": dashboard["outstanding_total"],
+                        "note": _("Facturas de cliente con saldo pendiente."),
+                    },
+                    {
+                        "title": _("Total del periodo"),
+                        "amount": dashboard["operating_total"],
+                        "note": _("%s documento(s) visibles en el periodo.") % dashboard["document_count"],
+                    },
+                    {
+                        "title": _("Vencido"),
+                        "amount": dashboard["overdue_total"],
+                        "note": _("Facturas vencidas pendientes."),
+                    },
+                ],
+            },
+            {
+                "title": _("Tickets POS"),
+                "description": _("Separación entre tickets POS con y sin factura emitida."),
+                "cards": [
+                    {
+                        "title": _("Tickets POS sin factura"),
+                        "amount": dashboard["pos_uninvoiced_total"],
+                        "note": _("Tickets POS cerrados en estados pagado o finalizado."),
+                    },
+                    {
+                        "title": _("Tickets POS con factura"),
+                        "amount": dashboard["pos_invoiced_total"],
+                        "note": _("%s ticket(s) POS con factura emitida.") % dashboard["pos_invoiced_count"],
+                    },
+                ],
+            },
+            {
+                "title": _("Fiscal"),
+                "description": _("Lectura fiscal básica para gestoría sobre ventas."),
+                "cards": [
+                    {
+                        "title": _("Base imponible fiscal"),
+                        "amount": dashboard["taxable_base_total"],
+                        "note": _("Base neta facturada del periodo."),
+                    },
+                    {
+                        "title": _("IVA repercutido"),
+                        "amount": dashboard["vat_output_total"],
+                        "note": _("IVA neto de ventas y abonos."),
+                    },
+                    {
+                        "title": _("IVA reducido por abonos"),
+                        "amount": dashboard["refund_vat_reduction_total"],
+                        "note": _("Impacto fiscal de los abonos del periodo."),
+                    },
+                ],
+            },
+        ]
+
+    def _get_accounting_health_kpis(self, sales_dashboard, purchase_dashboard):
+        sales_total = sales_dashboard["operating_total"]
+        purchase_total = purchase_dashboard["net_purchase_total"]
+        outstanding_sales = sales_dashboard["outstanding_total"]
+        outstanding_purchases = purchase_dashboard["outstanding_total"]
+        overdue_total = sales_dashboard["overdue_total"] + purchase_dashboard["overdue_total"]
+        sales_collected = max(0.0, sales_total - outstanding_sales)
+        purchases_paid = max(0.0, purchase_total - outstanding_purchases)
+        sales_collection_ratio = (sales_collected / sales_total * 100.0) if sales_total else 0.0
+        purchase_payment_ratio = (purchases_paid / purchase_total * 100.0) if purchase_total else 0.0
+        return [
+            {
+                "title": _("Saldo operativo"),
+                "value_type": "monetary",
+                "value": sales_total - purchase_total,
+                "note": _("Ventas operativas menos compras netas del periodo."),
+            },
+            {
+                "title": _("Balance de tesorería corto"),
+                "value_type": "monetary",
+                "value": outstanding_sales - outstanding_purchases,
+                "note": _("Pendiente de cobro menos pendiente de pago."),
+            },
+            {
+                "title": _("Exposición vencida"),
+                "value_type": "monetary",
+                "value": overdue_total,
+                "note": _("Suma de vencido en clientes y proveedores."),
+            },
+            {
+                "title": _("Ratio de cobro"),
+                "value_type": "percent",
+                "value": sales_collection_ratio,
+                "note": _("Porcentaje operativo ya cobrado en ventas."),
+            },
+            {
+                "title": _("Ratio de pago"),
+                "value_type": "percent",
+                "value": purchase_payment_ratio,
+                "note": _("Porcentaje neto ya pagado en compras."),
+            },
+        ]
+
+    def _get_accounting_period_bucket_mode(self, period_values):
+        period = period_values["period"]
+        if period in ("day", "month"):
+            return "day"
+        if period == "custom" and period_values["start_date"] and period_values["end_date"]:
+            duration = (period_values["end_date"] - period_values["start_date"]).days
+            return "day" if duration <= 31 else "month"
+        return "month"
+
+    def _prepare_accounting_bar_series(self, points, amount_key="amount"):
+        points = points or []
+        max_amount = max((abs(point.get(amount_key, 0.0)) for point in points), default=0.0)
+        prepared_points = []
+        for point in points:
+            amount = point.get(amount_key, 0.0)
+            width = 0
+            if max_amount:
+                width = max(6, round(abs(amount) / max_amount * 100))
+            prepared_points.append(
+                point
+                | {
+                    "bar_width": width,
+                    "is_negative": amount < 0,
+                }
+            )
+        return prepared_points
+
+    def _get_accounting_chart_values(
+        self,
+        user,
+        section,
+        period_values,
+        search_values=None,
+        company_values=None,
+        filter_state=None,
+        sales_dashboard=None,
+        purchase_dashboard=None,
+        partner_ids=None,
+    ):
+        search_values = search_values or {}
+        company_values = company_values or {}
+        bucket = self._get_accounting_period_bucket_mode(period_values)
+        invoice_model = request.env["account.move"]
+        pos_model = request.env["pos.order"]
+        invoice_series = invoice_model._get_wex_accounting_portal_timeseries(
+            user,
+            start_date=period_values["start_date"],
+            end_date=period_values["end_date"],
+            search_in=search_values.get("search_in"),
+            search=search_values.get("search"),
+            company_ids=company_values.get("selected_company_ids"),
+            scope="sale" if section == "sales" else "purchase",
+            filter_state=filter_state,
+            partner_ids=partner_ids,
+            bucket=bucket,
+        )
+        partner_rank = invoice_model._get_wex_accounting_portal_top_partners(
+            user,
+            start_date=period_values["start_date"],
+            end_date=period_values["end_date"],
+            search_in=search_values.get("search_in"),
+            search=search_values.get("search"),
+            company_ids=company_values.get("selected_company_ids"),
+            scope="sale" if section == "sales" else "purchase",
+            filter_state=filter_state,
+            partner_ids=partner_ids,
+            limit=5,
+        )
+        trend_points = []
+        comparison_points = []
+        top_partner_title = _("Top clientes") if section == "sales" else _("Top proveedores")
+        if section == "sales":
+            pos_series = pos_model._get_wex_accounting_portal_timeseries(
+                user,
+                start_date=period_values["start_date"],
+                end_date=period_values["end_date"],
+                search_in=search_values.get("search_in"),
+                search=search_values.get("search"),
+                company_ids=company_values.get("selected_company_ids"),
+                filter_state=filter_state,
+                partner_ids=partner_ids,
+                bucket=bucket,
+            )
+            trend_by_key = {
+                point["key"]: {
+                    "key": point["key"],
+                    "label": point["label"],
+                    "amount": point["amount"],
+                }
+                for point in invoice_series
+            }
+            for point in pos_series:
+                trend_item = trend_by_key.setdefault(
+                    point["key"],
+                    {"key": point["key"], "label": point["label"], "amount": 0.0},
+                )
+                trend_item["amount"] += point["uninvoiced_amount"]
+            trend_points = [trend_by_key[key] for key in sorted(trend_by_key)]
+            comparison_points = [
+                {
+                    "label": _("Facturación neta"),
+                    "amount": (sales_dashboard or {}).get("net_invoiced_total", 0.0),
+                },
+                {
+                    "label": _("Tickets POS sin factura"),
+                    "amount": (sales_dashboard or {}).get("pos_uninvoiced_total", 0.0),
+                },
+                {
+                    "label": _("Pendiente de cobro"),
+                    "amount": (sales_dashboard or {}).get("outstanding_total", 0.0),
+                },
+            ]
+        else:
+            trend_points = invoice_series
+            comparison_points = [
+                {
+                    "label": _("Compras netas"),
+                    "amount": (purchase_dashboard or {}).get("net_purchase_total", 0.0),
+                },
+                {
+                    "label": _("Pendiente de pago"),
+                    "amount": (purchase_dashboard or {}).get("outstanding_total", 0.0),
+                },
+                {
+                    "label": _("Vencido"),
+                    "amount": (purchase_dashboard or {}).get("overdue_total", 0.0),
+                },
+            ]
+        if len(trend_points) > 12:
+            trend_points = trend_points[-12:]
+        return {
+            "title": _("Tendencia y distribución"),
+            "description": (
+                _("Lectura visual de la evolución operativa de ventas.")
+                if section == "sales"
+                else _("Lectura visual de la evolución y concentración de compras.")
+            ),
+            "trend_title": _("Evolución del periodo"),
+            "trend_note": (
+                _("Neto facturado más tickets POS sin factura por tramo temporal.")
+                if section == "sales"
+                else _("Compras netas por tramo temporal.")
+            ),
+            "trend_points": self._prepare_accounting_bar_series(trend_points),
+            "comparison_title": _("Composición actual"),
+            "comparison_points": self._prepare_accounting_bar_series(comparison_points),
+            "top_partners_title": top_partner_title,
+            "top_partners": self._prepare_accounting_bar_series(partner_rank),
+            "empty_message": _("No hay datos suficientes para representar gráficos en este periodo."),
+        }
+
     def _get_accounting_item_sort_key(self, item):
         return (item["sort_datetime"], item["id"], item["kind"])
+
+    def _get_accounting_status(self, value):
+        return value if value in _STATUS_KEYS else "all"
+
+    def _get_accounting_partner_detail_url(
+        self,
+        partner_id,
+        section,
+        filterby,
+        filter_state,
+        period_values,
+        search_values=None,
+        company_values=None,
+    ):
+        args = self._get_accounting_query_args(
+            section,
+            filterby,
+            filter_state,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+        )
+        return "/my/accounting/partners/%s?%s" % (partner_id, urlencode(args))
+
+    def _get_accounting_partner_access_total(self, user, partner_id, section):
+        scope = self._get_accounting_invoice_scope(section)
+        total = request.env["account.move"]._get_wex_accounting_portal_count(
+            user,
+            scope=scope,
+            partner_ids=[partner_id],
+        )
+        if section == "sales":
+            total += request.env["pos.order"]._get_wex_accounting_portal_count(
+                user,
+                partner_ids=[partner_id],
+            )
+        return total
+
+    def _get_accounting_partner_or_404(self, partner_id, user, section):
+        partner = request.env["res.partner"].sudo().browse(partner_id).exists()
+        if not partner:
+            raise NotFound()
+        if not self._get_accounting_partner_access_total(
+            user, partner.commercial_partner_id.id, section
+        ):
+            raise Forbidden()
+        return partner.commercial_partner_id
 
     def _get_accounting_invoice_scope(self, section):
         return "purchase" if section == "purchases" else "sale"
@@ -560,6 +994,8 @@ class WexAccountingPortal(CustomerPortal):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         valid_filters = self._get_accounting_searchbar_filters(section=section)
         filterby = filterby if filterby in valid_filters else "all"
@@ -579,6 +1015,8 @@ class WexAccountingPortal(CustomerPortal):
                 company_ids=company_ids,
                 scope=scope,
                 move_types=move_types,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
             items.extend(invoice._get_wex_accounting_portal_list_item() for invoice in invoices)
         if section == "sales" and filterby in ("all", "pos"):
@@ -590,6 +1028,8 @@ class WexAccountingPortal(CustomerPortal):
                 search_in=search_in,
                 search=search,
                 company_ids=company_ids,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
             items.extend(order._get_wex_accounting_portal_list_item() for order in pos_orders)
 
@@ -606,6 +1046,8 @@ class WexAccountingPortal(CustomerPortal):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         total = 0
         invoice_filters = self._get_accounting_invoice_filter_keys(section)
@@ -621,6 +1063,8 @@ class WexAccountingPortal(CustomerPortal):
                 company_ids=company_ids,
                 scope=scope,
                 move_types=move_types,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
         if section == "sales" and filterby in ("all", "pos"):
             total += request.env["pos.order"]._get_wex_accounting_portal_count(
@@ -630,6 +1074,8 @@ class WexAccountingPortal(CustomerPortal):
                 search_in=search_in,
                 search=search,
                 company_ids=company_ids,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
         return total
 
@@ -643,6 +1089,8 @@ class WexAccountingPortal(CustomerPortal):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         rows = []
         invoice_filters = self._get_accounting_invoice_filter_keys(section)
@@ -659,6 +1107,8 @@ class WexAccountingPortal(CustomerPortal):
                 company_ids=company_ids,
                 scope=scope,
                 move_types=move_types,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             ):
                 item = move._get_wex_accounting_portal_list_item()
                 rows.append(
@@ -688,6 +1138,8 @@ class WexAccountingPortal(CustomerPortal):
                 search_in=search_in,
                 search=search,
                 company_ids=company_ids,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             ):
                 item = order._get_wex_accounting_portal_list_item()
                 rows.append(
@@ -754,11 +1206,13 @@ class WexAccountingPortal(CustomerPortal):
         values = self._prepare_portal_layout_values()
         section = self._get_accounting_section(section or kw.get("section"))
         filters = self._get_accounting_searchbar_filters(section=section)
+        status_filters = self._get_accounting_status_filters(section=section)
         sections = self._get_accounting_sections()
         searchbar_inputs = self._get_accounting_searchbar_inputs(section=section)
         period_filters = self._get_accounting_period_filters()
         period_values = self._get_accounting_period_values(kw)
         filterby = filterby if filterby in filters else "all"
+        filter_state = self._get_accounting_status(kw.get("status"))
         user = request.env.user
         search_values = self._get_accounting_search_values(kw)
         company_values = self._get_accounting_company_values(user, kw)
@@ -767,6 +1221,7 @@ class WexAccountingPortal(CustomerPortal):
         url_args = self._get_accounting_query_args(
             section,
             filterby,
+            filter_state,
             period_values,
             search_values=search_values,
             company_values=company_values,
@@ -779,6 +1234,7 @@ class WexAccountingPortal(CustomerPortal):
                     self._get_accounting_query_args(
                         section_key,
                         "all",
+                        filter_state,
                         period_values,
                         search_values=search_values,
                         company_values=company_values,
@@ -793,6 +1249,22 @@ class WexAccountingPortal(CustomerPortal):
                     self._get_accounting_query_args(
                         section,
                         filter_key,
+                        filter_state,
+                        period_values,
+                        search_values=search_values,
+                        company_values=company_values,
+                    )
+                ),
+            )
+
+        for status_key, status_data in status_filters.items():
+            status_data["url"] = "%s?%s" % (
+                base_url,
+                urlencode(
+                    self._get_accounting_query_args(
+                        section,
+                        filterby,
+                        status_key,
                         period_values,
                         search_values=search_values,
                         company_values=company_values,
@@ -805,6 +1277,7 @@ class WexAccountingPortal(CustomerPortal):
                 base_url,
                 urlencode(
                     self._get_accounting_filter_url_args(filterby, section=section)
+                    | ({"status": filter_state} if filter_state != "all" else {})
                     | self._get_accounting_period_choice_args(period_key, period_values)
                     | (
                         {"search": search_values["search"]}
@@ -833,6 +1306,7 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values["search_in"],
             search=search_values["search"],
             company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
         )
         pager = portal_pager(
             url=base_url,
@@ -852,16 +1326,43 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values["search_in"],
             search=search_values["search"],
             company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
         )
+        for item in items:
+            item["partner_detail_url"] = (
+                self._get_accounting_partner_detail_url(
+                    item["partner_id"],
+                    section,
+                    filterby,
+                    filter_state,
+                    period_values,
+                    search_values=search_values,
+                    company_values=company_values,
+                )
+                if item.get("partner_id")
+                else False
+            )
         sales_dashboard = self._get_accounting_sales_dashboard_values(
-            user, period_values, search_values=search_values, company_values=company_values
+            user,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+            filter_state=filter_state,
         )
         purchase_dashboard = self._get_accounting_purchase_dashboard_values(
-            user, period_values, search_values=search_values, company_values=company_values
+            user,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+            filter_state=filter_state,
         )
         dashboard_values = sales_dashboard if section == "sales" else purchase_dashboard
         hero_values = self._get_accounting_hero_values(
-            user, period_values, search_values=search_values, company_values=company_values
+            user,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+            filter_state=filter_state,
         )
         section_ui = {
             "partner_label": _("Proveedor") if section == "purchases" else _("Cliente"),
@@ -870,6 +1371,12 @@ class WexAccountingPortal(CustomerPortal):
             "payment_due_label": _("Pendiente de pago") if section == "purchases" else _("Pendiente de cobro"),
             "table_title": _("Detalle de compras") if section == "purchases" else _("Detalle de ventas"),
             "summary_title": _("Resumen de compras") if section == "purchases" else _("Resumen de ventas"),
+            "explore_title": _("Explorar documentos"),
+            "summary_note": (
+                _("Visión separada de compras y pagos a proveedores.")
+                if section == "purchases"
+                else _("Separación clara entre facturación, tickets POS y lectura fiscal.")
+            ),
         }
         values.update(
             {
@@ -881,7 +1388,9 @@ class WexAccountingPortal(CustomerPortal):
                 "section": section,
                 "sections": sections,
                 "filterby": filterby,
+                "filter_state": filter_state,
                 "searchbar_filters": filters,
+                "status_filters": status_filters,
                 "searchbar_inputs": searchbar_inputs,
                 "search_in": search_values["search_in"],
                 "search": search_values["search"],
@@ -891,6 +1400,20 @@ class WexAccountingPortal(CustomerPortal):
                 "company_values": company_values,
                 "hero": hero_values,
                 "dashboard": dashboard_values,
+                "health_kpis": self._get_accounting_health_kpis(
+                    sales_dashboard, purchase_dashboard
+                ),
+                "chart_values": self._get_accounting_chart_values(
+                    user,
+                    section,
+                    period_values,
+                    search_values=search_values,
+                    company_values=company_values,
+                    filter_state=filter_state,
+                    sales_dashboard=sales_dashboard,
+                    purchase_dashboard=purchase_dashboard,
+                ),
+                "summary_groups": self._get_accounting_summary_groups(section, dashboard_values),
                 "section_ui": section_ui,
                 "period_form_url": base_url,
                 "search_form_url": base_url,
@@ -899,6 +1422,102 @@ class WexAccountingPortal(CustomerPortal):
             }
         )
         return request.render("wex_accounting_portal.portal_my_accounting", values)
+
+    @http.route(
+        ["/my/accounting/partners/<int:partner_id>", "/my/accounting/partners/<int:partner_id>/page/<int:page>"],
+        type="http",
+        auth="user",
+        website=True,
+    )
+    def portal_accounting_partner_detail(
+        self, partner_id, page=1, filterby="all", section="sales", **kw
+    ):
+        self._check_accounting_portal_access()
+        values = self._prepare_portal_layout_values()
+        user = request.env.user
+        section = self._get_accounting_section(section or kw.get("section"))
+        partner = self._get_accounting_partner_or_404(partner_id, user, section)
+        filters = self._get_accounting_searchbar_filters(section=section)
+        filterby = filterby if filterby in filters else "all"
+        filter_state = self._get_accounting_status(kw.get("status"))
+        period_values = self._get_accounting_period_values(kw)
+        search_values = self._get_accounting_search_values(kw)
+        company_values = self._get_accounting_company_values(user, kw)
+        url_args = self._get_accounting_query_args(
+            section,
+            filterby,
+            filter_state,
+            period_values,
+            search_values=search_values,
+            company_values=company_values,
+        )
+        total = self._get_accounting_portal_total(
+            user,
+            section,
+            filterby,
+            start_date=period_values["start_date"],
+            end_date=period_values["end_date"],
+            search_in=search_values["search_in"],
+            search=search_values["search"],
+            company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
+            partner_ids=[partner.id],
+        )
+        pager = portal_pager(
+            url="/my/accounting/partners/%s" % partner.id,
+            url_args=url_args,
+            total=total,
+            page=page,
+            step=self._items_per_page,
+        )
+        items = self._get_accounting_portal_page_records(
+            user=user,
+            section=section,
+            filterby=filterby,
+            offset=pager["offset"],
+            limit=self._items_per_page,
+            start_date=period_values["start_date"],
+            end_date=period_values["end_date"],
+            search_in=search_values["search_in"],
+            search=search_values["search"],
+            company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
+            partner_ids=[partner.id],
+        )
+        dashboard = (
+            self._get_accounting_purchase_dashboard_values(
+                user,
+                period_values,
+                search_values=search_values,
+                company_values=company_values,
+                filter_state=filter_state,
+                partner_ids=[partner.id],
+            )
+            if section == "purchases"
+            else self._get_accounting_sales_dashboard_values(
+                user,
+                period_values,
+                search_values=search_values,
+                company_values=company_values,
+                filter_state=filter_state,
+                partner_ids=[partner.id],
+            )
+        )
+        values.update(
+            {
+                "page_name": "wex_accounting_partner_detail",
+                "accounting_portal_url": self._get_accounting_portal_base_url(),
+                "partner": partner,
+                "section": section,
+                "filterby": filterby,
+                "filter_state": filter_state,
+                "period_values": period_values,
+                "dashboard": dashboard,
+                "items": items,
+                "pager": pager,
+            }
+        )
+        return request.render("wex_accounting_portal.portal_accounting_partner_detail", values)
 
     @http.route(
         ["/my/accounting/invoices/<int:move_id>"],
@@ -970,6 +1589,7 @@ class WexAccountingPortal(CustomerPortal):
         self._check_accounting_portal_access()
         section = self._get_accounting_section(kw.get("section"))
         filterby = filterby if filterby in self._get_accounting_searchbar_filters(section=section) else "all"
+        filter_state = self._get_accounting_status(kw.get("status"))
         period_values = self._get_accounting_period_values(kw)
         search_values = self._get_accounting_search_values(kw)
         company_values = self._get_accounting_company_values(request.env.user, kw)
@@ -982,6 +1602,7 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values["search_in"],
             search=search_values["search"],
             company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
         )
         buffer = io.StringIO()
         writer = csv.writer(buffer)
@@ -1017,6 +1638,7 @@ class WexAccountingPortal(CustomerPortal):
         self._check_accounting_portal_access()
         section = self._get_accounting_section(kw.get("section"))
         filterby = filterby if filterby in self._get_accounting_searchbar_filters(section=section) else "all"
+        filter_state = self._get_accounting_status(kw.get("status"))
         period_values = self._get_accounting_period_values(kw)
         search_values = self._get_accounting_search_values(kw)
         company_values = self._get_accounting_company_values(request.env.user, kw)
@@ -1029,6 +1651,7 @@ class WexAccountingPortal(CustomerPortal):
             search_in=search_values["search_in"],
             search=search_values["search"],
             company_ids=company_values["selected_company_ids"],
+            filter_state=filter_state,
         )
         xlsx_content = self._build_xlsx_content(rows, section=section)
 

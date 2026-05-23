@@ -68,6 +68,31 @@ class AccountMove(models.Model):
         )
 
     @api.model
+    def _get_wex_accounting_portal_partner_domain(self, partner_ids=None):
+        if not partner_ids:
+            return []
+        return [("partner_id", "child_of", partner_ids)]
+
+    @api.model
+    def _get_wex_accounting_portal_payment_state_domain(self, filter_state=None):
+        today = fields.Date.today()
+        if filter_state == "pending":
+            return [
+                ("state", "=", "posted"),
+                ("payment_state", "not in", ("paid", "reversed", "in_payment")),
+            ]
+        if filter_state == "overdue":
+            return [
+                ("state", "=", "posted"),
+                ("payment_state", "not in", ("paid", "reversed", "in_payment")),
+                ("invoice_date_due", "!=", False),
+                ("invoice_date_due", "<", today),
+            ]
+        if filter_state == "paid":
+            return [("payment_state", "in", ("paid", "reversed", "in_payment"))]
+        return []
+
+    @api.model
     def _get_wex_accounting_portal_domain(
         self,
         user,
@@ -78,6 +103,8 @@ class AccountMove(models.Model):
         company_ids=None,
         scope=None,
         move_types=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         company_ids = self._get_wex_accounting_portal_company_ids(user, company_ids=company_ids)
         move_types = move_types or self._get_wex_accounting_portal_move_types(scope)
@@ -88,7 +115,11 @@ class AccountMove(models.Model):
         ] + self._get_wex_accounting_portal_period_domain(
             start_date=start_date,
             end_date=end_date,
-        ) + self._get_wex_accounting_portal_search_domain(search_in=search_in, search=search)
+        ) + self._get_wex_accounting_portal_search_domain(
+            search_in=search_in, search=search
+        ) + self._get_wex_accounting_portal_payment_state_domain(
+            filter_state=filter_state
+        ) + self._get_wex_accounting_portal_partner_domain(partner_ids=partner_ids)
 
     @api.model
     def _get_wex_accounting_portal_order(self):
@@ -107,6 +138,8 @@ class AccountMove(models.Model):
         company_ids=None,
         scope=None,
         move_types=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         return self.sudo().search(
             self._get_wex_accounting_portal_domain(
@@ -118,6 +151,8 @@ class AccountMove(models.Model):
                 company_ids=company_ids,
                 scope=scope,
                 move_types=move_types,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             ),
             order=self._get_wex_accounting_portal_order(),
             limit=limit,
@@ -135,6 +170,8 @@ class AccountMove(models.Model):
         company_ids=None,
         scope=None,
         move_types=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         return self.sudo().search_count(
             self._get_wex_accounting_portal_domain(
@@ -146,6 +183,8 @@ class AccountMove(models.Model):
                 company_ids=company_ids,
                 scope=scope,
                 move_types=move_types,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
         )
 
@@ -159,6 +198,8 @@ class AccountMove(models.Model):
         search=None,
         company_ids=None,
         scope=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         scope = self._get_wex_accounting_portal_scope(scope)
         main_move_type, refund_move_type = self._get_wex_accounting_portal_move_types(scope)
@@ -170,6 +211,8 @@ class AccountMove(models.Model):
             search=search,
             company_ids=company_ids,
             scope=scope,
+            filter_state=filter_state,
+            partner_ids=partner_ids,
         )
         grouped = self.sudo().read_group(
             domain,
@@ -221,6 +264,109 @@ class AccountMove(models.Model):
             "outstanding_total": sum(abs(move.amount_residual) for move in outstanding_records),
             "overdue_total": sum(abs(move.amount_residual) for move in overdue_records),
         }
+
+    @api.model
+    def _get_wex_accounting_portal_timeseries(
+        self,
+        user,
+        start_date=None,
+        end_date=None,
+        search_in=None,
+        search=None,
+        company_ids=None,
+        scope=None,
+        filter_state=None,
+        partner_ids=None,
+        bucket="month",
+    ):
+        bucket = "day" if bucket == "day" else "month"
+        refund_move_types = set(
+            self._get_wex_accounting_portal_move_types(scope)[1:]
+        )
+        records = self._get_wex_accounting_portal_records(
+            user,
+            start_date=start_date,
+            end_date=end_date,
+            search_in=search_in,
+            search=search,
+            company_ids=company_ids,
+            scope=scope,
+            filter_state=filter_state,
+            partner_ids=partner_ids,
+        )
+        series_by_key = {}
+        for move in records:
+            move_date = move.invoice_date
+            if not move_date:
+                continue
+            if bucket == "day":
+                key = move_date.strftime("%Y-%m-%d")
+                label = move_date.strftime("%d/%m")
+            else:
+                key = move_date.strftime("%Y-%m")
+                label = move_date.strftime("%m/%Y")
+            amount = abs(move.amount_total)
+            sign = -1.0 if move.move_type in refund_move_types else 1.0
+            series_item = series_by_key.setdefault(
+                key,
+                {"key": key, "label": label, "amount": 0.0, "count": 0},
+            )
+            series_item["amount"] += sign * amount
+            series_item["count"] += 1
+        return [series_by_key[key] for key in sorted(series_by_key)]
+
+    @api.model
+    def _get_wex_accounting_portal_top_partners(
+        self,
+        user,
+        start_date=None,
+        end_date=None,
+        search_in=None,
+        search=None,
+        company_ids=None,
+        scope=None,
+        filter_state=None,
+        partner_ids=None,
+        limit=5,
+    ):
+        refund_move_types = set(
+            self._get_wex_accounting_portal_move_types(scope)[1:]
+        )
+        records = self._get_wex_accounting_portal_records(
+            user,
+            start_date=start_date,
+            end_date=end_date,
+            search_in=search_in,
+            search=search,
+            company_ids=company_ids,
+            scope=scope,
+            filter_state=filter_state,
+            partner_ids=partner_ids,
+        )
+        totals_by_partner = {}
+        for move in records:
+            partner = move.partner_id.commercial_partner_id or move.partner_id
+            if not partner:
+                continue
+            sign = -1.0 if move.move_type in refund_move_types else 1.0
+            partner_values = totals_by_partner.setdefault(
+                partner.id,
+                {
+                    "partner_id": partner.id,
+                    "label": partner.display_name or "-",
+                    "vat": partner.vat or "-",
+                    "amount": 0.0,
+                    "count": 0,
+                },
+            )
+            partner_values["amount"] += sign * abs(move.amount_total)
+            partner_values["count"] += 1
+        ranked = sorted(
+            totals_by_partner.values(),
+            key=lambda values: values["amount"],
+            reverse=True,
+        )
+        return ranked[:limit]
 
     def _can_user_access_wex_accounting_portal_record(self, user):
         self.ensure_one()
@@ -294,6 +440,7 @@ class AccountMove(models.Model):
             "kind_label": _("Factura proveedor") if scope == "purchase" else _("Factura"),
             "document_label": move_type_labels.get(self.move_type, self.move_type or ""),
             "id": self.id,
+            "partner_id": self.partner_id.commercial_partner_id.id or self.partner_id.id,
             "name": self.name or self.payment_reference or _("Draft invoice"),
             "partner_name": self.partner_id.display_name or "-",
             "partner_vat": self.partner_id.vat or "-",

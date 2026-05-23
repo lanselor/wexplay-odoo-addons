@@ -57,6 +57,20 @@ class PosOrder(models.Model):
         )
 
     @api.model
+    def _get_wex_accounting_portal_partner_domain(self, partner_ids=None):
+        if not partner_ids:
+            return []
+        return [("partner_id", "child_of", partner_ids)]
+
+    @api.model
+    def _get_wex_accounting_portal_state_domain(self, filter_state=None):
+        if filter_state == "paid":
+            return [("state", "in", _WEX_PORTAL_POS_STATES)]
+        if filter_state in ("pending", "overdue"):
+            return [("id", "=", 0)]
+        return []
+
+    @api.model
     def _get_wex_accounting_portal_domain(
         self,
         user,
@@ -65,6 +79,8 @@ class PosOrder(models.Model):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         company_ids = self._get_wex_accounting_portal_company_ids(user, company_ids=company_ids)
         return [
@@ -73,7 +89,11 @@ class PosOrder(models.Model):
         ] + self._get_wex_accounting_portal_period_domain(
             start_date=start_date,
             end_date=end_date,
-        ) + self._get_wex_accounting_portal_search_domain(search_in=search_in, search=search)
+        ) + self._get_wex_accounting_portal_search_domain(
+            search_in=search_in, search=search
+        ) + self._get_wex_accounting_portal_state_domain(
+            filter_state=filter_state
+        ) + self._get_wex_accounting_portal_partner_domain(partner_ids=partner_ids)
 
     @api.model
     def _get_wex_accounting_portal_order(self):
@@ -90,6 +110,8 @@ class PosOrder(models.Model):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         return self.sudo().search(
             self._get_wex_accounting_portal_domain(
@@ -99,6 +121,8 @@ class PosOrder(models.Model):
                 search_in=search_in,
                 search=search,
                 company_ids=company_ids,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             ),
             order=self._get_wex_accounting_portal_order(),
             limit=limit,
@@ -114,6 +138,8 @@ class PosOrder(models.Model):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         return self.sudo().search_count(
             self._get_wex_accounting_portal_domain(
@@ -123,6 +149,8 @@ class PosOrder(models.Model):
                 search_in=search_in,
                 search=search,
                 company_ids=company_ids,
+                filter_state=filter_state,
+                partner_ids=partner_ids,
             )
         )
 
@@ -135,6 +163,8 @@ class PosOrder(models.Model):
         search_in=None,
         search=None,
         company_ids=None,
+        filter_state=None,
+        partner_ids=None,
     ):
         domain = self._get_wex_accounting_portal_domain(
             user,
@@ -143,6 +173,8 @@ class PosOrder(models.Model):
             search_in=search_in,
             search=search,
             company_ids=company_ids,
+            filter_state=filter_state,
+            partner_ids=partner_ids,
         )
         grouped = self.sudo().read_group(
             domain,
@@ -188,6 +220,60 @@ class PosOrder(models.Model):
                 + invoiced_values.get("count", 0)
             ),
         }
+
+    @api.model
+    def _get_wex_accounting_portal_timeseries(
+        self,
+        user,
+        start_date=None,
+        end_date=None,
+        search_in=None,
+        search=None,
+        company_ids=None,
+        filter_state=None,
+        partner_ids=None,
+        bucket="month",
+    ):
+        bucket = "day" if bucket == "day" else "month"
+        records = self._get_wex_accounting_portal_records(
+            user,
+            start_date=start_date,
+            end_date=end_date,
+            search_in=search_in,
+            search=search,
+            company_ids=company_ids,
+            filter_state=filter_state,
+            partner_ids=partner_ids,
+        )
+        series_by_key = {}
+        for order in records:
+            order_dt = fields.Datetime.to_datetime(order.date_order)
+            if not order_dt:
+                continue
+            if bucket == "day":
+                key = order_dt.strftime("%Y-%m-%d")
+                label = order_dt.strftime("%d/%m")
+            else:
+                key = order_dt.strftime("%Y-%m")
+                label = order_dt.strftime("%m/%Y")
+            series_item = series_by_key.setdefault(
+                key,
+                {
+                    "key": key,
+                    "label": label,
+                    "uninvoiced_amount": 0.0,
+                    "invoiced_amount": 0.0,
+                    "amount": 0.0,
+                    "count": 0,
+                },
+            )
+            series_item["amount"] += order.amount_total
+            series_item["count"] += 1
+            if order.state == "invoiced":
+                series_item["invoiced_amount"] += order.amount_total
+            else:
+                series_item["uninvoiced_amount"] += order.amount_total
+        return [series_by_key[key] for key in sorted(series_by_key)]
 
     def _can_user_access_wex_accounting_portal_record(self, user):
         self.ensure_one()
@@ -237,6 +323,7 @@ class PosOrder(models.Model):
             "kind_label": _("POS"),
             "document_label": _("POS Sale"),
             "id": self.id,
+            "partner_id": self.partner_id.commercial_partner_id.id or self.partner_id.id,
             "name": self.pos_reference or self.name or _("POS Order"),
             "partner_name": self.partner_id.display_name or "-",
             "partner_vat": self.partner_id.vat or "-",
