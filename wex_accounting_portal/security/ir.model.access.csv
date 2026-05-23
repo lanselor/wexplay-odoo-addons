@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_accounting_dashboard_report_readonly,wex.accounting.dashboard.report readonly,model_wex_accounting_dashboard_report,account.group_account_readonly,1,0,0,0
+access_wex_accounting_dashboard_report_invoice,wex.accounting.dashboard.report invoice,model_wex_accounting_dashboard_report,account.group_account_invoice,1,0,0,0

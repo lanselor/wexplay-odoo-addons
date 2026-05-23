@@ -1,0 +1,715 @@
+<odoo>
+    <template id="portal_my_home_accounting" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[@id='portal_common_category']" position="inside">
+            <t t-if="wex_accounting_portal_enabled">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Finanzas Wexplay</t>
+                    <t t-set="url" t-value="'/my/accounting'"/>
+                    <t t-set="placeholder_count" t-value="'wex_accounting_count'"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_breadcrumbs_accounting" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'wex_accounting_portal'" class="breadcrumb-item active">
+                Finanzas Wexplay
+            </li>
+            <li t-if="page_name in ('wex_accounting_invoice_detail', 'wex_accounting_pos_detail')" class="breadcrumb-item">
+                <a t-att-href="accounting_portal_url or '/my/accounting'">Finanzas Wexplay</a>
+            </li>
+            <li t-if="page_name == 'wex_accounting_invoice_detail'" class="breadcrumb-item active">
+                Factura
+            </li>
+            <li t-if="page_name == 'wex_accounting_pos_detail'" class="breadcrumb-item active">
+                Venta POS
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_accounting" name="Wex Accounting Portal List">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                    <div>
+                        <h2 class="mb-1">Finanzas Wexplay</h2>
+                        <p class="text-muted mb-0">
+                            Resumen económico del periodo con separación clara entre ventas y compras.
+                            <br/>
+                            <span><strong>Compañías:</strong> <t t-out="dashboard['company_label']"/></span>
+                            <t t-if="dashboard['search_label']">
+                                <span> | <strong>Búsqueda:</strong> <t t-out="dashboard['search_label']"/></span>
+                            </t>
+                        </p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a t-att-href="csv_export_url" class="btn btn-outline-secondary">Exportar CSV</a>
+                        <a t-att-href="xlsx_export_url" class="btn btn-outline-secondary">Exportar XLSX</a>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <t t-foreach="sections.items()" t-as="section_item">
+                        <t t-set="section_key" t-value="section_item[0]"/>
+                        <t t-set="section_data" t-value="section_item[1]"/>
+                        <t t-set="hero_item" t-value="hero[section_key]"/>
+                        <div class="col-12 col-lg-6">
+                            <a t-att-href="section_data['url']"
+                               t-att-class="'card h-100 text-decoration-none %s' % ('border-primary shadow' if section == section_key else 'border-0 shadow-sm')">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">
+                                                <t t-out="hero_item['label']"/>
+                                            </div>
+                                            <h3 class="mb-1 text-dark">
+                                                <t t-out="hero_item['label']"/>
+                                            </h3>
+                                            <p class="text-muted mb-0">
+                                                <t t-out="hero_item['description']"/>
+                                            </p>
+                                        </div>
+                                        <span t-att-class="'badge %s' % ('text-bg-primary' if section == section_key else 'text-bg-light')">
+                                            <t t-out="'Activa' if section == section_key else 'Ver sección'"/>
+                                        </span>
+                                    </div>
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-sm-4">
+                                            <div class="small text-muted">Total periodo</div>
+                                            <div class="fs-4 fw-bold text-dark">
+                                                <span t-out="hero_item['total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="small text-muted"><t t-out="hero_item['secondary_one_label']"/></div>
+                                            <div class="fw-semibold text-dark">
+                                                <span t-out="hero_item['secondary_one']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="small text-muted"><t t-out="hero_item['secondary_two_label']"/></div>
+                                            <div class="fw-semibold text-dark">
+                                                <span t-out="hero_item['secondary_two']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <div class="small text-uppercase text-muted fw-semibold mb-2">Tipo de documento</div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <t t-foreach="searchbar_filters.items()" t-as="filter_item">
+                                        <a t-att-href="filter_item[1]['url']"
+                                           t-att-class="'btn %s' % ('btn-primary' if filterby == filter_item[0] else 'btn-outline-primary')">
+                                            <t t-out="filter_item[1]['label']"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-uppercase text-muted fw-semibold mb-2">Búsqueda y compañía</div>
+                                <form t-att-action="search_form_url" method="get" class="row g-2 align-items-end">
+                                    <input type="hidden" name="section" t-att-value="section"/>
+                                    <input type="hidden" name="filterby" t-att-value="filterby"/>
+                                    <input type="hidden" name="period" t-att-value="period_values['period']"/>
+                                    <input t-if="period_values['period'] == 'day'" type="hidden" name="day" t-att-value="selector_values['selected_day']"/>
+                                    <input t-if="period_values['period'] == 'month'" type="hidden" name="year" t-att-value="selector_values['selected_year']"/>
+                                    <input t-if="period_values['period'] == 'month'" type="hidden" name="month" t-att-value="selector_values['selected_month']"/>
+                                    <input t-if="period_values['period'] == 'quarter'" type="hidden" name="year" t-att-value="selector_values['selected_year']"/>
+                                    <input t-if="period_values['period'] == 'quarter'" type="hidden" name="quarter" t-att-value="selector_values['selected_quarter']"/>
+                                    <input t-if="period_values['period'] == 'year'" type="hidden" name="year" t-att-value="selector_values['selected_year']"/>
+                                    <input t-if="period_values['period'] == 'custom'" type="hidden" name="date_from" t-att-value="selector_values['selected_date_from']"/>
+                                    <input t-if="period_values['period'] == 'custom'" type="hidden" name="date_to" t-att-value="selector_values['selected_date_to']"/>
+                                    <div class="col-sm-4 col-lg-2">
+                                        <label class="form-label small text-muted">Buscar en</label>
+                                        <select name="search_in" class="form-select">
+                                            <option t-foreach="searchbar_inputs.items()" t-as="search_item"
+                                                    t-att-value="search_item[0]"
+                                                    t-att-selected="search_item[0] == search_in and 'selected' or None">
+                                                <t t-out="search_item[1]['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-8 col-lg-4">
+                                        <label class="form-label small text-muted">Texto</label>
+                                        <input type="text" name="search" class="form-control" t-att-placeholder="'Factura, proveedor, NIF o referencia' if section == 'purchases' else 'Factura, cliente, NIF o referencia POS'" t-att-value="search"/>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3">
+                                        <label class="form-label small text-muted">Compañía</label>
+                                        <select name="company_id" class="form-select">
+                                            <option t-foreach="company_values['company_options']" t-as="company_option"
+                                                    t-att-value="company_option['value']"
+                                                    t-att-selected="company_option['value'] == (company_values['selected_company_id'] or 'all') and 'selected' or None">
+                                                <t t-out="company_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-2">
+                                        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                                    </div>
+                                    <div class="col-12" t-if="search or company_values['selected_company_id']">
+                                        <a t-att-href="'/my/accounting?section=%s' % section" class="btn btn-link px-0">Limpiar búsqueda y compañía</a>
+                                    </div>
+                                </form>
+                            </div>
+                            <div>
+                                <div class="small text-uppercase text-muted fw-semibold mb-2">Periodo</div>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <t t-foreach="period_filters.items()" t-as="period_item">
+                                        <a t-att-href="period_item[1]['url']"
+                                           t-att-class="'btn %s' % ('btn-dark' if period_values['period'] == period_item[0] else 'btn-outline-dark')">
+                                            <t t-out="period_item[1]['label']"/>
+                                        </a>
+                                    </t>
+                                </div>
+                                <form t-att-action="period_form_url" method="get" class="row g-2 align-items-end">
+                                    <input type="hidden" name="section" t-att-value="section"/>
+                                    <input type="hidden" name="filterby" t-att-value="filterby"/>
+                                    <input type="hidden" name="search_in" t-att-value="search_in"/>
+                                    <input type="hidden" name="search" t-att-value="search"/>
+                                    <input t-if="company_values['selected_company_id']" type="hidden" name="company_id" t-att-value="company_values['selected_company_id']"/>
+                                    <input type="hidden" name="period" t-att-value="period_values['period']"/>
+                                    <div class="col-sm-4 col-lg-2" t-if="period_values['period'] in ('year', 'month', 'quarter')">
+                                        <label class="form-label small text-muted">Año</label>
+                                        <select name="year" class="form-select">
+                                            <option t-foreach="selector_values['year_options']" t-as="year_option"
+                                                    t-att-value="year_option['value']"
+                                                    t-att-selected="year_option['value'] == selector_values['selected_year'] and 'selected' or None">
+                                                <t t-out="year_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4 col-lg-2" t-if="period_values['period'] == 'month'">
+                                        <label class="form-label small text-muted">Mes</label>
+                                        <select name="month" class="form-select">
+                                            <option t-foreach="selector_values['month_options']" t-as="month_option"
+                                                    t-att-value="month_option['value']"
+                                                    t-att-selected="month_option['value'] == selector_values['selected_month'] and 'selected' or None">
+                                                <t t-out="month_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4 col-lg-2" t-if="period_values['period'] == 'quarter'">
+                                        <label class="form-label small text-muted">Trimestre</label>
+                                        <select name="quarter" class="form-select">
+                                            <option t-foreach="selector_values['quarter_options']" t-as="quarter_option"
+                                                    t-att-value="quarter_option['value']"
+                                                    t-att-selected="quarter_option['value'] == selector_values['selected_quarter'] and 'selected' or None">
+                                                <t t-out="quarter_option['label']"/>
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3" t-if="period_values['period'] == 'day'">
+                                        <label class="form-label small text-muted">Día</label>
+                                        <input type="date" name="day" class="form-control" t-att-value="selector_values['selected_day']"/>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3" t-if="period_values['period'] == 'custom'">
+                                        <label class="form-label small text-muted">Desde</label>
+                                        <input type="date" name="date_from" class="form-control" t-att-value="selector_values['selected_date_from']"/>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-3" t-if="period_values['period'] == 'custom'">
+                                        <label class="form-label small text-muted">Hasta</label>
+                                        <input type="date" name="date_to" class="form-control" t-att-value="selector_values['selected_date_to']"/>
+                                    </div>
+                                    <div class="col-sm-6 col-lg-2" t-if="period_values['period'] != 'all'">
+                                        <button type="submit" class="btn btn-primary w-100">Aplicar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h4 class="mb-1"><t t-out="section_ui['summary_title']"/></h4>
+                            <p class="text-muted mb-0">
+                                <strong t-out="dashboard['period_label']"/> |
+                                <t t-if="section == 'sales'">Total operativo = neto facturado + POS no facturado</t>
+                                <t t-else="">Visión separada de compras y pagos a proveedores</t>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row g-3" t-if="section == 'sales'">
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Base operativa</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['operating_untaxed_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        Neto facturado + base POS no facturada
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">IVA operativo</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['operating_tax_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        IVA de ventas netas + POS no facturado
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Neto facturado</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['net_invoiced_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Ventas facturadas menos abonos</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Abonos</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['refund_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <t t-out="dashboard['refund_count']"/> abono(s) del periodo
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Pendiente de cobro</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['outstanding_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        Facturas de cliente con saldo pendiente
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Total operativo</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['operating_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <t t-out="dashboard['document_count']"/> documento(s) visibles en el periodo
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Vencido</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['overdue_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Facturas vencidas pendientes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">POS no facturado</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['pos_uninvoiced_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Ventas POS en estados pagado/finalizado</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">POS ya facturado</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['pos_invoiced_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <t t-out="dashboard['pos_invoiced_count']"/> venta(s) POS ya incorporadas a factura
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Base imponible fiscal</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['taxable_base_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">Base neta facturada del periodo</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">IVA repercutido</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['vat_output_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">IVA neto de ventas y abonos</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">IVA reducido por abonos</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['refund_vat_reduction_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">Impacto fiscal de los abonos del periodo</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3" t-else="">
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Base neta de compras</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['net_purchase_untaxed_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Base imponible neta del periodo</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">IVA soportado</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['vat_input_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">IVA neto de compras y abonos</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Neto de compras</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['net_purchase_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Facturas proveedor menos abonos</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Abonos proveedor</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['purchase_refund_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <t t-out="dashboard['refund_count']"/> abono(s) del periodo
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Pendiente de pago</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['outstanding_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Facturas proveedor con saldo pendiente</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Vencido</div>
+                                    <div class="fs-4 fw-bold">
+                                        <span t-out="dashboard['overdue_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                    </div>
+                                    <div class="text-muted small mt-2">Pagos vencidos a proveedores</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Compras facturadas</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['purchase_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">
+                                                <t t-out="dashboard['bill_count']"/> factura(s) proveedor
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Base fiscal de compras</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['taxable_base_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">Base neta deducible del periodo</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">IVA reducido por abonos</div>
+                                            <div class="fs-5 fw-bold">
+                                                <span t-out="dashboard['refund_vat_reduction_total']" t-options="{'widget': 'monetary', 'display_currency': dashboard['currency']}"/>
+                                            </div>
+                                            <div class="text-muted small mt-2">Impacto fiscal de abonos proveedor</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body border-bottom">
+                        <h4 class="mb-1"><t t-out="section_ui['table_title']"/></h4>
+                        <p class="text-muted mb-0">Listado operativo de documentos visibles según el filtro activo.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th><t t-out="section_ui['partner_label']"/></th>
+                                    <th>NIF</th>
+                                    <th><t t-out="section_ui['document_date_label']"/></th>
+                                    <th>Vencimiento</th>
+                                    <th class="text-end">Base imponible</th>
+                                    <th class="text-end">Impuestos</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Total en moneda firmada</th>
+                                    <th>Estado de pago</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="items" t-as="item">
+                                    <td>
+                                        <a t-att-href="item['detail_url']" class="fw-semibold text-decoration-none">
+                                            <t t-out="item['name']"/>
+                                        </a>
+                                        <div class="text-muted small">
+                                            <t t-out="item['company_name']"/>
+                                        </div>
+                                    </td>
+                                    <td><t t-out="item['partner_name']"/></td>
+                                    <td><t t-out="item['partner_vat']"/></td>
+                                    <td>
+                                        <t t-if="item['kind'] == 'invoice'">
+                                            <span t-out="item['date']" t-options="{'widget': 'date'}"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-out="item['date']" t-options="{'widget': 'datetime'}"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="item['due_date']">
+                                            <span t-out="item['due_date']" t-options="{'widget': 'date'}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="item['amount_untaxed']" t-options="{'widget': 'monetary', 'display_currency': item['currency']}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="item['amount_tax']" t-options="{'widget': 'monetary', 'display_currency': item['currency']}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="item['amount_total']" t-options="{'widget': 'monetary', 'display_currency': item['currency']}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-out="item['amount_total_signed']" t-options="{'widget': 'monetary', 'display_currency': item['signed_currency']}"/>
+                                    </td>
+                                    <td>
+                                        <div><t t-out="item['payment_state_label']"/></div>
+                                        <div class="text-muted small">
+                                            <t t-out="item['payment_methods_label']"/>
+                                        </div>
+                                        <div class="text-muted small" t-if="item['amount_due']">
+                                            Pendiente:
+                                            <span t-out="item['amount_due']" t-options="{'widget': 'monetary', 'display_currency': item['currency']}"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr t-if="not items">
+                                    <td colspan="10" class="text-center text-muted py-4">
+                                        No hay documentos disponibles para esta sección.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="o_portal_pager d-flex justify-content-center my-3">
+                    <t t-call="portal.pager"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_accounting_invoice_detail" name="Wex Accounting Portal Invoice Detail">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <t t-out="document['name']"/>
+                        </h2>
+                        <p class="text-muted mb-0">
+                            <t t-out="document['move_type_label']"/> | <t t-out="document['state_label']"/>
+                        </p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a t-att-href="accounting_portal_url" class="btn btn-outline-secondary">Volver</a>
+                        <a t-att-href="document['pdf_url']" class="btn btn-primary">Descargar PDF</a>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong><t t-out="'Proveedor' if document['scope'] == 'purchase' else 'Cliente'"/></strong><div class="text-muted"><t t-out="document['partner_name']"/></div><div class="text-muted small"><t t-out="document['partner_vat']"/></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Fecha</strong><div class="text-muted"><span t-out="document['invoice_date']" t-options="{'widget': 'date'}"/></div><div class="text-muted small">Vence: <t t-if="document['invoice_date_due']"><span t-out="document['invoice_date_due']" t-options="{'widget': 'date'}"/></t><t t-else="">-</t></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Total</strong><div class="text-muted"><span t-out="document['amount_total']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div><div class="text-muted small">Pendiente: <span t-out="document['amount_residual']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong><t t-out="'Pago' if document['scope'] == 'purchase' else 'Cobro'"/></strong><div class="text-muted"><t t-out="document['payment_state_label']"/></div><div class="text-muted small"><t t-out="document['payment_methods_label']"/></div></div></div></div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4"><strong>Origen</strong><div class="text-muted"><t t-out="document['invoice_origin'] or '-'"/></div></div>
+                            <div class="col-md-4"><strong>Referencia</strong><div class="text-muted"><t t-out="document['ref'] or '-'"/></div></div>
+                            <div class="col-md-4"><strong>Ref. pago</strong><div class="text-muted"><t t-out="document['payment_reference'] or '-'"/></div></div>
+                            <div class="col-md-4"><strong>Compañía</strong><div class="text-muted"><t t-out="document['company_name'] or '-'"/></div></div>
+                            <div class="col-md-4"><strong>Base imponible</strong><div class="text-muted"><span t-out="document['amount_untaxed']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div>
+                            <div class="col-md-4"><strong>Impuestos</strong><div class="text-muted"><span t-out="document['amount_tax']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Líneas</h4>
+                    <a t-if="not show_lines" t-att-href="document['show_lines_url']" class="btn btn-outline-primary btn-sm">Mostrar líneas</a>
+                    <a t-else="" t-att-href="document['hide_lines_url']" class="btn btn-outline-secondary btn-sm">Ocultar líneas</a>
+                </div>
+
+                <t t-if="show_lines">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="document['line_values']" t-as="line">
+                                        <td><t t-out="line['name']"/></td>
+                                        <td class="text-end"><t t-out="line['quantity']"/></td>
+                                        <td class="text-end"><span t-out="line['price_unit']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                        <td class="text-end"><span t-out="line['price_subtotal']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                        <td class="text-end"><span t-out="line['price_total']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_accounting_pos_detail" name="Wex Accounting Portal POS Detail">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <t t-out="document['name']"/>
+                        </h2>
+                        <p class="text-muted mb-0">Venta POS | <t t-out="document['state_label']"/></p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a t-att-href="accounting_portal_url" class="btn btn-outline-secondary">Volver</a>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Cliente</strong><div class="text-muted"><t t-out="document['partner_name']"/></div><div class="text-muted small"><t t-out="document['partner_vat']"/></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Fecha</strong><div class="text-muted"><span t-out="document['date_order']" t-options="{'widget': 'datetime'}"/></div><div class="text-muted small"><t t-out="document['company_name']"/></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Total</strong><div class="text-muted"><span t-out="document['amount_total']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div><div class="text-muted small">Base: <span t-out="document['amount_untaxed']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div></div></div>
+                    <div class="col-lg-3"><div class="card h-100"><div class="card-body"><strong>Cobro</strong><div class="text-muted"><t t-out="document['payment_state_label']"/></div><div class="text-muted small"><t t-out="document['payment_methods_label']"/></div></div></div></div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Sesión</strong><div class="text-muted"><t t-out="document['session_name'] or '-'"/></div></div>
+                            <div class="col-md-3"><strong>Impuestos</strong><div class="text-muted"><span t-out="document['amount_tax']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div>
+                            <div class="col-md-3"><strong>Pendiente</strong><div class="text-muted"><span t-out="document['amount_due']" t-options="{'widget': 'monetary', 'display_currency': document['currency']}"/></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Líneas</h4>
+                    <a t-if="not show_lines" t-att-href="document['show_lines_url']" class="btn btn-outline-primary btn-sm">Mostrar líneas</a>
+                    <a t-else="" t-att-href="document['hide_lines_url']" class="btn btn-outline-secondary btn-sm">Ocultar líneas</a>
+                </div>
+
+                <t t-if="show_lines">
+                    <div class="card border-0 shadow-sm">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="document['line_values']" t-as="line">
+                                        <td><t t-out="line['name']"/></td>
+                                        <td class="text-end"><t t-out="line['quantity']"/></td>
+                                        <td class="text-end"><span t-out="line['price_unit']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                        <td class="text-end"><span t-out="line['price_subtotal']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                        <td class="text-end"><span t-out="line['price_subtotal_incl']" t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

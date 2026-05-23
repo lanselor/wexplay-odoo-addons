@@ -1,0 +1,101 @@
+<odoo>
+    <record id="view_wex_accounting_dashboard_report_tree" model="ir.ui.view">
+        <field name="name">wex.accounting.dashboard.report.tree</field>
+        <field name="model">wex.accounting.dashboard.report</field>
+        <field name="arch" type="xml">
+            <list string="Wex Accounting Analysis" create="0" edit="0" delete="0">
+                <field name="document_date"/>
+                <field name="name"/>
+                <field name="source_kind"/>
+                <field name="company_id"/>
+                <field name="partner_id"/>
+                <field name="partner_vat"/>
+                <field name="due_date"/>
+                <field name="payment_status"/>
+                <field name="amount_total"/>
+                <field name="amount_total_signed"/>
+                <field name="operating_total_signed"/>
+                <field name="pending_amount"/>
+                <field name="overdue_amount"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_accounting_dashboard_report_search" model="ir.ui.view">
+        <field name="name">wex.accounting.dashboard.report.search</field>
+        <field name="model">wex.accounting.dashboard.report</field>
+        <field name="arch" type="xml">
+            <search string="Wex Accounting Analysis">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="partner_vat"/>
+                <field name="company_id"/>
+                <filter name="filter_invoices" string="Facturas" domain="[('source_kind', '=', 'invoice')]"/>
+                <filter name="filter_refunds" string="Abonos" domain="[('source_kind', '=', 'refund')]"/>
+                <filter name="filter_pos" string="POS" domain="[('source_kind', '=', 'pos')]"/>
+                <filter name="filter_pending" string="Pendiente" domain="[('pending_amount', '&gt;', 0)]"/>
+                <filter name="filter_overdue" string="Vencido" domain="[('overdue_amount', '&gt;', 0)]"/>
+                <filter name="filter_pos_uninvoiced" string="POS no facturado" domain="[('pos_uninvoiced_amount', '&gt;', 0)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_company" string="Compañía" context="{'group_by': 'company_id'}"/>
+                    <filter name="group_partner" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_source" string="Tipo" context="{'group_by': 'source_kind'}"/>
+                    <filter name="group_date_month" string="Mes" context="{'group_by': 'document_date:month'}"/>
+                    <filter name="group_payment_status" string="Estado de pago" context="{'group_by': 'payment_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_wex_accounting_dashboard_report_pivot" model="ir.ui.view">
+        <field name="name">wex.accounting.dashboard.report.pivot</field>
+        <field name="model">wex.accounting.dashboard.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Wex Accounting Analysis" disable_linking="0">
+                <field name="company_id" type="row"/>
+                <field name="document_date" type="col" interval="month"/>
+                <field name="operating_total_signed" type="measure"/>
+                <field name="amount_total_signed" type="measure"/>
+                <field name="pending_amount" type="measure"/>
+                <field name="overdue_amount" type="measure"/>
+                <field name="pos_uninvoiced_amount" type="measure"/>
+                <field name="vat_output_amount" type="measure"/>
+                <field name="taxable_base_amount" type="measure"/>
+                <field name="row_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_wex_accounting_dashboard_report_graph" model="ir.ui.view">
+        <field name="name">wex.accounting.dashboard.report.graph</field>
+        <field name="model">wex.accounting.dashboard.report</field>
+        <field name="arch" type="xml">
+            <graph string="Wex Accounting Analysis" type="line">
+                <field name="document_date" interval="month"/>
+                <field name="operating_total_signed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_wex_accounting_dashboard_report" model="ir.actions.act_window">
+        <field name="name">Wex Accounting Analysis</field>
+        <field name="res_model">wex.accounting.dashboard.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_wex_accounting_dashboard_report_search"/>
+        <field name="context">{'search_default_group_date_month': 1}</field>
+        <field name="help" type="html">
+            <p>
+                Vista analítica unificada de facturas de venta, abonos y ventas POS.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_wex_accounting_dashboard_report"
+        name="Wex Accounting Analysis"
+        parent="account.account_reports_management_menu"
+        action="action_wex_accounting_dashboard_report"
+        sequence="20"
+        groups="account.group_account_readonly,account.group_account_invoice"
+    />
+</odoo>
