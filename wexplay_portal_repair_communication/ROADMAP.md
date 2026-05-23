@@ -49,12 +49,46 @@ Completado parcialmente.
 - base de tests creada
 - varios errores funcionales ya documentados y corregidos
 
+### Fase 6 - Endurecimiento, SLA y mejoras operativas (2026-05)
+
+Completado.
+
+Ronda de auditoria completa (8 bugs detectados y corregidos):
+
+- guard multi-tab erroneo en `operator_chat_bridge.js` corregido (BUG-1)
+- fallo silencioso si `thread` no se resuelve en el bridge JS (BUG-2)
+- llamada doble a `_sync_operator_channel_members` eliminada (BUG-3)
+- cache de sidebar SAT sin discriminar canal corregida (BUG-4)
+- `@api.depends("id")` eliminado (prohibido en Odoo 18) (BUG-5)
+- limite de longitud de mensajes portal anadido (BUG-6)
+- campo `x_portal_conversation_html` con `sanitize=False` eliminado (BUG-7)
+- polling portal protegido contra errores de red (BUG-8)
+
+Mejoras funcionales y operativas:
+
+- SLA de 1 hora de tiempo laborable (L-V 10-14 y 16-20, Europe/Madrid)
+- notificacion al tecnico por `message_notify` cuando vence el SLA
+- creacion automatica de actividad en `repair.order` al vencer el SLA
+- cron `ir.cron` cada 15 minutos para chequeo de SLA
+- debounce de notificaciones: primera mensaje del cliente notifica; los
+  siguientes solo se proyectan al canal sin spam de avisos
+- confirmacion de lectura (`technician_last_read_at`): el portal muestra
+  `Visto` cuando el tecnico ha abierto el chat tras el ultimo mensaje del cliente
+- bandeja de entrada enriquecida con columnas SLA y lectura, marcado en rojo
+  cuando `sla_breached`
+- wizard `Responder` eliminado del header del formulario de conversacion;
+  accion primaria es `Abrir chat tecnico`
+- codigo muerto `x_portal_conversation_html` y sus metodos eliminados de
+  `repair.order`
+
 ## Fase actual
 
-Pulido fino + endurecimiento.
+Estabilizacion en produccion.
 
-La base funcional ya esta viva. Las siguientes iteraciones deben priorizar
-estabilidad, claridad operativa y tests reales antes de meter complejidad nueva.
+Las mejoras de la Fase 6 estan vivas. La prioridad ahora es:
+
+- confirmar que el SLA se comporta correctamente en produccion con horarios reales
+- ejecutar y sanear la suite real de tests del modulo
 
 ## Funcionalidades pendientes
 
@@ -63,15 +97,14 @@ estabilidad, claridad operativa y tests reales antes de meter complejidad nueva.
 - ejecutar y sanear la suite real de tests del modulo
 - revisar y limpiar logs de diagnostico temporales
 - ultimo pase de UX en portal, especialmente en movil
-- validar mejor comportamiento en entornos de produccion y multiusuario
+- validar comportamiento SLA en produccion con horarios reales (festivos, etc.)
 
 ### Pendientes funcionales
 
 - adjuntos en conversacion cliente-tecnico
 - respuestas rapidas o plantillas operativas para tecnico
-- SLA o reaviso automatico cuando un mensaje cliente queda sin responder
-- indicadores mas ricos de no leido o pendiente por SAT
 - cierre funcional de conversacion sin cerrar necesariamente el SAT
+- festivos configurables en el calculo de tiempo laborable SLA
 
 ### Pendientes tecnicas
 
@@ -90,5 +123,4 @@ estabilidad, claridad operativa y tests reales antes de meter complejidad nueva.
 ## Fuera de alcance por ahora
 
 - integracion nueva con WhatsApp como canal de esta conversacion
-- automatizaciones complejas de SLA
 - replanteamiento completo del sistema de mensajeria de Odoo

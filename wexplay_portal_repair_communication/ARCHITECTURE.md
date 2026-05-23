@@ -245,19 +245,100 @@ Debe vivir en el modulo y proyectarse despues donde convenga.
 
 ### Implementado
 
-Cuando entra mensaje del cliente:
+Cuando entra el primer mensaje del cliente en un ciclo nuevo (debounce activo):
 
 - se registra en la conversacion SAT
-- se marca estado pendiente
-- se proyecta al canal del tecnico si esta disponible
-- se intenta abrir el chat al responsable
+- se marca estado `pending_customer_reply`
+- se calcula el deadline SLA y se escribe en `sla_deadline`
+- se proyecta al canal del tecnico
+- se abre el chat al responsable
+- se notifica al responsable via `message_notify`
 - si falla Discuss, el mensaje sigue guardado como verdad funcional
+
+Si el cliente envia mensajes adicionales sin que el tecnico haya respondido:
+
+- se siguen proyectando al canal (tecnico los ve en el chat)
+- **no** se vuelven a enviar notificaciones ni se reabre el chat (debounce)
+- el `sla_deadline` se recalcula siempre desde el ultimo mensaje cliente
+
+Cuando el tecnico responde:
+
+- el SLA se resetea (`sla_deadline = False`, `sla_notified_at = False`)
+- el estado pasa a `answered`
+
+El cron SLA (`ir.cron` cada 15 minutos) detecta conversaciones con SLA vencido y:
+
+- registra `sla_notified_at`
+- notifica al responsable via `message_notify`
+- intenta abrir el canal del tecnico via bus
+- crea una actividad `mail.activity` en `repair.order` de tipo "todo"
 
 ### Pendiente
 
-- reaviso automatico por tiempo sin respuesta
-- SLA funcional configurable
-- tiempo real por bus/websocket en portal
+- tiempo real por bus/websocket en portal si en el futuro se justifica
+
+## Debounce de notificaciones
+
+El estado de la conversacion se captura ANTES del write ORM para distinguir
+si el mensaje es el primero del cliente en un ciclo de respuesta pendiente o
+un mensaje adicional:
+
+```python
+was_already_pending = conversation.state == "pending_customer_reply"
+skip_open_chat = was_already_pending
+conversation.write(update_vals)
+if not was_already_pending:
+    message._safe_notify_responsible_about_portal_message()
+message._safe_post_to_operator_channel(skip_open=skip_open_chat)
+```
+
+`skip_open=True` hace que `_post_message_to_operator_channel` proyecte el
+mensaje al canal pero no llame a `_open_operator_channel_for_user`.
+
+Regla: el mensaje siempre llega al canal. Solo se suprimen el `message_notify`
+y la apertura forzada del chat cuando ya hay un ciclo pendiente activo.
+
+## SLA de tiempo laborable
+
+El modulo implementa un calculo de tiempo laborable para el deadline SLA.
+
+Constantes de modulo:
+
+```python
+_SLA_MINUTES = 60
+_SLA_TZ = "Europe/Madrid"
+_SLA_WINDOWS = [(time(10, 0), time(14, 0)), (time(16, 0), time(20, 0))]
+_SLA_DAYS = {0, 1, 2, 3, 4}  # lunes-viernes
+```
+
+La funcion `_add_business_minutes(start_utc_naive, minutes)`:
+
+1. convierte UTC naive a Europe/Madrid
+2. si el instante esta fuera de horario o es fin de semana, avanza al inicio
+   del siguiente tramo laborable
+3. consume minutos avanzando por tramos, cambiando de dia cuando el tramo
+   actual se agota
+4. devuelve el resultado en UTC naive
+
+El deadline se escribe siempre que el cliente envia un mensaje (incluso si
+ya estaba pendiente), de modo que el SLA representa siempre el tiempo
+laborable desde el ultimo mensaje del cliente.
+
+## Confirmacion de lectura
+
+El campo `technician_last_read_at` en `wex.portal.repair.conversation` se
+actualiza cada vez que el tecnico:
+
+- llama a `action_open_operator_chat()` (abrir desde backend)
+- llama a `get_operator_chat_thread_data()` (carga OWL del contexto SAT)
+
+El portal solo muestra la etiqueta `Visto` cuando:
+
+- `technician_last_read_at` existe
+- es posterior o igual al `last_customer_message_at`
+
+Esto evita mostrar un "Visto" falso si el tecnico abrio el chat antes del
+ultimo mensaje del cliente.
 
 ## Seguridad y visibilidad
 
@@ -289,6 +370,24 @@ La seguridad debe vivir en:
 - dominios de acceso por `commercial_partner_id`
 - controladores que busquen siempre dentro del dominio visible
 
+## Guard multi-tab en el bridge JS
+
+El servicio `operator_chat_bridge.js` abre la ventana de chat del tecnico
+cuando llega un evento de bus. El guard correcto es:
+
+```js
+if (document.visibilityState !== "visible") { return; }
+```
+
+La condicion anterior usaba `!isMainTab && !isVisibleTab`, lo que provocaba
+que en produccion (varios tabs abiertos) el tab que tenia el WebSocket activo
+(main tab) podia estar en segundo plano y la llamada a `thread.open()` llegaba
+a una pestaña no visible. En test el error no se reproducla porque solo habia
+un tab abierto.
+
+Regla: para decidir si hay que abrir el chat al tecnico, la unica condicion
+relevante es si el tab actual esta visible, no si es el tab principal.
+
 ## Riesgos a vigilar
 
 - mezclar de nuevo la conversacion SAT con el chatter tecnico
@@ -297,3 +396,5 @@ La seguridad debe vivir en:
 - exponer datos sensibles en portal o en el lateral de conversacion
 - generar varias conversaciones para el mismo SAT en lugar de un hilo unico
 - introducir mejoras de tiempo real que rompan la estabilidad del popup portal
+- no respetar el debounce y volver a notificar al tecnico en cada mensaje del cliente
+- ampliar los horarios laborables del SLA sin actualizar la constante `_SLA_WINDOWS`
