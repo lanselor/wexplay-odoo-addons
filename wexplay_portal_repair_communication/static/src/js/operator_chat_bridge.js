@@ -9,6 +9,7 @@ class WexPortalRepairOperatorChatBridge {
     constructor(env, services) {
         this.env = env;
         this.busService = services.bus_service;
+        this.orm = services.orm;
         this.store = services["mail.store"];
         this._lastProcessedEventKey = null;
     }
@@ -29,6 +30,12 @@ class WexPortalRepairOperatorChatBridge {
                 console.warn("[WexPortalRepair] No se pudo procesar el relay multi-tab:", error);
             }
         });
+        document.addEventListener("visibilitychange", async () => {
+            if (document.visibilityState === "visible") {
+                await this.syncPendingOperatorChat();
+            }
+        });
+        this.syncPendingOperatorChat();
     }
 
     async handleOperatorChatEvent(payload, options = {}) {
@@ -84,10 +91,28 @@ class WexPortalRepairOperatorChatBridge {
         }
         thread.open();
     }
+
+    async syncPendingOperatorChat() {
+        if (document.visibilityState !== "visible") {
+            return;
+        }
+        try {
+            const payload = await this.orm.call(
+                "wex.portal.repair.conversation",
+                "get_pending_operator_chat_event_payload",
+                []
+            );
+            if (payload) {
+                await this.handleOperatorChatEvent(payload);
+            }
+        } catch (error) {
+            console.warn("[WexPortalRepair] Fallo en la reconciliacion del chat SAT:", error);
+        }
+    }
 }
 
 export const wexPortalRepairOperatorChatBridge = {
-    dependencies: ["bus_service", "mail.store"],
+    dependencies: ["bus_service", "mail.store", "orm"],
     start(env, services) {
         const bridge = reactive(new WexPortalRepairOperatorChatBridge(env, services));
         bridge.setup();

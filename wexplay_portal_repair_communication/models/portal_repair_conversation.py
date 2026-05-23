@@ -529,6 +529,38 @@ class WexPortalRepairConversation(models.Model):
             })
 
     @api.model
+    def get_pending_operator_chat_event_payload(self):
+        user = self.env.user
+        if not user or user.share:
+            return False
+
+        conversation = self.search(
+            [
+                ("responsible_user_id", "=", user.id),
+                ("state", "=", "pending_customer_reply"),
+                ("last_customer_message_at", "!=", False),
+            ],
+            order="last_customer_message_at desc, id desc",
+            limit=20,
+        ).filtered(
+            lambda conv: not conv.technician_last_read_at
+            or conv.technician_last_read_at < conv.last_customer_message_at
+        )[:1]
+        if not conversation:
+            return False
+
+        channel = conversation._ensure_operator_channel_for_user(user)
+        if not channel:
+            return False
+
+        return {
+            "channel_id": channel.id,
+            "repair_id": conversation.repair_id.id,
+            "conversation_id": conversation.id,
+            "ts": fields.Datetime.to_string(conversation.last_customer_message_at),
+        }
+
+    @api.model
     def _cron_check_sla(self):
         now = fields.Datetime.now()
         pending = self.search([

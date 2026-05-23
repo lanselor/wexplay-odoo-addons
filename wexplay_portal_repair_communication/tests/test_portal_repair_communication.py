@@ -2,6 +2,7 @@
 
 from unittest.mock import patch
 
+from odoo import fields
 from odoo.tests.common import TransactionCase
 
 
@@ -143,3 +144,38 @@ class TestPortalRepairCommunication(TransactionCase):
                 for item in customer_messages
             )
         )
+
+    def test_pending_operator_chat_event_payload_returns_unread_conversation(self):
+        conversation = self.repair._get_or_create_portal_conversation()
+        self.env["wex.portal.repair.message"].sudo().create(
+            {
+                "conversation_id": conversation.id,
+                "body": "Cliente pendiente",
+                "source": "portal_customer",
+                "visible_to_customer": True,
+                "author_user_id": self.portal_user.id,
+                "author_partner_id": self.company_partner.id,
+                "author_name": self.company_partner.display_name,
+            }
+        )
+
+        payload = (
+            self.env["wex.portal.repair.conversation"]
+            .with_user(self.responsible_a)
+            .get_pending_operator_chat_event_payload()
+        )
+
+        self.assertTrue(payload)
+        self.assertEqual(payload["conversation_id"], conversation.id)
+        self.assertEqual(payload["repair_id"], self.repair.id)
+        self.assertTrue(payload["channel_id"])
+
+        conversation.sudo().write(
+            {"technician_last_read_at": fields.Datetime.now()}
+        )
+        payload_after_read = (
+            self.env["wex.portal.repair.conversation"]
+            .with_user(self.responsible_a)
+            .get_pending_operator_chat_event_payload()
+        )
+        self.assertFalse(payload_after_read)

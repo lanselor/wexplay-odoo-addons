@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Wexplay Portal Repair Communication",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "summary": "Canal prioritario de comunicacion SAT B2B entre cliente empresa y tecnico.",
     "category": "Website/Portal",
     "author": "Wexplay",
