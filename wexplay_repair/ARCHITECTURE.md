@@ -50,6 +50,11 @@ This module is currently both:
 - Registers the custom `repair_card` view type
 - Makes the repair card view the default entry view for repair orders
 
+### `static/src/js|xml|scss/repair_order_card_view.*`
+- Renders the custom SAT operational card view
+- Includes a desktop sidebar with actionable repair alerts for technicians
+- Keeps alert rules in Python and limits OWL to presentation and navigation
+
 ### `views/repair_order_views.xml`
 - Applies the main SAT form customization
 

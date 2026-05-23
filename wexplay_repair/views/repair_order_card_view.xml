@@ -44,6 +44,7 @@
     <record id="repair.action_repair_order_tree" model="ir.actions.act_window">
       <field name="view_id" ref="wexplay_repair.view_repair_order_card"/>
       <field name="view_mode">repair_card,list,kanban,graph,pivot,form,activity</field>
+      <field name="context">{'search_default_group_by_create_date_day': 1}</field>
     </record>
 
     <record id="action_repair_order_tree_view_repair_card" model="ir.actions.act_window.view">

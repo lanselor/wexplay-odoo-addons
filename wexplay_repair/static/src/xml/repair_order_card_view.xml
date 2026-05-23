@@ -18,58 +18,140 @@
 
   <t t-name="wexplay_repair.RepairOrderCardView.Renderer" owl="1">
     <div class="o_wex_repair_card_renderer">
-      <t t-if="!hasContent">
-        <div class="o_view_nocontent_smiling_face wex_repair_empty_state">
-          No hay ordenes de reparacion para mostrar.
+      <div class="wex_repair_layout">
+        <div class="wex_repair_content">
+          <t t-if="!hasContent">
+            <div class="o_view_nocontent_smiling_face wex_repair_empty_state">
+              No hay ordenes de reparacion para mostrar.
+            </div>
+          </t>
+
+          <t t-if="props.list.isGrouped">
+            <div class="wex_repair_group_stack">
+              <t t-foreach="groups" t-as="group" t-key="group.id">
+                <section class="wex_repair_group" t-att-class="group.isFolded ? 'is-folded' : ''">
+                  <button type="button"
+                          class="wex_repair_group_header"
+                          t-on-click="() => this.toggleGroup(group)">
+                    <span class="wex_repair_group_heading">
+                      <i t-att-class="'fa wex_repair_group_caret ' + (group.isFolded ? 'fa-caret-right' : 'fa-caret-down')"/>
+                      <span class="wex_repair_group_identity">
+                        <span class="wex_repair_group_meta">
+                          <t t-esc="this.getGroupMetaLabel()"/>
+                        </span>
+                        <span class="wex_repair_group_title">
+                          <t t-esc="this.getGroupLabel(group)"/>
+                        </span>
+                      </span>
+                    </span>
+                    <span class="wex_repair_group_count">
+                      <t t-esc="group.count"/>
+                    </span>
+                  </button>
+
+                  <div t-if="!group.isFolded" class="wex_repair_card_stack">
+                    <t t-foreach="group.list.records" t-as="record" t-key="record.id">
+                      <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
+                    </t>
+                    <button t-if="this.hasMore(group)"
+                            type="button"
+                            class="btn btn-link wex_repair_group_more"
+                            t-on-click="() => this.loadMore(group)">
+                      Cargar mas
+                    </button>
+                  </div>
+                </section>
+              </t>
+            </div>
+          </t>
+
+          <t t-else="">
+            <div class="wex_repair_card_stack">
+              <t t-foreach="records" t-as="record" t-key="record.id">
+                <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
+              </t>
+            </div>
+          </t>
         </div>
-      </t>
 
-      <t t-if="props.list.isGrouped">
-        <div class="wex_repair_group_stack">
-          <t t-foreach="groups" t-as="group" t-key="group.id">
-            <section class="wex_repair_group" t-att-class="group.isFolded ? 'is-folded' : ''">
-              <button type="button"
-                      class="wex_repair_group_header"
-                      t-on-click="() => this.toggleGroup(group)">
-                <span class="wex_repair_group_heading">
-                  <i t-att-class="'fa wex_repair_group_caret ' + (group.isFolded ? 'fa-caret-right' : 'fa-caret-down')"/>
-                  <span class="wex_repair_group_identity">
-                    <span class="wex_repair_group_meta">
-                      <t t-esc="this.getGroupMetaLabel()"/>
-                    </span>
-                    <span class="wex_repair_group_title">
-                      <t t-esc="this.getGroupLabel(group)"/>
-                    </span>
-                  </span>
-                </span>
-                <span class="wex_repair_group_count">
-                  <t t-esc="group.count"/>
-                </span>
-              </button>
-
-              <div t-if="!group.isFolded" class="wex_repair_card_stack">
-                <t t-foreach="group.list.records" t-as="record" t-key="record.id">
-                  <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
-                </t>
-                <button t-if="this.hasMore(group)"
-                        type="button"
-                        class="btn btn-link wex_repair_group_more"
-                        t-on-click="() => this.loadMore(group)">
-                  Cargar mas
-                </button>
+        <aside class="wex_repair_sidebar">
+          <div class="wex_repair_sidebar_panel">
+            <div class="wex_repair_sidebar_header">
+              <div>
+                <div class="wex_repair_sidebar_kicker">Atencion SAT</div>
+                <div class="wex_repair_sidebar_title">Pendientes que no deberian dormirse</div>
               </div>
-            </section>
-          </t>
-        </div>
-      </t>
+              <button type="button"
+                      class="btn btn-sm btn-outline-secondary wex_repair_sidebar_refresh"
+                      t-att-disabled="sidebarState.loading ? true : undefined"
+                      t-on-click="() => this.loadSidebar()">
+                <i class="fa fa-refresh me-1"/>
+                Refrescar
+              </button>
+            </div>
 
-      <t t-else="">
-        <div class="wex_repair_card_stack">
-          <t t-foreach="records" t-as="record" t-key="record.id">
-            <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
-          </t>
-        </div>
-      </t>
+            <div t-if="sidebarGeneratedAt" class="wex_repair_sidebar_timestamp">
+              Actualizado: <t t-esc="sidebarGeneratedAt"/>
+            </div>
+
+            <div t-if="sidebarState.loading" class="wex_repair_sidebar_loading">
+              Cargando alertas operativas...
+            </div>
+
+            <div t-else="" class="wex_repair_sidebar_sections">
+              <t t-foreach="sidebarSections" t-as="section" t-key="section.key">
+                <section class="wex_repair_sidebar_section">
+                  <button type="button"
+                          class="wex_repair_sidebar_section_header"
+                          t-att-disabled="!section.count ? true : undefined"
+                          t-on-click="() => this.openSidebarSection(section)">
+                    <span class="wex_repair_sidebar_section_title">
+                      <t t-esc="section.title"/>
+                    </span>
+                    <span class="wex_repair_sidebar_section_count">
+                      <t t-esc="section.count"/>
+                    </span>
+                  </button>
+
+                  <t t-if="section.items.length">
+                    <div class="wex_repair_sidebar_list">
+                      <button t-foreach="section.items"
+                              t-as="item"
+                              t-key="item.id"
+                              type="button"
+                              class="wex_repair_sidebar_item"
+                              t-on-click="() => this.openSidebarRecord(item)">
+                        <span class="wex_repair_sidebar_item_top">
+                          <span class="wex_repair_sidebar_item_name">
+                            <t t-esc="item.name"/>
+                          </span>
+                          <span class="wex_repair_sidebar_item_age">
+                            <t t-esc="this.getSidebarItemAgeLabel(item)"/>
+                          </span>
+                        </span>
+                        <span t-if="item.customer" class="wex_repair_sidebar_item_customer">
+                          <t t-esc="item.customer"/>
+                        </span>
+                        <span t-if="item.device" class="wex_repair_sidebar_item_device">
+                          <t t-esc="item.device"/>
+                        </span>
+                        <span class="wex_repair_sidebar_item_meta">
+                          <t t-esc="item.state_label"/>
+                          <t t-if="item.workflow"> · <t t-esc="item.workflow"/></t>
+                        </span>
+                      </button>
+                    </div>
+                  </t>
+
+                  <div t-else="" class="wex_repair_sidebar_empty">
+                    <t t-esc="section.empty_message"/>
+                  </div>
+                </section>
+              </t>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   </t>
 

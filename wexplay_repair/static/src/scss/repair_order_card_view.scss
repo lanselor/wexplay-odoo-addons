@@ -26,6 +26,166 @@
     min-height: 100%;
 }
 
+.o_action_manager .wex_repair_layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 14px;
+}
+
+.o_action_manager .wex_repair_content {
+    min-width: 0;
+}
+
+.o_action_manager .wex_repair_sidebar {
+    position: sticky;
+    top: 0;
+}
+
+.o_action_manager .wex_repair_sidebar_panel {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid rgba(214, 220, 232, 0.96);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.14), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(247, 248, 253, 0.98) 100%);
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.o_action_manager .wex_repair_sidebar_header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.o_action_manager .wex_repair_sidebar_kicker {
+    color: var(--wex-repair-muted);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_repair_sidebar_title {
+    margin-top: 2px;
+    color: var(--wex-repair-ink);
+    font-size: 1rem;
+    font-weight: 850;
+    line-height: 1.2;
+}
+
+.o_action_manager .wex_repair_sidebar_timestamp,
+.o_action_manager .wex_repair_sidebar_loading,
+.o_action_manager .wex_repair_sidebar_empty {
+    color: var(--wex-repair-muted);
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.o_action_manager .wex_repair_sidebar_sections {
+    display: grid;
+    gap: 10px;
+}
+
+.o_action_manager .wex_repair_sidebar_section {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid rgba(214, 220, 232, 0.95);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.76);
+}
+
+.o_action_manager .wex_repair_sidebar_section_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.o_action_manager .wex_repair_sidebar_section_title {
+    color: var(--wex-repair-ink);
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.o_action_manager .wex_repair_sidebar_section_count {
+    min-width: 30px;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid rgba(99, 91, 154, 0.18);
+    background: rgba(240, 237, 251, 0.9);
+    color: var(--wex-repair-accent);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.o_action_manager .wex_repair_sidebar_list {
+    display: grid;
+    gap: 7px;
+}
+
+.o_action_manager .wex_repair_sidebar_item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid rgba(214, 220, 232, 0.92);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.o_action_manager .wex_repair_sidebar_item:hover,
+.o_action_manager .wex_repair_sidebar_item:focus {
+    border-color: rgba(99, 91, 154, 0.28);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.o_action_manager .wex_repair_sidebar_item_top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.o_action_manager .wex_repair_sidebar_item_name {
+    color: var(--wex-repair-ink);
+    font-size: 0.79rem;
+    font-weight: 850;
+}
+
+.o_action_manager .wex_repair_sidebar_item_age {
+    color: #a54e4e;
+    font-size: 0.64rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_sidebar_item_customer,
+.o_action_manager .wex_repair_sidebar_item_device,
+.o_action_manager .wex_repair_sidebar_item_meta {
+    overflow: hidden;
+    color: #526075;
+    font-size: 0.69rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .o_action_manager .wex_repair_card_stack,
 .o_action_manager .wex_repair_group_stack {
     display: grid;
@@ -119,7 +279,7 @@
 .o_action_manager .wex_repair_card {
     position: relative;
     display: block;
-    padding: 11px 13px 11px 15px;
+    padding: 10px 12px 10px 14px;
     border: 1px solid var(--wex-repair-card-border);
     border-radius: 15px;
     background: var(--wex-repair-card-bg);
@@ -172,7 +332,7 @@
 
 .o_action_manager .wex_repair_card_main {
     display: grid;
-    gap: 7px;
+    gap: 6px;
     min-width: 0;
 }
 
@@ -189,7 +349,7 @@
 
 .o_action_manager .wex_repair_card_name {
     color: var(--wex-repair-ink);
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 900;
     line-height: 1.05;
     letter-spacing: -0.02em;
@@ -290,7 +450,7 @@
 
 .o_action_manager .wex_repair_card_grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.15fr) repeat(3, minmax(0, 0.92fr));
     gap: 9px;
 }
 
@@ -359,7 +519,7 @@
 
 .o_action_manager .wex_repair_meta_text {
     overflow: hidden;
-    max-width: 18rem;
+    max-width: 15rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -373,6 +533,14 @@
 }
 
 @media (max-width: 1200px) {
+    .o_action_manager .wex_repair_layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .o_action_manager .wex_repair_sidebar {
+        position: static;
+    }
+
     .o_action_manager .wex_repair_card_grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }

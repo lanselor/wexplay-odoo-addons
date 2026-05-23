@@ -3,12 +3,13 @@
 import { _t } from "@web/core/l10n/translation";
 import { deserializeDateTime, formatDate } from "@web/core/l10n/dates";
 import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
 import { RelationalModel } from "@web/model/relational_model/relational_model";
 import { KanbanArchParser } from "@web/views/kanban/kanban_arch_parser";
 import { KanbanCompiler } from "@web/views/kanban/kanban_compiler";
 import { KanbanController } from "@web/views/kanban/kanban_controller";
 import { KanbanRenderer } from "@web/views/kanban/kanban_renderer";
-import { Component } from "@odoo/owl";
+import { Component, onWillStart, useState } from "@odoo/owl";
 
 const PRIORITY_CLASS_BY_VALUE = {
     normal: "is-priority-normal",
@@ -22,6 +23,19 @@ export class RepairOrderCardRenderer extends Component {
     static props = KanbanRenderer.props;
     static defaultProps = KanbanRenderer.defaultProps;
 
+    setup() {
+        this.orm = useService("orm");
+        this.sidebarState = useState({
+            loading: true,
+            sections: [],
+            generatedAt: null,
+        });
+
+        onWillStart(async () => {
+            await this.loadSidebar();
+        });
+    }
+
     get hasContent() {
         return this.props.list.isGrouped
             ? this.props.list.groups.length > 0
@@ -34,6 +48,16 @@ export class RepairOrderCardRenderer extends Component {
 
     get records() {
         return this.props.list.records || [];
+    }
+
+    get sidebarSections() {
+        return this.sidebarState.sections || [];
+    }
+
+    get sidebarGeneratedAt() {
+        return this.sidebarState.generatedAt
+            ? this.formatServerDate(this.sidebarState.generatedAt)
+            : "";
     }
 
     async openRecord(record) {
@@ -60,6 +84,44 @@ export class RepairOrderCardRenderer extends Component {
 
     async loadMore(group) {
         await group.list.load({ limit: group.list.records.length + group.model.initialLimit });
+    }
+
+    async loadSidebar() {
+        this.sidebarState.loading = true;
+        try {
+            const data = await this.orm.call("repair.order", "get_repair_card_sidebar_data", [], {});
+            this.sidebarState.sections = data.sections || [];
+            this.sidebarState.generatedAt = data.generated_at || null;
+        } finally {
+            this.sidebarState.loading = false;
+        }
+    }
+
+    async openSidebarRecord(item) {
+        await this.env.services.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "repair.order",
+            res_id: item.id,
+            views: [[false, "form"]],
+            target: "current",
+        });
+    }
+
+    async openSidebarSection(section) {
+        if (!section.domain?.length) {
+            return;
+        }
+        await this.env.services.action.doAction({
+            type: "ir.actions.act_window",
+            name: section.title || _t("Repair Orders"),
+            res_model: "repair.order",
+            view_mode: "repair_card,list,form",
+            domain: section.domain,
+            target: "current",
+            context: {
+                search_default_group_by_create_date_day: 1,
+            },
+        });
     }
 
     getGroupLabel(group) {
@@ -153,6 +215,16 @@ export class RepairOrderCardRenderer extends Component {
 
     hasMore(group) {
         return group.count > group.list.records.length;
+    }
+
+    getSidebarItemAgeLabel(item) {
+        if (!item?.age_days) {
+            return _t("Hoy");
+        }
+        if (item.age_days === 1) {
+            return _t("1 dia sin movimiento");
+        }
+        return _t("%s dias sin movimiento").replace("%s", item.age_days);
     }
 }
 

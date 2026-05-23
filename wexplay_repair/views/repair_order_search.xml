@@ -35,6 +35,9 @@
 
         <!-- Agrupación por prioridad SAT -->
         <xpath expr="//search/group[1]" position="inside">
+          <filter string="Creado el"
+                  name="group_by_create_date_day"
+                  context="{'group_by': 'create_date:day'}"/>
           <filter string="Prioridad SAT"
                   name="group_by_x_sat_priority"
                   context="{'group_by': 'x_sat_priority'}"/>
