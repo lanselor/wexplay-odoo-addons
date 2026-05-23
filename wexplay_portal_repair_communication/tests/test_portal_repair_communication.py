@@ -179,3 +179,16 @@ class TestPortalRepairCommunication(TransactionCase):
             .get_pending_operator_chat_event_payload()
         )
         self.assertFalse(payload_after_read)
+
+    def test_action_open_operator_chat_returns_client_action(self):
+        conversation = self.repair._get_or_create_portal_conversation()
+
+        action = conversation.with_user(self.responsible_a).action_open_operator_chat()
+
+        self.assertEqual(action["type"], "ir.actions.client")
+        self.assertEqual(
+            action["tag"],
+            "wex_portal_repair_communication.open_operator_chat",
+        )
+        self.assertEqual(action["params"]["conversation_id"], conversation.id)
+        self.assertTrue(action["params"]["channel_id"])

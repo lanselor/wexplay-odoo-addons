@@ -2,6 +2,7 @@
 
 import { reactive } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { openPortalRepairOperatorChat } from "./operator_chat_open";
 
 const STORAGE_EVENT_KEY = "wex_portal_repair_operator_chat";
 
@@ -81,15 +82,12 @@ class WexPortalRepairOperatorChatBridge {
         if (!channelId) {
             return;
         }
-        const thread = await this.store.Thread.getOrFetch({
-            model: "discuss.channel",
-            id: channelId,
+        const opened = await openPortalRepairOperatorChat(this.env, {
+            channel_id: channelId,
         });
-        if (!thread) {
+        if (!opened) {
             console.warn("[WexPortalRepair] No se pudo obtener el canal SAT del store:", channelId);
-            return;
         }
-        thread.open();
     }
 
     async syncPendingOperatorChat() {

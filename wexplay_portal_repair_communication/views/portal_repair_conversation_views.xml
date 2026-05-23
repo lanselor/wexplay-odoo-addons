@@ -20,7 +20,7 @@
                 <field name="message_count" string="Mensajes"/>
                 <field name="last_message_preview" string="Último mensaje"/>
                 <button name="action_open_repair" type="object" string="Abrir SAT" class="btn btn-secondary"/>
-                <button name="action_open_reply_wizard" type="object" string="Responder" class="btn btn-primary"/>
+                <button name="action_open_operator_chat" type="object" string="Abrir chat" class="btn btn-primary"/>
             </list>
         </field>
     </record>

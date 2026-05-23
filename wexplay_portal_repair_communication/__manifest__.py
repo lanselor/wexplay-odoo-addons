@@ -28,6 +28,8 @@
     "assets": {
         "web.assets_backend": [
             "wexplay_portal_repair_communication/static/src/js/chatter_portal_conversation_patch.js",
+            "wexplay_portal_repair_communication/static/src/js/operator_chat_open.js",
+            "wexplay_portal_repair_communication/static/src/js/operator_chat_open_action.js",
             "wexplay_portal_repair_communication/static/src/js/operator_chat_bridge.js",
             "wexplay_portal_repair_communication/static/src/js/operator_chat_context_patch.js",
             "wexplay_portal_repair_communication/static/src/xml/chatter_portal_conversation.xml",

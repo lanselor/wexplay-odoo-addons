@@ -497,8 +497,17 @@ class WexPortalRepairConversation(models.Model):
     def action_open_operator_chat(self):
         self.ensure_one()
         self.sudo().write({"technician_last_read_at": fields.Datetime.now()})
-        self._open_operator_channel_for_user(self.env.user)
-        return False
+        channel = self._ensure_operator_channel_for_user(self.env.user)
+        return {
+            "type": "ir.actions.client",
+            "tag": "wex_portal_repair_communication.open_operator_chat",
+            "params": {
+                "channel_id": channel.id,
+                "repair_id": self.repair_id.id,
+                "conversation_id": self.id,
+                "ts": fields.Datetime.to_string(fields.Datetime.now()),
+            },
+        }
 
     def get_operator_chat_thread_data(self):
         self.ensure_one()
