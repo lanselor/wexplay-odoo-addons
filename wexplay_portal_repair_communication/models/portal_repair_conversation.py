@@ -70,6 +70,13 @@ def _add_business_minutes(start_utc_naive, minutes):
     return dt.astimezone(pytz.utc).replace(tzinfo=None)
 
 
+def _plaintext_to_operator_html(body):
+    try:
+        return plaintext2html(body or "", with_paragraph=False)
+    except TypeError:
+        return plaintext2html(body or "")
+
+
 class WexPortalRepairConversation(models.Model):
     _name = "wex.portal.repair.conversation"
     _description = "SAT portal conversation"
@@ -248,7 +255,7 @@ class WexPortalRepairConversation(models.Model):
             wex_portal_repair_skip_discuss_sync=True,
         ).sudo().message_post(
             author_id=self.env.user.partner_id.id if self.env.user.partner_id else False,
-            body=plaintext2html(body, with_paragraph=False),
+            body=_plaintext_to_operator_html(body),
             message_type="comment",
             subtype_xmlid="mail.mt_comment",
         )
@@ -444,7 +451,7 @@ class WexPortalRepairConversation(models.Model):
         author_partner = message.author_partner_id or self.partner_id
         return {
             "author_id": author_partner.id if author_partner else False,
-            "body": plaintext2html(message.body or "", with_paragraph=False),
+            "body": _plaintext_to_operator_html(message.body),
             "message_type": "comment",
             "subtype_xmlid": "mail.mt_comment",
         }
