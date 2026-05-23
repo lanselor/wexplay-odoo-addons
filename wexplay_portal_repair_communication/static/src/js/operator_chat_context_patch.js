@@ -14,6 +14,7 @@ patch(ChatWindow.prototype, {
             wexPortalRepairSidebar: null,
             wexPortalRepairSidebarLoading: false,
             wexPortalRepairSidebarOpen: true,
+            _wexSidebarCheckedChannelId: null,
         });
 
         useEffect(
@@ -49,6 +50,13 @@ patch(ChatWindow.prototype, {
             this.state.wexPortalRepairSidebar = null;
             return;
         }
+        if (
+            !force &&
+            this.state._wexSidebarCheckedChannelId === this.thread.id &&
+            this.state.wexPortalRepairSidebar?.enabled === false
+        ) {
+            return;
+        }
         if (this.state.wexPortalRepairSidebarLoading && !force) {
             return;
         }
@@ -59,6 +67,7 @@ patch(ChatWindow.prototype, {
                 "get_wex_portal_repair_sidebar_values",
                 [[this.thread.id]]
             );
+            this.state._wexSidebarCheckedChannelId = this.thread.id;
         } finally {
             this.state.wexPortalRepairSidebarLoading = false;
         }

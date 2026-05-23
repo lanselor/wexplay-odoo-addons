@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from markupsafe import Markup, escape
-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import format_amount, format_date, html2plaintext
+from odoo.tools import format_amount, format_date, format_datetime, html2plaintext
 
 
 class RepairOrder(models.Model):
@@ -23,12 +21,6 @@ class RepairOrder(models.Model):
         string="Mensajes portal",
         compute="_compute_portal_conversation_fields",
     )
-    x_portal_conversation_html = fields.Html(
-        string="Histórico conversación portal",
-        compute="_compute_x_portal_conversation_html",
-        sanitize=False,
-    )
-
     def _compute_portal_conversation_fields(self):
         conversation_model = self.env["wex.portal.repair.conversation"]
         mapping = {
@@ -39,11 +31,6 @@ class RepairOrder(models.Model):
             conversation = mapping.get(repair.id)
             repair.x_portal_conversation_id = conversation
             repair.x_portal_conversation_message_count = conversation.message_count if conversation else 0
-
-    @api.depends("x_portal_conversation_id", "x_portal_conversation_id.message_ids")
-    def _compute_x_portal_conversation_html(self):
-        for repair in self:
-            repair.x_portal_conversation_html = repair._render_portal_conversation_html()
 
     def _get_portal_conversation(self):
         self.ensure_one()
@@ -196,6 +183,15 @@ class RepairOrder(models.Model):
             return _("Hoy")
         return format_date(self.env, message_date)
 
+    def _get_portal_conversation_responsible_employee(self, user):
+        self.ensure_one()
+        if not user:
+            return self.env["hr.employee"]
+        employee = getattr(user, "employee_id", False)
+        if employee:
+            return employee
+        return self.env["hr.employee"].sudo().search([("user_id", "=", user.id)], limit=1)
+
     def _get_portal_conversation_responsible_avatar_values(self, conversation):
         self.ensure_one()
         user = conversation.responsible_user_id if conversation else self.env["res.users"]
@@ -204,8 +200,13 @@ class RepairOrder(models.Model):
                 "responsible_avatar_url": "",
                 "responsible_initial": "",
             }
+        employee = self._get_portal_conversation_responsible_employee(user)
+        if employee:
+            avatar_url = "/web/image/hr.employee/%s/avatar_128" % employee.id
+        else:
+            avatar_url = "/web/image/res.users/%s/avatar_128" % user.id
         return {
-            "responsible_avatar_url": "/web/image/res.users/%s/avatar_128" % user.id,
+            "responsible_avatar_url": avatar_url,
             "responsible_initial": (user.display_name or "?")[:1].upper(),
         }
 
@@ -255,6 +256,7 @@ class RepairOrder(models.Model):
                 is_active_sat=is_active_sat,
                 has_valid_warranty=has_valid_warranty,
             ),
+            "technician_read_label": self._get_portal_conversation_technician_read_label(conversation),
         }
 
     def _get_portal_conversation_status_badge_class(self, state):
@@ -265,6 +267,17 @@ class RepairOrder(models.Model):
             "no_response_needed": "is-muted",
         }
         return mapping.get(state, "is-muted")
+
+    def _get_portal_conversation_technician_read_label(self, conversation):
+        self.ensure_one()
+        if not conversation or not conversation.technician_last_read_at:
+            return ""
+        last_customer_msg_at = conversation.last_customer_message_at
+        if not last_customer_msg_at:
+            return ""
+        if conversation.technician_last_read_at < last_customer_msg_at:
+            return ""
+        return format_datetime(self.env, conversation.technician_last_read_at, dt_format="d MMM, HH:mm")
 
     def _get_portal_conversation_entry_message(
         self, can_customer_write=False, is_active_sat=False, has_valid_warranty=False
@@ -429,36 +442,6 @@ class RepairOrder(models.Model):
             "budget_summary": repair._get_portal_chat_budget_summary(),
             "warranty_summary": repair._get_portal_chat_warranty_summary(),
         }
-
-    def _render_portal_conversation_html(self):
-        self.ensure_one()
-        values = self._get_portal_conversation_message_values(customer_view=False)
-        if not values:
-            return Markup(
-                "<div class='wex_portal_conv_empty'>Aún no hay conversación cliente asociada a este SAT.</div>"
-            )
-
-        chunks = ["<div class='wex_portal_conv_panel_body'>"]
-        for item in values:
-            if item["type"] == "date_separator":
-                chunks.append(
-                    "<div class='wex_portal_conv_date'>%s</div>" % escape(item["label"])
-                )
-                continue
-            css_class = "is-customer" if item["is_customer"] else "is-technician"
-            chunks.append(
-                "<div class='wex_portal_conv_entry %s'>"
-                "<div class='wex_portal_conv_meta'><strong>%s</strong></div>"
-                "<div class='wex_portal_conv_text'>%s</div>"
-                "</div>"
-                % (
-                    css_class,
-                    escape(item["author_name"]),
-                    escape(item["body"]).replace("\n", Markup("<br/>")),
-                )
-            )
-        chunks.append("</div>")
-        return Markup("".join(chunks))
 
     def action_open_or_create_portal_conversation(self):
         self.ensure_one()

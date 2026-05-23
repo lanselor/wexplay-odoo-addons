@@ -2,12 +2,12 @@
 
 ## Objetivo
 
-`wexplay_portal_repair_communication` crea un canal prioritario de comunicacion
-entre cliente empresa y tecnico SAT, ligado de forma directa a una
+`wexplay_portal_repair_communication` crea y gobierna un canal prioritario de
+comunicacion entre cliente empresa y tecnico SAT, ligado de forma directa a una
 `repair.order`.
 
 La meta no es construir un chat generico ni exponer el chatter de Odoo al
-portal. La meta es resolver un problema operativo:
+portal. La meta es resolver un problema operativo real:
 
 - mensajes de clientes sin responder
 - conversaciones dispersas entre WhatsApp, llamadas y conversaciones verbales
@@ -18,13 +18,28 @@ portal. La meta es resolver un problema operativo:
 
 La unidad de conversacion es el SAT.
 
-Regla v1:
+Regla consolidada:
 
 - existe un unico hilo funcional por `repair.order`
 - si el cliente vuelve a escribir dias o semanas despues sobre el mismo SAT, la
   conversacion sigue en el mismo hilo
-- el render del historico debe separar visualmente por fecha con bloques como
-  `Hoy` o fecha visible
+- el historial se renderiza con separadores por fecha
+- el chatter estandar de Odoo no es la fuente de verdad de esta conversacion
+
+## Fuente de verdad
+
+La verdad funcional vive en:
+
+- `wex.portal.repair.conversation`
+- `wex.portal.repair.message`
+
+Discuss y el portal son solo superficies de proyeccion.
+
+Regla de oro:
+
+- una sola fuente de verdad funcional
+- varias superficies de visualizacion
+- ninguna de esas superficies debe gobernar la logica de negocio
 
 ## Que SI es este modulo
 
@@ -33,9 +48,9 @@ Este modulo:
 - modela la conversacion SAT-cliente
 - decide quien debe recibir la comunicacion
 - mantiene el estado operativo de respuesta pendiente o atendida
-- proyecta la conversacion en portal, backend SAT y superficie de chat del
-  tecnico
+- proyecta la conversacion en portal, backend SAT y ventana de chat tecnico
 - mantiene un historico unico por SAT
+- crea una capa contextual de SAT dentro del chat tecnico
 
 ## Que NO es este modulo
 
@@ -57,7 +72,7 @@ Este modulo no:
 Solo debe:
 
 - exponer la conversacion del SAT en el portal autenticado
-- mostrar la burbuja contextual para escribir al tecnico
+- mostrar la burbuja y el popup contextual para escribir al tecnico
 - respetar las reglas de acceso ya existentes por `commercial_partner_id`
 
 No debe convertirse en el dueno de la conversacion.
@@ -68,8 +83,8 @@ No debe convertirse en el dueno de la conversacion.
 
 Solo debe:
 
-- mostrar una superficie de lectura operativa de la conversacion dentro de la
-  ficha SAT
+- mostrar superficies de lectura y acceso a la conversacion dentro de la ficha
+  SAT
 - conservar su chatter nativo con funcion interna
 
 No debe absorber la logica de comunicacion.
@@ -80,8 +95,11 @@ Este modulo define el criterio de SAT activo para esta comunicacion.
 
 Regla acordada:
 
-- el cliente puede escribir mientras el SAT siga dentro del periodo de garantia
-- fuera de garantia, la conversacion pasa a solo lectura del lado portal
+- el cliente puede escribir si el SAT sigue operativo
+- si el SAT ya no esta activo, la escritura depende de si la garantia sigue
+  vigente
+- en SAT no finalizado nunca debe mostrarse `Fuera de garantia`; en ese caso el
+  contexto del chat tecnico debe mostrar `No aplicable`
 
 ### `mail` y conversaciones Odoo
 
@@ -105,22 +123,21 @@ El tecnico responsable es solo la persona que debe atenderla en ese momento.
 
 ### Reglas
 
-- si cambia el responsable del SAT, las nuevas notificaciones deben pasar al
-  nuevo responsable
-- el historico no cambia de hilo ni se separa por tecnico
-- el fallback no debe quedar hardcodeado en una vista o en JS; debe resolverse
-  en Python con criterio unico
+- si cambia el responsable del SAT, el hilo no cambia
+- las nuevas notificaciones deben pasar al nuevo responsable
+- el tecnico saliente no debe seguir recibiendo mensajes nuevos
+- el fallback debe resolverse en Python con criterio unico
 
 ## Estado de la conversacion
 
 La conversacion necesita estado operativo propio, separado del estado SAT.
 
-Estados funcionales v1:
+Estados funcionales actuales:
 
 - `pending_customer_reply`: el ultimo mensaje relevante es del cliente
 - `answered`: el ultimo mensaje relevante es del tecnico
-- `no_response_needed`: el tecnico marco explicitamente que no hace falta
-  contestar
+- `no_response_needed`: marcado interno para casos en que no hace falta seguir
+  insistiendo
 
 La conversacion se considera atendida cuando esta en:
 
@@ -129,9 +146,7 @@ La conversacion se considera atendida cuando esta en:
 
 Si el cliente vuelve a escribir, regresa a `pending_customer_reply`.
 
-## Modelo funcional esperado
-
-La arquitectura v1 debe orientarse a:
+## Modelo funcional implementado
 
 ### Conversacion SAT
 
@@ -141,7 +156,7 @@ Responsabilidades:
 - responsable actual
 - estado de conversacion
 - fechas de ultima interaccion cliente/tecnico
-- trazabilidad de marcado `No es necesaria contestacion`
+- vinculacion opcional al canal operador de Discuss
 
 ### Mensajes de conversacion
 
@@ -149,80 +164,102 @@ Responsabilidades:
 
 - pertenecer a la conversacion SAT
 - guardar autor, contenido y fecha
-- distinguir origen portal/backend/sistema
+- distinguir origen portal, tecnico y sistema
 - definir si el mensaje es visible para cliente
 - proyectarse en las distintas superficies sin duplicar la verdad funcional
 
 ## Superficies de UI
 
-## Portal cliente
+### Portal cliente
 
 La conversacion se accede desde la ficha SAT.
 
-Debe existir una burbuja flotante contextual en la parte inferior derecha que
-invite a hablar con el tecnico sobre esa reparacion concreta.
+Superficies actuales:
+
+- pagina `Conversacion` dentro de la ficha SAT
+- burbuja flotante contextual en la parte inferior derecha
+- popup de chat portal que reutiliza el mismo hilo SAT
 
 La conversacion portal:
 
 - no es generica
 - no representa soporte global
 - esta ligada al SAT abierto por el usuario
-- muestra el historico completo de la conversacion visible al cliente
+- muestra el historico completo visible al cliente
+- usa polling ligero para refrescarse sin recarga manual
 
-## Ficha SAT en backend
+### Ficha SAT en backend
 
 La ficha de `repair.order` mantiene el chatter nativo de Odoo.
 
-Ademas, en la parte inferior de la zona de mensajes debe existir una segunda
-superficie propia del modulo, tipo panel, notebook, footer o bloque filtrable.
+Ademas existe una superficie especifica del modulo para:
 
-Su objetivo es:
-
-- separar visualmente el chatter interno de Odoo
-- mostrar de forma clara el historico de la conversacion SAT-cliente
-- permitir al tecnico consultar la conversacion sin perderse entre logs y notas
-  internas
+- separar visualmente chatter Odoo y conversacion SAT-cliente
+- mostrar el historico de la conversacion SAT-cliente
+- alternar entre chatter normal y conversacion portal
 
 Regla importante:
 
 - no es otro chatter de Odoo
 - es una vista funcional especifica de la conversacion SAT
 
-## Ventana de conversacion del tecnico
+### Ventana de conversacion del tecnico
 
-Cuando entra un mensaje del cliente, al tecnico le debe llegar una conversacion
-normal en la interfaz de chat de Odoo, como ocurre con mensajes internos entre
-empleados.
+Cuando entra un mensaje del cliente, al tecnico le llega una conversacion real
+en la interfaz de chat de Odoo.
 
-Esta ventana debe tener contexto adicional estable:
+Ese chat tiene contexto adicional estable:
 
 - cliente
 - numero de reparacion
-- dispositivo: tipo, marca y modelo
-- averia inicial
-- notas de reparacion
+- dispositivo
+- IMEI o serie
+- responsable
 - total SAT
 - estado de presupuesto
-- estado del flujo SAT
+- estado de garantia
+- averia reportada
+- notas SAT limpias
 
-La presencia de este lateral es lo que convierte la conversacion en herramienta
-operativa y no en mensajeria aislada.
+Acciones actuales del resumen SAT:
 
-Las acciones rapidas desde ese lateral pueden quedar como V2 si anadirlas en la
-primera fase complica demasiado la implementacion.
+- abrir SAT
+- abrir cliente
+- crear actividad pendiente
 
-## Menu interno
+Las acciones de llamada, videollamada y ajustes RTC se ocultan solo en estos
+chats SAT portal. La logica vive en el patch del `ChatWindow` y se puede
+revertir quitando los ids filtrados.
 
-Dentro del area `Portal clientes` debe existir una vista interna de
-`Conversaciones pendientes` para trabajo operativo.
+## Persistencia y proyeccion
 
-Debe servir para localizar:
+La conversacion no debe vivir duplicada en:
 
-- mensajes pendientes
-- conversaciones sin responder
-- conversaciones asignadas por tecnico
+- portal
+- ventana de chat
+- ficha SAT
 
-## Visibilidad y seguridad
+Debe vivir en el modulo y proyectarse despues donde convenga.
+
+## Notificacion y urgencia
+
+### Implementado
+
+Cuando entra mensaje del cliente:
+
+- se registra en la conversacion SAT
+- se marca estado pendiente
+- se proyecta al canal del tecnico si esta disponible
+- se intenta abrir el chat al responsable
+- si falla Discuss, el mensaje sigue guardado como verdad funcional
+
+### Pendiente
+
+- reaviso automatico por tiempo sin respuesta
+- SLA funcional configurable
+- tiempo real por bus/websocket en portal
+
+## Seguridad y visibilidad
 
 ### Cliente portal
 
@@ -234,70 +271,23 @@ El cliente no debe ver:
 
 - chatter bruto
 - followers
-- notas internas
+- notas internas del chatter
 - relaciones indirectas peligrosas
 
 ### Usuarios internos
 
-Cualquier usuario del grupo tecnicos puede ver las conversaciones.
+Los usuarios internos autorizados pueden ver la conversacion.
 
-El responsable del SAT es quien debe atenderlas operativamente.
+El responsable del SAT es quien debe atenderla operativamente.
 
 ### Regla portal
 
-La seguridad debe seguir viviendo en:
+La seguridad debe vivir en:
 
 - ACL
 - record rules
 - dominios de acceso por `commercial_partner_id`
 - controladores que busquen siempre dentro del dominio visible
-
-## Persistencia y proyeccion
-
-Regla de oro:
-
-- una sola fuente de verdad funcional
-- multiples puntos de visualizacion
-
-La conversacion no debe vivir duplicada en:
-
-- portal
-- ventana de chat
-- ficha SAT
-
-Debe vivir en el modulo nuevo y proyectarse despues donde convenga.
-
-## Notificacion y urgencia
-
-## V1
-
-Cuando entra mensaje del cliente:
-
-- se registra en la conversacion SAT
-- se marca estado pendiente
-- se abre una conversacion al tecnico responsable
-- se refuerza la visibilidad operativa de ese mensaje
-
-## V2 obligatoria
-
-Si el mensaje queda sin responder durante un tiempo definido:
-
-- el sistema debe relanzar aviso
-- el tecnico debe volver a recibir insistencia operativa
-
-La unica manera de cerrar operativamente un mensaje de cliente sin responder es:
-
-- responder
-- marcar `No es necesaria contestacion`
-
-## Limites actuales
-
-Quedan fuera de esta primera definicion:
-
-- adjuntos
-- reglas finas de intercambio de ficheros cliente-tecnico
-- integracion nueva con WhatsApp
-- panel lateral con acciones operativas completas
 
 ## Riesgos a vigilar
 
@@ -306,3 +296,4 @@ Quedan fuera de esta primera definicion:
 - dejar el routing ambiguo entre `res.users` y `hr.employee`
 - exponer datos sensibles en portal o en el lateral de conversacion
 - generar varias conversaciones para el mismo SAT en lugar de un hilo unico
+- introducir mejoras de tiempo real que rompan la estabilidad del popup portal

@@ -19,6 +19,7 @@
     "data": [
         "security/portal_repair_communication_security.xml",
         "security/ir.model.access.csv",
+        "data/ir_cron_sla.xml",
         "views/portal_repair_conversation_views.xml",
         "views/repair_order_views.xml",
         "views/portal_templates.xml",

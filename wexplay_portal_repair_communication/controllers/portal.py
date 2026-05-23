@@ -4,6 +4,8 @@ from odoo import http
 from odoo.addons.wexplay_portal.controllers.portal import WexplayCustomerPortal
 from odoo.http import request
 
+_MAX_MESSAGE_LENGTH = 5000
+
 
 class WexplayPortalRepairCommunication(WexplayCustomerPortal):
     @http.route(
@@ -30,7 +32,7 @@ class WexplayPortalRepairCommunication(WexplayCustomerPortal):
     )
     def portal_repair_conversation_message(self, repair_id, **post):
         repair = self._get_portal_repair_or_404(repair_id)
-        body = (post.get("body") or "").strip()
+        body = (post.get("body") or "").strip()[:_MAX_MESSAGE_LENGTH]
         return_mode = (post.get("return_mode") or "").strip()
         if body:
             repair._portal_post_customer_conversation_message(body)

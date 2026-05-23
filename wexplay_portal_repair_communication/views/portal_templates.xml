@@ -137,17 +137,28 @@
                         }
                         if (chatResponsible) {
                             if (payload.responsible_name) {
-                                var avatarHtml = payload.responsible_avatar_url
-                                    ? '<img class="wex_portal_chat_responsible_avatar" src="' + escapeHtml(payload.responsible_avatar_url) + '" alt="' + escapeHtml(payload.responsible_name) + '"/>'
-                                    : '<span class="wex_portal_chat_responsible_avatar wex_portal_chat_responsible_avatar--fallback">' + escapeHtml(payload.responsible_initial || "?") + "</span>";
-                                chatResponsible.innerHTML =
-                                    avatarHtml +
-                                    '<span class="wex_portal_chat_responsible_identity">' +
-                                    "<strong>" + escapeHtml(payload.responsible_name) + "</strong>" +
-                                    "</span>";
+                                chatResponsible.replaceChildren();
+                                var avatarNode;
+                                if (payload.responsible_avatar_url) {
+                                    avatarNode = document.createElement("img");
+                                    avatarNode.className = "wex_portal_chat_responsible_avatar";
+                                    avatarNode.src = payload.responsible_avatar_url;
+                                    avatarNode.alt = payload.responsible_name;
+                                } else {
+                                    avatarNode = document.createElement("span");
+                                    avatarNode.className = "wex_portal_chat_responsible_avatar wex_portal_chat_responsible_avatar--fallback";
+                                    avatarNode.textContent = payload.responsible_initial || "?";
+                                }
+                                var identityNode = document.createElement("span");
+                                identityNode.className = "wex_portal_chat_responsible_identity";
+                                var nameNode = document.createElement("strong");
+                                nameNode.textContent = payload.responsible_name;
+                                identityNode.appendChild(nameNode);
+                                chatResponsible.appendChild(avatarNode);
+                                chatResponsible.appendChild(identityNode);
                                 chatResponsible.style.display = "";
                             } else {
-                                chatResponsible.innerHTML = "";
+                                chatResponsible.replaceChildren();
                                 chatResponsible.style.display = "none";
                             }
                         }
@@ -376,6 +387,10 @@
                                         <span class="wex_portal_chat_responsible_label">Responsable</span>
                                         <strong><t t-out="portal_conversation['responsible_name']"/></strong>
                                     </div>
+                                    <div class="wex_portal_chat_read_receipt" t-if="portal_conversation.get('technician_read_label')">
+                                        <span class="wex_portal_chat_read_receipt_label">Visto</span>
+                                        <span><t t-out="portal_conversation['technician_read_label']"/></span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -531,6 +546,12 @@
                         </span>
                         <span class="wex_portal_chat_popup_sync_state" id="wexPortalChatPopupSyncState">
                             Conversación lista
+                        </span>
+                        <span id="wexPortalChatPopupReadReceipt"
+                              class="wex_portal_chat_read_receipt"
+                              t-att-style="'' if portal_conversation.get('technician_read_label') else 'display:none;'">
+                            <span class="wex_portal_chat_read_receipt_label">Visto</span>
+                            <span id="wexPortalChatPopupReadReceiptLabel"><t t-out="portal_conversation.get('technician_read_label', '')"/></span>
                         </span>
                     </div>
 

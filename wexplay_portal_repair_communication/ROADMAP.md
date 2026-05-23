@@ -1,67 +1,94 @@
 # Roadmap tecnico - Wexplay Portal Repair Communication
 
-## Fase 1 - Base documental y frontera modular
+## Fases completadas
 
-Objetivo: dejar fijada la arquitectura antes de implementar logica.
+### Fase 1 - Base documental y frontera modular
 
-- Crear modulo propio `wexplay_portal_repair_communication`.
-- Documentar que el modulo es dueno de la conversacion.
-- Separar de forma explicita chatter interno y conversacion SAT-cliente.
-- Fijar unidad funcional: un hilo por `repair.order`.
-- Fijar ownership y fallback: responsable, gerente, administrador.
+Completado.
 
-## Fase 2 - Modelo funcional v1
+- modulo propio `wexplay_portal_repair_communication`
+- ownership documental de la conversacion fijado
+- separacion explicita entre chatter interno y conversacion SAT-cliente
+- unidad funcional fijada: un hilo por `repair.order`
 
-Objetivo: construir la verdad funcional de la conversacion.
+### Fase 2 - Modelo funcional v1
 
-- Crear el modelo de conversacion SAT.
-- Crear el modelo de mensajes de conversacion.
-- Guardar estado operativo de respuesta.
-- Guardar ultimas fechas de interaccion cliente y tecnico.
-- Preparar proyeccion a superficies portal y backend sin duplicar la logica.
+Completado.
 
-## Fase 3 - Portal cliente v1
+- modelo de conversacion SAT
+- modelo de mensajes de conversacion
+- estado operativo de respuesta
+- proyeccion a superficies portal y backend sin duplicar la verdad funcional
 
-Objetivo: permitir al cliente escribir desde su SAT en portal.
+### Fase 3 - Portal cliente v1
 
-- Burbuja contextual inferior derecha en la ficha SAT.
-- Historial completo de conversacion del SAT.
-- Composer simple de mensaje.
-- Respeto estricto de seguridad por `commercial_partner_id`.
-- Desactivar escritura cuando el SAT quede fuera de garantia.
+Completado con alcance conservador.
 
-## Fase 4 - Backend tecnico v1
+- pagina `Conversacion` en portal
+- popup de chat portal
+- historico del SAT
+- composer simple de mensaje
+- respeto de seguridad por `commercial_partner_id`
+- desactivacion de escritura cuando no corresponde
 
-Objetivo: dar visibilidad real al tecnico sin depender del chatter bruto.
+### Fase 4 - Backend tecnico v1
 
-- Mostrar panel inferior especifico en `repair.order`.
-- Separar visualmente chatter Odoo y conversacion SAT.
-- Abrir la conversacion al tecnico como chat normal de Odoo.
-- Mostrar lateral contextual con informacion relevante del SAT.
-- Anadir menu `Conversaciones pendientes` en `Portal clientes`.
+Completado.
 
-## Fase 5 - Endurecimiento v1.1
+- superficie separada en `repair.order`
+- chat real del tecnico en Odoo
+- bloque contextual `Resumen SAT`
+- acciones `Abrir SAT`, `Abrir cliente` y `Crear tarea`
 
-Objetivo: cerrar riesgos operativos y de seguridad.
+### Fase 5 - Endurecimiento funcional inicial
 
-- Probar cambio de responsable con conversacion ya viva.
-- Probar fallback a gerente y a administrador.
-- Revisar datos sensibles en portal y lateral.
-- Validar que no se mezclan logs del chatter con mensajes SAT.
-- Revisar ergonomia de lectura del historico por fecha.
+Completado parcialmente.
 
-## Fase 6 - V2 obligatoria
+- reasignacion de responsable estabilizada
+- fallback y degradacion basica si falla Discuss
+- base de tests creada
+- varios errores funcionales ya documentados y corregidos
 
-Objetivo: evitar mensajes olvidados aunque el tecnico haya visto la conversacion.
+## Fase actual
 
-- Relanzar aviso si un mensaje del cliente queda sin responder durante X tiempo.
-- Permitir marcar `No es necesaria contestacion`.
-- Mantener la conversacion como pendiente hasta responder o marcarla.
-- Estudiar acciones rapidas desde el panel lateral del chat.
+Pulido fino + endurecimiento.
+
+La base funcional ya esta viva. Las siguientes iteraciones deben priorizar
+estabilidad, claridad operativa y tests reales antes de meter complejidad nueva.
+
+## Funcionalidades pendientes
+
+### Pendientes prioritarias
+
+- ejecutar y sanear la suite real de tests del modulo
+- revisar y limpiar logs de diagnostico temporales
+- ultimo pase de UX en portal, especialmente en movil
+- validar mejor comportamiento en entornos de produccion y multiusuario
+
+### Pendientes funcionales
+
+- adjuntos en conversacion cliente-tecnico
+- respuestas rapidas o plantillas operativas para tecnico
+- SLA o reaviso automatico cuando un mensaje cliente queda sin responder
+- indicadores mas ricos de no leido o pendiente por SAT
+- cierre funcional de conversacion sin cerrar necesariamente el SAT
+
+### Pendientes tecnicas
+
+- tiempo real por bus/websocket en portal si en el futuro se justifica
+- ampliar tests HTTP y de seguridad portal
+- revisar cuidadosamente el acoplamiento con parches Owl de `mail.ChatWindow`
+
+### Pendientes de producto/UX
+
+- seguir refinando la estetica del popup portal
+- decidir si el boton `Hablar con el tecnico` ya es version final o necesita
+  otra iteracion visual
+- estudiar si el popup portal debe mostrar mas contexto del SAT o mantener la
+  version ligera actual
 
 ## Fuera de alcance por ahora
 
-- adjuntos
-- reglas completas de intercambio documental
-- integracion nueva con WhatsApp
-- acciones masivas o automatizaciones complejas de SLA
+- integracion nueva con WhatsApp como canal de esta conversacion
+- automatizaciones complejas de SLA
+- replanteamiento completo del sistema de mensajeria de Odoo

@@ -1,11 +1,73 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import date, datetime, time, timedelta
+
+import pytz
 
 from odoo import _, api, fields, models
 from odoo.tools import plaintext2html
 
 _logger = logging.getLogger(__name__)
+
+_SLA_MINUTES = 60
+_SLA_TZ = "Europe/Madrid"
+_SLA_WINDOWS = [(time(10, 0), time(14, 0)), (time(16, 0), time(20, 0))]
+_SLA_DAYS = {0, 1, 2, 3, 4}  # lunes–viernes
+
+
+def _add_business_minutes(start_utc_naive, minutes):
+    """Suma minutos de tiempo laborable a un datetime UTC naive.
+
+    Horario: L-V, 10:00-14:00 y 16:00-20:00 (Europe/Madrid).
+    Devuelve UTC naive.
+    """
+    tz = pytz.timezone(_SLA_TZ)
+    dt = pytz.utc.localize(start_utc_naive).astimezone(tz)
+    remaining = minutes
+    safety = 0
+    while remaining > 0 and safety < 200:
+        safety += 1
+        # Avanzar a día laborable
+        while dt.weekday() not in _SLA_DAYS:
+            dt = tz.localize(datetime.combine(dt.date() + timedelta(days=1), _SLA_WINDOWS[0][0]))
+
+        # Buscar ventana actual o siguiente
+        current_window = None
+        for w_start, w_end in _SLA_WINDOWS:
+            if dt.time() < w_start:
+                dt = tz.localize(datetime.combine(dt.date(), w_start))
+                current_window = (w_start, w_end)
+                break
+            if w_start <= dt.time() < w_end:
+                current_window = (w_start, w_end)
+                break
+
+        if current_window is None:
+            # Pasadas todas las ventanas de hoy → primer tramo del siguiente día laborable
+            next_day = dt.date() + timedelta(days=1)
+            dt = tz.localize(datetime.combine(next_day, _SLA_WINDOWS[0][0]))
+            continue
+
+        w_end_dt = tz.localize(datetime.combine(dt.date(), current_window[1]))
+        minutes_in_window = int((w_end_dt - dt).total_seconds() / 60)
+
+        if remaining <= minutes_in_window:
+            dt += timedelta(minutes=remaining)
+            remaining = 0
+        else:
+            remaining -= minutes_in_window
+            # Avanzar a siguiente ventana
+            next_window = next(
+                (w for w in _SLA_WINDOWS if w[0] > current_window[1]), None
+            )
+            if next_window:
+                dt = tz.localize(datetime.combine(dt.date(), next_window[0]))
+            else:
+                next_day = dt.date() + timedelta(days=1)
+                dt = tz.localize(datetime.combine(next_day, _SLA_WINDOWS[0][0]))
+
+    return dt.astimezone(pytz.utc).replace(tzinfo=None)
 
 
 class WexPortalRepairConversation(models.Model):
@@ -85,6 +147,24 @@ class WexPortalRepairConversation(models.Model):
         string="Marcado por",
         readonly=True,
     )
+    technician_last_read_at = fields.Datetime(
+        string="Visto por técnico",
+        readonly=True,
+    )
+    sla_deadline = fields.Datetime(
+        string="Límite SLA",
+        readonly=True,
+        index=True,
+    )
+    sla_notified_at = fields.Datetime(
+        string="SLA notificado",
+        readonly=True,
+    )
+    sla_breached = fields.Boolean(
+        string="SLA incumplido",
+        compute="_compute_sla_breached",
+        store=True,
+    )
     message_ids = fields.One2many(
         "wex.portal.repair.message",
         "conversation_id",
@@ -121,6 +201,14 @@ class WexPortalRepairConversation(models.Model):
     def _compute_needs_response(self):
         for conversation in self:
             conversation.needs_response = conversation.state == "pending_customer_reply"
+
+    @api.depends("sla_deadline", "sla_notified_at")
+    def _compute_sla_breached(self):
+        now = fields.Datetime.now()
+        for conversation in self:
+            conversation.sla_breached = bool(
+                conversation.sla_deadline and conversation.sla_deadline <= now
+            )
 
     def _search_needs_response(self, operator, value):
         if operator not in ("=", "!=") or not isinstance(value, bool):
@@ -360,16 +448,15 @@ class WexPortalRepairConversation(models.Model):
             "subtype_xmlid": "mail.mt_comment",
         }
 
-    def _post_message_to_operator_channel(self, message):
+    def _post_message_to_operator_channel(self, message, skip_open=False):
         for conversation in self:
             channel = conversation._get_or_create_operator_channel()
-            conversation._sync_operator_channel_members()
             channel.with_context(
                 wex_portal_repair_skip_discuss_sync=True,
             ).sudo().message_post(
                 **conversation._prepare_operator_channel_post_values(message)
             )
-            if message.source == "portal_customer":
+            if message.source == "portal_customer" and not skip_open:
                 conversation._open_operator_channel_for_user(conversation.responsible_user_id)
 
     def action_open_repair(self):
@@ -409,11 +496,13 @@ class WexPortalRepairConversation(models.Model):
 
     def action_open_operator_chat(self):
         self.ensure_one()
+        self.sudo().write({"technician_last_read_at": fields.Datetime.now()})
         self._open_operator_channel_for_user(self.env.user)
         return False
 
     def get_operator_chat_thread_data(self):
         self.ensure_one()
+        self.sudo().write({"technician_last_read_at": fields.Datetime.now()})
         channel = self._ensure_operator_channel_for_user(self.env.user)
         return {
             "id": channel.id,
@@ -423,3 +512,70 @@ class WexPortalRepairConversation(models.Model):
     def get_operator_chat_sidebar_values(self):
         self.ensure_one()
         return self.repair_id._get_portal_chat_sidebar_values()
+
+    def _set_sla_deadline(self):
+        for conversation in self:
+            deadline = _add_business_minutes(fields.Datetime.now(), _SLA_MINUTES)
+            conversation.sudo().write({
+                "sla_deadline": deadline,
+                "sla_notified_at": False,
+            })
+
+    def _clear_sla(self):
+        for conversation in self:
+            conversation.sudo().write({
+                "sla_deadline": False,
+                "sla_notified_at": False,
+            })
+
+    @api.model
+    def _cron_check_sla(self):
+        now = fields.Datetime.now()
+        pending = self.search([
+            ("state", "=", "pending_customer_reply"),
+            ("sla_deadline", "<=", now),
+            ("sla_notified_at", "=", False),
+            ("responsible_user_id", "!=", False),
+        ])
+        for conversation in pending:
+            try:
+                conversation._notify_sla_breach()
+            except Exception:
+                _logger.exception(
+                    "SLA check failed for conversation %s (repair %s).",
+                    conversation.id,
+                    conversation.repair_id.id,
+                )
+
+    def _notify_sla_breach(self):
+        self.ensure_one()
+        responsible = self.responsible_user_id
+        if not responsible:
+            return
+        self.sudo().write({"sla_notified_at": fields.Datetime.now()})
+
+        repair = self.repair_id
+        repair.sudo().message_notify(
+            partner_ids=[responsible.partner_id.id],
+            subject=_("SLA vencido — %s") % (repair.name or _("SAT")),
+            body=_(
+                "El cliente lleva más de 1 hora de horario laboral sin recibir respuesta "
+                "en la reparación %s. Por favor atiende la conversación."
+            ) % (repair.name or ""),
+        )
+
+        self._open_operator_channel_for_user(responsible)
+
+        activity_type = self.env.ref("mail.mail_activity_data_todo", raise_if_not_found=False)
+        if activity_type and repair:
+            self.env["mail.activity"].sudo().create({
+                "res_model_id": self.env["ir.model"]._get_id("repair.order"),
+                "res_id": repair.id,
+                "activity_type_id": activity_type.id,
+                "summary": _("SLA vencido — cliente sin respuesta"),
+                "user_id": responsible.id,
+                "note": _(
+                    "Han pasado más de 1 hora de horario laboral sin respuesta al cliente "
+                    "en la conversación portal de este SAT."
+                ),
+            })

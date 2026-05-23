@@ -8,25 +8,31 @@ class WexPortalRepairOperatorChatBridge {
         this.env = env;
         this.busService = services.bus_service;
         this.store = services["mail.store"];
-        this.multiTab = services.multi_tab;
     }
 
     setup() {
         this.busService.subscribe("wex.portal_repair/operator_chat", async (payload) => {
-            if (!this.multiTab.isOnMainTab()) {
+            if (document.visibilityState !== "visible") {
                 return;
             }
             const thread = await this.store.Thread.getOrFetch({
                 model: "discuss.channel",
                 id: payload.channel_id,
             });
-            thread?.open();
+            if (!thread) {
+                console.warn(
+                    "[WexPortalRepair] No se pudo obtener el canal SAT del store:",
+                    payload.channel_id
+                );
+                return;
+            }
+            thread.open();
         });
     }
 }
 
 export const wexPortalRepairOperatorChatBridge = {
-    dependencies: ["bus_service", "mail.store", "multi_tab"],
+    dependencies: ["bus_service", "mail.store"],
     start(env, services) {
         const bridge = reactive(new WexPortalRepairOperatorChatBridge(env, services));
         bridge.setup();

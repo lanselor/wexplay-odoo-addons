@@ -116,7 +116,10 @@ class WexPortalRepairMessage(models.Model):
                 "last_message_at": message.create_date,
                 "last_message_preview": message.body[:160],
             }
+            skip_open_chat = False
             if message.source == "portal_customer":
+                was_already_pending = conversation.state == "pending_customer_reply"
+                skip_open_chat = was_already_pending
                 update_vals.update(
                     {
                         "state": "pending_customer_reply",
@@ -126,7 +129,9 @@ class WexPortalRepairMessage(models.Model):
                     }
                 )
                 conversation.write(update_vals)
-                message._safe_notify_responsible_about_portal_message()
+                conversation._set_sla_deadline()
+                if not was_already_pending:
+                    message._safe_notify_responsible_about_portal_message()
             elif message.source == "technician":
                 update_vals.update(
                     {
@@ -137,11 +142,12 @@ class WexPortalRepairMessage(models.Model):
                     }
                 )
                 conversation.write(update_vals)
+                conversation._clear_sla()
             else:
                 conversation.write(update_vals)
 
             if not self.env.context.get("wex_portal_repair_skip_operator_channel_projection"):
-                message._safe_post_to_operator_channel()
+                message._safe_post_to_operator_channel(skip_open=skip_open_chat)
 
     def _safe_notify_responsible_about_portal_message(self):
         self.ensure_one()
@@ -154,10 +160,10 @@ class WexPortalRepairMessage(models.Model):
                 self.repair_id.id,
             )
 
-    def _safe_post_to_operator_channel(self):
+    def _safe_post_to_operator_channel(self, skip_open=False):
         self.ensure_one()
         try:
-            self.conversation_id._post_message_to_operator_channel(self)
+            self.conversation_id._post_message_to_operator_channel(self, skip_open=skip_open)
         except Exception:
             _logger.exception(
                 "Portal repair message %s could not be projected to operator channel for repair %s.",
