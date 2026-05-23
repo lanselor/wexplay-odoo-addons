@@ -192,3 +192,43 @@ class TestPortalRepairCommunication(TransactionCase):
         )
         self.assertEqual(action["params"]["conversation_id"], conversation.id)
         self.assertTrue(action["params"]["channel_id"])
+
+    def test_sync_operator_channel_history_backfills_missing_messages(self):
+        conversation = self.repair._get_or_create_portal_conversation()
+        channel = conversation._get_or_create_operator_channel()
+        initial_count = self.env["mail.message"].search_count(
+            [
+                ("model", "=", "discuss.channel"),
+                ("res_id", "=", channel.id),
+                ("message_type", "=", "comment"),
+            ]
+        )
+
+        missing_message = self.env["wex.portal.repair.message"].with_context(
+            wex_portal_repair_skip_operator_channel_projection=True,
+        ).create(
+            {
+                "conversation_id": conversation.id,
+                "body": "Mensaje desincronizado",
+                "source": "portal_customer",
+                "visible_to_customer": True,
+                "author_user_id": self.portal_user.id,
+                "author_partner_id": self.company_partner.id,
+                "author_name": self.company_partner.display_name,
+            }
+        )
+
+        self.assertFalse(missing_message.operator_mail_message_id)
+
+        conversation._sync_operator_channel_history(channel=channel)
+        missing_message.invalidate_recordset(["operator_mail_message_id"])
+
+        synced_count = self.env["mail.message"].search_count(
+            [
+                ("model", "=", "discuss.channel"),
+                ("res_id", "=", channel.id),
+                ("message_type", "=", "comment"),
+            ]
+        )
+        self.assertEqual(synced_count, initial_count + 1)
+        self.assertTrue(missing_message.operator_mail_message_id)

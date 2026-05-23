@@ -41,6 +41,13 @@ class WexPortalRepairMessage(models.Model):
         readonly=True,
     )
     author_name = fields.Char(string="Autor", readonly=True)
+    operator_mail_message_id = fields.Many2one(
+        "mail.message",
+        string="Mensaje proyectado al chat técnico",
+        readonly=True,
+        copy=False,
+        ondelete="set null",
+    )
     source = fields.Selection(
         [
             ("portal_customer", "Cliente portal"),

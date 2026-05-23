@@ -6,7 +6,7 @@ from datetime import date, datetime, time, timedelta
 import pytz
 
 from odoo import _, api, fields, models
-from odoo.tools import plaintext2html
+from odoo.tools import html2plaintext, plaintext2html
 
 _logger = logging.getLogger(__name__)
 
@@ -429,6 +429,7 @@ class WexPortalRepairConversation(models.Model):
         channel = self._ensure_operator_channel_for_user(user)
         if not channel:
             return
+        self._sync_operator_channel_history(channel=channel)
         user._bus_send(
             "wex.portal_repair/operator_chat",
             {
@@ -448,14 +449,85 @@ class WexPortalRepairConversation(models.Model):
             "subtype_xmlid": "mail.mt_comment",
         }
 
+    def _get_operator_channel_projected_messages(self, channel):
+        self.ensure_one()
+        return self.env["mail.message"].sudo().search(
+            [
+                ("model", "=", "discuss.channel"),
+                ("res_id", "=", channel.id),
+                ("message_type", "=", "comment"),
+            ],
+            order="id asc",
+        )
+
+    def _get_operator_channel_projection_fingerprint(self, author_partner_id, body):
+        normalized_body = (body or "").strip()
+        return (
+            author_partner_id or False,
+            normalized_body,
+        )
+
+    def _get_operator_channel_missing_messages(self, channel):
+        self.ensure_one()
+        projected_messages = self._get_operator_channel_projected_messages(channel)
+        projected_fingerprints = [
+            self._get_operator_channel_projection_fingerprint(
+                mail_message.author_id.id if mail_message.author_id else False,
+                html2plaintext(mail_message.body or "").strip(),
+            )
+            for mail_message in projected_messages
+        ]
+
+        sequence = list(projected_fingerprints)
+        missing_messages = self.env["wex.portal.repair.message"]
+        for message in self.message_ids.sorted(lambda msg: (msg.create_date or fields.Datetime.now(), msg.id)):
+            if message.source == "system":
+                continue
+            if message.operator_mail_message_id and message.operator_mail_message_id.exists():
+                continue
+            fingerprint = self._get_operator_channel_projection_fingerprint(
+                message.author_partner_id.id if message.author_partner_id else False,
+                message.body,
+            )
+            matched_index = next(
+                (index for index, existing in enumerate(sequence) if existing == fingerprint),
+                -1,
+            )
+            if matched_index >= 0:
+                sequence = sequence[matched_index + 1 :]
+                continue
+            missing_messages |= message
+        return missing_messages
+
+    def _sync_operator_channel_history(self, channel=None):
+        for conversation in self:
+            operator_channel = channel or conversation._get_or_create_operator_channel()
+            missing_messages = conversation._get_operator_channel_missing_messages(
+                operator_channel
+            )
+            for message in missing_messages:
+                projected_message = operator_channel.with_context(
+                    wex_portal_repair_skip_discuss_sync=True,
+                ).sudo().message_post(
+                    **conversation._prepare_operator_channel_post_values(message)
+                )
+                if projected_message:
+                    message.sudo().write(
+                        {"operator_mail_message_id": projected_message.id}
+                    )
+
     def _post_message_to_operator_channel(self, message, skip_open=False):
         for conversation in self:
             channel = conversation._get_or_create_operator_channel()
-            channel.with_context(
+            projected_message = channel.with_context(
                 wex_portal_repair_skip_discuss_sync=True,
             ).sudo().message_post(
                 **conversation._prepare_operator_channel_post_values(message)
             )
+            if projected_message:
+                message.sudo().write(
+                    {"operator_mail_message_id": projected_message.id}
+                )
             if message.source == "portal_customer" and not skip_open:
                 conversation._open_operator_channel_for_user(conversation.responsible_user_id)
 
@@ -498,6 +570,7 @@ class WexPortalRepairConversation(models.Model):
         self.ensure_one()
         self.sudo().write({"technician_last_read_at": fields.Datetime.now()})
         channel = self._ensure_operator_channel_for_user(self.env.user)
+        self._sync_operator_channel_history(channel=channel)
         return {
             "type": "ir.actions.client",
             "tag": "wex_portal_repair_communication.open_operator_chat",
@@ -513,6 +586,7 @@ class WexPortalRepairConversation(models.Model):
         self.ensure_one()
         self.sudo().write({"technician_last_read_at": fields.Datetime.now()})
         channel = self._ensure_operator_channel_for_user(self.env.user)
+        self._sync_operator_channel_history(channel=channel)
         return {
             "id": channel.id,
             "model": "discuss.channel",
