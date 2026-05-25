@@ -41,6 +41,16 @@ class MrwShippingConfig(models.Model):
         required=True,
         default="https://sagec.mrw.es/MRWEnvio.asmx?WSDL",
     )
+    api_timeout_seconds = fields.Integer(
+        string="Timeout SOAP (segundos)",
+        default=90,
+        required=True,
+        help=(
+            "Tiempo máximo de espera para llamadas SOAP de negocio contra MRW. "
+            "La generación de etiquetas en producción puede tardar más que el "
+            "WSDL de diagnóstico."
+        ),
+    )
     agency_code = fields.Char(string="Código de franquicia", required=True)
     subscriber_code = fields.Char(string="Código de abonado", required=True)
     department_code = fields.Char(string="Código de departamento")
@@ -186,6 +196,7 @@ class MrwShippingConfig(models.Model):
         "environment",
         "test_wsdl_url",
         "production_wsdl_url",
+        "api_timeout_seconds",
         "default_national_service_id",
         "default_international_service_id",
     )
@@ -195,6 +206,10 @@ class MrwShippingConfig(models.Model):
                 raise ValidationError(_("The test WSDL URL is required."))
             if config.environment == "production" and not config.production_wsdl_url:
                 raise ValidationError(_("The production WSDL URL is required."))
+            if not 5 <= config.api_timeout_seconds <= 300:
+                raise ValidationError(
+                    _("The MRW SOAP timeout must be between 5 and 300 seconds.")
+                )
             config._check_default_service_type()
 
     def _check_default_service_type(self):

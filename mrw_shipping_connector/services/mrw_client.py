@@ -10,7 +10,7 @@ from .mrw_mapper import MRWMapper, sanitize_payload
 class MRWClient:
     """Minimal SOAP client for confirmed MRW operations."""
 
-    TIMEOUT = 30
+    DEFAULT_TIMEOUT = 90
 
     def __init__(self, config):
         self.config = config
@@ -64,6 +64,7 @@ class MRWClient:
 
     def _call(self, operation, request_xml):
         endpoint = self._get_service_endpoint()
+        timeout = self._get_timeout()
         request = Request(
             endpoint,
             data=request_xml.encode("utf-8"),
@@ -74,7 +75,7 @@ class MRWClient:
             method="POST",
         )
         try:
-            with urlopen(request, timeout=self.TIMEOUT) as response:
+            with urlopen(request, timeout=timeout) as response:
                 return response.read().decode("utf-8", errors="replace")
         except HTTPError as error:
             body = error.read().decode("utf-8", errors="replace")
@@ -82,7 +83,18 @@ class MRWClient:
                 return body
             raise MRWConnectionError(str(error)) from error
         except (URLError, TimeoutError, OSError) as error:
-            raise MRWConnectionError(str(error)) from error
+            raise MRWConnectionError(
+                "MRW SOAP call failed for %s at %s after %ss: %s"
+                % (operation, endpoint, timeout, error)
+            ) from error
+
+    def _get_timeout(self):
+        timeout = getattr(self.config, "api_timeout_seconds", 0) or self.DEFAULT_TIMEOUT
+        try:
+            timeout = int(timeout)
+        except (TypeError, ValueError):
+            timeout = self.DEFAULT_TIMEOUT
+        return min(max(timeout, 5), 300)
 
     def _get_service_endpoint(self):
         wsdl_url = self.config._get_wsdl_url()

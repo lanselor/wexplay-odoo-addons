@@ -74,6 +74,7 @@
                             <group string="Endpoints y resultado">
                                 <field name="test_wsdl_url"/>
                                 <field name="production_wsdl_url"/>
+                                <field name="api_timeout_seconds"/>
                                 <field name="last_connection_test_at"/>
                                 <field name="last_connection_test_status"/>
                                 <field name="last_connection_test_message"/>
