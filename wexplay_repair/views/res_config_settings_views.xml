@@ -26,6 +26,36 @@
             
             <xpath expr="//form" position="inside">
                 <app string="Wexplay SAT" name="wexplay_sat_settings" groups="base.group_system">
+
+                    <block title="Prioridad SAT y plazos" name="wexplay_sat_priority_settings">
+                        <setting string="Normal">
+                            <field name="x_sat_priority_normal_hours"/>
+                        </setting>
+
+                        <setting string="Urgente">
+                            <field name="x_sat_priority_urgent_hours"/>
+                        </setting>
+
+                        <setting string="Empresa">
+                            <field name="x_sat_priority_company_hours"/>
+                        </setting>
+
+                        <setting string="Garantía">
+                            <field name="x_sat_priority_warranty_hours"/>
+                        </setting>
+
+                        <setting string="Presupuesto">
+                            <field name="x_sat_priority_budget_hours"/>
+                        </setting>
+
+                        <setting string="Presupuesto 2">
+                            <field name="x_sat_priority_budget_extended_hours"/>
+                        </setting>
+
+                        <setting string="Express">
+                            <field name="x_sat_priority_express_hours"/>
+                        </setting>
+                    </block>
                     
                     <block title="Workflow de presupuesto" name="wexplay_sat_budget_workflow_settings">
                         <setting string="Ubicación para Revisión">

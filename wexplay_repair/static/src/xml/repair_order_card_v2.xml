@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-  <t t-name="wexplay_repair.RepairOrderCardView.Buttons"
-     t-inherit="web.KanbanView.Buttons"
+  <t t-name="wexplay_repair.RepairOrderCardV2.Buttons"
+     t-inherit="wexplay_repair.RepairOrderCardView.Buttons"
      t-inherit-mode="primary"
      owl="1">
-    <xpath expr="//div[hasclass('o_cp_buttons')]" position="inside">
-      <button t-if="showWexGroupToggle"
-              type="button"
-              class="btn btn-outline-secondary wex_repair_group_toggle"
-              t-on-click="wexToggleGroups">
-        <i t-att-class="'fa me-1 ' + wexGroupToggleIcon"/>
-        <t t-esc="wexGroupToggleLabel"/>
-      </button>
-    </xpath>
   </t>
 
-  <t t-name="wexplay_repair.RepairOrderCardView.Renderer" owl="1">
+  <t t-name="wexplay_repair.RepairOrderCardV2.Renderer" owl="1">
     <div class="o_wex_repair_card_renderer">
+      <div class="wex_v2_hero">
+        <div class="wex_v2_hero_track">
+        <button t-foreach="heroSections"
+                t-as="section"
+                t-key="section.key"
+                type="button"
+                t-att-class="this.getHeroTabClass(section)"
+                t-on-click="() => this.openHeroSection(section)">
+          <span class="wex_v2_hero_label">
+            <t t-esc="section.short_title || section.title"/>
+          </span>
+          <span class="wex_v2_hero_count">
+            <t t-esc="section.count"/>
+          </span>
+        </button>
+        </div>
+      </div>
+
       <div class="wex_repair_layout">
+
         <div class="wex_repair_content">
           <t t-if="!hasContent">
             <div class="o_view_nocontent_smiling_face wex_repair_empty_state">
@@ -75,21 +85,21 @@
         </div>
 
         <aside class="wex_repair_sidebar">
-          <div class="wex_repair_sidebar_panel">
-            <div class="wex_repair_sidebar_header">
-              <div>
-                <div class="wex_repair_sidebar_kicker">Atencion SAT</div>
-                <div class="wex_repair_sidebar_title">Pendientes que no deberian dormirse</div>
-              </div>
-              <button type="button"
-                      class="btn btn-sm btn-outline-secondary wex_repair_sidebar_refresh"
-                      t-att-disabled="sidebarState.loading ? true : undefined"
-                      t-on-click="() => this.loadSidebar()">
-                <i class="fa fa-refresh me-1"/>
-                Refrescar
-              </button>
+          <div class="wex_repair_sidebar_header">
+            <div>
+              <div class="wex_repair_sidebar_kicker">Atencion SAT</div>
+              <div class="wex_repair_sidebar_title">Pendientes que no deberian dormirse</div>
             </div>
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary wex_repair_sidebar_refresh"
+                    t-att-disabled="sidebarState.loading ? true : undefined"
+                    t-on-click="() => this.loadSidebar()">
+              <i class="fa fa-refresh me-1"/>
+              Refrescar
+            </button>
+          </div>
 
+          <div class="wex_repair_sidebar_body">
             <div t-if="sidebarGeneratedAt" class="wex_repair_sidebar_timestamp">
               Actualizado: <t t-esc="sidebarGeneratedAt"/>
             </div>
@@ -100,7 +110,9 @@
 
             <div t-else="" class="wex_repair_sidebar_sections">
               <t t-foreach="sidebarSections" t-as="section" t-key="section.key">
-                <section class="wex_repair_sidebar_section">
+                <section class="wex_repair_sidebar_section"
+                         t-att-class="this.getSidebarSectionSeverityClass(section)">
+
                   <button type="button"
                           class="wex_repair_sidebar_section_header"
                           t-att-disabled="!section.count ? true : undefined"
@@ -109,14 +121,21 @@
                       <span class="wex_repair_sidebar_section_title">
                         <t t-esc="section.title"/>
                       </span>
-                      <span t-if="section.count" class="wex_repair_sidebar_section_summary">
-                        Mostrando <t t-esc="section.shown_count"/> de <t t-esc="section.count"/>
-                      </span>
                     </span>
                     <span class="wex_repair_sidebar_section_count">
                       <t t-esc="section.count"/>
                     </span>
                   </button>
+
+                  <div t-if="section.count" class="wex_v2_sidebar_progress">
+                    <div class="wex_v2_sidebar_progress_track">
+                      <div class="wex_v2_sidebar_progress_fill"
+                           t-att-style="'width: ' + this.getSidebarProgressWidth(section)"/>
+                    </div>
+                    <span class="wex_v2_sidebar_progress_label">
+                      <t t-esc="section.shown_count"/> / <t t-esc="section.count"/>
+                    </span>
+                  </div>
 
                   <t t-if="section.items.length">
                     <div class="wex_repair_sidebar_list">
@@ -163,107 +182,9 @@
             </div>
           </div>
         </aside>
+
       </div>
     </div>
-  </t>
-
-  <t t-name="wexplay_repair.RepairOrderCardView.Card" owl="1">
-    <article class="wex_repair_card"
-             t-att-class="this.getStateClass(record)"
-             tabindex="0"
-             t-on-click="() => this.openRecord(record)">
-      <div class="wex_repair_card_main">
-        <div class="wex_repair_card_header">
-          <div class="wex_repair_card_identity">
-            <div class="wex_repair_card_name">
-              <t t-esc="record.data.name"/>
-            </div>
-            <div t-if="this.getDeviceSubtitle(record)" class="wex_repair_card_subtitle">
-              <t t-esc="this.getDeviceSubtitle(record)"/>
-            </div>
-          </div>
-          <div class="wex_repair_card_badges">
-            <span t-if="record.data.x_sat_priority"
-                  t-att-class="'wex_repair_chip is-priority ' + this.getPriorityClass(record)">
-              <t t-esc="this.getSelectionLabel(record, 'x_sat_priority')"/>
-            </span>
-            <span class="wex_repair_chip is-state">
-              <t t-esc="this.getSelectionLabel(record, 'state')"/>
-            </span>
-          </div>
-        </div>
-
-        <div t-if="record.data.x_reported_issue" class="wex_repair_card_issue">
-          <span class="wex_repair_issue_label">Averia</span>
-          <span class="wex_repair_issue_value">
-            <t t-esc="record.data.x_reported_issue"/>
-          </span>
-        </div>
-
-        <div class="wex_repair_card_grid">
-          <div class="wex_repair_info_block is-device">
-            <span class="wex_repair_info_label">Modelo</span>
-            <span class="wex_repair_info_value">
-              <t t-esc="this.getDeviceTitle(record)"/>
-            </span>
-          </div>
-          <div class="wex_repair_info_block">
-            <span class="wex_repair_info_label">Cliente</span>
-            <span class="wex_repair_info_value">
-              <t t-esc="this.getText(record.data.partner_id)"/>
-            </span>
-          </div>
-          <div class="wex_repair_info_block">
-            <span class="wex_repair_info_label">Creado</span>
-            <span class="wex_repair_info_value">
-              <t t-esc="this.formatServerDate(record.data.create_date)"/>
-            </span>
-          </div>
-          <div class="wex_repair_info_block">
-            <span class="wex_repair_info_label">Workflow</span>
-            <span class="wex_repair_info_value">
-              <t t-esc="this.getText(record.data.product_location_src_id) || 'Sin ubicar'"/>
-            </span>
-          </div>
-        </div>
-
-        <div class="wex_repair_card_meta">
-          <span t-if="record.data.x_customer_reference" class="wex_repair_meta_item">
-            <i class="fa fa-hashtag"/>
-            <span class="wex_repair_meta_text">
-              <t t-esc="record.data.x_customer_reference"/>
-            </span>
-          </span>
-          <span t-if="this.getText(record.data.product_id)" class="wex_repair_meta_item">
-            <i class="fa fa-cube"/>
-            <span class="wex_repair_meta_text">
-              <t t-esc="this.getText(record.data.product_id)"/>
-            </span>
-          </span>
-          <span t-if="this.getUnlockSummary(record)" class="wex_repair_meta_item">
-            <i class="fa fa-lock"/>
-            <span class="wex_repair_meta_text">
-              <t t-esc="this.getUnlockSummary(record)"/>
-            </span>
-          </span>
-          <span t-if="record.data.x_accessories" class="wex_repair_meta_item">
-            <i class="fa fa-plug"/>
-            <span class="wex_repair_meta_text">
-              <t t-esc="record.data.x_accessories"/>
-            </span>
-          </span>
-          <button t-if="record.data.sale_order_id"
-                  type="button"
-                  class="wex_repair_meta_item is-link"
-                  t-on-click.stop="() => this.openSaleOrder(record)">
-            <i class="fa fa-file-text-o"/>
-            <span class="wex_repair_meta_text">
-              <t t-esc="this.getText(record.data.sale_order_id)"/>
-            </span>
-          </button>
-        </div>
-      </div>
-    </article>
   </t>
 
 </templates>

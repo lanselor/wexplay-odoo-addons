@@ -111,11 +111,24 @@
     text-align: left;
 }
 
+.o_action_manager .wex_repair_sidebar_section_heading {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
 .o_action_manager .wex_repair_sidebar_section_title {
     color: var(--wex-repair-ink);
     font-size: 0.82rem;
     font-weight: 800;
     line-height: 1.25;
+}
+
+.o_action_manager .wex_repair_sidebar_section_summary {
+    color: var(--wex-repair-muted);
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.3;
 }
 
 .o_action_manager .wex_repair_sidebar_section_count {
@@ -133,6 +146,18 @@
 .o_action_manager .wex_repair_sidebar_list {
     display: grid;
     gap: 7px;
+}
+
+.o_action_manager .wex_repair_sidebar_more {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--wex-repair-accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .o_action_manager .wex_repair_sidebar_item {

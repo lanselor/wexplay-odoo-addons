@@ -6,6 +6,48 @@ from odoo import fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
+    x_sat_priority_normal_hours = fields.Float(
+        string="Horas objetivo SAT Normal",
+        default=72.0,
+        config_parameter="wexplay_repair.x_sat_priority_normal_hours",
+    )
+
+    x_sat_priority_urgent_hours = fields.Float(
+        string="Horas objetivo SAT Urgente",
+        default=24.0,
+        config_parameter="wexplay_repair.x_sat_priority_urgent_hours",
+    )
+
+    x_sat_priority_company_hours = fields.Float(
+        string="Horas objetivo SAT Empresa",
+        default=48.0,
+        config_parameter="wexplay_repair.x_sat_priority_company_hours",
+    )
+
+    x_sat_priority_warranty_hours = fields.Float(
+        string="Horas objetivo SAT Garantia",
+        default=72.0,
+        config_parameter="wexplay_repair.x_sat_priority_warranty_hours",
+    )
+
+    x_sat_priority_budget_hours = fields.Float(
+        string="Horas objetivo SAT Presupuesto",
+        default=72.0,
+        config_parameter="wexplay_repair.x_sat_priority_budget_hours",
+    )
+
+    x_sat_priority_budget_extended_hours = fields.Float(
+        string="Horas objetivo SAT Presupuesto 2",
+        default=120.0,
+        config_parameter="wexplay_repair.x_sat_priority_budget_extended_hours",
+    )
+
+    x_sat_priority_express_hours = fields.Float(
+        string="Horas objetivo SAT Express",
+        default=1.0,
+        config_parameter="wexplay_repair.x_sat_priority_express_hours",
+    )
+
     x_repair_budget_location_estimating_id = fields.Many2one(
         related="company_id.x_repair_budget_location_estimating_id",
         comodel_name="stock.location",

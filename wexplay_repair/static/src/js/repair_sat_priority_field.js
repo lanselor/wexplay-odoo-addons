@@ -9,6 +9,9 @@ const PRIORITY_ICONS = {
     urgent: "fa fa-bolt",
     company: "fa fa-building-o",
     warranty: "fa fa-shield",
+    budget: "fa fa-file-text-o",
+    budget_extended: "fa fa-files-o",
+    express: "fa fa-rocket",
 };
 
 class RepairSatPriorityField extends Component {

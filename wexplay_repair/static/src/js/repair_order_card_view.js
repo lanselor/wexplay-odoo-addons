@@ -3,7 +3,7 @@
 import { _t } from "@web/core/l10n/translation";
 import { deserializeDateTime, formatDate } from "@web/core/l10n/dates";
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 import { RelationalModel } from "@web/model/relational_model/relational_model";
 import { KanbanArchParser } from "@web/views/kanban/kanban_arch_parser";
 import { KanbanCompiler } from "@web/views/kanban/kanban_compiler";
@@ -16,6 +16,9 @@ const PRIORITY_CLASS_BY_VALUE = {
     urgent: "is-priority-urgent",
     company: "is-priority-company",
     warranty: "is-priority-warranty",
+    budget: "is-priority-company",
+    budget_extended: "is-priority-company",
+    express: "is-priority-urgent",
 };
 
 export class RepairOrderCardRenderer extends Component {
@@ -34,6 +37,11 @@ export class RepairOrderCardRenderer extends Component {
         onWillStart(async () => {
             await this.loadSidebar();
         });
+        if (this.env.searchModel) {
+            useBus(this.env.searchModel, "update", () => {
+                this.loadSidebar();
+            });
+        }
     }
 
     get hasContent() {
@@ -89,12 +97,33 @@ export class RepairOrderCardRenderer extends Component {
     async loadSidebar() {
         this.sidebarState.loading = true;
         try {
-            const data = await this.orm.call("repair.order", "get_repair_card_sidebar_data", [], {});
+            const data = await this.orm.call(
+                "repair.order",
+                "get_repair_card_sidebar_data",
+                [this.getActiveSearchDomain()],
+                {}
+            );
             this.sidebarState.sections = data.sections || [];
             this.sidebarState.generatedAt = data.generated_at || null;
         } finally {
             this.sidebarState.loading = false;
         }
+    }
+
+    getActiveSearchDomain() {
+        if (this.env.searchModel) {
+            return this.env.searchModel.searchDomain || this.env.searchModel.domain || [];
+        }
+        return this.props.list?.model?.root?.domain || [];
+    }
+
+    getCurrentSearchDefaultsContext() {
+        const globalContext = this.env.searchModel?.globalContext || {};
+        return Object.fromEntries(
+            Object.entries(globalContext).filter(([key, value]) =>
+                key.startsWith("search_default_") && value
+            )
+        );
     }
 
     async openSidebarRecord(item) {
@@ -115,10 +144,16 @@ export class RepairOrderCardRenderer extends Component {
             type: "ir.actions.act_window",
             name: section.title || _t("Repair Orders"),
             res_model: "repair.order",
+            views: [
+                [false, "repair_card"],
+                [false, "list"],
+                [false, "form"],
+            ],
             view_mode: "repair_card,list,form",
             domain: section.domain,
             target: "current",
             context: {
+                ...this.getCurrentSearchDefaultsContext(),
                 search_default_group_by_create_date_day: 1,
             },
         });
@@ -218,6 +253,9 @@ export class RepairOrderCardRenderer extends Component {
     }
 
     getSidebarItemAgeLabel(item) {
+        if (item?.alert_label) {
+            return item.alert_label;
+        }
         if (!item?.age_days) {
             return _t("Hoy");
         }

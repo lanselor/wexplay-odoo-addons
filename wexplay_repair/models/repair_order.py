@@ -12,6 +12,16 @@ from .device_constants import DEVICE_TYPE_SELECTION
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
+    _SAT_PRIORITY_DEADLINE_FIELD_BY_VALUE = {
+        "normal": "x_sat_priority_normal_hours",
+        "urgent": "x_sat_priority_urgent_hours",
+        "company": "x_sat_priority_company_hours",
+        "warranty": "x_sat_priority_warranty_hours",
+        "budget": "x_sat_priority_budget_hours",
+        "budget_extended": "x_sat_priority_budget_extended_hours",
+        "express": "x_sat_priority_express_hours",
+    }
+
     state = fields.Selection(
         selection_add=[("done", "Finalizado")],
         ondelete={"done": "set default"},
@@ -28,6 +38,9 @@ class RepairOrder(models.Model):
             ("urgent", "Urgente"),
             ("company", "Empresa"),
             ("warranty", "Garantía"),
+            ("budget", "Presupuesto"),
+            ("budget_extended", "Presupuesto 2"),
+            ("express", "Express"),
         ],
         string="Prioridad SAT",
         default="normal",
@@ -277,11 +290,41 @@ class RepairOrder(models.Model):
             },
         }
 
+    def _get_sat_priority_deadline_hours_map(self):
+        self.ensure_one()
+        params = self.env["ir.config_parameter"].sudo()
+        hours_map = {}
+        for priority, field_name in self._SAT_PRIORITY_DEADLINE_FIELD_BY_VALUE.items():
+            default = self._get_sat_priority_deadline_default(priority)
+            hours_map[priority] = float(
+                params.get_param(f"wexplay_repair.{field_name}", default)
+            )
+        return hours_map
+
+    def _get_sat_priority_deadline_hours(self):
+        self.ensure_one()
+        priority = self.x_sat_priority or "normal"
+        return self._get_sat_priority_deadline_hours_map().get(priority) or 0.0
+
+    @api.model
+    def _get_sat_priority_deadline_default(self, priority):
+        defaults = {
+            "normal": 72.0,
+            "urgent": 24.0,
+            "company": 48.0,
+            "warranty": 72.0,
+            "budget": 72.0,
+            "budget_extended": 120.0,
+            "express": 1.0,
+        }
+        return defaults.get(priority, 0.0)
+
     @api.model
     def _get_repair_card_alert_thresholds(self):
         return {
             "waiting_spare_days": 3,
             "confirmed_stale_days": 2,
+            "express_risk_hours": 2,
             "section_limit": 6,
         }
 
@@ -302,8 +345,17 @@ class RepairOrder(models.Model):
     def _get_repair_card_base_domain(self, companies):
         return [
             ("company_id", "in", companies.ids),
-            ("state", "not in", ["done", "cancel"]),
+            ("state", "not in", ["done", "cancel", "delivered"]),
         ]
+
+    @api.model
+    def _get_repair_card_effective_domain(self, companies, active_domain=None, extra_domain=None):
+        domain = list(self._get_repair_card_base_domain(companies))
+        if active_domain:
+            domain += active_domain
+        if extra_domain:
+            domain += extra_domain
+        return domain
 
     @api.model
     def _prepare_repair_card_alert_item(self, repair, now_dt, state_labels):
@@ -316,7 +368,70 @@ class RepairOrder(models.Model):
             "state_label": state_labels.get(repair.state, repair.state or ""),
             "workflow": repair.product_location_src_id.complete_name or "",
             "age_days": age_days,
+            "alert_label": "",
         }
+
+    def _get_sat_priority_deadline_at(self):
+        self.ensure_one()
+        create_dt = fields.Datetime.to_datetime(self.create_date)
+        if not create_dt:
+            return False
+        return create_dt + timedelta(hours=self._get_sat_priority_deadline_hours())
+
+    def _get_sat_priority_overdue_delta(self, now_dt):
+        self.ensure_one()
+        deadline_dt = self._get_sat_priority_deadline_at()
+        if not deadline_dt:
+            return timedelta(0)
+        return now_dt - deadline_dt
+
+    def _is_sat_priority_overdue(self, now_dt):
+        self.ensure_one()
+        overdue_delta = self._get_sat_priority_overdue_delta(now_dt)
+        return overdue_delta.total_seconds() > 0
+
+    @api.model
+    def _format_repair_card_overdue_label(self, overdue_delta):
+        overdue_hours = max(int(overdue_delta.total_seconds() // 3600), 0)
+        overdue_days = overdue_hours // 24
+        if overdue_days >= 1:
+            if overdue_days == 1:
+                return _("1 dia de retraso")
+            return _("%s dias de retraso") % overdue_days
+        if overdue_hours <= 1:
+            return _("Menos de 1h de retraso")
+        return _("%s horas de retraso") % overdue_hours
+
+    @api.model
+    def _prepare_overdue_alert_item(self, repair, now_dt, state_labels):
+        item = self._prepare_repair_card_alert_item(repair, now_dt, state_labels)
+        item["alert_label"] = self._format_repair_card_overdue_label(
+            repair._get_sat_priority_overdue_delta(now_dt)
+        )
+        return item
+
+    @api.model
+    def _prepare_express_alert_item(self, repair, now_dt, state_labels):
+        item = self._prepare_repair_card_alert_item(repair, now_dt, state_labels)
+        deadline_dt = repair._get_sat_priority_deadline_at()
+        if deadline_dt:
+            remaining_delta = deadline_dt - now_dt
+            remaining_hours = max(int(remaining_delta.total_seconds() // 3600), 0)
+            if repair._is_sat_priority_overdue(now_dt):
+                item["alert_label"] = self._format_repair_card_overdue_label(
+                    repair._get_sat_priority_overdue_delta(now_dt)
+                )
+            elif remaining_hours <= 1:
+                item["alert_label"] = _("Vence en menos de 1h")
+            else:
+                item["alert_label"] = _("Vence en %s horas") % remaining_hours
+        return item
+
+    @api.model
+    def _prepare_without_responsible_alert_item(self, repair, now_dt, state_labels):
+        item = self._prepare_repair_card_alert_item(repair, now_dt, state_labels)
+        item["alert_label"] = _("Sin responsable")
+        return item
 
     @api.model
     def _build_repair_card_alert_section(
@@ -335,11 +450,14 @@ class RepairOrder(models.Model):
         full_domain = base_domain + domain
         repairs = self.search(full_domain, order="write_date asc, create_date asc, id asc", limit=limit)
         count = self.search_count(full_domain)
+        shown_count = len(repairs)
         return {
             "key": key,
             "title": title,
             "empty_message": empty_message,
             "count": count,
+            "shown_count": shown_count,
+            "hidden_count": max(count - shown_count, 0),
             "items": [
                 self._prepare_repair_card_alert_item(repair, now_dt, state_labels)
                 for repair in repairs
@@ -348,27 +466,74 @@ class RepairOrder(models.Model):
         }
 
     @api.model
-    def _get_waiting_spare_alert_section(self, companies, thresholds, now_dt, state_labels):
+    def _build_dynamic_repair_card_alert_section(
+        self,
+        *,
+        key,
+        title,
+        empty_message,
+        repairs,
+        now_dt,
+        state_labels,
+        limit,
+        prepare_item_method,
+    ):
+        shown_repairs = repairs[:limit]
+        return {
+            "key": key,
+            "title": title,
+            "empty_message": empty_message,
+            "count": len(repairs),
+            "shown_count": len(shown_repairs),
+            "hidden_count": max(len(repairs) - len(shown_repairs), 0),
+            "items": [
+                prepare_item_method(repair, now_dt, state_labels)
+                for repair in shown_repairs
+            ],
+            "domain": [("id", "in", repairs.ids or [0])],
+        }
+
+    @api.model
+    def _get_waiting_spare_alert_section(
+        self, companies, thresholds, now_dt, state_labels, active_domain=None
+    ):
         waiting_spare_location_ids = self._get_repair_card_waiting_spare_location_ids(companies)
         if not waiting_spare_location_ids:
             return {
                 "key": "waiting_spare",
                 "title": _("Pendiente de repuesto"),
-                "empty_message": _("No hay ubicacion de pendiente de repuesto configurada en las companias activas."),
+                "empty_message": _(
+                    "No hay ubicacion de pendiente de repuesto configurada en las companias activas."
+                ),
                 "count": 0,
+                "shown_count": 0,
+                "hidden_count": 0,
                 "items": [],
                 "domain": [],
             }
 
-        cutoff = now_dt - timedelta(days=thresholds["waiting_spare_days"])
+        repairs = self.search(
+            self._get_repair_card_effective_domain(
+                companies,
+                active_domain=active_domain,
+                extra_domain=[("product_location_src_id", "in", waiting_spare_location_ids)],
+            ),
+            order="create_date asc, id asc",
+        ).filtered(
+            lambda repair: (
+                fields.Datetime.to_datetime(
+                    getattr(repair, "x_waiting_spare_started_at", False)
+                    or repair.write_date
+                    or repair.create_date
+                )
+                <= now_dt - timedelta(days=thresholds["waiting_spare_days"])
+            )
+        )
         return self._build_repair_card_alert_section(
             key="waiting_spare",
             title=_("Pendiente de repuesto"),
             empty_message=_("No hay ordenes envejecidas en pendiente de repuesto ahora mismo."),
-            domain=[
-                ("product_location_src_id", "in", waiting_spare_location_ids),
-                ("write_date", "<=", fields.Datetime.to_string(cutoff)),
-            ],
+            domain=[("id", "in", repairs.ids or [0])],
             companies=companies,
             now_dt=now_dt,
             limit=thresholds["section_limit"],
@@ -376,7 +541,9 @@ class RepairOrder(models.Model):
         )
 
     @api.model
-    def _get_confirmed_stale_alert_section(self, companies, thresholds, now_dt, state_labels):
+    def _get_confirmed_stale_alert_section(
+        self, companies, thresholds, now_dt, state_labels, active_domain=None
+    ):
         waiting_spare_location_ids = self._get_repair_card_waiting_spare_location_ids(companies)
         cutoff = now_dt - timedelta(days=thresholds["confirmed_stale_days"])
         domain = [
@@ -389,7 +556,7 @@ class RepairOrder(models.Model):
             key="confirmed_stale",
             title=_("Confirmadas sin movimiento"),
             empty_message=_("No hay ordenes confirmadas que lleven demasiado tiempo sin movimiento."),
-            domain=domain,
+            domain=(active_domain or []) + domain,
             companies=companies,
             now_dt=now_dt,
             limit=thresholds["section_limit"],
@@ -397,19 +564,216 @@ class RepairOrder(models.Model):
         )
 
     @api.model
-    def _get_repair_card_alert_sections(self):
+    def _get_overdue_alert_section(
+        self, companies, thresholds, now_dt, state_labels, active_domain=None
+    ):
+        repairs = self.search(
+            self._get_repair_card_effective_domain(companies, active_domain=active_domain),
+            order="create_date asc, id asc",
+        ).filtered(lambda repair: repair._is_sat_priority_overdue(now_dt))
+        return self._build_dynamic_repair_card_alert_section(
+            key="overdue",
+            title=_("Con retraso"),
+            empty_message=_("No hay ordenes activas fuera de plazo ahora mismo."),
+            repairs=repairs,
+            now_dt=now_dt,
+            state_labels=state_labels,
+            limit=thresholds["section_limit"],
+            prepare_item_method=self._prepare_overdue_alert_item,
+        )
+
+    @api.model
+    def _get_express_alert_section(
+        self, companies, thresholds, now_dt, state_labels, active_domain=None
+    ):
+        repairs = self.search(
+            self._get_repair_card_effective_domain(
+                companies,
+                active_domain=active_domain,
+                extra_domain=[("x_sat_priority", "=", "express")],
+            ),
+            order="create_date asc, id asc",
+        ).filtered(
+            lambda repair: repair._is_sat_priority_overdue(now_dt)
+            or repair._get_sat_priority_overdue_delta(now_dt).total_seconds()
+            >= -(thresholds["express_risk_hours"] * 3600)
+        )
+        return self._build_dynamic_repair_card_alert_section(
+            key="express",
+            title=_("Express con riesgo"),
+            empty_message=_("No hay ordenes express con riesgo ahora mismo."),
+            repairs=repairs,
+            now_dt=now_dt,
+            state_labels=state_labels,
+            limit=thresholds["section_limit"],
+            prepare_item_method=self._prepare_express_alert_item,
+        )
+
+    @api.model
+    def _get_without_responsible_alert_section(
+        self, companies, thresholds, now_dt, state_labels, active_domain=None
+    ):
+        repairs = self.search(
+            self._get_repair_card_effective_domain(
+                companies,
+                active_domain=active_domain,
+                extra_domain=[("user_id", "=", False)],
+            ),
+            order="create_date asc, id asc",
+        )
+        return self._build_dynamic_repair_card_alert_section(
+            key="without_responsible",
+            title=_("Sin responsable"),
+            empty_message=_("No hay ordenes activas sin responsable."),
+            repairs=repairs,
+            now_dt=now_dt,
+            state_labels=state_labels,
+            limit=thresholds["section_limit"],
+            prepare_item_method=self._prepare_without_responsible_alert_item,
+        )
+
+    @api.model
+    def _get_repair_card_alert_sections(self, active_domain=None):
         companies = self._get_repair_card_sidebar_companies()
         now_dt = fields.Datetime.now()
         thresholds = self._get_repair_card_alert_thresholds()
         state_labels = self._get_repair_card_state_labels()
         return [
-            self._get_waiting_spare_alert_section(companies, thresholds, now_dt, state_labels),
-            self._get_confirmed_stale_alert_section(companies, thresholds, now_dt, state_labels),
+            self._get_overdue_alert_section(
+                companies, thresholds, now_dt, state_labels, active_domain=active_domain
+            ),
+            self._get_express_alert_section(
+                companies, thresholds, now_dt, state_labels, active_domain=active_domain
+            ),
+            self._get_waiting_spare_alert_section(
+                companies, thresholds, now_dt, state_labels, active_domain=active_domain
+            ),
+            self._get_without_responsible_alert_section(
+                companies, thresholds, now_dt, state_labels, active_domain=active_domain
+            ),
+            self._get_confirmed_stale_alert_section(
+                companies, thresholds, now_dt, state_labels, active_domain=active_domain
+            ),
         ]
 
     @api.model
-    def get_repair_card_sidebar_data(self):
+    def get_repair_card_sidebar_data(self, active_domain=None):
         return {
             "generated_at": fields.Datetime.to_string(fields.Datetime.now()),
-            "sections": self._get_repair_card_alert_sections(),
+            "sections": self._get_repair_card_alert_sections(active_domain=active_domain),
+        }
+
+    @api.model
+    def _has_repair_card_field(self, field_name):
+        return field_name in self._fields
+
+    @api.model
+    def _get_repair_card_v2_hero_base_domain(self, companies):
+        domain = [("company_id", "in", companies.ids)]
+        if self._has_repair_card_field("state"):
+            domain.append(("state", "not in", ["cancel"]))
+        return domain
+
+    @api.model
+    def _get_repair_card_v2_waiting_spare_domain(self, companies):
+        waiting_spare_location_ids = self._get_repair_card_waiting_spare_location_ids(companies)
+        if not waiting_spare_location_ids:
+            return [("id", "=", 0)]
+        return [("product_location_src_id", "in", waiting_spare_location_ids)]
+
+    @api.model
+    def _get_repair_card_v2_pending_pickup_domain(self, companies):
+        done_location_ids = companies.mapped("x_repair_state_location_done_id").ids
+        if not done_location_ids:
+            return [("id", "=", 0)]
+        return [
+            ("state", "in", ["done", "cancel"]),
+            ("product_location_src_id", "in", done_location_ids),
+        ]
+
+    @api.model
+    def _get_repair_card_v2_hero_sections_definition(self, companies):
+        sections = [
+            {
+                "key": "draft",
+                "title": _("Entrada / Nuevos"),
+                "short_title": _("Entrada"),
+                "domain": [("state", "=", "draft")],
+            },
+        ]
+        if self._has_repair_card_field("x_budget_stage"):
+            sections.append(
+                {
+                    "key": "estimating",
+                    "title": _("En revision"),
+                    "short_title": _("Revision"),
+                    "domain": [("x_budget_stage", "=", "estimating")],
+                }
+            )
+            sections.append(
+                {
+                    "key": "waiting_customer",
+                    "title": _("Pendiente cliente"),
+                    "short_title": _("Cliente"),
+                    "domain": [("x_budget_stage", "=", "waiting_customer")],
+                }
+            )
+            sections.append(
+                {
+                    "key": "accepted_budget",
+                    "title": _("Presupuesto aceptado"),
+                    "short_title": _("Aceptado"),
+                    "domain": [("x_budget_stage", "=", "accepted")],
+                }
+            )
+        sections.extend(
+            [
+                {
+                    "key": "confirmed",
+                    "title": _("Confirmadas"),
+                    "short_title": _("Confirmadas"),
+                    "domain": [("state", "=", "confirmed")],
+                },
+                {
+                    "key": "under_repair",
+                    "title": _("En reparacion"),
+                    "short_title": _("Reparacion"),
+                    "domain": [("state", "=", "under_repair")],
+                },
+                {
+                    "key": "waiting_spare",
+                    "title": _("Pendiente repuesto"),
+                    "short_title": _("Repuesto"),
+                    "domain": self._get_repair_card_v2_waiting_spare_domain(companies),
+                },
+                {
+                    "key": "pending_pickup",
+                    "title": _("Pendiente recoger"),
+                    "short_title": _("Recoger"),
+                    "domain": self._get_repair_card_v2_pending_pickup_domain(companies),
+                },
+            ]
+        )
+        return sections
+
+    @api.model
+    def get_repair_card_v2_hero_data(self, active_domain=None):
+        companies = self._get_repair_card_sidebar_companies()
+        base_domain = self._get_repair_card_v2_hero_base_domain(companies)
+        active_domain = active_domain or []
+        sections = []
+        for definition in self._get_repair_card_v2_hero_sections_definition(companies):
+            full_domain = base_domain + active_domain + definition["domain"]
+            sections.append(
+                {
+                    "key": definition["key"],
+                    "title": definition["title"],
+                    "short_title": definition["short_title"],
+                    "count": self.search_count(full_domain),
+                    "domain": full_domain,
+                }
+            )
+        return {
+            "generated_at": fields.Datetime.to_string(fields.Datetime.now()),
+            "sections": sections,
         }
