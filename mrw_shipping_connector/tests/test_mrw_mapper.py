@@ -322,6 +322,11 @@ class TestMRWMapper(TransactionCase):
             "http://www.mrw.es/CancelarEnvio",
         )
 
+    def test_client_uses_configured_timeout(self):
+        self.config.api_timeout_seconds = 120
+
+        self.assertEqual(MRWClient(self.config)._get_timeout(), 120)
+
     def test_client_cancel_shipment_calls_cancelar_envio(self):
         shipment = self._create_shipment()
         shipment.mrw_shipment_number = "01400F001137"
