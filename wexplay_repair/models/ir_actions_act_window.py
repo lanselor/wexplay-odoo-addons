@@ -13,11 +13,9 @@ class IrActionsActWindow(models.Model):
         if not action or not repair_card_view:
             return
 
-        repair_card_v2_view = self.env.ref("wexplay_repair.view_repair_order_card_v2", raise_if_not_found=False)
-
         action.write({
             "view_id": repair_card_view.id,
-            "view_mode": "repair_card,repair_card_v2,list,kanban,graph,pivot,form,activity",
+            "view_mode": "repair_card,list,kanban,graph,pivot,form,activity",
             "context": "{'search_default_group_by_create_date_day': 1, 'search_default_wex_my_repairs': 1}",
         })
 
@@ -31,15 +29,8 @@ class IrActionsActWindow(models.Model):
                 "sequence": 1,
             })
 
-        if repair_card_v2_view:
-            repair_card_v2_action_view = action.view_ids.filtered(lambda view: view.view_mode == "repair_card_v2")[:1]
-            if not repair_card_v2_action_view:
-                action_view_model.create({
-                    "act_window_id": action.id,
-                    "view_id": repair_card_v2_view.id,
-                    "view_mode": "repair_card_v2",
-                    "sequence": 2,
-                })
+        obsolete_view_mode = "_".join(("repair", "card", "v2"))
+        action.view_ids.filtered(lambda view: view.view_mode == obsolete_view_mode).unlink()
 
         ordered_views = repair_card_action_view | (action.view_ids - repair_card_action_view)
         for index, action_view in enumerate(ordered_views, start=1):

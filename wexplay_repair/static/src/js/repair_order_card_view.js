@@ -9,7 +9,7 @@ import { KanbanArchParser } from "@web/views/kanban/kanban_arch_parser";
 import { KanbanCompiler } from "@web/views/kanban/kanban_compiler";
 import { KanbanController } from "@web/views/kanban/kanban_controller";
 import { KanbanRenderer } from "@web/views/kanban/kanban_renderer";
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 
 const PRIORITY_CLASS_BY_VALUE = {
     normal: "is-priority-normal",
@@ -21,8 +21,12 @@ const PRIORITY_CLASS_BY_VALUE = {
     express: "is-priority-urgent",
 };
 
+const AUTOREFRESH_MS = 5 * 60 * 1000;
+const REPAIR_ORDER_VIEW_MODE = "repair_card,list,kanban,graph,pivot,form,activity";
+
 export class RepairOrderCardRenderer extends Component {
     static template = "wexplay_repair.RepairOrderCardView.Renderer";
+    static viewType = "repair_card";
     static props = KanbanRenderer.props;
     static defaultProps = KanbanRenderer.defaultProps;
 
@@ -31,17 +35,37 @@ export class RepairOrderCardRenderer extends Component {
         this.sidebarState = useState({
             loading: true,
             sections: [],
+            groups: [],
             generatedAt: null,
         });
+        this.heroState = useState({
+            loading: true,
+            sections: [],
+            indicators: [],
+        });
+        this._autoRefreshTimer = null;
 
         onWillStart(async () => {
-            await this.loadSidebar();
+            await Promise.all([this.loadSidebar(), this.loadHero()]);
         });
         if (this.env.searchModel) {
             useBus(this.env.searchModel, "update", () => {
                 this.loadSidebar();
+                this.loadHero();
             });
         }
+        onMounted(() => {
+            this._autoRefreshTimer = setInterval(() => {
+                this.loadSidebar();
+                this.loadHero();
+            }, AUTOREFRESH_MS);
+        });
+        onWillUnmount(() => {
+            if (this._autoRefreshTimer) {
+                clearInterval(this._autoRefreshTimer);
+                this._autoRefreshTimer = null;
+            }
+        });
     }
 
     get hasContent() {
@@ -62,10 +86,40 @@ export class RepairOrderCardRenderer extends Component {
         return this.sidebarState.sections || [];
     }
 
+    get sidebarGroups() {
+        return this.sidebarState.groups || [];
+    }
+
     get sidebarGeneratedAt() {
         return this.sidebarState.generatedAt
             ? this.formatServerDate(this.sidebarState.generatedAt)
             : "";
+    }
+
+    get heroSections() {
+        return this.heroState.sections || [];
+    }
+
+    get heroIndicators() {
+        return this.heroState.indicators || [];
+    }
+
+    get repairCardViewType() {
+        return this.constructor.viewType || "repair_card";
+    }
+
+    getRepairOrderViews() {
+        return [
+            [false, this.repairCardViewType],
+            [false, "list"],
+            [false, "kanban"],
+            [false, "graph"],
+            [false, "pivot"],
+            [false, "form"],
+            [false, "activity"],
+        ].filter((view, index, views) =>
+            index === views.findIndex((candidate) => candidate[1] === view[1])
+        );
     }
 
     async openRecord(record) {
@@ -99,14 +153,30 @@ export class RepairOrderCardRenderer extends Component {
         try {
             const data = await this.orm.call(
                 "repair.order",
-                "get_repair_card_sidebar_data",
-                [this.getActiveSearchDomain()],
+                "get_repair_card_sidebar_metrics_data",
+                [this.getPanelBaseDomain()],
                 {}
             );
-            this.sidebarState.sections = data.sections || [];
+            this.sidebarState.groups = data.groups || [];
             this.sidebarState.generatedAt = data.generated_at || null;
         } finally {
             this.sidebarState.loading = false;
+        }
+    }
+
+    async loadHero() {
+        this.heroState.loading = true;
+        try {
+            const data = await this.orm.call(
+                "repair.order",
+                "get_repair_card_hero_data",
+                [this.getPanelBaseDomain()],
+                {}
+            );
+            this.heroState.sections = data.sections || [];
+            this.heroState.indicators = data.indicators || [];
+        } finally {
+            this.heroState.loading = false;
         }
     }
 
@@ -117,13 +187,61 @@ export class RepairOrderCardRenderer extends Component {
         return this.props.list?.model?.root?.domain || [];
     }
 
+    getPanelBaseDomain() {
+        return this.env.searchModel?.globalContext?.wex_repair_panel_base_domain || this.getActiveSearchDomain();
+    }
+
+    getActiveHeroKey() {
+        return this.env.searchModel?.globalContext?.wex_repair_active_hero || "";
+    }
+
+    getHeroTabClass(section) {
+        const classes = ["wex_v2_hero_tab"];
+        if (section?.key && section.key === this.getActiveHeroKey()) {
+            classes.push("is-active");
+        }
+        return classes.join(" ");
+    }
+
+    getHeroIndicatorClass(indicator) {
+        const classes = ["wex_v2_hero_indicator", `is-severity-${indicator.severity || "muted"}`];
+        if (!indicator.enabled) {
+            classes.push("is-disabled");
+        }
+        return classes.join(" ");
+    }
+
+    getSidebarMetricClass(metric) {
+        const classes = ["wex_v2_sidebar_metric", `is-severity-${metric.severity || "muted"}`];
+        if (!metric.enabled) {
+            classes.push("is-disabled");
+        }
+        return classes.join(" ");
+    }
+
+    getSidebarGroupClass(group) {
+        return `wex_v2_sidebar_metric_group is-severity-${group.severity || "muted"}`;
+    }
+
     getCurrentSearchDefaultsContext() {
         const globalContext = this.env.searchModel?.globalContext || {};
-        return Object.fromEntries(
+        const defaultsFromContext = Object.fromEntries(
             Object.entries(globalContext).filter(([key, value]) =>
                 key.startsWith("search_default_") && value
             )
         );
+        const defaultsFromActiveFilters = {};
+        const searchModel = this.env.searchModel;
+        for (const queryElement of searchModel?.query || []) {
+            const searchItem = searchModel.searchItems?.[queryElement.searchItemId];
+            if (searchItem?.name) {
+                defaultsFromActiveFilters[`search_default_${searchItem.name}`] = 1;
+            }
+        }
+        return {
+            ...defaultsFromContext,
+            ...defaultsFromActiveFilters,
+        };
     }
 
     async openSidebarRecord(item) {
@@ -136,6 +254,62 @@ export class RepairOrderCardRenderer extends Component {
         });
     }
 
+    async openHeroSection(section) {
+        if (!section.domain?.length) {
+            return;
+        }
+        await this.env.services.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Ordenes de reparacion"),
+            res_model: "repair.order",
+            views: this.getRepairOrderViews(),
+            view_mode: REPAIR_ORDER_VIEW_MODE,
+            domain: section.domain,
+            target: "current",
+            context: {
+                ...this.getCurrentSearchDefaultsContext(),
+                search_default_group_by_create_date_day: 1,
+                wex_repair_panel_base_domain: this.getPanelBaseDomain(),
+                wex_repair_active_hero: section.key,
+            },
+        }, {
+            clearBreadcrumbs: true,
+        });
+    }
+
+    async openHeroIndicator(indicator) {
+        if (!indicator.enabled || !indicator.domain?.length) {
+            return;
+        }
+        await this.openMetricDomain(indicator.title || _t("Ordenes de reparacion"), indicator.domain);
+    }
+
+    async openSidebarMetric(metric) {
+        if (!metric.enabled || !metric.domain?.length) {
+            return;
+        }
+        await this.openMetricDomain(metric.title || _t("Ordenes de reparacion"), metric.domain);
+    }
+
+    async openMetricDomain(title, domain) {
+        await this.env.services.action.doAction({
+            type: "ir.actions.act_window",
+            name: title,
+            res_model: "repair.order",
+            views: this.getRepairOrderViews(),
+            view_mode: REPAIR_ORDER_VIEW_MODE,
+            domain,
+            target: "current",
+            context: {
+                ...this.getCurrentSearchDefaultsContext(),
+                search_default_group_by_create_date_day: 1,
+                wex_repair_panel_base_domain: this.getPanelBaseDomain(),
+            },
+        }, {
+            clearBreadcrumbs: true,
+        });
+    }
+
     async openSidebarSection(section) {
         if (!section.domain?.length) {
             return;
@@ -144,17 +318,14 @@ export class RepairOrderCardRenderer extends Component {
             type: "ir.actions.act_window",
             name: section.title || _t("Repair Orders"),
             res_model: "repair.order",
-            views: [
-                [false, "repair_card"],
-                [false, "list"],
-                [false, "form"],
-            ],
-            view_mode: "repair_card,list,form",
+            views: this.getRepairOrderViews(),
+            view_mode: REPAIR_ORDER_VIEW_MODE,
             domain: section.domain,
             target: "current",
             context: {
                 ...this.getCurrentSearchDefaultsContext(),
                 search_default_group_by_create_date_day: 1,
+                wex_repair_panel_base_domain: this.getPanelBaseDomain(),
             },
         });
     }

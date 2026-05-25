@@ -18,7 +18,42 @@
 
   <t t-name="wexplay_repair.RepairOrderCardView.Renderer" owl="1">
     <div class="o_wex_repair_card_renderer">
+      <div class="wex_v2_hero">
+        <div class="wex_v2_hero_track">
+        <button t-foreach="heroSections"
+                t-as="section"
+                t-key="section.key"
+                type="button"
+                t-att-class="this.getHeroTabClass(section)"
+                t-on-click="() => this.openHeroSection(section)">
+          <span class="wex_v2_hero_label">
+            <t t-esc="section.short_title || section.title"/>
+          </span>
+          <span class="wex_v2_hero_count">
+            <t t-esc="section.count"/>
+          </span>
+        </button>
+        </div>
+        <div t-if="heroIndicators.length" class="wex_v2_hero_indicators">
+          <button t-foreach="heroIndicators"
+                  t-as="indicator"
+                  t-key="indicator.key"
+                  type="button"
+                  t-att-class="this.getHeroIndicatorClass(indicator)"
+                  t-att-disabled="!indicator.enabled ? true : undefined"
+                  t-on-click="() => this.openHeroIndicator(indicator)">
+            <span class="wex_v2_hero_indicator_label">
+              <t t-esc="indicator.title"/>
+            </span>
+            <span class="wex_v2_hero_indicator_count">
+              <t t-esc="indicator.count"/>
+            </span>
+          </button>
+        </div>
+      </div>
+
       <div class="wex_repair_layout">
+
         <div class="wex_repair_content">
           <t t-if="!hasContent">
             <div class="o_view_nocontent_smiling_face wex_repair_empty_state">
@@ -75,21 +110,21 @@
         </div>
 
         <aside class="wex_repair_sidebar">
-          <div class="wex_repair_sidebar_panel">
-            <div class="wex_repair_sidebar_header">
-              <div>
-                <div class="wex_repair_sidebar_kicker">Atencion SAT</div>
-                <div class="wex_repair_sidebar_title">Pendientes que no deberian dormirse</div>
-              </div>
-              <button type="button"
-                      class="btn btn-sm btn-outline-secondary wex_repair_sidebar_refresh"
-                      t-att-disabled="sidebarState.loading ? true : undefined"
-                      t-on-click="() => this.loadSidebar()">
-                <i class="fa fa-refresh me-1"/>
-                Refrescar
-              </button>
+          <div class="wex_repair_sidebar_header">
+            <div>
+              <div class="wex_repair_sidebar_kicker">Atencion SAT</div>
+              <div class="wex_repair_sidebar_title">Pendientes que no deberian dormirse</div>
             </div>
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary wex_repair_sidebar_refresh"
+                    t-att-disabled="sidebarState.loading ? true : undefined"
+                    t-on-click="() => this.loadSidebar()">
+              <i class="fa fa-refresh me-1"/>
+              Refrescar
+            </button>
+          </div>
 
+          <div class="wex_repair_sidebar_body">
             <div t-if="sidebarGeneratedAt" class="wex_repair_sidebar_timestamp">
               Actualizado: <t t-esc="sidebarGeneratedAt"/>
             </div>
@@ -99,70 +134,36 @@
             </div>
 
             <div t-else="" class="wex_repair_sidebar_sections">
-              <t t-foreach="sidebarSections" t-as="section" t-key="section.key">
-                <section class="wex_repair_sidebar_section">
-                  <button type="button"
-                          class="wex_repair_sidebar_section_header"
-                          t-att-disabled="!section.count ? true : undefined"
-                          t-on-click="() => this.openSidebarSection(section)">
-                    <span class="wex_repair_sidebar_section_heading">
-                      <span class="wex_repair_sidebar_section_title">
-                        <t t-esc="section.title"/>
-                      </span>
-                      <span t-if="section.count" class="wex_repair_sidebar_section_summary">
-                        Mostrando <t t-esc="section.shown_count"/> de <t t-esc="section.count"/>
-                      </span>
-                    </span>
-                    <span class="wex_repair_sidebar_section_count">
-                      <t t-esc="section.count"/>
-                    </span>
-                  </button>
-
-                  <t t-if="section.items.length">
-                    <div class="wex_repair_sidebar_list">
-                      <button t-foreach="section.items"
-                              t-as="item"
-                              t-key="item.id"
-                              type="button"
-                              class="wex_repair_sidebar_item"
-                              t-on-click="() => this.openSidebarRecord(item)">
-                        <span class="wex_repair_sidebar_item_top">
-                          <span class="wex_repair_sidebar_item_name">
-                            <t t-esc="item.name"/>
-                          </span>
-                          <span class="wex_repair_sidebar_item_age">
-                            <t t-esc="this.getSidebarItemAgeLabel(item)"/>
-                          </span>
-                        </span>
-                        <span t-if="item.customer" class="wex_repair_sidebar_item_customer">
-                          <t t-esc="item.customer"/>
-                        </span>
-                        <span t-if="item.device" class="wex_repair_sidebar_item_device">
-                          <t t-esc="item.device"/>
-                        </span>
-                        <span class="wex_repair_sidebar_item_meta">
-                          <t t-esc="item.state_label"/>
-                          <t t-if="item.workflow"> · <t t-esc="item.workflow"/></t>
-                        </span>
-                      </button>
-                    </div>
-                  </t>
-
-                  <div t-else="" class="wex_repair_sidebar_empty">
-                    <t t-esc="section.empty_message"/>
+              <t t-foreach="sidebarGroups" t-as="group" t-key="group.key">
+                <section t-att-class="this.getSidebarGroupClass(group)">
+                  <div class="wex_v2_sidebar_metric_group_title">
+                    <t t-esc="group.title"/>
                   </div>
-
-                  <button t-if="section.hidden_count"
-                          type="button"
-                          class="wex_repair_sidebar_more"
-                          t-on-click="() => this.openSidebarSection(section)">
-                    Ver las <t t-esc="section.hidden_count"/> restantes
-                  </button>
+                  <div class="wex_v2_sidebar_metric_list">
+                    <button t-foreach="group.metrics"
+                            t-as="metric"
+                            t-key="metric.key"
+                            type="button"
+                            t-att-class="this.getSidebarMetricClass(metric)"
+                            t-att-disabled="!metric.enabled ? true : undefined"
+                            t-on-click="() => this.openSidebarMetric(metric)">
+                      <span class="wex_v2_sidebar_metric_label">
+                        <t t-esc="metric.title"/>
+                      </span>
+                      <span class="wex_v2_sidebar_metric_count">
+                        <t t-esc="metric.count"/>
+                      </span>
+                      <span t-if="metric.enabled" class="wex_v2_sidebar_metric_arrow">
+                        →
+                      </span>
+                    </button>
+                  </div>
                 </section>
               </t>
             </div>
           </div>
         </aside>
+
       </div>
     </div>
   </t>

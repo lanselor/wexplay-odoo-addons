@@ -592,3 +592,456 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+.o_action_manager .wex_v2_hero {
+    margin: -2px 0 8px;
+}
+
+.o_action_manager .wex_v2_hero_track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0;
+    border-bottom: 1px solid rgba(184, 193, 212, 0.95);
+}
+
+.o_action_manager .wex_v2_hero_indicators {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 7px 0 2px;
+}
+
+.o_action_manager .wex_v2_hero_indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid rgba(214, 220, 232, 0.86);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.62);
+    color: var(--wex-repair-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.o_action_manager .wex_v2_hero_indicator:not(.is-disabled):hover,
+.o_action_manager .wex_v2_hero_indicator:not(.is-disabled):focus {
+    background: rgba(255, 255, 255, 0.94);
+    outline: none;
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-severity-warning {
+    border-color: rgba(224, 176, 76, 0.34);
+    background: rgba(224, 176, 76, 0.11);
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-severity-critical {
+    border-color: rgba(194, 75, 75, 0.3);
+    background: rgba(194, 75, 75, 0.1);
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-disabled {
+    opacity: 0.66;
+    cursor: default;
+}
+
+.o_action_manager .wex_v2_hero_indicator_count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--wex-repair-ink);
+    text-align: center;
+}
+
+.o_action_manager .wex_v2_hero_tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    margin: 0 4px -1px 0;
+    padding: 7px 12px 8px;
+    border: 1px solid transparent;
+    border-bottom-color: rgba(184, 193, 212, 0.95);
+    border-radius: 12px 12px 0 0;
+    background: transparent;
+    color: var(--wex-repair-muted);
+    text-align: left;
+    transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.o_action_manager .wex_v2_hero_tab:hover,
+.o_action_manager .wex_v2_hero_tab:focus {
+    border-color: rgba(184, 193, 212, 0.95);
+    border-bottom-color: rgba(184, 193, 212, 0.95);
+    background: rgba(255, 255, 255, 0.58);
+    color: var(--wex-repair-ink);
+    outline: none;
+}
+
+.o_action_manager .wex_v2_hero_tab.is-active {
+    border-color: rgba(150, 163, 191, 0.96);
+    border-bottom-color: #f8f8fc;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--wex-repair-ink);
+}
+
+.o_action_manager .wex_v2_hero_tab.is-active::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px;
+    height: 2px;
+    background: #f8f8fc;
+}
+
+.o_action_manager .wex_v2_hero_label {
+    font-size: 0.74rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_v2_hero_count {
+    color: var(--wex-repair-ink);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_repair_layout {
+    grid-template-columns: minmax(0, 1fr) 366px;
+    gap: 12px;
+}
+
+.o_action_manager .wex_repair_sidebar {
+    position: sticky;
+    top: 6px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-self: start;
+    min-height: 0;
+    max-height: calc(100vh - 92px);
+    padding-top: 0;
+}
+
+.o_action_manager .wex_repair_sidebar_header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 4px 0 8px;
+}
+
+.o_action_manager .wex_repair_sidebar_body {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 2px 0 0;
+}
+
+.o_action_manager .wex_repair_sidebar_body::-webkit-scrollbar {
+    width: 7px;
+}
+
+.o_action_manager .wex_repair_sidebar_body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(141, 152, 180, 0.38);
+}
+
+.o_action_manager .wex_repair_sidebar_kicker {
+    font-size: 0.66rem;
+}
+
+.o_action_manager .wex_repair_sidebar_title {
+    margin-top: 1px;
+    font-size: 1.08rem;
+}
+
+.o_action_manager .wex_repair_sidebar_timestamp,
+.o_action_manager .wex_repair_sidebar_loading,
+.o_action_manager .wex_repair_sidebar_empty {
+    font-size: 0.77rem;
+}
+
+.o_action_manager .wex_repair_sidebar_sections {
+    display: grid;
+    gap: 12px;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group {
+    display: grid;
+    gap: 5px;
+    padding: 9px 0 10px;
+    border-top: 1px solid rgba(214, 220, 232, 0.92);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-muted);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-critical .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-warning .wex_v2_sidebar_metric_group_title {
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-today .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-accent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_list {
+    display: grid;
+    gap: 3px;
+}
+
+.o_action_manager .wex_v2_sidebar_metric {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    color: var(--wex-repair-ink);
+    text-align: left;
+}
+
+.o_action_manager .wex_v2_sidebar_metric:not(.is-disabled):hover,
+.o_action_manager .wex_v2_sidebar_metric:not(.is-disabled):focus {
+    color: var(--wex-repair-accent);
+    outline: none;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-disabled {
+    color: var(--wex-repair-muted);
+    cursor: default;
+    opacity: 0.66;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_label {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.79rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_count {
+    min-width: 33px;
+    padding: 1px 8px;
+    border: 1px solid rgba(214, 220, 232, 0.88);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--wex-repair-muted);
+    font-size: 0.73rem;
+    font-weight: 900;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_arrow {
+    color: currentColor;
+    font-size: 0.88rem;
+    font-weight: 900;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-critical:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(194, 75, 75, 0.24);
+    background: rgba(194, 75, 75, 0.1);
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-warning:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(224, 176, 76, 0.28);
+    background: rgba(224, 176, 76, 0.12);
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-info:not(.is-disabled) .wex_v2_sidebar_metric_count,
+.o_action_manager .wex_v2_sidebar_metric.is-severity-today:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(96, 112, 158, 0.22);
+    background: rgba(96, 112, 158, 0.08);
+    color: var(--wex-repair-accent);
+}
+
+.o_action_manager .wex_repair_sidebar_section {
+    display: grid;
+    gap: 7px;
+    padding: 9px 0 10px;
+    border: 0;
+    border-top: 1px solid rgba(214, 220, 232, 0.92);
+    border-radius: 0;
+    background: transparent;
+}
+
+.o_action_manager .wex_repair_sidebar_section:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.o_action_manager .wex_repair_sidebar_section_header {
+    gap: 8px;
+}
+
+.o_action_manager .wex_repair_sidebar_section_title {
+    font-size: 0.8rem;
+}
+
+.o_action_manager .wex_repair_sidebar_section_count {
+    min-width: 32px;
+    padding: 0.08rem 0.42rem;
+    font-size: 0.66rem;
+}
+
+.o_action_manager .wex_repair_sidebar_list {
+    gap: 6px;
+}
+
+.o_action_manager .wex_repair_sidebar_item {
+    gap: 1px;
+    padding: 8px 9px;
+    border-radius: 10px;
+}
+
+.o_action_manager .wex_repair_sidebar_item_name {
+    font-size: 0.76rem;
+}
+
+.o_action_manager .wex_repair_sidebar_item_age {
+    font-size: 0.62rem;
+}
+
+.o_action_manager .wex_repair_sidebar_item_customer,
+.o_action_manager .wex_repair_sidebar_item_device,
+.o_action_manager .wex_repair_sidebar_item_meta {
+    font-size: 0.67rem;
+}
+
+.o_action_manager .wex_repair_sidebar_section.is-severity-critical {
+    border-top-color: rgba(194, 75, 75, 0.24);
+}
+
+.o_action_manager .wex_repair_sidebar_section.is-severity-critical .wex_repair_sidebar_section_count {
+    background: rgba(194, 75, 75, 0.1);
+    color: var(--wex-repair-priority-urgent);
+    border-color: rgba(194, 75, 75, 0.24);
+}
+
+.o_action_manager .wex_repair_sidebar_section.is-severity-critical .wex_repair_sidebar_section_title {
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_repair_sidebar_section.is-severity-warning .wex_repair_sidebar_section_count {
+    background: rgba(224, 176, 76, 0.12);
+    color: #956e0e;
+    border-color: rgba(224, 176, 76, 0.28);
+}
+
+.o_action_manager .wex_repair_sidebar_section.is-severity-ok .wex_repair_sidebar_section_count {
+    background: rgba(78, 173, 114, 0.1);
+    color: var(--wex-repair-done);
+    border-color: rgba(78, 173, 114, 0.22);
+}
+
+.o_action_manager .wex_v2_sidebar_progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.o_action_manager .wex_v2_sidebar_progress_track {
+    flex: 1 1 auto;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(214, 220, 232, 0.6);
+    overflow: hidden;
+}
+
+.o_action_manager .wex_v2_sidebar_progress_fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--wex-repair-accent);
+    transition: width 0.4s ease;
+}
+
+.o_action_manager .wex_v2_sidebar_progress_label {
+    flex: 0 0 auto;
+    color: var(--wex-repair-muted);
+    font-size: 0.6rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+    .o_action_manager .wex_repair_sidebar {
+        position: static;
+        max-height: none;
+    }
+
+    .o_action_manager .wex_repair_sidebar_body {
+        overflow: visible;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .o_action_manager .wex_v2_hero {
+        margin-bottom: 6px;
+    }
+
+    .o_action_manager .wex_v2_hero_track {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+
+    .o_action_manager .wex_v2_hero_track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .o_action_manager .wex_v2_hero_tab {
+        flex: 0 0 auto;
+        min-height: 34px;
+        padding: 6px 10px 7px;
+    }
+
+    .o_action_manager .wex_v2_hero_label {
+        font-size: 0.7rem;
+    }
+
+    .o_action_manager .wex_v2_hero_count {
+        font-size: 0.92rem;
+    }
+}

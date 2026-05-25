@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -668,21 +668,21 @@ class RepairOrder(models.Model):
         return field_name in self._fields
 
     @api.model
-    def _get_repair_card_v2_hero_base_domain(self, companies):
+    def _get_repair_card_hero_base_domain(self, companies):
         domain = [("company_id", "in", companies.ids)]
         if self._has_repair_card_field("state"):
             domain.append(("state", "not in", ["cancel"]))
         return domain
 
     @api.model
-    def _get_repair_card_v2_waiting_spare_domain(self, companies):
+    def _get_repair_card_waiting_spare_domain(self, companies):
         waiting_spare_location_ids = self._get_repair_card_waiting_spare_location_ids(companies)
         if not waiting_spare_location_ids:
             return [("id", "=", 0)]
         return [("product_location_src_id", "in", waiting_spare_location_ids)]
 
     @api.model
-    def _get_repair_card_v2_pending_pickup_domain(self, companies):
+    def _get_repair_card_pending_pickup_domain(self, companies):
         done_location_ids = companies.mapped("x_repair_state_location_done_id").ids
         if not done_location_ids:
             return [("id", "=", 0)]
@@ -692,7 +692,7 @@ class RepairOrder(models.Model):
         ]
 
     @api.model
-    def _get_repair_card_v2_hero_sections_definition(self, companies):
+    def _get_repair_card_hero_sections_definition(self, companies):
         sections = [
             {
                 "key": "draft",
@@ -744,25 +744,279 @@ class RepairOrder(models.Model):
                     "key": "waiting_spare",
                     "title": _("Pendiente repuesto"),
                     "short_title": _("Repuesto"),
-                    "domain": self._get_repair_card_v2_waiting_spare_domain(companies),
+                    "domain": self._get_repair_card_waiting_spare_domain(companies),
                 },
                 {
                     "key": "pending_pickup",
                     "title": _("Pendiente recoger"),
                     "short_title": _("Recoger"),
-                    "domain": self._get_repair_card_v2_pending_pickup_domain(companies),
+                    "domain": self._get_repair_card_pending_pickup_domain(companies),
                 },
             ]
         )
         return sections
 
+    def _get_repair_card_phase_started_at(self):
+        self.ensure_one()
+        return fields.Datetime.to_datetime(self.write_date or self.create_date)
+
+    def _get_repair_card_sla_elapsed_ratio(self, now_dt):
+        self.ensure_one()
+        phase_started_at = self._get_repair_card_phase_started_at()
+        sla_hours = self._get_sat_priority_deadline_hours()
+        if not phase_started_at or not sla_hours:
+            return 0.0
+        elapsed_hours = max((now_dt - phase_started_at).total_seconds() / 3600.0, 0.0)
+        return elapsed_hours / sla_hours
+
+    def _is_repair_card_sla_overdue(self, now_dt):
+        self.ensure_one()
+        return self._get_repair_card_sla_elapsed_ratio(now_dt) > 1.0
+
+    def _is_repair_card_sla_at_risk(self, now_dt):
+        self.ensure_one()
+        ratio = self._get_repair_card_sla_elapsed_ratio(now_dt)
+        return 0.8 <= ratio <= 1.0
+
     @api.model
-    def get_repair_card_v2_hero_data(self, active_domain=None):
+    def _get_repair_card_active_repairs(self, companies, active_domain=None):
+        return self.search(
+            self._get_repair_card_effective_domain(companies, active_domain=active_domain),
+            order="write_date asc, create_date asc, id asc",
+        )
+
+    @api.model
+    def _get_repair_card_schedule_domain(self, day):
+        start_dt = datetime.combine(day, time.min)
+        end_dt = start_dt + timedelta(days=1)
+        return [
+            ("schedule_date", ">=", fields.Datetime.to_string(start_dt)),
+            ("schedule_date", "<", fields.Datetime.to_string(end_dt)),
+        ]
+
+    @api.model
+    def _build_repair_card_metric(self, key, title, repairs, severity):
+        return {
+            "key": key,
+            "title": title,
+            "count": len(repairs),
+            "domain": [("id", "in", repairs.ids or [0])],
+            "severity": severity,
+            "enabled": bool(repairs),
+        }
+
+    @api.model
+    def _get_repair_card_metric_repairs(self, companies, active_domain=None):
+        now_dt = fields.Datetime.now()
+        today = fields.Date.context_today(self)
+        tomorrow = today + timedelta(days=1)
+        active_repairs = self._get_repair_card_active_repairs(
+            companies, active_domain=active_domain
+        )
+        waiting_spare_location_ids = self._get_repair_card_waiting_spare_location_ids(companies)
+        done_location_ids = companies.mapped("x_repair_state_location_done_id").ids
+
+        overdue_repairs = active_repairs.filtered(
+            lambda repair: repair._is_repair_card_sla_overdue(now_dt)
+        )
+        critical_overdue_repairs = overdue_repairs.filtered(
+            lambda repair: repair.x_sat_priority in ("express", "urgent")
+        )
+        regular_overdue_repairs = overdue_repairs - critical_overdue_repairs
+        at_risk_repairs = active_repairs.filtered(
+            lambda repair: repair._is_repair_card_sla_at_risk(now_dt)
+        )
+        draft_stale_repairs = active_repairs.filtered(
+            lambda repair: repair.state == "draft"
+            and repair._get_repair_card_phase_started_at()
+            and repair._get_repair_card_phase_started_at() <= now_dt - timedelta(hours=48)
+        )
+        under_repair_stale_repairs = active_repairs.filtered(
+            lambda repair: repair.state == "under_repair"
+            and repair._get_repair_card_phase_started_at()
+            and repair._get_repair_card_phase_started_at() <= now_dt - timedelta(hours=24)
+        )
+        waiting_spare_repairs = active_repairs.filtered(
+            lambda repair: repair.product_location_src_id.id in waiting_spare_location_ids
+        )
+        without_responsible_repairs = active_repairs.filtered(lambda repair: not repair.user_id)
+        confirmed_stale_repairs = active_repairs.filtered(
+            lambda repair: repair.state == "confirmed"
+            and repair._get_repair_card_phase_started_at()
+            and repair._get_repair_card_phase_started_at() <= now_dt - timedelta(days=2)
+        )
+
+        today_schedule_repairs = self.search(
+            self._get_repair_card_effective_domain(
+                companies,
+                active_domain=active_domain,
+                extra_domain=self._get_repair_card_schedule_domain(today),
+            ),
+            order="schedule_date asc, id asc",
+        )
+        tomorrow_schedule_repairs = self.search(
+            self._get_repair_card_effective_domain(
+                companies,
+                active_domain=active_domain,
+                extra_domain=self._get_repair_card_schedule_domain(tomorrow),
+            ),
+            order="schedule_date asc, id asc",
+        )
+        today_at_risk_repairs = today_schedule_repairs.filtered(
+            lambda repair: not (
+                repair.state in ("done", "cancel", "delivered")
+                or repair.product_location_src_id.id in done_location_ids
+            )
+        )
+
+        return {
+            "overdue_all": overdue_repairs,
+            "overdue_critical": critical_overdue_repairs,
+            "overdue_regular": regular_overdue_repairs,
+            "sla_at_risk": at_risk_repairs,
+            "today_at_risk": today_at_risk_repairs,
+            "draft_stale": draft_stale_repairs,
+            "under_repair_stale": under_repair_stale_repairs,
+            "waiting_spare": waiting_spare_repairs,
+            "without_responsible": without_responsible_repairs,
+            "confirmed_stale": confirmed_stale_repairs,
+            "today_schedule": today_schedule_repairs,
+            "tomorrow_schedule": tomorrow_schedule_repairs,
+        }
+
+    @api.model
+    def _get_repair_card_hero_indicators(self, companies, active_domain=None):
+        metric_repairs = self._get_repair_card_metric_repairs(
+            companies, active_domain=active_domain
+        )
+        return [
+            self._build_repair_card_metric(
+                "overdue_all",
+                _("Con retraso"),
+                metric_repairs["overdue_all"],
+                "warning",
+            ),
+            self._build_repair_card_metric(
+                "overdue_critical",
+                _("SLA critico"),
+                metric_repairs["overdue_critical"],
+                "critical",
+            ),
+        ]
+
+    @api.model
+    def get_repair_card_sidebar_metrics_data(self, active_domain=None):
         companies = self._get_repair_card_sidebar_companies()
-        base_domain = self._get_repair_card_v2_hero_base_domain(companies)
+        metric_repairs = self._get_repair_card_metric_repairs(
+            companies, active_domain=active_domain
+        )
+        return {
+            "generated_at": fields.Datetime.to_string(fields.Datetime.now()),
+            "groups": [
+                {
+                    "key": "critical",
+                    "title": _("Critico"),
+                    "severity": "critical",
+                    "metrics": [
+                        self._build_repair_card_metric(
+                            "overdue_critical",
+                            _("SLA superado - Express/Urgente"),
+                            metric_repairs["overdue_critical"],
+                            "critical",
+                        ),
+                        self._build_repair_card_metric(
+                            "today_at_risk",
+                            _("Compromisos de hoy en riesgo"),
+                            metric_repairs["today_at_risk"],
+                            "critical",
+                        ),
+                    ],
+                },
+                {
+                    "key": "attention",
+                    "title": _("Atencion"),
+                    "severity": "warning",
+                    "metrics": [
+                        self._build_repair_card_metric(
+                            "overdue_regular",
+                            _("SLA superado - resto prioridades"),
+                            metric_repairs["overdue_regular"],
+                            "warning",
+                        ),
+                        self._build_repair_card_metric(
+                            "sla_at_risk",
+                            _("SLA en riesgo (>80% consumido)"),
+                            metric_repairs["sla_at_risk"],
+                            "warning",
+                        ),
+                        self._build_repair_card_metric(
+                            "confirmed_stale",
+                            _("Confirmadas sin movimiento"),
+                            metric_repairs["confirmed_stale"],
+                            "warning",
+                        ),
+                    ],
+                },
+                {
+                    "key": "operational",
+                    "title": _("Operativo"),
+                    "severity": "info",
+                    "metrics": [
+                        self._build_repair_card_metric(
+                            "draft_stale",
+                            _("En ENTRADA sin primer toque +48h"),
+                            metric_repairs["draft_stale"],
+                            "info",
+                        ),
+                        self._build_repair_card_metric(
+                            "waiting_spare",
+                            _("Pendiente de repuesto"),
+                            metric_repairs["waiting_spare"],
+                            "info",
+                        ),
+                        self._build_repair_card_metric(
+                            "without_responsible",
+                            _("Sin responsable"),
+                            metric_repairs["without_responsible"],
+                            "info",
+                        ),
+                        self._build_repair_card_metric(
+                            "under_repair_stale",
+                            _("En reparacion sin movimiento +24h"),
+                            metric_repairs["under_repair_stale"],
+                            "info",
+                        ),
+                    ],
+                },
+                {
+                    "key": "today",
+                    "title": _("Hoy"),
+                    "severity": "today",
+                    "metrics": [
+                        self._build_repair_card_metric(
+                            "today_schedule",
+                            _("Entregas comprometidas para hoy"),
+                            metric_repairs["today_schedule"],
+                            "today",
+                        ),
+                        self._build_repair_card_metric(
+                            "tomorrow_schedule",
+                            _("Entregas comprometidas manana"),
+                            metric_repairs["tomorrow_schedule"],
+                            "today",
+                        ),
+                    ],
+                },
+            ],
+        }
+
+    @api.model
+    def get_repair_card_hero_data(self, active_domain=None):
+        companies = self._get_repair_card_sidebar_companies()
+        base_domain = self._get_repair_card_hero_base_domain(companies)
         active_domain = active_domain or []
         sections = []
-        for definition in self._get_repair_card_v2_hero_sections_definition(companies):
+        for definition in self._get_repair_card_hero_sections_definition(companies):
             full_domain = base_domain + active_domain + definition["domain"]
             sections.append(
                 {
@@ -776,4 +1030,7 @@ class RepairOrder(models.Model):
         return {
             "generated_at": fields.Datetime.to_string(fields.Datetime.now()),
             "sections": sections,
+            "indicators": self._get_repair_card_hero_indicators(
+                companies, active_domain=active_domain
+            ),
         }

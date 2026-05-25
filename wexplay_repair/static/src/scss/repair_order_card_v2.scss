@@ -10,6 +10,61 @@
     border-bottom: 1px solid rgba(184, 193, 212, 0.95);
 }
 
+.o_action_manager .wex_v2_hero_indicators {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 7px 0 2px;
+}
+
+.o_action_manager .wex_v2_hero_indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid rgba(214, 220, 232, 0.86);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.62);
+    color: var(--wex-repair-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.o_action_manager .wex_v2_hero_indicator:not(.is-disabled):hover,
+.o_action_manager .wex_v2_hero_indicator:not(.is-disabled):focus {
+    background: rgba(255, 255, 255, 0.94);
+    outline: none;
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-severity-warning {
+    border-color: rgba(224, 176, 76, 0.34);
+    background: rgba(224, 176, 76, 0.11);
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-severity-critical {
+    border-color: rgba(194, 75, 75, 0.3);
+    background: rgba(194, 75, 75, 0.1);
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_hero_indicator.is-disabled {
+    opacity: 0.66;
+    cursor: default;
+}
+
+.o_action_manager .wex_v2_hero_indicator_count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--wex-repair-ink);
+    text-align: center;
+}
+
 .o_action_manager .wex_v2_hero_tab {
     position: relative;
     display: inline-flex;
@@ -70,7 +125,7 @@
 }
 
 .o_action_manager .wex_repair_layout {
-    grid-template-columns: minmax(0, 1fr) 318px;
+    grid-template-columns: minmax(0, 1fr) 366px;
     gap: 12px;
 }
 
@@ -115,23 +170,134 @@
 }
 
 .o_action_manager .wex_repair_sidebar_kicker {
-    font-size: 0.6rem;
+    font-size: 0.66rem;
 }
 
 .o_action_manager .wex_repair_sidebar_title {
     margin-top: 1px;
-    font-size: 0.98rem;
+    font-size: 1.08rem;
 }
 
 .o_action_manager .wex_repair_sidebar_timestamp,
 .o_action_manager .wex_repair_sidebar_loading,
 .o_action_manager .wex_repair_sidebar_empty {
-    font-size: 0.7rem;
+    font-size: 0.77rem;
 }
 
 .o_action_manager .wex_repair_sidebar_sections {
     display: grid;
-    gap: 10px;
+    gap: 12px;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group {
+    display: grid;
+    gap: 5px;
+    padding: 9px 0 10px;
+    border-top: 1px solid rgba(214, 220, 232, 0.92);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-muted);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-critical .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-warning .wex_v2_sidebar_metric_group_title {
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_group.is-severity-today .wex_v2_sidebar_metric_group_title {
+    color: var(--wex-repair-accent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric_list {
+    display: grid;
+    gap: 3px;
+}
+
+.o_action_manager .wex_v2_sidebar_metric {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    color: var(--wex-repair-ink);
+    text-align: left;
+}
+
+.o_action_manager .wex_v2_sidebar_metric:not(.is-disabled):hover,
+.o_action_manager .wex_v2_sidebar_metric:not(.is-disabled):focus {
+    color: var(--wex-repair-accent);
+    outline: none;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-disabled {
+    color: var(--wex-repair-muted);
+    cursor: default;
+    opacity: 0.66;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_label {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.79rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_count {
+    min-width: 33px;
+    padding: 1px 8px;
+    border: 1px solid rgba(214, 220, 232, 0.88);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--wex-repair-muted);
+    font-size: 0.73rem;
+    font-weight: 900;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.o_action_manager .wex_v2_sidebar_metric_arrow {
+    color: currentColor;
+    font-size: 0.88rem;
+    font-weight: 900;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-critical:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(194, 75, 75, 0.24);
+    background: rgba(194, 75, 75, 0.1);
+    color: var(--wex-repair-priority-urgent);
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-warning:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(224, 176, 76, 0.28);
+    background: rgba(224, 176, 76, 0.12);
+    color: #956e0e;
+}
+
+.o_action_manager .wex_v2_sidebar_metric.is-severity-info:not(.is-disabled) .wex_v2_sidebar_metric_count,
+.o_action_manager .wex_v2_sidebar_metric.is-severity-today:not(.is-disabled) .wex_v2_sidebar_metric_count {
+    border-color: rgba(96, 112, 158, 0.22);
+    background: rgba(96, 112, 158, 0.08);
+    color: var(--wex-repair-accent);
 }
 
 .o_action_manager .wex_repair_sidebar_section {

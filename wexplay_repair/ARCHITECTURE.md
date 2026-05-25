@@ -39,6 +39,7 @@ This module is currently both:
 
 ### `models/res_config_settings.py`
 - Exposes SAT company settings in the UI
+- Exposes SAT operational deadline settings for the closed `x_sat_priority` catalog
 
 ### `models/account_move.py`
 - Resolves SAT repairs linked to an invoice
@@ -49,11 +50,18 @@ This module is currently both:
 ### `models/ir_ui_view.py` and `models/ir_actions_act_window.py`
 - Registers the custom `repair_card` view type
 - Makes the repair card view the default entry view for repair orders
+- Registers and wires the experimental `repair_card_v2` view for iterative SAT UX work
 
 ### `static/src/js|xml|scss/repair_order_card_view.*`
 - Renders the custom SAT operational card view
 - Includes a desktop sidebar with actionable repair alerts for technicians
 - Keeps alert rules in Python and limits OWL to presentation and navigation
+
+### `static/src/js|xml|scss/repair_order_card_v2.*`
+- Hosts the experimental SAT operational view used to iterate without destabilizing the main card entry
+- Reuses the existing repair cards for the central list
+- Adds a hero navigation layer based on SAT workflow/stage buckets
+- Adds a right-side operational panel that must always follow the active search/filter domain
 
 ### `views/repair_order_views.xml`
 - Applies the main SAT form customization
@@ -76,6 +84,159 @@ It should not keep growing with:
 
 Those belong in extender modules.
 
+## SAT Card Views
+
+### `repair_card`
+
+`repair_card` remains the stable SAT card view.
+
+Its purpose is:
+- preserve the known operational card design
+- remain the safe/default custom SAT card view
+- host shared rendering logic reused by `repair_card_v2`
+
+### `repair_card_v2`
+
+`repair_card_v2` is the experimental SAT operational workspace.
+
+It exists to validate UX ideas without forcing unfinished concepts into the
+main `repair_card` flow.
+
+Current design intent:
+- hero on top for workflow navigation
+- central list with the normal SAT repair cards
+- right-side operational panel for summaries, alerts and drill-downs
+
+`repair_card_v2` is intentionally allowed to evolve faster than `repair_card`,
+but the business rules behind it must still live in Python and remain
+reusable.
+
+## Hero Semantics
+
+The top hero in `repair_card_v2` is not driven by SAT priority.
+
+It is driven by SAT workflow/stage meaning and should answer:
+`Where in the workflow is the work currently sitting?`
+
+The current buckets are derived from the real SAT flow already modeled through:
+- `state`
+- `x_budget_stage`
+- `product_location_src_id`
+- company-configured SAT locations
+
+Current hero buckets:
+- `Entrada / Nuevos`
+- `En revision`
+- `Pendiente cliente`
+- `Presupuesto aceptado`
+- `Confirmadas`
+- `En reparacion`
+- `Pendiente repuesto`
+- `Pendiente recoger`
+
+Important rule:
+- hero buckets must replace each other as navigation
+- they must not accumulate as if they were independent long-lived filters
+
+The hero should always feel like stage navigation, not like a strip of CTA buttons.
+
+## SAT Priority Model
+
+`x_sat_priority` has been repurposed as a closed operational SAT catalog.
+
+It now serves two roles at the same time:
+- immediate visual importance for technicians
+- backend operational policy for deadlines and future alerts
+
+Current closed catalog:
+- `normal`
+- `urgent`
+- `company`
+- `warranty`
+- `budget`
+- `budget_extended`
+- `express`
+
+Business rule:
+- this catalog is intentionally closed
+- users must not be able to create arbitrary extra values from settings
+- what is configurable is the timing/policy attached to each existing value,
+  not the creation of new categories
+
+## SAT Deadline Policy
+
+For this phase, SAT delay control does not use `schedule_date`.
+
+The deadline source is:
+- `create_date`
+- plus the configured amount of hours attached to `x_sat_priority`
+
+The priority hour settings live in SAT settings through `res.config.settings`
+and `ir.config_parameter`.
+
+Default baseline used in this phase:
+- `Normal` -> `72h`
+- `Urgente` -> `24h`
+- `Empresa` -> `48h`
+- `Garantia` -> `72h`
+- `Presupuesto` -> `72h`
+- `Presupuesto 2` -> `120h`
+- `Express` -> `1h`
+
+This deadline policy currently powers:
+- overdue detection
+- express risk detection
+- sidebar alert labeling
+
+## Search, Hero And Sidebar Contract
+
+The current SAT operational views must follow one consistent contract:
+
+- search/filter domain defines the working scope
+- hero counts must be recalculated from that active search scope
+- sidebar alerts must also be recalculated from that same active search scope
+
+In practice:
+- if `Mis ordenes` is active, hero and sidebar must reflect only that technician's queue
+- if the filter is removed, hero and sidebar must expand to the wider SAT scope
+
+This contract matters more than visual polish because it keeps all three zones
+of the interface honest:
+- hero
+- central list
+- sidebar
+
+## Default Entry Behavior
+
+Current agreed default behavior for the SAT action:
+- group by `create_date:day`
+- activate `Mis ordenes` by default
+
+Rationale:
+- technicians should land first on their own queue
+- they must still be able to remove that filter and inspect the wider team load
+
+## Sidebar Scope
+
+The right-side panel is currently still in transition.
+
+Its intended role is not to become a second long list of repair orders.
+
+Its target role is:
+- compact operational summaries
+- alerts derived from delay/risk conditions
+- short drill-down samples only when useful
+
+The current logic already prepares sections such as:
+- `Con retraso`
+- `Express con riesgo`
+- `Pendiente de repuesto`
+- `Sin responsable`
+- `Confirmadas sin movimiento`
+
+But the visual treatment should continue evolving toward summary-first blocks
+instead of heavy stacks of mini-cards.
+
 ## Known Architectural Debt
 
 - QZ printing actions reference `wexplay_sat_print` client actions directly.
@@ -83,6 +244,10 @@ Those belong in extender modules.
 - There are historical backup files in the module tree that should not be treated as live source.
 - The SAT invoice report still resolves repairs directly in QWeb instead of receiving fully prepared values.
 - SAT DMS route helpers live in `wexplay_repair`, while part of the DMS company configuration still uses fields introduced by `wex_consent`. This is accepted for now because the repair/consent scope is stable. See `docs/DMS_ROUTE_TECHNICAL_DEBT.md`.
+- `repair_card_v2` UX is still intentionally unfinished:
+  - hero logic is valid, but visual polish may continue changing
+  - sidebar currently mixes useful logic with a presentation that is still too list-heavy
+  - scroll interaction between long repair lists and the right panel still needs future refinement
 
 ## Printing Notes
 
