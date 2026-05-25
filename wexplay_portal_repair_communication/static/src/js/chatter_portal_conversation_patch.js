@@ -11,14 +11,12 @@ patch(Chatter.prototype, {
         this.orm = useService("orm");
         this.store = useState(useService("mail.store"));
         Object.assign(this.state, {
-            portalConversationTab: "chatter",
             portalConversationLoading: false,
             portalConversation: null,
         });
 
         useEffect(
             () => {
-                this.state.portalConversationTab = "chatter";
                 this.state.portalConversation = null;
                 if (this.isPortalConversationSupportedThread()) {
                     this.loadPortalConversationData();
@@ -35,8 +33,23 @@ patch(Chatter.prototype, {
     isPortalConversationTabActive() {
         return (
             this.isPortalConversationSupportedThread() &&
-            this.state.portalConversationTab === "portal_conversation"
+            this.isWexChatterFooterTabActive("portal_conversation")
         );
+    },
+
+    getWexChatterFooterTabs() {
+        const tabs = super.getWexChatterFooterTabs(...arguments);
+        if (!this.isPortalConversationSupportedThread()) {
+            return tabs;
+        }
+        return [
+            ...tabs,
+            {
+                name: "portal_conversation",
+                label: "Conversación portal",
+                count: this.portalConversationMessageCount,
+            },
+        ];
     },
 
     async loadPortalConversationData(force = false) {
@@ -59,19 +72,11 @@ patch(Chatter.prototype, {
         }
     },
 
-    async setPortalConversationTab(tabName) {
-        this.state.portalConversationTab = tabName;
+    async _wexOnChatterFooterTabChanged(tabName) {
+        await super._wexOnChatterFooterTabChanged(...arguments);
         if (tabName === "portal_conversation") {
             await this.loadPortalConversationData(true);
         }
-    },
-
-    onClickChatterTab() {
-        this.setPortalConversationTab("chatter");
-    },
-
-    onClickPortalConversationTab() {
-        this.setPortalConversationTab("portal_conversation");
     },
 
     get portalConversationMessageCount() {

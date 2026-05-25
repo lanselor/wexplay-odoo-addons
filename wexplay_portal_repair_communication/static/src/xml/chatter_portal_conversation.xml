@@ -6,32 +6,7 @@
        t-inherit-mode="extension"
        owl="1">
 
-        <xpath expr="//t[@t-if=&quot;props.has_activities and activities.length and !messageSearch.searching and !messageSearch.searched&quot;]" position="attributes">
-            <attribute name="t-if">props.has_activities and activities.length and !messageSearch.searching and !messageSearch.searched and !this.isPortalConversationTabActive()</attribute>
-        </xpath>
-
-        <xpath expr="//t[@t-if=&quot;scheduledMessages.length&quot;]" position="attributes">
-            <attribute name="t-if">scheduledMessages.length and !this.isPortalConversationTabActive()</attribute>
-        </xpath>
-
-        <xpath expr="//div[@t-if=&quot;state.isAttachmentBoxOpened&quot;]" position="attributes">
-            <attribute name="t-if">state.isAttachmentBoxOpened and !this.isPortalConversationTabActive()</attribute>
-        </xpath>
-
-        <xpath expr="//SearchMessageResult[@t-if=&quot;messageSearch.searching or messageSearch.searched&quot;]" position="replace">
-            <SearchMessageResult t-if="!this.isPortalConversationTabActive() and (messageSearch.searching or messageSearch.searched)"
-                                 thread="state.thread"
-                                 messageSearch="messageSearch"
-                                 onClickJump.bind="closeSearch"/>
-        </xpath>
-
-        <xpath expr="//Thread[@t-else='']" position="replace">
-            <Thread t-if="!this.isPortalConversationTabActive() and !(messageSearch.searching or messageSearch.searched)"
-                    thread="state.thread"
-                    t-key="state.thread.localId"
-                    order="'desc'"
-                    scrollRef="rootRef"
-                    jumpPresent="state.jumpThreadPresent"/>
+        <xpath expr="//Thread[@t-if=&quot;this.isWexChatterMainTabActive() and !(messageSearch.searching or messageSearch.searched)&quot;]" position="after">
             <div t-if="this.isPortalConversationTabActive()"
                  class="wex-portal-conversation-page h-100 d-flex flex-column">
                 <div class="wex-portal-conversation-page__header d-flex justify-content-between align-items-start gap-3">
@@ -75,26 +50,6 @@
                      class="wex-portal-conversation-page__empty">
                     Aún no hay conversación portal asociada a este SAT.
                 </div>
-            </div>
-        </xpath>
-
-        <xpath expr="//div[hasclass('o-mail-Chatter-content')]" position="after">
-            <div t-if="this.isPortalConversationSupportedThread()"
-                 class="wex-portal-conversation-footer d-print-none">
-                <button type="button"
-                        t-att-class="'wex-portal-conversation-footer__tab ' + (state.portalConversationTab === 'chatter' ? 'is-active' : '')"
-                        t-on-click="onClickChatterTab">
-                    Chatter
-                </button>
-                <button type="button"
-                        t-att-class="'wex-portal-conversation-footer__tab ' + (state.portalConversationTab === 'portal_conversation' ? 'is-active' : '')"
-                        t-on-click="onClickPortalConversationTab">
-                    Conversación portal
-                    <span t-if="this.portalConversationMessageCount"
-                          class="wex-portal-conversation-footer__count">
-                        <t t-out="this.portalConversationMessageCount"/>
-                    </span>
-                </button>
             </div>
         </xpath>
 

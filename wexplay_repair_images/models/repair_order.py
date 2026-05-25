@@ -144,6 +144,37 @@ class RepairOrder(models.Model):
             })
         return images
 
+    def _get_repair_image_for_chatter_action(self, image_id):
+        self.ensure_one()
+        image = self.x_image_ids.filtered(lambda record: record.id == image_id)[:1]
+        if not image:
+            raise UserError(_("La imagen seleccionada no pertenece a este SAT."))
+        return image
+
+    def get_repair_images_chatter_values(self):
+        self.ensure_one()
+        images = self.x_image_ids.sorted(lambda record: (record.sequence, record.id))
+        return {
+            "count": len(images),
+            "can_manage_images": self.env.user.has_group(
+                "wexplay_image_core.group_wex_image_user"
+            ),
+            "images": [
+                {
+                    "id": image.id,
+                    "name": image.name or _("Imagen SAT"),
+                    "description": image.description or "",
+                    "sequence": image.sequence,
+                    "include_in_report": image.x_include_in_sat_report,
+                    "thumbnail_url": image.thumbnail_url or image.preview_url or "",
+                    "uploaded_by_name": image.uploaded_by_id.display_name or "",
+                    "uploaded_at": fields.Datetime.to_string(image.uploaded_at) if image.uploaded_at else "",
+                    "tags": image._get_repair_image_tag_names(),
+                }
+                for image in images
+            ],
+        }
+
     def upload_repair_image_from_dropzone(self, filename, binary_content):
         self.ensure_one()
         if not binary_content:
@@ -176,6 +207,14 @@ class RepairOrder(models.Model):
         )
         image._post_images_batch_added_to_repair_chatter()
         return {"image_id": image.id, "image_name": image.name}
+
+    def action_open_repair_image_preview(self, image_id):
+        self.ensure_one()
+        return self._get_repair_image_for_chatter_action(image_id).action_open_preview()
+
+    def action_open_repair_image_dms_file(self, image_id):
+        self.ensure_one()
+        return self._get_repair_image_for_chatter_action(image_id).action_open_dms_file()
 
     def action_open_image_upload_wizard(self):
         self.ensure_one()

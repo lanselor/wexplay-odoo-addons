@@ -12,6 +12,7 @@ Integración SAT del core de imágenes para repair.order.
     "license": "LGPL-3",
     "depends": [
         "repair",
+        "web_responsive_app_customizer",
         "wexplay_repair",
         "wexplay_image_core",
         "wex_consent",
@@ -26,8 +27,9 @@ Integración SAT del core de imágenes para repair.order.
     ],
     "assets": {
         "web.assets_backend": [
-            "wexplay_repair_images/static/src/js/repair_images_dropzone.js",
+            "wexplay_repair_images/static/src/js/chatter_repair_images_patch.js",
             "wexplay_repair_images/static/src/scss/repair_images.scss",
+            "wexplay_repair_images/static/src/xml/chatter_repair_images.xml",
         ],
     },
     "installable": True,

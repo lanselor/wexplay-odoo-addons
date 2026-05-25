@@ -11,6 +11,7 @@
         "hr",
         "portal",
         "website",
+        "web_responsive_app_customizer",
         "wexplay_portal",
         "wexplay_repair",
         "wexplay_portal_repair_workflow",

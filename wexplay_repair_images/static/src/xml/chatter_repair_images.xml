@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="wexplay_repair_images.ChatterRepairImages"
+       t-inherit="mail.Chatter"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <xpath expr="//Thread[@t-if=&quot;this.isWexChatterMainTabActive() and !(messageSearch.searching or messageSearch.searched)&quot;]" position="after">
+            <div t-if="this.isRepairImagesTabActive()"
+                 class="wex-repair-images-chatter-page h-100 d-flex flex-column">
+                <div class="wex-repair-images-chatter-page__header d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <div class="wex-repair-images-chatter-page__eyebrow">Ficha técnica y diagnóstico</div>
+                        <div class="wex-repair-images-chatter-page__title">Imágenes SAT</div>
+                    </div>
+                    <button t-if="this.canManageRepairImages"
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            t-on-click="onClickRepairImagesUpload">
+                        <t t-if="this.repairImagesState.uploading">Subiendo...</t>
+                        <t t-else="">Subir imágenes</t>
+                    </button>
+                </div>
+
+                <div t-if="this.repairImagesState.loading"
+                     class="wex-repair-images-chatter-page__loading">
+                    Cargando imágenes...
+                </div>
+
+                <div t-else=""
+                     class="wex_repair_images_panel wex_repair_images_panel--chatter">
+                    <div class="d-flex flex-wrap gap-2 mb-3 wex_repair_images_panel__toolbar">
+                        <div class="text-muted align-self-center wex_repair_images_panel__counter">
+                            <t t-out="this.repairImagesCount"/> imágenes registradas
+                        </div>
+                    </div>
+
+                    <div t-if="this.canManageRepairImages"
+                         t-att-class="'wex_repair_images_dropzone ' + (this.repairImagesState.uploading ? 'is-loading' : '')"
+                         tabindex="0"
+                         role="button"
+                         aria-label="Zona de arrastre de imágenes"
+                         t-on-click="onClickRepairImagesUpload"
+                         t-on-keydown="onRepairImagesDropzoneKeydown"
+                         t-on-dragover="onRepairImagesDragOver"
+                         t-on-dragleave="onRepairImagesDragLeave"
+                         t-on-drop="onRepairImagesDrop">
+                        <span class="wex_repair_images_dropzone__label">Arrastra imágenes aquí o haz clic para seleccionar</span>
+                        <span class="wex_repair_images_dropzone__hint">JPG · PNG · WebP · GIF</span>
+                        <span class="wex_repair_images_dropzone__loading">Subiendo...</span>
+                    </div>
+
+                    <div t-if="this.repairImagesItems.length"
+                         class="wex-repair-images-chatter-list">
+                        <t t-foreach="this.repairImagesItems" t-as="image" t-key="image.id">
+                            <div class="wex-repair-images-chatter-card">
+                                <div class="wex-repair-images-chatter-card__media">
+                                    <img t-if="image.thumbnail_url"
+                                         t-att-src="image.thumbnail_url"
+                                         t-att-alt="image.name"/>
+                                    <div t-else=""
+                                         class="wex-repair-images-chatter-card__placeholder">
+                                        <i class="fa fa-picture-o"/>
+                                    </div>
+                                </div>
+                                <div class="wex-repair-images-chatter-card__body">
+                                    <div class="wex-repair-images-chatter-card__topline">
+                                        <strong><t t-out="image.name"/></strong>
+                                        <span class="badge text-bg-light" t-if="image.include_in_report">Informe</span>
+                                    </div>
+                                    <div class="wex-repair-images-chatter-card__meta">
+                                        <span>Orden <t t-out="image.sequence"/></span>
+                                        <span t-if="image.uploaded_by_name">Por <t t-out="image.uploaded_by_name"/></span>
+                                        <span t-if="image.uploaded_at"><t t-out="image.uploaded_at"/></span>
+                                    </div>
+                                    <div t-if="image.description"
+                                         class="wex-repair-images-chatter-card__description">
+                                        <t t-out="image.description"/>
+                                    </div>
+                                    <div t-if="image.tags.length"
+                                         class="wex-repair-images-chatter-card__tags">
+                                        <t t-foreach="image.tags" t-as="tag" t-key="tag">
+                                            <span class="wex-repair-images-chatter-card__tag">
+                                                <t t-out="tag"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="wex-repair-images-chatter-card__actions">
+                                        <button type="button"
+                                                class="btn btn-link btn-sm"
+                                                t-att-data-image-id="image.id"
+                                                t-on-click="onClickRepairImagePreviewButton">
+                                            Abrir imagen
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-link btn-sm"
+                                                t-att-data-image-id="image.id"
+                                                t-on-click="onClickRepairImageDmsFileButton">
+                                            DMS
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div t-else=""
+                         class="wex-repair-images-chatter-page__empty">
+                        Aún no hay imágenes registradas en este SAT.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>

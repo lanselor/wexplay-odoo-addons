@@ -231,3 +231,122 @@
     font-size: 12px;
     font-weight: 700;
 }
+
+.wex-repair-images-chatter-page {
+    min-height: 18rem;
+    padding: 1rem 0 0;
+}
+
+.wex-repair-images-chatter-page__header {
+    padding: 0 1rem 1rem;
+    border-bottom: 1px solid #dbe1e7;
+}
+
+.wex-repair-images-chatter-page__eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+}
+
+.wex-repair-images-chatter-page__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #233142;
+}
+
+.wex-repair-images-chatter-page__loading,
+.wex-repair-images-chatter-page__empty {
+    padding: 1.25rem 1rem;
+    color: #6b7280;
+}
+
+.wex_repair_images_panel--chatter {
+    padding: 1rem;
+}
+
+.wex-repair-images-chatter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.wex-repair-images-chatter-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid #dde4ee;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fcfdff 0%, #f6f8fb 100%);
+}
+
+.wex-repair-images-chatter-card__media img,
+.wex-repair-images-chatter-card__placeholder {
+    width: 92px;
+    height: 92px;
+    border-radius: 12px;
+    border: 1px solid #d9dee7;
+    background: #ffffff;
+    object-fit: cover;
+}
+
+.wex-repair-images-chatter-card__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a93a4;
+    font-size: 1.6rem;
+}
+
+.wex-repair-images-chatter-card__body {
+    min-width: 0;
+}
+
+.wex-repair-images-chatter-card__topline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    color: #213047;
+}
+
+.wex-repair-images-chatter-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.wex-repair-images-chatter-card__description {
+    margin-top: 0.5rem;
+    color: #445064;
+    white-space: pre-wrap;
+}
+
+.wex-repair-images-chatter-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+}
+
+.wex-repair-images-chatter-card__tag {
+    display: inline-flex;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #445064;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.wex-repair-images-chatter-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.7rem;
+}
