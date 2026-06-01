@@ -86,13 +86,23 @@ class DeliveryCarrier(models.Model):
                 shipment.action_prepare()
             if not shipment.mrw_shipment_number:
                 shipment._send_create_shipment_to_mrw()
+            self._mrw_sync_picking_shipping_data(picking, shipment)
             if shipment.state == "error" or not shipment.mrw_shipment_number:
                 raise UserError(
                     shipment.last_error
                     or _("MRW did not return a shipment number for %s.") % picking.name
                 )
             if self.mrw_label_on_send and not shipment.label_attachment_id:
-                shipment._get_label_from_mrw()
+                try:
+                    shipment._get_label_from_mrw()
+                except Exception as error:
+                    shipment.write({"last_error": str(error)})
+                    shipment._create_log(
+                        operation="get_label",
+                        status="error",
+                        error_message=str(error),
+                    )
+                self._mrw_sync_picking_shipping_data(picking, shipment)
                 if shipment.last_error:
                     picking.message_post(
                         body=_(
@@ -154,11 +164,48 @@ class DeliveryCarrier(models.Model):
         self._mrw_check_picking_can_be_sent(picking)
         if picking.mrw_shipment_id:
             return picking.mrw_shipment_id
+        if picking.carrier_tracking_ref:
+            return self._mrw_link_existing_tracking_to_picking(picking)
         shipment = self.env["mrw.shipping.shipment"].create(
             self._mrw_prepare_shipment_values_from_picking(picking)
         )
         picking.mrw_shipment_id = shipment
         return shipment
+
+    def _mrw_link_existing_tracking_to_picking(self, picking):
+        self.ensure_one()
+        shipment = self.env["mrw.shipping.shipment"].create(
+            {
+                **self._mrw_prepare_shipment_values_from_picking(picking),
+                "state": "sent",
+                "mrw_shipment_number": picking.carrier_tracking_ref,
+            }
+        )
+        self._mrw_sync_picking_shipping_data(picking, shipment)
+        picking.message_post(
+            body=_(
+                "The delivery order already had MRW tracking %s, so Odoo linked "
+                "a recovery MRW shipment instead of creating a new expedition."
+            )
+            % picking.carrier_tracking_ref
+        )
+        return shipment
+
+    def _mrw_sync_picking_shipping_data(self, picking, shipment):
+        self.ensure_one()
+        values = {}
+        if not picking.mrw_shipment_id:
+            values["mrw_shipment_id"] = shipment.id
+        if shipment.mrw_shipment_number and (
+            not picking.carrier_tracking_ref
+            or picking.carrier_tracking_ref != shipment.mrw_shipment_number
+        ):
+            values["carrier_tracking_ref"] = shipment.mrw_shipment_number
+        if values:
+            picking.write(values)
+            # MRW shipment creation is an external irreversible side effect.
+            # Persist the local audit/tracking link before any later label/UI step.
+            self.env.cr.commit()
 
     def _mrw_check_picking_can_be_sent(self, picking):
         if picking.picking_type_code != "outgoing":

@@ -115,6 +115,22 @@ class TestMRWDeliveryFlow(TransactionCase):
             "http://www.mrw.es/seguimiento_envios/MRW_historico_nacional.asp?enviament=01400F001137",
         )
 
+    def test_existing_tracking_is_recovered_without_creating_new_remote_attempt(self):
+        picking = self._picking(
+            self.outgoing_type,
+            self.customer_location,
+            self._partner(self.country_es),
+        )
+        picking.carrier_tracking_ref = "01400F280052"
+
+        shipment = self.carrier._mrw_get_or_create_shipment_from_picking(picking)
+
+        self.assertTrue(shipment)
+        self.assertEqual(shipment.state, "sent")
+        self.assertEqual(shipment.mrw_shipment_number, "01400F280052")
+        self.assertEqual(picking.mrw_shipment_id, shipment)
+        self.assertEqual(picking.carrier_tracking_ref, "01400F280052")
+
     def test_production_calls_are_blocked_without_explicit_enablement(self):
         shipment = self.env["mrw.shipping.shipment"].create(
             {
