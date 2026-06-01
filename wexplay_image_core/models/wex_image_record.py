@@ -177,6 +177,7 @@ class WexImageRecord(models.Model):
             "name": _("Vista previa"),
             "res_model": self._name,
             "res_id": self.id,
+            "views": [(self.env.ref("wexplay_image_core.view_wex_image_record_form").id, "form")],
             "view_mode": "form",
             "target": "new",
         }
@@ -188,6 +189,7 @@ class WexImageRecord(models.Model):
             "name": _("Archivo DMS"),
             "res_model": "dms.file",
             "res_id": self.dms_file_id.id,
+            "views": [(False, "form")],
             "view_mode": "form",
             "target": "current",
         }
