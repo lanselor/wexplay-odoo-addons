@@ -584,10 +584,23 @@ class WexRepairShippingOperation(models.Model):
 
     def _send_delivery_to_carrier(self):
         self.ensure_one()
-        self.picking_id.send_to_shipper()
-        if self.picking_id.mrw_shipment_id:
-            self.mrw_shipment_id = self.picking_id.mrw_shipment_id
-        self.state = "label_ready" if self.label_attachment_id else "sent"
+        try:
+            self.picking_id.send_to_shipper()
+        except Exception as error:
+            picking = self.env["stock.picking"].browse(self.picking_id.id)
+            if picking.mrw_shipment_id or picking.carrier_tracking_ref:
+                self._sync_delivery_state_from_picking()
+                self.last_error = str(error)
+                self._post_message(
+                    _(
+                        "MRW created or linked the expedition, but Odoo reported a "
+                        "post-send error: %s"
+                    )
+                    % error
+                )
+                return
+            raise
+        self._sync_delivery_state_from_picking()
 
     def _send_pickup_to_carrier(self):
         self.ensure_one()
@@ -611,6 +624,22 @@ class WexRepairShippingOperation(models.Model):
                 "last_error": shipment.last_error,
             }
         )
+
+    def _sync_delivery_state_from_picking(self):
+        self.ensure_one()
+        values = {}
+        if self.picking_id.mrw_shipment_id:
+            values["mrw_shipment_id"] = self.picking_id.mrw_shipment_id.id
+        if self.picking_id.carrier_tracking_ref:
+            values["last_error"] = False
+            values["state"] = (
+                "label_ready" if self.label_attachment_id else "sent"
+            )
+        elif self.picking_id.mrw_shipment_id and self.picking_id.mrw_shipment_id.last_error:
+            values["last_error"] = self.picking_id.mrw_shipment_id.last_error
+            values["state"] = "error"
+        if values:
+            self.write(values)
 
     def _create_mrw_pickup_shipment(self):
         self.ensure_one()
