@@ -1,0 +1,87 @@
+.o_form_view {
+    --wex-repair-form-footer-height: 4.25rem;
+    --wex-repair-form-footer-border: rgba(188, 199, 216, 0.95);
+    --wex-repair-form-footer-surface:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 248, 252, 0.98));
+    --wex-repair-form-footer-shadow: 0 -10px 24px rgba(15, 23, 42, 0.08);
+    --wex-repair-form-footer-padding-x: 1rem;
+    --wex-repair-form-footer-gap: 0.85rem;
+
+    .o_form_sheet_bg.o_wex_repair_form_footer_container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        position: relative;
+    }
+
+    .o_form_sheet_bg.o_wex_repair_form_footer_container > .o_form_sheet {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+}
+
+.wex-repair-form-footer {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--wex-repair-form-footer-gap);
+    min-height: var(--wex-repair-form-footer-height);
+    padding: 0.65rem var(--wex-repair-form-footer-padding-x);
+    border-top: 1px solid var(--wex-repair-form-footer-border);
+    background: var(--wex-repair-form-footer-surface);
+    box-shadow: var(--wex-repair-form-footer-shadow);
+    z-index: 3;
+    backdrop-filter: blur(10px);
+
+    &.is-editing {
+        border-top-color: rgba(99, 91, 154, 0.22);
+        box-shadow: 0 -10px 24px rgba(99, 91, 154, 0.08);
+    }
+}
+
+.wex-repair-form-footer__zone {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    min-height: calc(var(--wex-repair-form-footer-height) - 1.3rem);
+
+    &--left {
+        justify-content: flex-start;
+    }
+
+    &--center {
+        justify-content: center;
+    }
+
+    &--right {
+        justify-content: flex-end;
+    }
+}
+
+.o_form_view.o_xxl_form_view {
+    .wex-repair-form-footer {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+}
+
+.o_form_view.o_xxs_form_view {
+    .wex-repair-form-footer {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.6rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .wex-repair-form-footer__zone {
+        justify-content: flex-start;
+        min-height: auto;
+
+        &--center,
+        &--right {
+            justify-content: flex-start;
+        }
+    }
+}
