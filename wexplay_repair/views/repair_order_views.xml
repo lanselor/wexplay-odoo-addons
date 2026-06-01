@@ -241,9 +241,9 @@
                                     </div>
                                 </page>
 
-                                <page string="Test">
+                                <page name="wex_repair_test_page" string="Test">
                                     <div class="alert alert-light mb-0" role="alert">
-                                        Espacio reservado para futuras pruebas.
+                                        Espacio reservado para resultados y pruebas del dispositivo.
                                     </div>
                                 </page>
 
