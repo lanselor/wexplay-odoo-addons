@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_portal_repair_workflow.PortalDashboard">
+        <div class="wex_kb_app wex_kb_dashboard">
+            <div class="wex_kb_dashboard_shell">
+                <div class="wex_kb_dashboard_main">
+                    <div class="wex_kb_dash_header">
+                        <div>
+                            <div class="wex_kb_eyebrow">Backoffice portal</div>
+                            <h1><t t-esc="title"/></h1>
+                            <p><t t-esc="subtitle"/></p>
+                        </div>
+                        <div class="wex_kb_app_header_actions">
+                            <button t-foreach="periodOptions"
+                                    t-as="option"
+                                    t-key="option['days']"
+                                    type="button"
+                                    t-att-class="option['is_selected'] ? 'btn btn-primary' : 'btn btn-secondary'"
+                                    t-on-click="() => this.changePeriod(option['days'])">
+                                <t t-esc="option['label']"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <t t-if="state.loading">
+                        <div class="wex_kb_empty">Cargando dashboard...</div>
+                    </t>
+                    <t t-elif="state.error">
+                        <div class="wex_kb_empty">
+                            <strong>No se pudo cargar el dashboard.</strong>
+                            <div><t t-esc="state.error"/></div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <section class="wex_kb_surface wex_kb_surface_emphasis">
+                            <div class="wex_kb_section_header">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Atención</div>
+                                    <h2>Prioridad operativa</h2>
+                                </div>
+                                <span class="wex_kb_meta_line" t-if="generatedAtLabel">
+                                    Actualizado: <t t-esc="generatedAtLabel"/>
+                                </span>
+                            </div>
+                            <div class="wex_kb_dashboard_stats">
+                                <button t-foreach="attentionCards"
+                                        t-as="card"
+                                        t-key="card['title']"
+                                        type="button"
+                                        t-att-class="this.getCardClass(card)"
+                                        t-on-click="() => this.openAction(card['action'])">
+                                    <span class="wex_kb_tile_icon">
+                                        <i t-att-class="card['icon']" t-att-title="card['title']"/>
+                                    </span>
+                                    <span><t t-esc="card['title']"/></span>
+                                    <strong><t t-esc="card['value']"/></strong>
+                                    <small class="text-muted text-break"><t t-esc="card['helper']"/></small>
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_dashboard_article_section">
+                            <div class="wex_kb_section_header wex_kb_section_header_strong">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Resumen</div>
+                                    <h2>Actividad del portal</h2>
+                                </div>
+                            </div>
+                            <div class="wex_kb_dashboard_stats">
+                                <button t-foreach="summaryCards"
+                                        t-as="card"
+                                        t-key="card['title']"
+                                        type="button"
+                                        t-att-class="this.getCardClass(card)"
+                                        t-on-click="() => this.openAction(card['action'])">
+                                    <span class="wex_kb_tile_icon">
+                                        <i t-att-class="card['icon']" t-att-title="card['title']"/>
+                                    </span>
+                                    <span><t t-esc="card['title']"/></span>
+                                    <strong><t t-esc="card['value']"/></strong>
+                                    <small class="text-muted text-break"><t t-esc="card['helper']"/></small>
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_dashboard_article_section" t-if="conversationCards.length">
+                            <div class="wex_kb_section_header wex_kb_section_header_strong">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Conversación</div>
+                                    <h2>Cliente y técnico</h2>
+                                </div>
+                            </div>
+                            <div class="wex_kb_dashboard_stats">
+                                <button t-foreach="conversationCards"
+                                        t-as="card"
+                                        t-key="card['title']"
+                                        type="button"
+                                        t-att-class="this.getCardClass(card)"
+                                        t-on-click="() => this.openAction(card['action'])">
+                                    <span class="wex_kb_tile_icon">
+                                        <i t-att-class="card['icon']" t-att-title="card['title']"/>
+                                    </span>
+                                    <span><t t-esc="card['title']"/></span>
+                                    <strong><t t-esc="card['value']"/></strong>
+                                    <small class="text-muted text-break"><t t-esc="card['helper']"/></small>
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="wex_kb_surface wex_kb_dashboard_article_section">
+                            <div class="wex_kb_section_header wex_kb_section_header_strong">
+                                <div>
+                                    <div class="wex_kb_section_kicker">Actividad</div>
+                                    <h2><t t-esc="activityPreview['title']"/></h2>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-link p-0"
+                                        t-on-click="() => this.openAction(activityPreview['open_all_action'])">
+                                    Ver todo
+                                </button>
+                            </div>
+                            <t t-if="activityPreview['rows'].length">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Evento</th>
+                                                <th>Gestión</th>
+                                                <th>SAT</th>
+                                                <th>Ref. cliente</th>
+                                                <th>Cliente</th>
+                                                <th>Importe</th>
+                                                <th>Responsable</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="activityPreview['rows']"
+                                                t-as="row"
+                                                t-key="row['id']"
+                                                t-on-click="() => this.openAction(row['open_action'])">
+                                                <td><t t-esc="this.formatDateTimeValue(row['event_date'])"/></td>
+                                                <td>
+                                                    <span class="d-inline-flex align-items-center gap-2">
+                                                        <span class="wex_kb_badge">
+                                                            <i t-att-class="row['event_icon']" t-att-title="row['event_type_label']"/>
+                                                        </span>
+                                                        <span><t t-esc="row['event_type_label']"/></span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span t-att-class="this.getHandledBadgeClass(row)">
+                                                        <t t-esc="row['handled_state_label']"/>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <strong><t t-esc="row['repair_name']"/></strong>
+                                                    <div class="wex_kb_meta_line" t-if="row['sale_order_name']">
+                                                        <t t-esc="row['sale_order_name']"/>
+                                                    </div>
+                                                </td>
+                                                <td><t t-esc="row['customer_reference'] || '-'"/></td>
+                                                <td><t t-esc="row['partner_name']"/></td>
+                                                <td><t t-esc="this.formatMonetaryValue(row)"/></td>
+                                                <td><t t-esc="row['responsible_name'] || '-'"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="wex_kb_empty"><t t-esc="activityPreview['empty_message']"/></div>
+                            </t>
+                        </section>
+                    </t>
+                </div>
+
+                <aside class="wex_kb_dashboard_aside">
+                    <section class="wex_kb_surface">
+                        <div class="wex_kb_sidebar_title">Accesos rápidos</div>
+                        <div class="wex_kb_sidebar_stack">
+                            <button t-foreach="quickActions"
+                                    t-as="item"
+                                    t-key="item['label']"
+                                    type="button"
+                                    class="wex_kb_quick_link"
+                                    t-on-click="() => this.openAction(item['action'])">
+                                <span class="wex_kb_tile_icon">
+                                    <i t-att-class="item['icon']" t-att-title="item['label']"/>
+                                </span>
+                                <div class="wex_kb_tile_body">
+                                    <strong><t t-esc="item['label']"/></strong>
+                                    <span><t t-esc="item['description']"/></span>
+                                </div>
+                                <i class="fa fa-angle-right"/>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="wex_kb_surface">
+                        <div class="wex_kb_sidebar_title">Estado</div>
+                        <div class="wex_kb_dashboard_stats wex_kb_dashboard_stats_sidebar">
+                            <div class="wex_kb_stat_card">
+                                <span>Periodo</span>
+                                <strong><t t-esc="state.periodDays"/></strong>
+                            </div>
+                            <div class="wex_kb_stat_card">
+                                <span>Registros</span>
+                                <strong><t t-esc="activityPreview['rows'].length"/></strong>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    </t>
+</templates>

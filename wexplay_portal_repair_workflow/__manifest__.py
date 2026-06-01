@@ -16,16 +16,23 @@ Current MVP:
     "license": "LGPL-3",
     "depends": [
         "sale_management",
+        "wex_knowledge",
         "wexplay_portal",
         "wexplay_repair_workflow",
     ],
     "data": [
         "security/wex_portal_repair_event_security.xml",
         "security/ir.model.access.csv",
+        "views/portal_dashboard_views.xml",
         "views/portal_repair_event_views.xml",
         "views/portal_repair_workflow_templates.xml",
     ],
     "assets": {
+        "web.assets_backend": [
+            "wexplay_portal_repair_workflow/static/src/js/portal_dashboard.js",
+            "wexplay_portal_repair_workflow/static/src/xml/portal_dashboard.xml",
+            "wexplay_portal_repair_workflow/static/src/scss/portal_dashboard.scss",
+        ],
         "web.assets_frontend": [
             "wexplay_portal_repair_workflow/static/src/js/portal_budget_debug.js",
             "wexplay_portal_repair_workflow/static/src/scss/portal_repair_workflow.scss",

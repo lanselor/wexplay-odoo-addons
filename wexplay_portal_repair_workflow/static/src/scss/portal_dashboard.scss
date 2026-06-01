@@ -1,0 +1,171 @@
+// === Portal Dashboard — mejoras visuales ===
+// Complementa wex_knowledge/scss/knowledge.scss. No redefine arquitectura base.
+
+// --- Header: tipografía y eyebrow ---
+
+.wex_kb_dash_header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.wex_kb_dash_header .wex_kb_eyebrow {
+    color: var(--wex-kb-accent);
+}
+
+// --- Botones de periodo con color acento ---
+
+.wex_kb_app_header_actions {
+    .btn-primary {
+        background-color: var(--wex-kb-accent);
+        border-color: var(--wex-kb-accent);
+
+        &:hover,
+        &:focus {
+            background-color: #503fa0;
+            border-color: #503fa0;
+        }
+    }
+
+    .btn-secondary {
+        background-color: var(--wex-kb-surface);
+        border-color: var(--wex-kb-border-strong);
+        color: var(--wex-kb-ink);
+
+        &:hover {
+            background-color: var(--wex-kb-accent-soft);
+            border-color: var(--wex-kb-accent);
+            color: var(--wex-kb-accent);
+        }
+    }
+}
+
+// --- Tiles interactivos (stat cards usados como button) ---
+
+button.wex_kb_stat_card {
+    cursor: pointer;
+    min-height: 112px;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+
+    strong {
+        font-size: 2.1rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--wex-kb-ink);
+    }
+
+    > span:not(.wex_kb_tile_icon) {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--wex-kb-muted);
+        line-height: 1.3;
+    }
+
+    small {
+        font-size: 0.74rem;
+        line-height: 1.35;
+        max-width: 14ch;
+    }
+
+    &:hover {
+        border-color: rgba(95, 78, 163, 0.35);
+        background: #faf8ff;
+        box-shadow: 0 12px 28px rgba(95, 78, 163, 0.1);
+        transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--wex-kb-accent);
+        outline-offset: 2px;
+    }
+}
+
+// --- Sección "Prioridad operativa": borde acento izquierdo ---
+
+.wex_kb_surface_emphasis {
+    border-left: 3px solid var(--wex-kb-accent);
+    padding-left: 15px; // 18px base − 3px de borde
+}
+
+// --- Section header: "Ver todo" y timestamp ---
+
+.wex_kb_section_header .btn-link {
+    color: var(--wex-kb-accent);
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--wex-kb-ink);
+        text-decoration: underline;
+    }
+}
+
+.wex_kb_section_header .wex_kb_meta_line {
+    margin-top: 0;
+    font-size: 0.78rem;
+    align-self: center;
+}
+
+// --- Tabla de actividad ---
+
+.wex_kb_dashboard_article_section .table-responsive {
+    border: 1px solid var(--wex-kb-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.wex_kb_dashboard_article_section .table {
+    margin-bottom: 0;
+
+    thead th {
+        background: var(--wex-kb-surface-soft);
+        border-bottom: 1.5px solid var(--wex-kb-border-strong);
+        color: var(--wex-kb-muted);
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        padding: 10px 12px;
+    }
+
+    tbody tr {
+        cursor: pointer;
+        transition: background-color 0.12s ease;
+
+        td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+            padding: 10px 12px;
+        }
+
+        &:hover td {
+            background-color: var(--wex-kb-accent-soft);
+        }
+
+        &:last-child td {
+            border-bottom: 0;
+        }
+    }
+}
+
+// --- Quick links en aside: icono cambia al hacer hover ---
+
+.wex_kb_dashboard_aside .wex_kb_quick_link {
+    .wex_kb_tile_icon {
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    &:hover .wex_kb_tile_icon {
+        background-color: var(--wex-kb-accent);
+        color: #fff;
+    }
+}
