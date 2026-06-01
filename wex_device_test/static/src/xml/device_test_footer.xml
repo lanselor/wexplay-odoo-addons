@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="wex_device_test.RepairFormFooterRight"
+       t-inherit="web_responsive_app_customizer.RepairFormFooter.Right"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <xpath expr="." position="inside">
+            <div t-if="__comp__.isWexDeviceTestFooterAvailable()"
+                 class="wex-device-test-footer">
+                <button type="button"
+                        class="btn btn-outline-primary wex-device-test-footer__toggle"
+                        t-on-click="() => __comp__.onWexDeviceTestFooterToggle()">
+                    <span>Conexión Android</span>
+                    <span t-att-class="__comp__.getWexDeviceTestFooterButtonBadgeClass()">
+                        <t t-out="__comp__.getWexDeviceTestFooterButtonBadgeLabel()"/>
+                    </span>
+                    <i t-att-class="'fa ' + (__comp__.wexDeviceTestFooterState.isOpen ? 'fa-chevron-down' : 'fa-chevron-up')"/>
+                </button>
+
+                <div t-if="__comp__.wexDeviceTestFooterState.isOpen"
+                     class="wex-device-test-footer__panel shadow-lg">
+                    <div class="wex-device-test-footer__panel_header">
+                        <div>
+                            <div class="wex-device-test-footer__eyebrow">Conexión Android</div>
+                            <div class="wex-device-test-footer__title">Emparejado, QR y control del run</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    t-on-click="() => __comp__.refreshWexDeviceTestFooterData()"
+                                    t-att-disabled="__comp__.wexDeviceTestFooterState.isLoading ? true : undefined">
+                                Refresh
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    t-on-click="() => __comp__.onWexDeviceTestFooterToggle()">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div t-if="__comp__.wexDeviceTestFooterState.isLoading"
+                         class="wex-device-test-footer__loading">
+                        Cargando datos de conexión Android...
+                    </div>
+
+                    <div t-elif="__comp__.wexDeviceTestFooterState.error"
+                         class="alert alert-danger mb-0"
+                         role="alert">
+                        <t t-out="__comp__.wexDeviceTestFooterState.error"/>
+                    </div>
+
+                    <div t-elif="__comp__.wexDeviceTestFooterState.data"
+                         class="wex-device-test-footer__panel_body">
+                        <div t-if="__comp__.wexDeviceTestFooterState.liveNotice"
+                             t-att-class="'wex-device-test-footer__live_notice wex-device-test-footer__live_notice--' + __comp__.wexDeviceTestFooterState.liveNoticeTone">
+                            <div class="wex-device-test-footer__live_notice_body">
+                                <strong>Actualización automática</strong>
+                                <span>
+                                    <t t-out="__comp__.wexDeviceTestFooterState.liveNotice"/>
+                                </span>
+                            </div>
+                            <div class="wex-device-test-footer__live_notice_meta">
+                                <t t-out="__comp__.wexDeviceTestFooterState.lastUpdatedLabel"/>
+                            </div>
+                        </div>
+
+                        <div class="wex-device-test-footer__summary">
+                            <div class="wex-device-test-footer__summary_block">
+                                <div class="wex-device-test-footer__summary_label">SAT</div>
+                                <div class="wex-device-test-footer__summary_value">
+                                    <t t-out="__comp__.wexDeviceTestFooterState.data.repair_order_name"/>
+                                </div>
+                            </div>
+                            <div class="wex-device-test-footer__summary_block">
+                                <div class="wex-device-test-footer__summary_label">Estado</div>
+                                <div class="wex-device-test-footer__summary_value">
+                                    <span t-att-class="'wex-device-test-footer__status wex-device-test-footer__status--' + __comp__.wexDeviceTestFooterState.data.status_tone">
+                                        <t t-out="__comp__.wexDeviceTestFooterState.data.state_label"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="wex-device-test-footer__summary_block">
+                                <div class="wex-device-test-footer__summary_label">Sesión</div>
+                                <div class="wex-device-test-footer__summary_value">
+                                    <t t-out="__comp__.wexDeviceTestFooterState.data.session_name or 'Sin sesión vinculada'"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wex-device-test-footer__actions">
+                            <button t-if="__comp__.wexDeviceTestFooterState.data.can_start_run"
+                                    type="button"
+                                    class="btn btn-primary"
+                                    t-on-click="() => __comp__.onWexDeviceTestFooterStartRun()">
+                                Start Test Run
+                            </button>
+                            <button t-if="__comp__.wexDeviceTestFooterState.data.can_open_run"
+                                    type="button"
+                                    class="btn btn-outline-primary"
+                                    t-on-click="() => __comp__.onWexDeviceTestFooterOpenRun()">
+                                Open Active Run
+                            </button>
+                            <button t-if="__comp__.wexDeviceTestFooterState.data.can_restart_pairing"
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    t-on-click="() => __comp__.onWexDeviceTestFooterRestartPairing()">
+                                Restart Pairing
+                            </button>
+                        </div>
+
+                        <div class="wex-device-test-footer__content">
+                            <div class="wex-device-test-footer__card">
+                                <div class="wex-device-test-footer__card_eyebrow">APK Download</div>
+                                <div class="wex-device-test-footer__card_title">Descargar APK</div>
+                                <p class="wex-device-test-footer__card_copy">
+                                    Escanea este QR desde la cámara del teléfono para abrir la mini web de descarga.
+                                </p>
+                                <div class="wex-device-test-footer__qr">
+                                    <img t-att-src="__comp__.wexDeviceTestFooterState.data.download_qr_url"
+                                         alt="QR descarga APK"/>
+                                </div>
+                                <a t-att-href="__comp__.wexDeviceTestFooterState.data.download_url"
+                                   target="_blank"
+                                   class="wex-device-test-footer__link">
+                                    <t t-out="__comp__.wexDeviceTestFooterState.data.download_url"/>
+                                </a>
+                            </div>
+
+                            <div class="wex-device-test-footer__card">
+                                <div class="wex-device-test-footer__card_eyebrow">Repair Pairing</div>
+                                <div class="wex-device-test-footer__card_title">Vincular con esta reparación</div>
+                                <p class="wex-device-test-footer__card_copy">
+                                    Escanea este QR desde la app Android para rellenar la URL de Odoo y el contexto del run.
+                                </p>
+                                <div t-if="__comp__.wexDeviceTestFooterState.data.pairing_qr_url"
+                                     class="wex-device-test-footer__qr">
+                                    <img t-att-src="__comp__.wexDeviceTestFooterState.data.pairing_qr_url"
+                                         alt="QR pairing reparación"/>
+                                </div>
+                                <div t-else=""
+                                     class="alert alert-warning mb-0"
+                                     role="alert">
+                                    Configura una URL pública válida para generar el QR de pairing.
+                                </div>
+                            </div>
+
+                            <div class="wex-device-test-footer__card wex-device-test-footer__card--meta">
+                                <div class="wex-device-test-footer__card_eyebrow">Run activo</div>
+                                <div class="wex-device-test-footer__card_title">
+                                    <t t-out="__comp__.wexDeviceTestFooterState.data.run_name or 'Sin run activo'"/>
+                                </div>
+                                <div class="wex-device-test-footer__meta_list">
+                                    <div class="wex-device-test-footer__meta_row">
+                                        <span class="wex-device-test-footer__meta_label">Short Pairing Code</span>
+                                        <span class="wex-device-test-footer__meta_value">
+                                            <t t-out="__comp__.wexDeviceTestFooterState.data.pairing_code or 'No generado'"/>
+                                        </span>
+                                    </div>
+                                    <div class="wex-device-test-footer__meta_row">
+                                        <span class="wex-device-test-footer__meta_label">Technical Pairing Token</span>
+                                        <span class="wex-device-test-footer__meta_value">
+                                            <t t-out="__comp__.wexDeviceTestFooterState.data.pairing_token_display or 'No generado'"/>
+                                        </span>
+                                    </div>
+                                    <div class="wex-device-test-footer__meta_row">
+                                        <span class="wex-device-test-footer__meta_label">Runs registrados</span>
+                                        <span class="wex-device-test-footer__meta_value">
+                                            <t t-out="__comp__.wexDeviceTestFooterState.data.run_count"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="wex-device-test-footer__actions wex-device-test-footer__actions--tight">
+                                    <button t-if="__comp__.wexDeviceTestFooterState.data.show_pairing_token"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="() => __comp__.onWexDeviceTestFooterHideToken()">
+                                        Ocultar token
+                                    </button>
+                                    <button t-else=""
+                                            type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="() => __comp__.onWexDeviceTestFooterShowToken()">
+                                        Mostrar token
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>

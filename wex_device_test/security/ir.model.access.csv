@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_device_test_session_manager,wex.device.test.session.manager,model_wex_device_test_session,wex_device_test.group_wex_device_test_manager,1,1,1,1
+access_wex_device_test_log_manager,wex.device.test.log.manager,model_wex_device_test_log,wex_device_test.group_wex_device_test_manager,1,0,0,0
+access_wex_device_test_result_manager,wex.device.test.result.manager,model_wex_device_test_result,wex_device_test.group_wex_device_test_manager,1,0,0,0
+access_wex_device_test_run_manager,wex.device.test.run.manager,model_wex_device_test_run,wex_device_test.group_wex_device_test_manager,1,1,1,1

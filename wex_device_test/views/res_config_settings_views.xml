@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_wex_device_test_settings" model="ir.actions.act_window">
+        <field name="name">Configuración Device Test</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'wex_device_test'}</field>
+    </record>
+
+    <menuitem
+        id="menu_wex_device_test_settings"
+        name="Configuración Device Test"
+        parent="base.menu_administration"
+        action="action_wex_device_test_settings"
+        sequence="96"
+        groups="base.group_system"
+    />
+
+    <record id="res_config_settings_view_form_wex_device_test" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wex.device.test</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Wex Device Test" name="wex_device_test_settings" groups="base.group_system">
+                    <block title="API Android" name="wex_device_test_api_settings">
+                        <setting string="Bearer token de fase 1">
+                            <field name="wex_device_test_api_token" password="True" placeholder="Introduce el token compartido"/>
+                        </setting>
+                        <setting string="URL base pública para pairing">
+                            <field name="wex_device_test_public_base_url" placeholder="https://odoo.wexplay.com o http://192.168.0.101:8069"/>
+                            <div class="text-muted">
+                                Esta URL se insertará en el QR de vinculación. Si queda vacía, Device Test intentará usar <code>web.base.url</code>.
+                            </div>
+                        </setting>
+                        <setting string="QR de configuración fase 1">
+                            <field name="wex_device_test_effective_base_url" invisible="1"/>
+                            <field name="wex_device_test_config_qr_payload" invisible="1"/>
+                            <field name="wex_device_test_config_qr_url" invisible="1"/>
+
+                            <div class="mb-3 text-muted">
+                                Este QR fijo incluye la URL base efectiva y el bearer token de fase 1 para configurar rápidamente la app Android antes de escanear el QR dinámico de cada reparación.
+                            </div>
+
+                            <div class="alert alert-warning mb-3" role="alert" invisible="wex_device_test_config_qr_payload">
+                                Guarda primero un bearer token válido y asegúrate de tener una URL base efectiva para poder generar el QR imprimible.
+                            </div>
+
+                            <div invisible="not wex_device_test_config_qr_payload">
+                                <field name="wex_device_test_config_qr_html" widget="html" readonly="1" nolabel="1"/>
+                                <div class="mt-2 mb-3">
+                                    <span class="text-muted">URL efectiva usada:</span>
+                                    <code><field name="wex_device_test_effective_base_url" readonly="1" nolabel="1"/></code>
+                                </div>
+                                <button name="action_print_wex_device_test_config_qr"
+                                        type="object"
+                                        string="Descargar PDF imprimible"
+                                        class="btn btn-primary"/>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_device_test_result_search" model="ir.ui.view">
+        <field name="name">wex.device.test.result.search</field>
+        <field name="model">wex.device.test.result</field>
+        <field name="arch" type="xml">
+            <search string="Device Test Results">
+                <field name="session_id"/>
+                <field name="test_type"/>
+                <field name="run_id"/>
+                <field name="status"/>
+                <field name="message"/>
+                <filter name="filter_audio" string="Audio" domain="[('test_type', 'in', ('speaker', 'earpiece'))]"/>
+                <filter name="filter_sensors" string="Sensors" domain="[('test_type', 'in', ('proximity', 'accelerometer', 'gyroscope'))]"/>
+                <filter name="filter_thermal" string="Thermal" domain="[('test_type', '=', 'thermal_info')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_test_type" string="Test Type" context="{'group_by': 'test_type'}"/>
+                    <filter name="group_by_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_wex_device_test_result_list" model="ir.ui.view">
+        <field name="name">wex.device.test.result.list</field>
+        <field name="model">wex.device.test.result</field>
+        <field name="arch" type="xml">
+            <list string="Device Test Results" create="0" delete="0" edit="0">
+                <field name="executed_at"/>
+                <field name="session_id"/>
+                <field name="test_type"/>
+                <field name="status"/>
+                <field name="message"/>
+                <field name="company_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_device_test_result_form" model="ir.ui.view">
+        <field name="name">wex.device.test.result.form</field>
+        <field name="model">wex.device.test.result</field>
+        <field name="arch" type="xml">
+            <form string="Device Test Result" create="0" delete="0" edit="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="session_id" readonly="1"/>
+                            <field name="run_id" readonly="1"/>
+                            <field name="test_type" readonly="1"/>
+                            <field name="status" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="executed_at" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Message">
+                        <field name="message" readonly="1" nolabel="1"/>
+                    </group>
+                    <group string="Technical Details">
+                        <field name="technical_details" readonly="1" nolabel="1"/>
+                    </group>
+                    <group string="Measurements">
+                        <field name="measurement_json" readonly="1" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_device_test_results" model="ir.actions.act_window">
+        <field name="name">Resultados</field>
+        <field name="res_model">wex.device.test.result</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_wex_device_test_result_search"/>
+    </record>
+
+    <menuitem
+        id="menu_wex_device_test_results"
+        name="Resultados"
+        parent="menu_wex_device_test_root"
+        action="action_wex_device_test_results"
+        sequence="15"
+        groups="wex_device_test.group_wex_device_test_manager"
+    />
+</odoo>

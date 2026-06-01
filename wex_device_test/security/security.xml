@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="module_category_wex_device_test" model="ir.module.category">
+        <field name="name">Device Test</field>
+        <field name="description">Permisos para el módulo Device Test</field>
+        <field name="sequence">39</field>
+    </record>
+
+    <record id="group_wex_device_test_manager" model="res.groups">
+        <field name="name">Device Test Manager</field>
+        <field name="category_id" ref="wex_device_test.module_category_wex_device_test"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="wex_device_test_session_rule_manager" model="ir.rule">
+        <field name="name">Device test sessions by company</field>
+        <field name="model_id" ref="model_wex_device_test_session"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_device_test.group_wex_device_test_manager'))]"/>
+    </record>
+
+    <record id="wex_device_test_log_rule_manager" model="ir.rule">
+        <field name="name">Device test logs by company</field>
+        <field name="model_id" ref="model_wex_device_test_log"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_device_test.group_wex_device_test_manager'))]"/>
+    </record>
+
+    <record id="wex_device_test_result_rule_manager" model="ir.rule">
+        <field name="name">Device test results by company</field>
+        <field name="model_id" ref="model_wex_device_test_result"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_device_test.group_wex_device_test_manager'))]"/>
+    </record>
+
+    <record id="wex_device_test_run_rule_manager" model="ir.rule">
+        <field name="name">Device test runs by company</field>
+        <field name="model_id" ref="model_wex_device_test_run"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('wex_device_test.group_wex_device_test_manager'))]"/>
+    </record>
+</odoo>

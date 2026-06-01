@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_wex_device_test_config_qr" model="ir.actions.report">
+        <field name="name">QR Configuración Device Test</field>
+        <field name="model">res.config.settings</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wex_device_test.report_wex_device_test_config_qr</field>
+        <field name="report_file">wex_device_test.report_wex_device_test_config_qr</field>
+        <field name="print_report_name">'QR-Device-Test-Config'</field>
+        <field name="binding_model_id" ref="base.model_res_config_settings"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_wex_device_test_config_qr">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div style="text-align:center;margin-bottom:24px;">
+                            <h2 style="margin-bottom:8px;">Wex Device Test</h2>
+                            <div style="font-size:18px;font-weight:600;">QR de configuración fase 1</div>
+                            <div style="margin-top:8px;color:#6b7280;">
+                                Escanea este QR desde la app Android para cargar la URL base y el bearer token global.
+                            </div>
+                        </div>
+
+                        <div style="text-align:center;margin:24px 0;">
+                            <img t-if="o.wex_device_test_config_qr_url"
+                                 t-att-src="o.wex_device_test_config_qr_url"
+                                 alt="QR configuración Device Test"
+                                 style="width:320px;height:320px;object-fit:contain;border:1px solid #d1d5db;border-radius:12px;padding:12px;background:#fff;"/>
+                        </div>
+
+                        <div style="margin-top:24px;">
+                            <p style="margin:0 0 8px 0;font-weight:600;">URL base efectiva</p>
+                            <div style="padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f8fafc;">
+                                <span t-out="o.wex_device_test_effective_base_url"/>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:18px;">
+                            <p style="margin:0 0 8px 0;font-weight:600;">Bearer token de fase 1</p>
+                            <div style="padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f8fafc;word-break:break-all;">
+                                <span t-out="o.wex_device_test_api_token"/>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:24px;color:#6b7280;font-size:12px;">
+                            Flujo recomendado: 1) escanear este QR fijo de configuración, 2) escanear el QR dinámico de la reparación para vincular el run.
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
