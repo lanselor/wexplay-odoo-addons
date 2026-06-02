@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(gh repo list lanselor --limit 50 2>&1)",
+      "PowerShell(gh repo view lanselor/claude-skills --json name,description 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents/wexplay-dossier 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents/README.md --jq '.content' 2>&1 | powershell -Command \"[System.Text.Encoding]::UTF8.GetString\\([System.Convert]::FromBase64String\\(\\($input -join ''\\)\\)\\)\" 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents/wexplay-dossier/SKILL.md --jq '.content' 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents/wexplay-dossier/scripts 2>&1)",
+      "PowerShell(gh api repos/lanselor/claude-skills/contents/wexplay-dossier/assets 2>&1)",
+      "PowerShell(if \\(-not \\(Test-Path \"$env:USERPROFILE\\\\.claude\\\\skills\\\\wexplay-dossier\"\\)\\) { New-Item -ItemType Directory -Force \"$env:USERPROFILE\\\\.claude\\\\skills\\\\wexplay-dossier\\\\scripts\"; New-Item -ItemType Directory -Force \"$env:USERPROFILE\\\\.claude\\\\skills\\\\wexplay-dossier\\\\assets\" }; Write-Host \"Directorios creados\")",
+      "PowerShell(Get-Item \"$env:USERPROFILE\\\\.claude\\\\skills\\\\wexplay-dossier\\\\SKILL.md\" | Select-Object Length)",
+      "Bash(\"C:/Users/Alex/AppData/Local/Programs/Python/Python312/python.exe\" scripts/generate_dossier.py --type vpn --output \"C:/Users/usuario/Desktop/Wexplay\")",
+      "PowerShell(Get-Command py -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\usuario\\\\AppData\\\\Roaming\\\\uv\\\\\" -ErrorAction SilentlyContinue | Select-Object Name, Mode; $env:PATH -split \";\" | Where-Object {$_ -ne \"\"} | Select-Object -First 20)",
+      "PowerShell([System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\) -split \";\" | Select-Object -First 20)",
+      "PowerShell([System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\) -split \";\" | Select-Object -Last 20)",
+      "PowerShell(& \"C:\\\\Users\\\\usuario\\\\.local\\\\bin\\\\uv.exe\" run --python 3.14 python --version 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\usuario\\\\.local\\\\bin\\\\uv.exe\" python list 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\usuario\\\\.local\\\\bin\\\\uv.exe\" run --python 3.14 pip install playwright 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\usuario\\\\.local\\\\bin\\\\uv.exe\" pip install playwright 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\usuario\\\\.local\\\\bin\\\\uv.exe\" pip install --system playwright 2>&1)"
+    ]
+  }
+}
