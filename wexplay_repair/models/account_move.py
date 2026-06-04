@@ -137,8 +137,17 @@ class AccountMove(models.Model):
     # ---------------------------------------------------------
     @api.depends("invoice_line_ids.sale_line_ids.order_id")
     def _compute_has_sat_related(self):
+        all_sale_orders = self.mapped("invoice_line_ids.sale_line_ids.order_id")
+        repairs = self.env["repair.order"]
+        if all_sale_orders:
+            repairs = repairs.search([("sale_order_id", "in", all_sale_orders.ids)])
+        sale_order_ids_with_repairs = set(repairs.mapped("sale_order_id").ids)
         for move in self:
-            move.has_sat_related = bool(move._get_sat_repairs())
+            sale_orders = move._get_sale_orders_from_invoice()
+            move.has_sat_related = any(
+                sale_order.id in sale_order_ids_with_repairs
+                for sale_order in sale_orders
+            )
 
     def action_print_sat_pdf(self):
         """Download the SAT PDF report."""

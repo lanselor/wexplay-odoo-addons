@@ -198,6 +198,14 @@ patch(Chatter.prototype, {
         await this.onClickRepairImageDmsFile(imageId);
     },
 
+    async onClickRepairImageSatReportToggleButton(event) {
+        const imageId = Number(event.currentTarget.dataset.imageId || 0);
+        if (!imageId) {
+            return;
+        }
+        await this.onClickRepairImageSatReportToggle(imageId);
+    },
+
     async onClickRepairImagePreview(imageId) {
         const action = await this.orm.call(
             "repair.order",
@@ -215,5 +223,14 @@ patch(Chatter.prototype, {
             [[this.props.threadId], imageId]
         );
         await this.action.doAction(action);
+    },
+
+    async onClickRepairImageSatReportToggle(imageId) {
+        await this.orm.call(
+            "repair.order",
+            "action_toggle_repair_image_sat_report",
+            [[this.props.threadId], imageId]
+        );
+        await this.loadRepairImagesData(true);
     },
 });

@@ -43,6 +43,9 @@ export class RepairOrderCardRenderer extends Component {
             sections: [],
             indicators: [],
         });
+        this.groupState = useState({
+            expandedGroups: {},
+        });
         this._autoRefreshTimer = null;
 
         onWillStart(async () => {
@@ -76,6 +79,22 @@ export class RepairOrderCardRenderer extends Component {
 
     get groups() {
         return this.props.list.groups || [];
+    }
+
+    get hasGroupedCards() {
+        return this.props.list.isGrouped && this.groups.length > 0;
+    }
+
+    get hasExpandedGroups() {
+        return this.groups.some((group) => this.isGroupExpanded(group));
+    }
+
+    get groupToggleLabel() {
+        return this.hasExpandedGroups ? _t("Plegar grupos") : _t("Expandir grupos");
+    }
+
+    get groupToggleIcon() {
+        return this.hasExpandedGroups ? "fa-compress" : "fa-expand";
     }
 
     get records() {
@@ -140,8 +159,32 @@ export class RepairOrderCardRenderer extends Component {
         });
     }
 
-    async toggleGroup(group) {
-        await group.toggle();
+    getGroupKey(group) {
+        if (group.id !== undefined) {
+            return String(group.id);
+        }
+        if (Array.isArray(group.value)) {
+            return String(group.value[0]);
+        }
+        return String(group.value || group.displayName || "");
+    }
+
+    isGroupExpanded(group) {
+        return Boolean(this.groupState.expandedGroups[this.getGroupKey(group)]);
+    }
+
+    toggleGroup(group) {
+        const key = this.getGroupKey(group);
+        this.groupState.expandedGroups[key] = !this.isGroupExpanded(group);
+    }
+
+    toggleAllGroups() {
+        const shouldExpand = !this.hasExpandedGroups;
+        const nextExpandedGroups = {};
+        for (const group of this.groups) {
+            nextExpandedGroups[this.getGroupKey(group)] = shouldExpand;
+        }
+        this.groupState.expandedGroups = nextExpandedGroups;
     }
 
     async loadMore(group) {
@@ -376,10 +419,7 @@ export class RepairOrderCardRenderer extends Component {
             try {
                 return formatDate(deserializeDateTime(normalized));
             } catch {
-                const isoDate = luxon.DateTime.fromISO(value);
-                if (isoDate.isValid) {
-                    return formatDate(isoDate);
-                }
+                return this.getText(value);
             }
         }
         return this.getText(value);
@@ -448,38 +488,9 @@ export class RepairOrderCardController extends KanbanController {
             ...super.modelParams,
             config: {
                 ...super.modelParams.config,
-                openGroupsByDefault: false,
+                openGroupsByDefault: true,
             },
         };
-    }
-
-    get showWexGroupToggle() {
-        return this.model.root.isGrouped && this.model.root.groups.length > 0;
-    }
-
-    get wexHasFoldedGroups() {
-        return this.model.root.groups.some((group) => group.isFolded);
-    }
-
-    get wexGroupToggleLabel() {
-        return this.wexHasFoldedGroups ? _t("Expandir grupos") : _t("Plegar grupos");
-    }
-
-    get wexGroupToggleIcon() {
-        return this.wexHasFoldedGroups ? "fa-expand" : "fa-compress";
-    }
-
-    async wexToggleGroups() {
-        const groups = this.model.root.groups || [];
-        if (!groups.length) {
-            return;
-        }
-        const shouldExpand = this.wexHasFoldedGroups;
-        for (const group of groups) {
-            if (group.isFolded === shouldExpand) {
-                await group.toggle();
-            }
-        }
     }
 }
 

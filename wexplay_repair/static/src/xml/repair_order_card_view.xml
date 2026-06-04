@@ -5,15 +5,6 @@
      t-inherit="web.KanbanView.Buttons"
      t-inherit-mode="primary"
      owl="1">
-    <xpath expr="//div[hasclass('o_cp_buttons')]" position="inside">
-      <button t-if="showWexGroupToggle"
-              type="button"
-              class="btn btn-outline-secondary wex_repair_group_toggle"
-              t-on-click="wexToggleGroups">
-        <i t-att-class="'fa me-1 ' + wexGroupToggleIcon"/>
-        <t t-esc="wexGroupToggleLabel"/>
-      </button>
-    </xpath>
   </t>
 
   <t t-name="wexplay_repair.RepairOrderCardView.Renderer" owl="1">
@@ -62,14 +53,22 @@
           </t>
 
           <t t-if="props.list.isGrouped">
+            <div t-if="hasGroupedCards" class="wex_repair_group_toolbar">
+              <button type="button"
+                      class="btn btn-outline-secondary btn-sm"
+                      t-on-click="() => this.toggleAllGroups()">
+                <i t-att-class="'fa me-1 ' + groupToggleIcon"/>
+                <t t-esc="groupToggleLabel"/>
+              </button>
+            </div>
             <div class="wex_repair_group_stack">
               <t t-foreach="groups" t-as="group" t-key="group.id">
-                <section class="wex_repair_group" t-att-class="group.isFolded ? 'is-folded' : ''">
+                <section class="wex_repair_group" t-att-class="this.isGroupExpanded(group) ? '' : 'is-folded'">
                   <button type="button"
                           class="wex_repair_group_header"
                           t-on-click="() => this.toggleGroup(group)">
                     <span class="wex_repair_group_heading">
-                      <i t-att-class="'fa wex_repair_group_caret ' + (group.isFolded ? 'fa-caret-right' : 'fa-caret-down')"/>
+                      <i t-att-class="'fa wex_repair_group_caret ' + (this.isGroupExpanded(group) ? 'fa-caret-down' : 'fa-caret-right')"/>
                       <span class="wex_repair_group_identity">
                         <span class="wex_repair_group_meta">
                           <t t-esc="this.getGroupMetaLabel()"/>
@@ -84,7 +83,7 @@
                     </span>
                   </button>
 
-                  <div t-if="!group.isFolded" class="wex_repair_card_stack">
+                  <div t-if="this.isGroupExpanded(group)" class="wex_repair_card_stack">
                     <t t-foreach="group.list.records" t-as="record" t-key="record.id">
                       <t t-call="wexplay_repair.RepairOrderCardView.Card"/>
                     </t>

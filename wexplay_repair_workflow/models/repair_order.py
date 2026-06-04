@@ -239,8 +239,15 @@ class RepairOrder(models.Model):
         return vals
 
     def _set_budget_stage(self, new_stage):
+        repairs_by_vals = {}
         for repair in self:
-            repair.write(repair._prepare_budget_stage_vals(new_stage))
+            vals = repair._prepare_budget_stage_vals(new_stage)
+            key = tuple(sorted(vals.items()))
+            repairs_by_vals.setdefault(key, self.env["repair.order"])
+            repairs_by_vals[key] |= repair
+
+        for vals_key, repairs in repairs_by_vals.items():
+            repairs.write(dict(vals_key))
         return True
 
     def _confirm_repair_if_needed(self):
@@ -323,16 +330,28 @@ class RepairOrder(models.Model):
             self.write({"product_location_src_id": location.id})
 
     def _sync_location_for_budget_stage(self):
+        repairs_by_location = {}
         for repair in self:
-            repair._set_product_location_if_needed(
-                repair._get_target_location_from_budget_stage(repair.x_budget_stage)
-            )
+            location = repair._get_target_location_from_budget_stage(repair.x_budget_stage)
+            if not location or repair.product_location_src_id == location:
+                continue
+            repairs_by_location.setdefault(location.id, self.env["repair.order"])
+            repairs_by_location[location.id] |= repair
+
+        for location_id, repairs in repairs_by_location.items():
+            repairs.write({"product_location_src_id": location_id})
 
     def _sync_location_for_repair_state(self):
+        repairs_by_location = {}
         for repair in self:
-            repair._set_product_location_if_needed(
-                repair._get_target_location_from_repair_state(repair.state)
-            )
+            location = repair._get_target_location_from_repair_state(repair.state)
+            if not location or repair.product_location_src_id == location:
+                continue
+            repairs_by_location.setdefault(location.id, self.env["repair.order"])
+            repairs_by_location[location.id] |= repair
+
+        for location_id, repairs in repairs_by_location.items():
+            repairs.write({"product_location_src_id": location_id})
 
     def _requires_glue_choice_on_finish(self):
         self.ensure_one()

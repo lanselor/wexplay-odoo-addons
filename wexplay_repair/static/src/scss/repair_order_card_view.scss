@@ -222,6 +222,16 @@
     gap: 6px;
 }
 
+.o_action_manager .wex_repair_group_toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 7px;
+}
+
+.o_action_manager .wex_repair_group_toolbar .btn {
+    border-radius: 12px;
+}
+
 .o_action_manager .wex_repair_group_header {
     display: flex;
     align-items: center;
@@ -295,8 +305,7 @@
     text-align: center;
 }
 
-.o_action_manager .wex_repair_group_more,
-.o_action_manager .wex_repair_group_toggle {
+.o_action_manager .wex_repair_group_more {
     justify-self: start;
     border-radius: 12px;
 }

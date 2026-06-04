@@ -332,6 +332,23 @@ class RepairOrder(models.Model):
             limit=1,
         )
 
+    def _get_device_test_active_runs_by_repair(self):
+        repair_ids = [repair_id for repair_id in self.ids if repair_id]
+        if not repair_ids:
+            return {}
+
+        active_runs = self.env["wex.device.test.run"].search(
+            [
+                ("repair_order_id", "in", repair_ids),
+                ("state", "in", self.env["wex.device.test.run"]._get_active_states()),
+            ],
+            order="started_at desc, id desc",
+        )
+        active_runs_by_repair = {}
+        for run in active_runs:
+            active_runs_by_repair.setdefault(run.repair_order_id.id, run)
+        return active_runs_by_repair
+
     def _has_device_test_access(self):
         self.ensure_one()
         return self.env.user.has_group("wex_device_test.group_wex_device_test_manager")
@@ -757,8 +774,10 @@ class RepairOrder(models.Model):
         "x_device_test_run_ids.session_id.last_thermal_status",
     )
     def _compute_device_test_run_data(self):
+        active_runs_by_repair = self._get_device_test_active_runs_by_repair()
+        empty_run = self.env["wex.device.test.run"]
         for record in self:
-            active_run = record._get_device_test_active_run()
+            active_run = active_runs_by_repair.get(record.id, empty_run)
             pairing_payload = record._get_device_test_pairing_payload(active_run)
             download_url = record._get_device_test_download_url()
             session = active_run.session_id if active_run else self.env["wex.device.test.session"]

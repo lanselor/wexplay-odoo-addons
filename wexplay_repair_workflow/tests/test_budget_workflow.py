@@ -61,6 +61,17 @@ class TestBudgetWorkflow(SavepointCase):
         )
         self.assertEqual(repair.x_budget_stage, "estimating")
 
+    def test_start_budget_supports_multiple_repairs(self):
+        repair_a = self._create_repair()
+        repair_b = self._create_repair()
+
+        (repair_a | repair_b).action_start_budget()
+
+        self.assertEqual(repair_a.x_budget_stage, "estimating")
+        self.assertEqual(repair_b.x_budget_stage, "estimating")
+        self.assertTrue(repair_a.x_budget_started_at)
+        self.assertTrue(repair_b.x_budget_started_at)
+
     def test_accept_budget_requires_sale_order_and_confirms_repair(self):
         repair = self._create_repair(x_budget_stage="waiting_customer")
 

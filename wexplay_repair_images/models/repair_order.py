@@ -128,9 +128,12 @@ class RepairOrder(models.Model):
     def _collect_sat_report_images(self):
         self.ensure_one()
         images = []
-        for rec in self.x_image_ids.filtered("x_include_in_sat_report").sorted(
+        image_records = self.x_image_ids.filtered("x_include_in_sat_report").sorted(
             lambda r: (r.sequence, r.id)
-        ):
+        )
+        image_records.mapped("dms_file_id").read(["mimetype"])
+        image_records.mapped("tag_ids")
+        for rec in image_records:
             img_data = rec.dms_file_id.image_1920
             if not img_data:
                 continue
@@ -215,6 +218,12 @@ class RepairOrder(models.Model):
     def action_open_repair_image_dms_file(self, image_id):
         self.ensure_one()
         return self._get_repair_image_for_chatter_action(image_id).action_open_dms_file()
+
+    def action_toggle_repair_image_sat_report(self, image_id):
+        self.ensure_one()
+        image = self._get_repair_image_for_chatter_action(image_id)
+        image.x_include_in_sat_report = not image.x_include_in_sat_report
+        return image.x_include_in_sat_report
 
     def action_open_image_upload_wizard(self):
         self.ensure_one()

@@ -5,6 +5,7 @@ from datetime import datetime, time, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.osv import expression
 
 from .device_constants import DEVICE_TYPE_SELECTION
 
@@ -291,7 +292,6 @@ class RepairOrder(models.Model):
         }
 
     def _get_sat_priority_deadline_hours_map(self):
-        self.ensure_one()
         params = self.env["ir.config_parameter"].sudo()
         hours_map = {}
         for priority, field_name in self._SAT_PRIORITY_DEADLINE_FIELD_BY_VALUE.items():
@@ -356,6 +356,50 @@ class RepairOrder(models.Model):
         if extra_domain:
             domain += extra_domain
         return domain
+
+    @api.model
+    def _get_repair_card_priority_deadline_domain(
+        self, now_dt, priorities=None, extra_hours=0.0
+    ):
+        hours_map = self._get_sat_priority_deadline_hours_map()
+        priority_values = priorities or list(self._SAT_PRIORITY_DEADLINE_FIELD_BY_VALUE)
+        priority_domains = []
+        for priority in priority_values:
+            deadline_hours = hours_map.get(priority) or 0.0
+            cutoff = now_dt + timedelta(hours=extra_hours - deadline_hours)
+            date_domain = [("create_date", "<=", fields.Datetime.to_string(cutoff))]
+            priority_domain = [("x_sat_priority", "=", priority)]
+            if priority == "normal":
+                priority_domain = expression.OR(
+                    [[("x_sat_priority", "=", False)], priority_domain]
+                )
+            priority_domains.append(expression.AND([priority_domain, date_domain]))
+        return expression.OR(priority_domains) if priority_domains else [("id", "=", 0)]
+
+    @api.model
+    def _get_repair_card_waiting_spare_alert_domain(
+        self, waiting_spare_location_ids, thresholds, now_dt
+    ):
+        cutoff = fields.Datetime.to_string(
+            now_dt - timedelta(days=thresholds["waiting_spare_days"])
+        )
+        location_domain = [("product_location_src_id", "in", waiting_spare_location_ids)]
+        if not self._has_repair_card_field("x_waiting_spare_started_at"):
+            return expression.AND([location_domain, [("write_date", "<=", cutoff)]])
+
+        age_domain = expression.OR(
+            [
+                [
+                    ("x_waiting_spare_started_at", "!=", False),
+                    ("x_waiting_spare_started_at", "<=", cutoff),
+                ],
+                [
+                    ("x_waiting_spare_started_at", "=", False),
+                    ("write_date", "<=", cutoff),
+                ],
+            ]
+        )
+        return expression.AND([location_domain, age_domain])
 
     @api.model
     def _prepare_repair_card_alert_item(self, repair, now_dt, state_labels):
@@ -445,12 +489,15 @@ class RepairOrder(models.Model):
         now_dt,
         limit,
         state_labels,
+        prepare_item_method=None,
+        order="write_date asc, create_date asc, id asc",
     ):
         base_domain = self._get_repair_card_base_domain(companies)
         full_domain = base_domain + domain
-        repairs = self.search(full_domain, order="write_date asc, create_date asc, id asc", limit=limit)
+        repairs = self.search(full_domain, order=order, limit=limit)
         count = self.search_count(full_domain)
         shown_count = len(repairs)
+        prepare_item_method = prepare_item_method or self._prepare_repair_card_alert_item
         return {
             "key": key,
             "title": title,
@@ -459,38 +506,10 @@ class RepairOrder(models.Model):
             "shown_count": shown_count,
             "hidden_count": max(count - shown_count, 0),
             "items": [
-                self._prepare_repair_card_alert_item(repair, now_dt, state_labels)
+                prepare_item_method(repair, now_dt, state_labels)
                 for repair in repairs
             ],
             "domain": full_domain,
-        }
-
-    @api.model
-    def _build_dynamic_repair_card_alert_section(
-        self,
-        *,
-        key,
-        title,
-        empty_message,
-        repairs,
-        now_dt,
-        state_labels,
-        limit,
-        prepare_item_method,
-    ):
-        shown_repairs = repairs[:limit]
-        return {
-            "key": key,
-            "title": title,
-            "empty_message": empty_message,
-            "count": len(repairs),
-            "shown_count": len(shown_repairs),
-            "hidden_count": max(len(repairs) - len(shown_repairs), 0),
-            "items": [
-                prepare_item_method(repair, now_dt, state_labels)
-                for repair in shown_repairs
-            ],
-            "domain": [("id", "in", repairs.ids or [0])],
         }
 
     @api.model
@@ -512,28 +531,14 @@ class RepairOrder(models.Model):
                 "domain": [],
             }
 
-        repairs = self.search(
-            self._get_repair_card_effective_domain(
-                companies,
-                active_domain=active_domain,
-                extra_domain=[("product_location_src_id", "in", waiting_spare_location_ids)],
-            ),
-            order="create_date asc, id asc",
-        ).filtered(
-            lambda repair: (
-                fields.Datetime.to_datetime(
-                    getattr(repair, "x_waiting_spare_started_at", False)
-                    or repair.write_date
-                    or repair.create_date
-                )
-                <= now_dt - timedelta(days=thresholds["waiting_spare_days"])
-            )
+        domain = self._get_repair_card_waiting_spare_alert_domain(
+            waiting_spare_location_ids, thresholds, now_dt
         )
         return self._build_repair_card_alert_section(
             key="waiting_spare",
             title=_("Pendiente de repuesto"),
             empty_message=_("No hay ordenes envejecidas en pendiente de repuesto ahora mismo."),
-            domain=[("id", "in", repairs.ids or [0])],
+            domain=(active_domain or []) + domain,
             companies=companies,
             now_dt=now_dt,
             limit=thresholds["section_limit"],
@@ -567,69 +572,57 @@ class RepairOrder(models.Model):
     def _get_overdue_alert_section(
         self, companies, thresholds, now_dt, state_labels, active_domain=None
     ):
-        repairs = self.search(
-            self._get_repair_card_effective_domain(companies, active_domain=active_domain),
-            order="create_date asc, id asc",
-        ).filtered(lambda repair: repair._is_sat_priority_overdue(now_dt))
-        return self._build_dynamic_repair_card_alert_section(
+        domain = self._get_repair_card_priority_deadline_domain(now_dt)
+        return self._build_repair_card_alert_section(
             key="overdue",
             title=_("Con retraso"),
             empty_message=_("No hay ordenes activas fuera de plazo ahora mismo."),
-            repairs=repairs,
+            domain=(active_domain or []) + domain,
+            companies=companies,
             now_dt=now_dt,
-            state_labels=state_labels,
             limit=thresholds["section_limit"],
+            state_labels=state_labels,
             prepare_item_method=self._prepare_overdue_alert_item,
+            order="create_date asc, id asc",
         )
 
     @api.model
     def _get_express_alert_section(
         self, companies, thresholds, now_dt, state_labels, active_domain=None
     ):
-        repairs = self.search(
-            self._get_repair_card_effective_domain(
-                companies,
-                active_domain=active_domain,
-                extra_domain=[("x_sat_priority", "=", "express")],
-            ),
-            order="create_date asc, id asc",
-        ).filtered(
-            lambda repair: repair._is_sat_priority_overdue(now_dt)
-            or repair._get_sat_priority_overdue_delta(now_dt).total_seconds()
-            >= -(thresholds["express_risk_hours"] * 3600)
+        domain = self._get_repair_card_priority_deadline_domain(
+            now_dt,
+            priorities=["express"],
+            extra_hours=thresholds["express_risk_hours"],
         )
-        return self._build_dynamic_repair_card_alert_section(
+        return self._build_repair_card_alert_section(
             key="express",
             title=_("Express con riesgo"),
             empty_message=_("No hay ordenes express con riesgo ahora mismo."),
-            repairs=repairs,
+            domain=(active_domain or []) + domain,
+            companies=companies,
             now_dt=now_dt,
-            state_labels=state_labels,
             limit=thresholds["section_limit"],
+            state_labels=state_labels,
             prepare_item_method=self._prepare_express_alert_item,
+            order="create_date asc, id asc",
         )
 
     @api.model
     def _get_without_responsible_alert_section(
         self, companies, thresholds, now_dt, state_labels, active_domain=None
     ):
-        repairs = self.search(
-            self._get_repair_card_effective_domain(
-                companies,
-                active_domain=active_domain,
-                extra_domain=[("user_id", "=", False)],
-            ),
-            order="create_date asc, id asc",
-        )
-        return self._build_dynamic_repair_card_alert_section(
+        return self._build_repair_card_alert_section(
             key="without_responsible",
             title=_("Sin responsable"),
             empty_message=_("No hay ordenes activas sin responsable."),
-            repairs=repairs,
+            domain=(active_domain or []) + [("user_id", "=", False)],
+            companies=companies,
             now_dt=now_dt,
-            state_labels=state_labels,
             limit=thresholds["section_limit"],
+            state_labels=state_labels,
             prepare_item_method=self._prepare_without_responsible_alert_item,
+            order="create_date asc, id asc",
         )
 
     @api.model

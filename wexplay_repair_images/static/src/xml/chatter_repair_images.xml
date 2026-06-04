@@ -87,6 +87,14 @@
                                         </t>
                                     </div>
                                     <div class="wex-repair-images-chatter-card__actions">
+                                        <button t-if="this.canManageRepairImages"
+                                                type="button"
+                                                t-att-class="'btn btn-sm ' + (image.include_in_report ? 'btn-outline-success' : 'btn-outline-secondary')"
+                                                t-att-data-image-id="image.id"
+                                                t-on-click="onClickRepairImageSatReportToggleButton">
+                                            <t t-if="image.include_in_report">Quitar del informe</t>
+                                            <t t-else="">Incluir en informe</t>
+                                        </button>
                                         <button type="button"
                                                 class="btn btn-link btn-sm"
                                                 t-att-data-image-id="image.id"

@@ -140,6 +140,34 @@ class TestWexConsent(SavepointCase):
                 }
             )
 
+    def test_duplicate_active_documents_are_blocked_in_batch_create(self):
+        with self.assertRaises(ValidationError):
+            self.env["wex.consent.document"].create(
+                [
+                    {
+                        "name": "Recepción duplicada A",
+                        "repair_order_id": self.repair.id,
+                        "document_type": "reception",
+                    },
+                    {
+                        "name": "Recepción duplicada B",
+                        "repair_order_id": self.repair.id,
+                        "document_type": "reception",
+                    },
+                ]
+            )
+
+    def test_duplicate_active_documents_are_blocked_in_batch_write(self):
+        delivery_document = self.env["wex.consent.document"].get_or_create_from_repair(
+            self.repair, "delivery"
+        )
+        reception_document = self.env["wex.consent.document"].get_or_create_from_repair(
+            self.repair, "reception"
+        )
+
+        with self.assertRaises(ValidationError):
+            (delivery_document | reception_document).write({"document_type": "delivery"})
+
     def test_store_pdf_in_dms_creates_sat_repair_and_signatures_tree(self):
         document = self.env["wex.consent.document"].get_or_create_from_repair(
             self.repair, "delivery"

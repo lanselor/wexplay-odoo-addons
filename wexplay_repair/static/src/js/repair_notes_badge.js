@@ -2,7 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { FormRenderer } from "@web/views/form/form_renderer";
-import { onMounted, onPatched } from "@odoo/owl";
+import { onMounted, onPatched, useRef } from "@odoo/owl";
 
 function htmlToText(html) {
     if (!html) return "";
@@ -19,8 +19,7 @@ function applyBadge(renderer) {
         const record = renderer?.props?.record;
         if (!record || record.resModel !== "repair.order") return;
 
-        // renderer.el puede no existir en algunos ciclos -> fallback al formulario visible
-        const el = renderer?.el || document.querySelector(".o_form_view");
+        const el = renderer?.wexCompiledViewRoot?.el || renderer?.el;
         if (!el) return;
 
         const tab = el.querySelector(".o_notebook .nav-link[name='repair_notes']");
@@ -44,6 +43,7 @@ function applyBadge(renderer) {
 patch(FormRenderer.prototype, {
     setup() {
         super.setup();
+        this.wexCompiledViewRoot = useRef("compiled_view_root");
 
         // Inicial y tras cada patch
         onMounted(() => applyBadge(this));

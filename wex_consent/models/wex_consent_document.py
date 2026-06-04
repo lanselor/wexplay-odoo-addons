@@ -164,27 +164,78 @@ class WexConsentDocument(models.Model):
                 }
             )
 
+    @api.model
+    def _raise_active_document_duplicate(self, document_type):
+        raise ValidationError(
+            _("Ya existe un documento activo de %(doc_type)s para esta reparación.")
+            % {
+                "doc_type": self._get_document_type_label(document_type),
+            }
+        )
+
+    @api.model
+    def _check_no_active_document_duplicates_batch(self, candidates, exclude_ids=None):
+        active_candidates = [
+            candidate
+            for candidate in candidates
+            if candidate.get("state") != "cancelled"
+            and candidate.get("repair_order_id")
+            and candidate.get("document_type")
+        ]
+        if not active_candidates:
+            return
+
+        seen_pairs = set()
+        for candidate in active_candidates:
+            pair = (candidate["repair_order_id"], candidate["document_type"])
+            if pair in seen_pairs:
+                self._raise_active_document_duplicate(candidate["document_type"])
+            seen_pairs.add(pair)
+
+        repair_order_ids = list({candidate["repair_order_id"] for candidate in active_candidates})
+        document_types = list({candidate["document_type"] for candidate in active_candidates})
+        domain = [
+            ("repair_order_id", "in", repair_order_ids),
+            ("document_type", "in", document_types),
+            ("state", "!=", "cancelled"),
+        ]
+        if exclude_ids:
+            domain.append(("id", "not in", list(exclude_ids)))
+
+        duplicates = self.search(domain)
+        existing_pairs = {
+            (duplicate.repair_order_id.id, duplicate.document_type)
+            for duplicate in duplicates
+        }
+        for candidate in active_candidates:
+            pair = (candidate["repair_order_id"], candidate["document_type"])
+            if pair in existing_pairs:
+                self._raise_active_document_duplicate(candidate["document_type"])
+
     @api.model_create_multi
     def create(self, vals_list):
-        for vals in vals_list:
-            pseudo_document = self.new(vals)
-            pseudo_document._check_no_active_document_duplicate(
-                repair_order_id=vals.get("repair_order_id"),
-                document_type=vals.get("document_type"),
-                state=vals.get("state") or "draft",
-                exclude_id=0,
-            )
+        candidates = [
+            {
+                "repair_order_id": vals.get("repair_order_id"),
+                "document_type": vals.get("document_type"),
+                "state": vals.get("state") or "draft",
+            }
+            for vals in vals_list
+        ]
+        self._check_no_active_document_duplicates_batch(candidates)
         return super().create(vals_list)
 
     def write(self, vals):
         if {"repair_order_id", "document_type", "state"}.intersection(vals):
-            for rec in self:
-                rec._check_no_active_document_duplicate(
-                    repair_order_id=vals.get("repair_order_id") or rec.repair_order_id.id,
-                    document_type=vals.get("document_type") or rec.document_type,
-                    state=vals.get("state") or rec.state,
-                    exclude_id=rec.id,
-                )
+            candidates = [
+                {
+                    "repair_order_id": vals.get("repair_order_id") or rec.repair_order_id.id,
+                    "document_type": vals.get("document_type") or rec.document_type,
+                    "state": vals.get("state") or rec.state,
+                }
+                for rec in self
+            ]
+            self._check_no_active_document_duplicates_batch(candidates, exclude_ids=self.ids)
         return super().write(vals)
 
     @api.model
