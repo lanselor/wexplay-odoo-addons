@@ -16,6 +16,15 @@
                     <field name="purchase_list_line_count" widget="statinfo"/>
                 </button>
             </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="wex_is_repair_quotation" invisible="1"/>
+                <field name="wex_purchase_list_is_reservation"
+                       string="Marcar como reserva"
+                       widget="boolean_toggle"
+                       help="Las líneas añadidas a la lista de compra requerirán aviso al cliente cuando lleguen."
+                       invisible="wex_is_repair_quotation"
+                       readonly="state not in ('draft', 'sent')"/>
+            </xpath>
         </field>
     </record>
     

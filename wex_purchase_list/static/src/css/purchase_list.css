@@ -393,7 +393,7 @@
 
 .wex_pl_header {
     display: grid;
-    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    grid-template-columns: 52px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 112px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
     gap: 0;
     align-items: center;
     width: 100%;
@@ -472,21 +472,22 @@
     justify-content: space-between;
     width: 100%;
     min-width: 1220px;
-    margin: 4px 0 0;
-    padding: 8px 12px;
+    margin: 8px 0 0;
+    padding: 12px 14px;
     border: 1px solid #cbd5e1;
-    background: #dbe3ee;
-    color: #263445;
+    background: linear-gradient(135deg, #e8eef6 0%, #d9e3ef 100%);
+    color: #1f2f42;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-weight: 800;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     cursor: pointer;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.05);
 }
 
 .wex_pl_group.is-depth-0 {
-    border-left: 0;
-    background: #cfd9e6;
+    border-left: 6px solid #64748b;
+    background: linear-gradient(135deg, #dce6f1 0%, #cad6e5 100%);
     font-size: 12px;
 }
 
@@ -495,7 +496,7 @@
     min-width: calc(1220px - 24px);
     margin-left: 24px;
     border-left: 6px solid #64748b;
-    background: #e7edf5;
+    background: linear-gradient(135deg, #eef3f8 0%, #e1e8f1 100%);
 }
 
 .wex_pl_group.is-depth-2 {
@@ -503,33 +504,35 @@
     min-width: calc(1220px - 48px);
     margin-left: 48px;
     border-left: 6px solid #94a3b8;
-    background: #f1f5f9;
+    background: linear-gradient(135deg, #f7f9fc 0%, #edf2f7 100%);
 }
 
 .wex_pl_group:hover {
-    background: #d2dce9;
+    background: linear-gradient(135deg, #dde7f2 0%, #cedaea 100%);
 }
 
 .wex_pl_group.is-depth-1:hover {
-    background: #dbe4ef;
+    background: linear-gradient(135deg, #e7eef6 0%, #dae4ef 100%);
 }
 
 .wex_pl_group.is-depth-2:hover {
-    background: #e8eef5;
+    background: linear-gradient(135deg, #f1f5fa 0%, #e7edf4 100%);
 }
 
 .wex_pl_group_title {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 9px;
 }
 
 .wex_pl_group_count {
-    min-width: 26px;
-    padding: 2px 6px;
+    min-width: 32px;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: #ffffff;
-    color: #475569;
+    background: rgba(255, 255, 255, 0.92);
+    color: #334155;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    font-weight: 800;
     text-align: center;
 }
 
@@ -541,7 +544,7 @@
 }
 
 .wex_pl_top {
-    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    grid-template-columns: 52px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 112px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
     min-height: 35px;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -549,7 +552,7 @@
 }
 
 .wex_pl_bottom {
-    grid-template-columns: 34px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 86px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
+    grid-template-columns: 52px minmax(280px, 2.2fr) 68px minmax(150px, 1fr) 112px minmax(135px, 1fr) minmax(120px, 0.9fr) 118px;
     min-height: 34px;
     padding-top: 5px;
     padding-bottom: 5px;
@@ -563,12 +566,31 @@
 
 .wex_pl_cell.is-select {
     display: flex;
+    align-items: stretch;
     justify-content: center;
+    height: 100%;
     padding-right: 0;
 }
 
-.wex_pl_cell.is-select input {
+.wex_pl_select_control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 35px;
+    cursor: pointer;
+}
+
+.wex_pl_select_control input {
+    width: 17px;
+    height: 17px;
     margin: 0;
+    cursor: pointer;
+}
+
+.wex_pl_selection_hint {
+    color: #475569;
+    font-weight: 600;
 }
 
 .wex_pl_label {
@@ -603,17 +625,185 @@
 }
 
 .wex_pl_link {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
-    height: 22px;
-    padding: 0 7px;
+    width: 100%;
+    min-height: 32px;
+    padding: 4px 7px;
     border: 1px solid #bfd0e7;
     background: #e8f0fb;
     color: #1d4ed8;
     font-size: 11px;
     font-weight: 700;
     text-decoration: none !important;
+}
+
+.wex_pl_link:hover {
+    border-color: #7ea0d1;
+    background: #dce9fb;
+    color: #1e40af;
+}
+
+.wex_pl_cell.is-link {
+    padding-right: 4px;
+}
+
+.wex_pl_muted.is-no-link {
+    padding: 8px 4px;
+    color: #94a3b8;
+    font-size: 11px;
+    text-align: center;
+}
+
+.wex_pl_reservation_hero {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px;
+    background: #e8eef6;
+}
+
+.wex_pl_hero_card {
+    display: flex;
+    align-items: center;
+    min-height: 96px;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #cbd5e1;
+    border-left: 6px solid #64748b;
+    background: #ffffff;
+    color: #1f2937;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.wex_pl_hero_card:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.1);
+    transform: translateY(-1px);
+}
+
+.wex_pl_hero_card.is-active {
+    box-shadow: 0 0 0 2px #4f46e5, 0 3px 10px rgba(15, 23, 42, 0.12);
+}
+
+.wex_pl_hero_card.is-overdue {
+    border-left-color: #dc2626;
+    background: #fff7f7;
+}
+
+.wex_pl_hero_card.is-waiting_arrival {
+    border-left-color: #2563eb;
+    background: #f5f9ff;
+}
+
+.wex_pl_hero_card.is-pending_notification {
+    border-left-color: #d97706;
+    background: #fffbeb;
+}
+
+.wex_pl_hero_card.is-notified {
+    border-left-color: #16a34a;
+    background: #f3fcf5;
+}
+
+.wex_pl_hero_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.wex_pl_hero_content {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wex_pl_hero_label {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.wex_pl_hero_hint {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.wex_pl_hero_count {
+    min-width: 34px;
+    padding: 5px 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.wex_pl_reservation_header,
+.wex_pl_reservation_top {
+    grid-template-columns: minmax(250px, 2fr) 68px minmax(150px, 1fr) 112px minmax(150px, 1fr) minmax(130px, 0.9fr) minmax(190px, 1fr);
+}
+
+.wex_pl_reservation_bottom {
+    grid-template-columns: minmax(160px, 1.4fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(150px, 1fr);
+}
+
+.wex_pl_cell.is-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.wex_pl_cell.is-actions .btn {
+    min-height: 30px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.wex_pl_action_whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-color: #25d366;
+    background: #f0fff6;
+    color: #128c4a;
+}
+
+.wex_pl_action_whatsapp:hover {
+    border-color: #128c4a;
+    background: #25d366;
+    color: #ffffff;
+}
+
+.wex_pl_action_whatsapp:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+}
+
+.wex_pl_action_notify {
+    white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+    .wex_pl_reservation_hero {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .wex_pl_badge,

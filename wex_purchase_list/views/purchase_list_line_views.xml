@@ -140,6 +140,38 @@
         </field>
     </record>
 
+    <record id="view_wex_purchase_reservation_line_operational" model="ir.ui.view">
+        <field name="name">wex_purchase_list.line.reservation.operational</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="arch" type="xml">
+            <wex_operational_list string="Reservas"
+                                  js_class="wex_purchase_list_reservations"
+                                  class="wex_purchase_list_reservation_view"
+                                  create="true"
+                                  quick_create="false"
+                                  default_order="create_date desc, id desc">
+                <field name="requested_by"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="vendor_id"/>
+                <field name="vendor_url"/>
+                <field name="repair_id"/>
+                <field name="sale_line_id"/>
+                <field name="customer_id"/>
+                <field name="is_reservation"/>
+                <field name="reservation_followup_state"/>
+                <field name="reservation_board_section"/>
+                <field name="requested_on"/>
+                <field name="received_on"/>
+                <field name="customer_notified"/>
+                <field name="customer_notified_on"/>
+                <field name="state"/>
+                <field name="is_notification_overdue"/>
+                <field name="is_request_overdue"/>
+            </wex_operational_list>
+        </field>
+    </record>
+
     <record id="view_wex_purchase_list_line_form" model="ir.ui.view">
         <field name="name">wex_purchase_list.line.form</field>
         <field name="model">wex_purchase_list.line</field>
@@ -354,7 +386,7 @@
         <field name="name">Reservas</field>
         <field name="res_model">wex_purchase_list.line</field>
         <field name="view_mode">wex_operational_list,list,form</field>
-        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="view_id" ref="view_wex_purchase_reservation_line_operational"/>
         <field name="search_view_id" ref="view_wex_purchase_list_line_search"/>
         <field name="domain">[('is_reservation','=',True)]</field>
         <field name="context">{'group_by':'reservation_board_section'}</field>
@@ -367,7 +399,7 @@
     <record id="action_wex_purchase_reservation_line_view_operational" model="ir.actions.act_window.view">
         <field name="sequence" eval="1"/>
         <field name="view_mode">wex_operational_list</field>
-        <field name="view_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="view_id" ref="view_wex_purchase_reservation_line_operational"/>
         <field name="act_window_id" ref="action_wex_purchase_reservation_line"/>
     </record>
 

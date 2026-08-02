@@ -9,6 +9,7 @@ El módulo no sustituye el reabastecimiento nativo. Mantiene un flujo paralelo, 
 ## Qué hace hoy
 
 - Muestra una lista interna de compra basada en `wex_purchase_list.line`.
+- Usa una vista operativa propia `wex_operational_list` como entrada principal para compras y reservas.
 - Permite añadir productos a esa lista desde:
   - la ficha de producto
   - una reparación, a partir de `stock.move`
@@ -24,6 +25,9 @@ El módulo no sustituye el reabastecimiento nativo. Mantiene un flujo paralelo, 
   - si el cliente ya fue avisado
   - precio informado al cliente
   - RFQ/PO y línea de compra generadas
+- Permite agrupar visualmente reservas y seguimiento mediante `reservation_board_section`.
+- Permite marcar al cliente como avisado desde lista, reservas y formulario cuando el repuesto ya está recibido.
+- Permite abrir rápidamente el enlace del proveedor y WhatsApp del cliente cuando el origen lo soporta.
 - Permite crear RFQ agrupadas por proveedor y compañía a partir de líneas en estado `to_purchase`.
 
 ## Qué no hace
@@ -45,9 +49,45 @@ Modelo principal del módulo.
 Responsabilidades actuales:
 - almacenar la necesidad interna de compra
 - mantener estados internos
+- calcular señales operativas de reserva, retraso y tablero
 - enlazar orígenes (`repair`, `sale`, `product`)
 - centralizar la creación de líneas con `add_from_origin()`
+- registrar avisos al cliente y su trazabilidad mínima
 - generar RFQ con `action_create_rfqs()`
+
+Métodos relevantes:
+- `add_from_origin()`
+- `action_create_rfqs()`
+- `action_mark_customer_notified()`
+- `action_open_customer_whatsapp()`
+- `action_mark_as_received()`
+
+### Vista operativa `wex_purchase_list_operational`
+
+Archivos:
+- [purchase_list_operational_action.js](/C:/odoo18/addons-wexplay/wex_purchase_list/static/src/js/purchase_list_operational_action.js)
+- [purchase_list_operational_action.xml](/C:/odoo18/addons-wexplay/wex_purchase_list/static/src/xml/purchase_list_operational_action.xml)
+- [purchase_list.css](/C:/odoo18/addons-wexplay/wex_purchase_list/static/src/css/purchase_list.css)
+
+Responsabilidades actuales:
+- renderizar la lista como tablero operativo más cercano a hoja interna que a kanban estándar
+- permitir selección múltiple y creación agrupada de RFQ
+- conservar temporalmente la selección al abrir y volver de una ficha, sin cambiar el clic normal de edición de la fila
+- permitir seleccionar todas las líneas visibles del filtro actual para la compra diaria
+- ofrecer una acción individual de apertura de URL por línea, amplia y separada del clic que abre la ficha
+- marcar reservas como avisadas sin salir del tablero
+- soportar agrupaciones visuales por proveedor, cliente, estado o bloque de reservas
+
+### Vista operativa de Reservas
+
+La acción de Reservas usa una vista XML distinta que reutiliza el renderizador base con una presentación específica.
+
+Responsabilidades:
+- mostrar un HERO de ancho completo con `Con retraso`, `Esperando llegada`, `Pendientes de aviso` y `Ya avisadas`
+- priorizar automáticamente el primer bloque con reservas y mostrar solo sus líneas para evitar agrupaciones verticales largas
+- ofrecer WhatsApp cuando exista cliente y `Marcar avisado` solo en reservas recibidas aún no avisadas
+- recargar el tablero tras marcar un aviso para que la reserva se desplace a `Ya avisadas`
+- no ofrecer selección múltiple ni creación de RFQ: Reservas se centra en seguimiento y aviso individual
 
 ### Extensiones de `repair.order` y `stock.move`
 
@@ -66,6 +106,14 @@ Responsabilidades actuales:
 - smart button de líneas de compra desde la venta
 - acción para añadir una línea de venta a la lista
 - trazabilidad con `purchase_list_line_id` en `sale.order.line`
+- política `Marcar como reserva` por cotización comercial, activa por defecto
+- sincronización de esa política con líneas de compra aún no avisadas
+
+Reglas:
+- las ventas independientes añaden sus productos como reserva por defecto
+- las cotizaciones SAT no exponen ni pueden modificar esta política; sus piezas usan `stock.move.wex_is_reservation`
+- la política solo se puede cambiar en estado borrador o enviada
+- el cambio puede retirar avisos futuros de líneas activas, pero no altera un aviso ya registrado
 
 ### Extensión de `product.template` en `product.py`
 
@@ -150,3 +198,4 @@ Nota:
 - el bloque de pricing sigue viviendo en este módulo aunque no pertenece al flujo principal de compra interna
 - hay que revisar seguridad sobre `stock.move`
 - hay que revisar reglas multi-company para alinearlas con el comportamiento esperado
+- la vista operativa ya es pieza central del módulo y conviene documentar mejor sus filtros, agrupaciones y límites para evitar que la UX evolucione sin trazabilidad

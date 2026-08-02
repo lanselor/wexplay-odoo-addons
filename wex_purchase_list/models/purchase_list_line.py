@@ -600,7 +600,7 @@ class WexPurchaseListLine(models.Model):
     def _prepare_reservation_vals(self, origin_model, origin):
         vals = {"is_reservation": False}
         if origin_model == "sale.order.line":
-            vals["is_reservation"] = True
+            vals["is_reservation"] = bool(origin.order_id.wex_purchase_list_is_reservation)
         elif origin_model == "stock.move":
             vals["is_reservation"] = bool(getattr(origin, "wex_is_reservation", False))
         vals.update(self._get_customer_vals_from_origin(origin_model, origin))
