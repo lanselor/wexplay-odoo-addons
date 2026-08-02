@@ -24,6 +24,7 @@
                         <button type="button"
                                 class="btn-close wex_sat_print_modal__close"
                                 t-on-click="close"
+                                t-att-disabled="state.isPrinting"
                                 style="flex:0 0 auto; margin:0; padding:0.55rem; border:1px solid rgba(152, 168, 192, 0.5); border-radius:14px; background-color:rgba(255, 255, 255, 0.85); opacity:1;"
                                 aria-label="Close"/>
                     </div>
@@ -50,7 +51,8 @@
                                     <button type="button"
                                             class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--primary"
                                             style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(99, 91, 154, 0.08), transparent 28%), #fff; color:#1f2937; text-align:left;"
-                                            t-on-click="onPrintLabel29x90">
+                                            t-on-click="onPrintLabel29x90"
+                                            t-att-disabled="state.isPrinting">
                                         <span class="wex_sat_print_modal__action_icon"
                                               style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.05rem;">
                                             <i class="fa fa-file-text-o"></i>
@@ -78,23 +80,27 @@
                                                 <button class="btn wex_sat_print_modal__qty_btn"
                                                         type="button"
                                                         style="min-width:3rem; border:0; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.15rem; font-weight:800;"
-                                                        t-on-click="decrementAccessoryQty">-</button>
+                                                        t-on-click="decrementAccessoryQty"
+                                                        t-att-disabled="state.isPrinting">-</button>
                                                 <input type="number"
                                                        class="form-control wex_sat_print_modal__qty_input"
                                                        style="border:0; background:transparent; color:#1f2937; font-size:1rem; font-weight:800; text-align:center; box-shadow:none;"
                                                        t-att-value="state.accessoryQty"
-                                                       t-on-input="onAccessoryQtyInput"/>
+                                                       t-on-input="onAccessoryQtyInput"
+                                                       t-att-disabled="state.isPrinting"/>
                                                 <button class="btn wex_sat_print_modal__qty_btn"
                                                         type="button"
                                                         style="min-width:3rem; border:0; background:rgba(99, 91, 154, 0.08); color:#635b9a; font-size:1.15rem; font-weight:800;"
-                                                        t-on-click="incrementAccessoryQty">+</button>
+                                                        t-on-click="incrementAccessoryQty"
+                                                        t-att-disabled="state.isPrinting">+</button>
                                                 </div>
                                             </div>
                                             <div style="flex:1 1 240px;">
                                             <button type="button"
                                                     class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--secondary"
                                                     style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(24, 119, 155, 0.07), transparent 28%), #fff; color:#1f2937; text-align:left;"
-                                                    t-on-click="onPrintLabel29x42">
+                                                    t-on-click="onPrintLabel29x42"
+                                                    t-att-disabled="state.isPrinting">
                                                 <span class="wex_sat_print_modal__action_icon"
                                                       style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(24, 119, 155, 0.08); color:#18779b; font-size:1.05rem;">
                                                     <i class="fa fa-tags"></i>
@@ -128,7 +134,8 @@
                                 <button type="button"
                                         class="btn wex_sat_print_modal__action_btn wex_sat_print_modal__action_btn--dark"
                                         style="display:grid; grid-template-columns:2.75rem minmax(0, 1fr); gap:0.8rem; align-items:center; width:100%; padding:0.9rem 1rem; border:1px solid #98a8c0; border-radius:16px; background:radial-gradient(circle at top right, rgba(31, 41, 55, 0.05), transparent 30%), #fff; color:#1f2937; text-align:left;"
-                                        t-on-click="onPrintTicket80x170">
+                                        t-on-click="onPrintTicket80x170"
+                                        t-att-disabled="state.isPrinting">
                                     <span class="wex_sat_print_modal__action_icon"
                                           style="display:inline-flex; align-items:center; justify-content:center; width:2.75rem; height:2.75rem; border-radius:14px; background:rgba(31, 41, 55, 0.08); color:#1f2937; font-size:1.05rem;">
                                         <i class="fa fa-ticket"></i>
@@ -147,7 +154,8 @@
                             <button type="button"
                                     class="btn wex_sat_print_modal__bulk_btn wex_sat_print_modal__bulk_btn--success"
                                     style="width:100%; min-height:3.6rem; border:0; border-radius:18px; background:linear-gradient(135deg, #2f8f6a 0%, #24684f 100%); color:#fff; font-size:0.94rem; font-weight:800; letter-spacing:0.01em; box-shadow:0 14px 30px rgba(15, 23, 42, 0.12);"
-                                    t-on-click="onPrintAll">
+                                    t-on-click="onPrintAll"
+                                    t-att-disabled="state.isPrinting">
                                 <i class="fa fa-check-circle me-2"></i>Imprimir todo
                             </button>
                             </div>
@@ -156,9 +164,28 @@
                             <button type="button"
                                     class="btn wex_sat_print_modal__bulk_btn wex_sat_print_modal__bulk_btn--info"
                                     style="width:100%; min-height:3.6rem; border:0; border-radius:18px; background:linear-gradient(135deg, #2f9cc0 0%, #1e728d 100%); color:#fff; font-size:0.94rem; font-weight:800; letter-spacing:0.01em; box-shadow:0 14px 30px rgba(15, 23, 42, 0.12);"
-                                    t-on-click="onPrintSat">
+                                    t-on-click="onPrintSat"
+                                    t-att-disabled="state.isPrinting">
                                 <i class="fa fa-files-o me-2"></i>Imprimir documentos recogida
                             </button>
+                            </div>
+                        </div>
+
+                        <div t-if="state.isPrinting"
+                             class="wex_sat_print_modal__progress"
+                             role="status"
+                             aria-live="polite">
+                            <div class="wex_sat_print_modal__progress_meta">
+                                <span>Imprimiendo <t t-esc="state.currentTaskLabel"/></span>
+                                <span><t t-esc="state.completedTasks + 1"/> de <t t-esc="state.totalTasks"/></span>
+                            </div>
+                            <div class="progress wex_sat_print_modal__progress_track"
+                                 role="progressbar"
+                                 aria-valuemin="0"
+                                 t-att-aria-valuemax="state.totalTasks"
+                                 t-att-aria-valuenow="state.completedTasks">
+                                <div class="progress-bar wex_sat_print_modal__progress_bar"
+                                     t-att-style="'width: ' + progressPercentage + '%'"/>
                             </div>
                         </div>
                     </div>
@@ -168,7 +195,8 @@
                         <button type="button"
                                 class="btn btn-link wex_sat_print_modal__cancel"
                                 style="color:#667085; font-weight:700; text-decoration:none;"
-                                t-on-click="close">Cancelar y Salir</button>
+                                t-on-click="close"
+                                t-att-disabled="state.isPrinting">Cancelar y Salir</button>
                     </div>
 
                 </div>

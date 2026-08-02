@@ -18,14 +18,28 @@ export class SatPrintCenterModal extends Component {
         this.actionService = useService("action");
         this.dialog = useService("dialog");
 
-        // Estado mínimo para cantidad de etiquetas de accesorios
+        // Estado de cantidad y progreso visible de los trabajos enviados a QZ.
         this.state = useState({
             accessoryQty: 1,
+            isPrinting: false,
+            totalTasks: 0,
+            completedTasks: 0,
+            currentTaskLabel: "",
         });
     }
 
     close() {
+        if (this.state.isPrinting) {
+            return;
+        }
         this.props.close();
+    }
+
+    get progressPercentage() {
+        if (!this.state.totalTasks) {
+            return 0;
+        }
+        return Math.round((this.state.completedTasks / this.state.totalTasks) * 100);
     }
 
     _abs(url) {
@@ -66,114 +80,128 @@ export class SatPrintCenterModal extends Component {
     // Acciones
     // ------------------------------
     async onPrintAll() {
-    // Validación única (evita 3 mensajes de “no se pudo determinar…”)
-        const id = this._getActiveId();
-        if (!id) {
-            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
-            return;
-        }
-
-        try {
-            // Secuencial (más estable con QZ/colas/drivers)
-            await this.onPrintLabel29x90();
-            await this.onPrintLabel29x42();
-            await this.onPrintTicket80x170();
-
-            this.notification.add("Impresión completa enviada a QZ Tray.", { type: "success" });
-        } catch (e) {
-            // Si falla una, aborta (el resto no se lanza)
-            this.notification.add(`Error en "Imprimir todo": ${e?.message || e}`, { type: "danger" });
-        }
+        await this._runPrintBatch(
+            [
+                this._getMainLabelTask(),
+                this._getAccessoryLabelTask(),
+                this._getTicketTask(),
+            ],
+            "Impresión completa enviada a QZ Tray."
+        );
     }
     
     async onPrintSat() {
-    // Validación única (evita 2 mensajes de “no se pudo determinar…”)
-        const id = this._getActiveId();
-        if (!id) {
-            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
-            return;
-        }
-
-        try {
-            // Secuencial (más estable con QZ/colas/drivers)
-            await this.onPrintLabel29x90();
-            await this.onPrintTicket80x170();
-
-            this.notification.add("Impresión completa enviada a QZ Tray.", { type: "success" });
-        } catch (e) {
-            // Si falla una, aborta (el resto no se lanza)
-            this.notification.add(`Error en "Imprimir todo": ${e?.message || e}`, { type: "danger" });
-        }
+        await this._runPrintBatch(
+            [this._getMainLabelTask(), this._getTicketTask()],
+            "Impresión de recogida enviada a QZ Tray."
+        );
     }
 
     async onPrintLabel29x90() {
-        const id = this._getActiveId();
-        if (!id) {
-            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
-            return;
-        }
-        // Etiqueta SAT completa: 1 copia (por ahora)
-        return this._printDocument(
-            "sat_label_main",
-            this._reportUrl("wexplay_sat_print.report_repair_label_29x90"),
-            {
-                copies: 1,
-                reportName: "wexplay_sat_print.report_repair_label_29x90",
-            }
-        );
+        await this._runPrintBatch([this._getMainLabelTask()]);
     }
 
     async onPrintLabel29x42() {
-        const id = this._getActiveId();
-        if (!id) {
-            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
-            return;
-        }
-
-        const qty = this._sanitizeQty(this.state.accessoryQty);
-
-        // Etiqueta accesorios: aplica cantidad vía QZ copies
-        return this._printDocument(
-            "sat_label_accessory",
-            this._reportUrl("wexplay_sat_print.report_repair_label_29x42"),
-            {
-                copies: qty,
-                reportName: "wexplay_sat_print.report_repair_label_29x42",
-            }
-        );
+        await this._runPrintBatch([this._getAccessoryLabelTask()]);
     }
 
     async onPrintTicket80x170() {
-        const id = this._getActiveId();
-        if (!id) {
-            this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
-            return;
-        }
-        // Ticket: thermal (copies=1 por defecto; no exponemos qty aquí)
-        return this._printDocument(
-            "sat_ticket",
-            this._reportUrl("wexplay_sat_print.report_repair_ticket_80x170"),
-            {
-                reportName: "wexplay_sat_print.report_repair_ticket_80x170",
-            }
-        );
+        await this._runPrintBatch([this._getTicketTask()]);
     }
 
-    // API única de impresión en el modal: todo pasa por kind
-    async _printDocument(documentCode, reportUrl, opts = {}) {
-        try {
-            await printOdooDocument(documentCode, reportUrl, this.env, opts);
+    _getMainLabelTask() {
+        return {
+            label: "etiqueta SAT completa",
+            documentCode: "sat_label_main",
+            reportName: "wexplay_sat_print.report_repair_label_29x90",
+            options: { copies: 1 },
+        };
+    }
 
-            // Mensaje con cantidad si aplica
-            const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
-            const isLabel = documentCode === "sat_label_main" || documentCode === "sat_label_accessory";
+    _getAccessoryLabelTask() {
+        return {
+            label: "etiquetas de accesorios",
+            documentCode: "sat_label_accessory",
+            reportName: "wexplay_sat_print.report_repair_label_29x42",
+            // La cantidad sigue siendo copias del mismo trabajo QZ, no tareas separadas.
+            options: { copies: this._sanitizeQty(this.state.accessoryQty) },
+        };
+    }
+
+    _getTicketTask() {
+        return {
+            label: "resguardo",
+            documentCode: "sat_ticket",
+            reportName: "wexplay_sat_print.report_repair_ticket_80x170",
+            options: {},
+        };
+    }
+
+    async _runPrintBatch(tasks, successMessage = false) {
+        const id = this._getActiveId();
+        if (!id || this.state.isPrinting) {
+            if (!id) {
+                this.notification.add("No se pudo determinar la orden de reparación.", { type: "danger" });
+            }
+            return;
+        }
+
+        this._startPrintBatch(tasks);
+        let allTasksSucceeded = true;
+
+        try {
+            for (const task of tasks) {
+                this.state.currentTaskLabel = task.label;
+                const taskSucceeded = await this._printDocument(task);
+                allTasksSucceeded = allTasksSucceeded && taskSucceeded;
+                this.state.completedTasks += 1;
+            }
+
+            if (successMessage && allTasksSucceeded) {
+                this.notification.add(successMessage, { type: "success" });
+            }
+        } finally {
+            this._finishPrintBatch();
+        }
+    }
+
+    _startPrintBatch(tasks) {
+        this.state.isPrinting = true;
+        this.state.totalTasks = tasks.length;
+        this.state.completedTasks = 0;
+        this.state.currentTaskLabel = tasks[0]?.label || "documentos";
+    }
+
+    _finishPrintBatch() {
+        this.state.isPrinting = false;
+        this.state.totalTasks = 0;
+        this.state.completedTasks = 0;
+        this.state.currentTaskLabel = "";
+    }
+
+    // API única de impresión en el modal: todo pasa por el documento lógico.
+    async _printDocument(task) {
+        const reportUrl = this._reportUrl(task.reportName);
+
+        try {
+            await printOdooDocument(task.documentCode, reportUrl, this.env, {
+                ...task.options,
+                reportName: task.reportName,
+            });
+
+            const copies = Number.isInteger(task.options.copies) && task.options.copies > 0
+                ? task.options.copies
+                : 1;
+            const isLabel = task.documentCode === "sat_label_main" || task.documentCode === "sat_label_accessory";
             if (isLabel && copies > 1) {
                 this.notification.add(`Impresión enviada a QZ Tray (${copies} copias).`, { type: "success" });
             } else {
                 this.notification.add("Impresión enviada a QZ Tray.", { type: "success" });
             }
+            return true;
         } catch (e) {
             this.notification.add(`Error imprimiendo: ${e?.message || e}`, { type: "danger" });
+            return false;
         }
     }
 }

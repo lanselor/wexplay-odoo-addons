@@ -314,6 +314,45 @@
     background: var(--wex-sat-modal-info-soft);
 }
 
+.wex_sat_print_modal__progress {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem 0.95rem;
+    border: 1px solid rgba(47, 156, 192, 0.35);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(47, 156, 192, 0.08), rgba(99, 91, 154, 0.06));
+}
+
+.wex_sat_print_modal__progress_meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.55rem;
+    color: var(--wex-sat-modal-ink);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.wex_sat_print_modal__progress_track {
+    height: 0.55rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(99, 91, 154, 0.12);
+}
+
+.wex_sat_print_modal__progress_bar {
+    min-width: 12%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2f9cc0, #635b9a, #2f9cc0);
+    background-size: 200% 100%;
+    animation: wex-sat-print-progress 1.2s linear infinite;
+}
+
+.wex_sat_print_modal button:disabled,
+.wex_sat_print_modal input:disabled {
+    cursor: wait;
+    opacity: 0.58;
+}
+
 .wex_sat_print_modal__footer {
     justify-content: center;
     padding: 0 1.5rem 1.25rem;
@@ -328,6 +367,16 @@
 
 .wex_sat_print_modal__backdrop {
     background: rgba(15, 23, 42, 0.38);
+}
+
+@keyframes wex-sat-print-progress {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: 0 0;
+    }
 }
 
 @media (max-width: 991.98px) {
@@ -349,5 +398,11 @@
 
     .wex_sat_print_modal__content {
         border-radius: 20px;
+    }
+
+    .wex_sat_print_modal__progress_meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.2rem;
     }
 }
