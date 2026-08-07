@@ -189,17 +189,18 @@
                     </form>
                 </div>
 
+                <div class="wex_portal_filtertabs mb-3" role="tablist" aria-label="Repair filters">
+                    <a t-foreach="searchbar_filters.items()" t-as="searchbar_filter"
+                       t-att-href="searchbar_filter[1]['url']"
+                       t-att-class="'wex_portal_filtertab %s' % ('is-active' if filterby == searchbar_filter[0] else '')">
+                        <t t-if="searchbar_filter[0] == 'active'">Activos</t>
+                        <t t-if="searchbar_filter[0] == 'done'">Finalizados</t>
+                        <t t-if="searchbar_filter[0] == 'all'">Todos</t>
+                    </a>
+                </div>
+
                 <t t-if="repairs">
                     <div class="wex_portal_panel wex_portal_panel--table overflow-hidden">
-                        <div class="wex_portal_filtertabs" role="tablist" aria-label="Repair filters">
-                            <a t-foreach="searchbar_filters.items()" t-as="searchbar_filter"
-                               t-att-href="searchbar_filter[1]['url']"
-                               t-att-class="'wex_portal_filtertab %s' % ('is-active' if filterby == searchbar_filter[0] else '')">
-                                <t t-if="searchbar_filter[0] == 'active'">Activos</t>
-                                <t t-if="searchbar_filter[0] == 'done'">Finalizados</t>
-                                <t t-if="searchbar_filter[0] == 'all'">Todos</t>
-                            </a>
-                        </div>
                         <div class="table-responsive border-top overflow-hidden">
                         <table class="table table-hover o_portal_my_doc_table mb-0 wex_portal_repair_table">
                             <thead>
@@ -264,6 +265,14 @@
                     <div class="alert alert-info" role="status">
                         <t t-if="search">No hay reparaciones SAT que coincidan con esta búsqueda.</t>
                         <t t-else="">No hay reparaciones SAT para este filtro.</t>
+                        <t t-if="not search and filterby != 'all'">
+                            <span class="ms-1">
+                                Puedes revisar
+                                <a t-att-href="searchbar_filters['done']['url']">Finalizados</a>
+                                o
+                                <a t-att-href="searchbar_filters['all']['url']">Todos</a>.
+                            </span>
+                        </t>
                     </div>
                 </t>
             </div>
