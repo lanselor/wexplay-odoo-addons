@@ -16,6 +16,7 @@ class RepairMediaUploadController(http.Controller):
         try:
             job = repair.create_video_processing_job(upload.filename, upload.read())
         except Exception as exc:
+            request.env.cr.rollback()
             return request.make_response(json.dumps({"error": str(exc)}), status=400)
         return request.make_response(
             json.dumps({"job_id": job.id, "state": job.state}),
