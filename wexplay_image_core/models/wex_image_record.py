@@ -58,10 +58,23 @@ class WexImageRecord(models.Model):
     )
     mimetype = fields.Char(string="Tipo", related="dms_file_id.mimetype", store=False, readonly=True)
     file_size = fields.Float(string="Tamaño", related="dms_file_id.size", store=False, readonly=True)
+    file_size_human = fields.Char(
+        string="Tamaño",
+        related="dms_file_id.human_size",
+        store=False,
+        readonly=True,
+    )
     checksum = fields.Char(string="Checksum/SHA1", related="dms_file_id.checksum", store=False, readonly=True)
     preview_image = fields.Image(string="Imagen", related="dms_file_id.image_1920", readonly=True)
-    thumbnail_url = fields.Char(compute="_compute_preview_urls")
-    preview_url = fields.Char(compute="_compute_preview_urls")
+    media_kind = fields.Selection(
+        selection=[("image", "Imagen"), ("video", "Vídeo")],
+        compute="_compute_media_urls",
+        readonly=True,
+    )
+    media_thumbnail = fields.Image(string="Miniatura de vídeo", attachment=True, readonly=True)
+    thumbnail_url = fields.Char(compute="_compute_media_urls")
+    preview_url = fields.Char(compute="_compute_media_urls")
+    content_url = fields.Char(compute="_compute_media_urls")
 
     _sql_constraints = [
         (
@@ -71,12 +84,27 @@ class WexImageRecord(models.Model):
         ),
     ]
 
-    @api.depends("dms_file_id")
-    def _compute_preview_urls(self):
+    @api.depends("dms_file_id", "dms_file_id.mimetype", "media_thumbnail")
+    def _compute_media_urls(self):
         for rec in self:
             if not rec.dms_file_id:
+                rec.media_kind = False
                 rec.thumbnail_url = False
                 rec.preview_url = False
+                rec.content_url = False
+                continue
+            rec.media_kind = "video" if (rec.mimetype or "").startswith("video/") else "image"
+            rec.content_url = (
+                "/web/content?id=%s&field=content&model=dms.file&filename_field=name&download=false"
+                % rec.dms_file_id.id
+            )
+            if rec.media_kind == "video":
+                rec.thumbnail_url = (
+                    "/web/image/wex.image.record/%s/media_thumbnail/128x128?crop=1" % rec.id
+                    if rec.media_thumbnail
+                    else False
+                )
+                rec.preview_url = rec.content_url
                 continue
             rec.thumbnail_url = (
                 "/web/image/dms.file/%s/image_128/128x128?crop=1" % rec.dms_file_id.id
@@ -157,6 +185,11 @@ class WexImageRecord(models.Model):
         if extra_vals:
             values.update(extra_vals)
         return self.create(values)
+
+    @api.model
+    def create_media_from_binary(self, **kwargs):
+        """Create an image or video record while preserving the legacy image API."""
+        return self.create_image_from_binary(**kwargs)
 
     def get_preview_payload(self):
         self.ensure_one()

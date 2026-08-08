@@ -45,6 +45,14 @@
             <form>
                 <header>
                     <button
+                        name="action_open_notification_wizard"
+                        type="object"
+                        string="Enviar correo"
+                        class="btn-secondary"
+                        icon="fa-envelope"
+                        invisible="not mrw_shipment_number"
+                    />
+                    <button
                         name="action_prepare"
                         type="object"
                         string="Preparar"
@@ -301,6 +309,36 @@
                                     icon="fa-download"
                                 />
                             </group>
+                        </page>
+                        <page string="Notificaciones">
+                            <group>
+                                <group string="Destinatario">
+                                    <field name="partner_id" readonly="1"/>
+                                    <field name="notification_count" readonly="1"/>
+                                    <button
+                                        name="action_open_notification_wizard"
+                                        type="object"
+                                        string="Enviar / reenviar correo"
+                                        class="btn-primary"
+                                        invisible="not mrw_shipment_number"
+                                    />
+                                </group>
+                                <group string="Reglas">
+                                    <div class="text-muted">Los envíos normales comunican el seguimiento.</div>
+                                    <div class="text-muted">Las recogidas adjuntan la etiqueta solo cuando está disponible.</div>
+                                </group>
+                            </group>
+                            <field name="notification_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="event_type"/>
+                                    <field name="recipient_email"/>
+                                    <field name="template_id"/>
+                                    <field name="attachment_id"/>
+                                    <field name="state"/>
+                                    <field name="sent_at"/>
+                                    <field name="sent_by_id"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Último error" invisible="not last_error">
                             <field name="last_error" nolabel="1"/>

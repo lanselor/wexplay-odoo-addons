@@ -10,7 +10,7 @@ Centraliza:
 - Configuración de perfiles y asignaciones
 - Enrutamiento de impresión (legacy / híbrido / nuevo)
 - Trazas de auditoría
-- Diagnóstico de impresoras
+- Búsqueda de impresoras desde QZ
 
 No contiene lógica de negocio de SAT ni de producto.
 
@@ -28,14 +28,24 @@ Campos relevantes:
 - `paperformat_ids` — formatos de papel que acepta (Many2many → `report.paperformat`)
 - `report_action_ids` — reportes compatibles (Many2many → `ir.actions.report`)
 
-Las capacidades (`paperformat_ids`, `report_action_ids`) son opcionales. Si están configuradas, el resolver las valida y registra warnings en la traza si hay incompatibilidad. No bloquean la impresión.
+Las capacidades (`paperformat_ids`, `report_action_ids`) se derivan de las asignaciones documentales que apuntan a perfiles del dispositivo. Si están configuradas, el resolver las valida y registra warnings en la traza si hay incompatibilidad. No bloquean la impresión.
 
 ### `wex.print.device.snapshot`
 Captura de estado de impresoras cargada desde QZ Tray.
 
-- Solo lectura. Se crea desde `Cargar diagnóstico desde QZ`.
+- Solo lectura. Se crea desde `Buscar impresoras`.
 - Campo computed `existing_device_id`: detecta si ya existe un `wex.print.device` con ese nombre.
-- Método `action_save_as_device()`: crea un dispositivo pre-rellenado y abre su formulario. Si ya existe, abre el existente sin duplicar.
+- Método `action_open_setup_wizard()`: abre el asistente de configuración con el nombre QZ y driver detectados. Si ya existe un dispositivo, abre el existente sin duplicar.
+
+### `wex.print.device.setup.wizard`
+Asistente operativo de alta desde una impresora detectada por QZ.
+
+- Crea el dispositivo con las capacidades derivadas de los tipos de documento elegidos.
+- Crea un perfil estándar asociado al dispositivo o reutiliza uno equivalente.
+- Crea las asignaciones documentales para el usuario y empresa elegidos.
+- No modifica la configuración Legacy de usuario o empresa y deja `pilot_use_new_resolution` desactivado por defecto.
+
+La misma pantalla se abre desde un dispositivo existente para ampliar sus documentos configurados. Las capacidades de reporte y formato del dispositivo se sincronizan desde las asignaciones que apuntan a sus perfiles, también tras crear, editar o eliminar una asignación o cambiar el perfil que la vincula al dispositivo.
 
 ### `wex.print.document.type`
 Tipo de documento imprimible.
@@ -49,6 +59,8 @@ Campos relevantes:
 - `paperformat_page_height` / `paperformat_page_width` — devueltos en `get_document_payload()` para que el cliente JS pueda configurar el tamaño correcto en QZ
 
 El método `get_document_payload()` devuelve todo lo necesario para el router JS incluyendo las dimensiones del paperformat.
+
+Para que el asistente y las capacidades de dispositivo puedan mostrar una configuración documental completa, el tipo debe tener `report_action_id` y `paperformat_id` vinculados. `report_name` mantiene compatibilidad con llamadas existentes, pero por sí solo no puede aportar esas relaciones ni las capacidades derivadas.
 
 ### `wex.print.profile`
 Configuración de salida para un dispositivo.

@@ -104,6 +104,16 @@
                                 <field name="last_wsdl_operation_details" nolabel="1"/>
                             </group>
                         </page>
+                        <page string="Notificaciones al cliente">
+                            <div class="alert alert-info" role="alert">
+                                Configura las plantillas que usarán los envíos manuales y
+                                reenvíos. Los avisos automáticos se activarán en una fase posterior.
+                            </div>
+                            <group string="Plantillas de correo">
+                                <field name="notification_shipment_created_template_id"/>
+                                <field name="notification_pickup_label_template_id"/>
+                            </group>
+                        </page>
                         <page string="Credenciales" groups="mrw_shipping_connector.group_mrw_shipping_administrator">
                             <group string="AuthInfo MRW">
                                 <field name="agency_code"/>

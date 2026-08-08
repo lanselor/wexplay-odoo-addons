@@ -13,6 +13,7 @@ from odoo.tools import format_date, format_datetime
 
 RE_PLACEHOLDER = re.compile(r"\$\{([^}]+)\}")
 PORTAL_NATIVE_PLACEHOLDER = "${portal_url}"
+MAX_RENDERED_RELATION_ITEMS = 5
 
 SUPPORTED_RES_MODEL_SELECTION = [
     ("sale.order", "Sales: Quotation / Order"),
@@ -87,7 +88,7 @@ class WhatsappComposeWizard(models.TransientModel):
     portal_link_status = fields.Char(compute="_compute_portal_link_status", store=False)
     portal_link_available = fields.Boolean(compute="_compute_portal_link_status", store=False)
     portal_url = fields.Char(compute="_compute_portal_url", store=False)
-    rendered_body = fields.Text(required=True)
+    rendered_body = fields.Text()
     rendered_body_preview_html = fields.Html(
         compute="_compute_rendered_body_preview_html",
         sanitize=False,
@@ -259,22 +260,7 @@ class WhatsappComposeWizard(models.TransientModel):
             vals = self._normalize_and_validate_template(vals)
             new_vals_list.append(vals)
 
-        records = super().create(new_vals_list)
-
-        for w in records:
-            ctx_res_model = w.res_model_ctx or w.env.context.get("default_res_model")
-            if ctx_res_model == "repair.order" and w.res_model != "repair.order":
-                w._post_guardrail_note(
-                    action=_("Corrección automática de modelo"),
-                    details=_("Se forzó res_model a repair.order por origen en SAT."),
-                )
-            elif ctx_res_model == "repair.order":
-                w._post_guardrail_note(
-                    action=_("Modelo normalizado"),
-                    details=_("Origen SAT: el asistente solo permite plantillas de repair.order."),
-                )
-
-        return records
+        return super().create(new_vals_list)
 
     def write(self, vals):
         for w in self:
@@ -447,6 +433,8 @@ class WhatsappComposeWizard(models.TransientModel):
             current = current[part]
             if not current:
                 return None
+            if hasattr(current, "_fields"):
+                current = current[:MAX_RENDERED_RELATION_ITEMS]
         return current
 
     def _is_safe_getattr_path_supported(self, record, path, max_depth=6):
@@ -475,8 +463,8 @@ class WhatsappComposeWizard(models.TransientModel):
         if hasattr(value, "exists") and hasattr(value, "display_name"):
             if len(value) == 1:
                 return value.display_name or ""
-            names = value.mapped("display_name")
-            return ", ".join(names[:5]) if names else ""
+            names = value[:MAX_RENDERED_RELATION_ITEMS].mapped("display_name")
+            return ", ".join(names) if names else ""
 
         if isinstance(value, bool):
             return "Sí" if value else "No"

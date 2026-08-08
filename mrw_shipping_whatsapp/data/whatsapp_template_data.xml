@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="whatsapp_template_mrw_shipment_created" model="whatsapp.template">
+            <field name="name">MRW - Envío creado</field>
+            <field name="res_model">mrw.shipping.shipment</field>
+            <field name="context_group">mrw_shipping</field>
+            <field name="sequence">10</field>
+            <field name="body">Hola ${partner.name},
+
+Hemos creado tu envío con MRW.
+
+Referencia: ${mrw_reference}
+Seguimiento: ${mrw_tracking_number}
+Puedes consultar su estado aquí: ${mrw_tracking_url}
+
+Un saludo.</field>
+        </record>
+
+        <record id="whatsapp_template_mrw_pickup_created" model="whatsapp.template">
+            <field name="name">MRW - Recogida confirmada</field>
+            <field name="res_model">mrw.shipping.shipment</field>
+            <field name="context_group">mrw_shipping</field>
+            <field name="sequence">20</field>
+            <field name="body">Hola ${partner.name},
+
+Hemos solicitado la recogida con MRW.
+
+Referencia: ${mrw_reference}
+Seguimiento: ${mrw_tracking_number}
+Puedes consultar su estado aquí: ${mrw_tracking_url}
+
+Un saludo.</field>
+        </record>
+    </data>
+</odoo>

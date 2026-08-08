@@ -522,6 +522,16 @@
     background: #eef4f8;
 }
 
+.wex_portal_gallery_video_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 220px;
+    background: linear-gradient(135deg, #27364a, #4e5d72);
+    color: #ffffff;
+    font-size: 2rem;
+}
+
 .wex_portal_gallery_caption {
     display: flex;
     flex-direction: column;

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="whatsapp_template_view_form_mrw" model="ir.ui.view">
+        <field name="name">whatsapp.template.form.mrw</field>
+        <field name="model">whatsapp.template</field>
+        <field name="inherit_id" ref="wex_whatsapp_chatter.view_whatsapp_template_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('alert')][.//strong[contains(., 'Variables disponibles')]]//div[hasclass('row')]" position="inside">
+                <div class="col-12 col-lg-6" invisible="res_model != 'mrw.shipping.shipment'">
+                    <div class="p-3 bg-white rounded border h-100">
+                        <div class="fw-bold text-uppercase text-muted mb-2">MRW: envío / recogida</div>
+                        <div class="mb-2">
+                            <code><span>$</span>{mrw_reference}</code>
+                            <div class="text-muted">Referencia interna del envío MRW.</div>
+                        </div>
+                        <div class="mb-2">
+                            <code><span>$</span>{mrw_tracking_number}</code>
+                            <div class="text-muted">Número de seguimiento asignado por MRW.</div>
+                        </div>
+                        <div>
+                            <code><span>$</span>{mrw_tracking_url}</code>
+                            <div class="text-muted">Enlace de seguimiento de MRW. La etiqueta PDF nunca se comparte por WhatsApp.</div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

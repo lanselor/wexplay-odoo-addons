@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_wex_vendor_bill_ocr_job_tree" model="ir.ui.view">
+        <field name="name">wex.vendor.bill.ocr.job.list</field>
+        <field name="model">wex.vendor.bill.ocr.job</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="purchase_order_id"/>
+                <field name="attachment_name"/>
+                <field name="state"/>
+                <field name="method_used"/>
+                <field name="progress_percent" widget="progressbar"/>
+                <field name="progress_message"/>
+                <field name="parsed_invoice_number"/>
+                <field name="parsed_total_amount"/>
+                <field name="result_move_id"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_wex_vendor_bill_ocr_job_form" model="ir.ui.view">
+        <field name="name">wex.vendor.bill.ocr.job.form</field>
+        <field name="model">wex.vendor.bill.ocr.job</field>
+        <field name="arch" type="xml">
+            <form string="Vendor Bill OCR Job">
+                <header>
+                    <button type="object"
+                            name="action_refresh_view"
+                            string="Refresh"
+                            class="btn btn-secondary"/>
+                    <button type="object"
+                            name="action_open_review_wizard"
+                            string="Open Review"
+                            class="btn btn-primary"
+                            invisible="state != 'review'"/>
+                    <button type="object"
+                            name="action_requeue"
+                            string="Requeue"
+                            class="btn btn-secondary"
+                            invisible="state not in ('draft', 'error')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,processing,review,done,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <div class="text-muted">
+                            <field name="progress_message" readonly="1"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="purchase_order_id" readonly="1"/>
+                            <field name="attachment_id" readonly="1"/>
+                            <field name="result_move_id" readonly="1"/>
+                            <field name="method_used" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="queued_at" readonly="1"/>
+                            <field name="started_at" readonly="1"/>
+                            <field name="finished_at" readonly="1"/>
+                            <field name="confidence_score" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Progress">
+                        <field name="progress_percent" widget="progressbar" readonly="1"/>
+                        <field name="progress_message" readonly="1"/>
+                    </group>
+                    <group string="Flags">
+                        <group>
+                            <field name="has_pending_receipt" readonly="1"/>
+                            <field name="needs_serials" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="has_vendor_bill" readonly="1"/>
+                            <field name="is_ready_to_apply" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Parsed Data">
+                            <group>
+                                <group>
+                                    <field name="parsed_supplier_name" readonly="1"/>
+                                    <field name="parsed_supplier_vat" readonly="1"/>
+                                    <field name="parsed_invoice_number" readonly="1"/>
+                                    <field name="parsed_invoice_date" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="parsed_external_ref" readonly="1"/>
+                                    <field name="parsed_untaxed_amount" readonly="1"/>
+                                    <field name="parsed_tax_amount" readonly="1"/>
+                                    <field name="parsed_total_amount" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Raw Text">
+                            <field name="raw_text" readonly="1" nolabel="1"/>
+                        </page>
+                        <page string="Error" invisible="not error_message">
+                            <field name="error_message" readonly="1" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wex_vendor_bill_ocr_job" model="ir.actions.act_window">
+        <field name="name">Vendor Bill OCR Jobs</field>
+        <field name="res_model">wex.vendor.bill.ocr.job</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -7,4 +7,11 @@
     <record id="wex_consent.group_wex_consent_manager" model="res.groups">
         <field name="implied_ids" eval="[(4, ref('wexplay_image_core.group_wex_image_manager'))]"/>
     </record>
+
+    <record id="wex_repair_media_process_job_company_rule" model="ir.rule">
+        <field name="name">SAT video processing jobs by company</field>
+        <field name="model_id" ref="model_wex_repair_media_process_job"/>
+        <field name="groups" eval="[(4, ref('wexplay_image_core.group_wex_image_user'))]"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

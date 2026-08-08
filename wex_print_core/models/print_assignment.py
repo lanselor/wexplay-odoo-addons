@@ -20,9 +20,44 @@ class WexPrintAssignment(models.Model):
     report_action_id = fields.Many2one("ir.actions.report", string="Reporte (filtro)", ondelete="restrict")
     paperformat_id = fields.Many2one("report.paperformat", string="Formato de papel (filtro)", ondelete="restrict")
     profile_id = fields.Many2one("wex.print.profile", string="Perfil de impresión", required=True, ondelete="restrict")
+    device_id = fields.Many2one(
+        related="profile_id.device_id",
+        string="Dispositivo",
+        store=True,
+        index=True,
+        readonly=True,
+    )
+    document_report_action_id = fields.Many2one(
+        related="document_type_id.report_action_id",
+        string="Reporte del documento",
+        readonly=True,
+    )
+    document_paperformat_id = fields.Many2one(
+        related="document_type_id.paperformat_id",
+        string="Formato del documento",
+        readonly=True,
+    )
     user_id = fields.Many2one("res.users", string="Usuario")
     company_id = fields.Many2one("res.company", string="Empresa")
     notes = fields.Text(string="Notas")
+
+    @api.model_create_multi
+    def create(self, values_list):
+        assignments = super().create(values_list)
+        assignments.mapped("device_id")._sync_capabilities_from_assignments()
+        return assignments
+
+    def write(self, values):
+        previous_devices = self.mapped("device_id")
+        result = super().write(values)
+        (previous_devices | self.mapped("device_id"))._sync_capabilities_from_assignments()
+        return result
+
+    def unlink(self):
+        devices = self.mapped("device_id")
+        result = super().unlink()
+        devices._sync_capabilities_from_assignments()
+        return result
 
     def action_open_resolution_test(self):
         self.ensure_one()

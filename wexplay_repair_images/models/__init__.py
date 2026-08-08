@@ -4,3 +4,4 @@ from . import res_company
 from . import res_config_settings
 from . import repair_order
 from . import wex_image_record
+from . import wex_repair_media_process_job

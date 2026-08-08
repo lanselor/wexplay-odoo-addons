@@ -5,3 +5,5 @@ from . import mrw_shipping_service
 from . import mrw_shipping_shipment
 from . import mrw_shipping_package
 from . import mrw_shipping_log
+from . import mrw_shipping_notification
+from . import mrw_shipping_notification_wizard

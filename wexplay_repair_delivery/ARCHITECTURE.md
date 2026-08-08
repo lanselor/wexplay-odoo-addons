@@ -93,6 +93,9 @@ This module should not become the general owner of:
 - `repair.order` exposes the tracking link directly from the `Envíos` tab so
   logistics follow-up does not require opening the technical MRW shipment
   record.
+- SAT shipping operations reuse the MRW customer notification wizard from the
+  selected `mrw.shipping.shipment`; they do not own email templates, email
+  delivery, or notification history.
 
 ## Known Architectural Debt
 

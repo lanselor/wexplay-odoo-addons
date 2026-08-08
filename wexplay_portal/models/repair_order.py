@@ -390,6 +390,7 @@ class RepairOrder(models.Model):
                     "tags": sorted_tags.mapped("name"),
                     "tag_codes": sorted_tags.mapped("code"),
                     "has_binary": bool(image.dms_file_id and image.dms_file_id.content),
+                    "media_kind": image.media_kind if "media_kind" in image._fields else "image",
                     "image_url": f"/my/repairs/{self.id}/images/{image.id}?variant=preview",
                     "thumbnail_url": f"/my/repairs/{self.id}/images/{image.id}?variant=thumb",
                     "preview_url": f"/my/repairs/{self.id}/images/{image.id}?variant=preview",

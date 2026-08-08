@@ -31,10 +31,10 @@ registry.category("actions").add("wex_print_core.load_printer_diagnostics", asyn
         }));
 
         await orm.create("wex.print.device.snapshot", payload);
-        notification.add(`Diagnóstico cargado: ${payload.length} impresoras.`, { type: "success" });
+        notification.add(`Se encontraron ${payload.length} impresoras desde QZ Tray.`, { type: "success" });
         env.services.action.doAction("wex_print_core.action_wex_print_device_snapshots");
     } catch (error) {
-        notification.add(`No se pudo cargar el diagnóstico: ${error?.message || error}`, {
+        notification.add(`No se pudieron buscar impresoras: ${error?.message || error}`, {
             type: "danger",
         });
     }

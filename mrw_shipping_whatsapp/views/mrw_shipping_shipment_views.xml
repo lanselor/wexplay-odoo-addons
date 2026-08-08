@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrw_shipping_shipment_view_form_whatsapp" model="ir.ui.view">
+        <field name="name">mrw.shipping.shipment.form.whatsapp</field>
+        <field name="model">mrw.shipping.shipment</field>
+        <field name="inherit_id" ref="mrw_shipping_connector.mrw_shipping_shipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="action_open_mrw_whatsapp"
+                    type="object"
+                    string="WhatsApp"
+                    class="btn-success"
+                    icon="fa-whatsapp"
+                    invisible="not mrw_shipment_number"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

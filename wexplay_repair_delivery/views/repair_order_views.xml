@@ -137,6 +137,13 @@
                                             title="Abrir tracking"
                                             invisible="not tracking_url"
                                         />
+                                        <button
+                                            name="action_open_mrw_notification_wizard"
+                                            type="object"
+                                            icon="fa-envelope"
+                                            title="Enviar / reenviar correo"
+                                            invisible="not mrw_shipment_id"
+                                        />
                                     </list>
                                 </field>
                             </div>

@@ -20,6 +20,10 @@
         <field name="model">wex.print.device</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_open_document_setup_wizard" type="object"
+                            string="Añadir documentos" class="btn-primary"/>
+                </header>
                 <sheet>
                     <group string="Identificación">
                         <field name="name"/>
@@ -30,9 +34,24 @@
                         <field name="company_id"/>
                         <field name="active"/>
                     </group>
-                    <group string="Capacidades">
-                        <field name="paperformat_ids" widget="many2many_tags"/>
-                        <field name="report_action_ids" widget="many2many_tags"/>
+                    <group string="Documentos configurados" colspan="2">
+                        <field name="assignment_ids" nolabel="1">
+                            <list create="0" edit="0" delete="0">
+                                <field name="document_type_id"/>
+                                <field name="document_report_action_id"/>
+                                <field name="document_paperformat_id"/>
+                                <field name="profile_id"/>
+                                <field name="user_id"/>
+                                <field name="company_id"/>
+                                <field name="priority"/>
+                                <field name="pilot_use_new_resolution"/>
+                                <field name="active"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group string="Capacidades derivadas" colspan="2">
+                        <field name="paperformat_ids" widget="many2many_tags" readonly="1"/>
+                        <field name="report_action_ids" widget="many2many_tags" readonly="1"/>
                     </group>
                     <group string="Notas">
                         <field name="notes" nolabel="1"/>
@@ -267,10 +286,10 @@
                 <field name="printer_type"/>
                 <field name="existing_device_id"/>
                 <field name="user_id"/>
-                <button name="action_save_as_device" type="object" string="Guardar como dispositivo" icon="fa-floppy-o"
+                <button name="action_open_setup_wizard" type="object" string="Configurar impresora" icon="fa-magic"
                         invisible="existing_device_id != False"
                         class="btn-sm btn-primary"/>
-                <button name="action_save_as_device" type="object" string="Abrir dispositivo" icon="fa-external-link"
+                <button name="action_open_setup_wizard" type="object" string="Abrir dispositivo" icon="fa-external-link"
                         invisible="existing_device_id == False"
                         class="btn-sm btn-secondary"/>
             </list>
@@ -283,10 +302,10 @@
         <field name="arch" type="xml">
             <form create="0" edit="0">
                 <header>
-                    <button name="action_save_as_device" type="object" string="Guardar como dispositivo"
+                    <button name="action_open_setup_wizard" type="object" string="Configurar impresora"
                             class="btn-primary"
                             invisible="existing_device_id != False"/>
-                    <button name="action_save_as_device" type="object" string="Abrir dispositivo guardado"
+                    <button name="action_open_setup_wizard" type="object" string="Abrir dispositivo guardado"
                             invisible="existing_device_id == False"/>
                 </header>
                 <sheet>
@@ -312,13 +331,13 @@
     </record>
 
     <record id="action_wex_print_device_snapshots" model="ir.actions.act_window">
-        <field name="name">Diagnóstico de impresoras</field>
+        <field name="name">Impresoras encontradas</field>
         <field name="res_model">wex.print.device.snapshot</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="action_wex_print_load_printer_diagnostics" model="ir.actions.client">
-        <field name="name">Cargar diagnóstico desde QZ</field>
+        <field name="name">Buscar impresoras</field>
         <field name="tag">wex_print_core.load_printer_diagnostics</field>
     </record>
 
@@ -328,6 +347,6 @@
     <menuitem id="menu_wex_print_profiles" name="Perfiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_assignments" name="Asignaciones" parent="menu_wex_print_root" action="action_wex_print_assignments" sequence="40" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_traces" name="Trazas" parent="menu_wex_print_root" action="action_wex_print_traces" sequence="50" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_device_snapshots" name="Diagnóstico de impresoras" parent="menu_wex_print_root" action="action_wex_print_device_snapshots" sequence="60" groups="wex_print_core.group_wex_print_core_admin"/>
-    <menuitem id="menu_wex_print_load_printer_diagnostics" name="Cargar diagnóstico desde QZ" parent="menu_wex_print_root" action="action_wex_print_load_printer_diagnostics" sequence="70" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_device_snapshots" name="Impresoras encontradas" parent="menu_wex_print_root" action="action_wex_print_device_snapshots" sequence="60" groups="wex_print_core.group_wex_print_core_admin"/>
+    <menuitem id="menu_wex_print_load_printer_diagnostics" name="Buscar impresoras" parent="menu_wex_print_root" action="action_wex_print_load_printer_diagnostics" sequence="70" groups="wex_print_core.group_wex_print_core_admin"/>
 </odoo>

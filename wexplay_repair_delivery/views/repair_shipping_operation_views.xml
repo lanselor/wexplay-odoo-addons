@@ -64,6 +64,12 @@
                         invisible="not tracking_url"
                     />
                     <button
+                        name="action_open_mrw_notification_wizard"
+                        type="object"
+                        string="Enviar correo"
+                        invisible="not mrw_shipment_id"
+                    />
+                    <button
                         name="action_open_label"
                         type="object"
                         string="Abrir etiqueta"
@@ -154,6 +160,12 @@
                                         type="object"
                                         string="Abrir tracking"
                                         invisible="not tracking_url"
+                                    />
+                                    <button
+                                        name="action_open_mrw_notification_wizard"
+                                        type="object"
+                                        string="Enviar / reenviar correo"
+                                        invisible="not mrw_shipment_id"
                                     />
                                     <button
                                         name="action_open_label"

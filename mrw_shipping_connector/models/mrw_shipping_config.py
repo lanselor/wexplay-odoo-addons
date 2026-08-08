@@ -89,6 +89,20 @@ class MrwShippingConfig(models.Model):
             "tener autorización operativa para emitir envíos reales."
         ),
     )
+    notification_shipment_created_template_id = fields.Many2one(
+        comodel_name="mail.template",
+        string="Plantilla de envío creado",
+        domain="[('model_id.model', '=', 'mrw.shipping.shipment')]",
+        ondelete="restrict",
+        help="Plantilla usada al comunicar el número y el enlace de seguimiento.",
+    )
+    notification_pickup_label_template_id = fields.Many2one(
+        comodel_name="mail.template",
+        string="Plantilla de etiqueta de recogida",
+        domain="[('model_id.model', '=', 'mrw.shipping.shipment')]",
+        ondelete="restrict",
+        help="Plantilla usada al enviar al cliente la etiqueta PDF de una recogida.",
+    )
     is_default = fields.Boolean(string="Por defecto", default=False)
     last_connection_test_at = fields.Datetime(
         string="Última prueba de conexión",

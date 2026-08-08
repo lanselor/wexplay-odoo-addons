@@ -24,6 +24,32 @@ Aprendizaje:
 
 ## Errores registrados
 
+## 2026-08-07 - Herencia global de Many2One rompia el ciclo de vida OWL
+
+Contexto:
+
+Se anadieron filtros rapidos bajo el selector de plantillas del wizard de WhatsApp. La primera implementacion intento extender visualmente el template global `web.Many2OneField`.
+
+Sintoma:
+
+Al abrir el wizard, Odoo mostraba `OwlError` con `Cannot read properties of undefined (reading 'length')`. El fallo afectaba al render de campos Many2One que no disponian de los datos del selector personalizado.
+
+Causa:
+
+La herencia QWeb del template base no quedaba limitada al widget de plantillas y alteraba el componente Many2One global. El template extendido esperaba `filterButtons`, propiedad que solo existe en el componente propio.
+
+Correccion:
+
+Se sustituyo la herencia global por un widget OWL aislado, `wex_whatsapp_template_picker`, con template propio. Solo el campo `template_id` del wizard usa ese widget.
+
+Validacion:
+
+Se validaron XML y JavaScript, se actualizaron los assets y se ejecutaron las pruebas del modulo. Debe comprobarse manualmente tras cada actualizacion de Odoo la busqueda, `Buscar mas...` y apertura de plantilla.
+
+Aprendizaje:
+
+No extender un template de campo global para resolver una necesidad de un solo campo sin confirmar el alcance real de la herencia. Si el estado es especifico del widget, el template tambien debe quedar aislado.
+
 ## 2026-05-02 - Modelos WhatsApp soportados no estaban centralizados
 
 Contexto:

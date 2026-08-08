@@ -189,9 +189,110 @@
     overflow: hidden;
 }
 
+.wex_portal_pending_budget_banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    border: 2px solid #ead6a4;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff8e7 0%, #fffdf5 100%);
+    color: #6d5215;
+}
+
+.wex_portal_pending_budget_banner_copy {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.wex_portal_pending_budget_banner_copy strong {
+    color: #5b4310;
+}
+
+.wex_portal_pending_budget_banner_actions .btn {
+    min-width: 10.5rem;
+    font-weight: 800;
+}
+
+.wex_portal_pending_budget_modal {
+    border: 2px solid #d9cdea;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.wex_portal_pending_budget_modal .modal-header,
+.wex_portal_pending_budget_modal .modal-footer {
+    border-color: #e6deef;
+}
+
+.wex_portal_pending_budget_summary {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #ecdcae;
+    border-radius: 14px;
+    background: #fff8e7;
+    color: #6d5215;
+}
+
+.wex_portal_pending_budget_list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.wex_portal_pending_budget_item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #e2dbe9;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.wex_portal_pending_budget_item_copy {
+    min-width: 0;
+}
+
+.wex_portal_pending_budget_item_title {
+    color: #20313f;
+    font-weight: 800;
+}
+
+.wex_portal_pending_budget_item_device {
+    margin-top: 0.2rem;
+    color: #5f4f81;
+    font-weight: 700;
+}
+
+.wex_portal_pending_budget_item_meta {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 0.45rem;
+    color: #607284;
+    font-size: 0.92rem;
+}
+
+.wex_portal_pending_budget_item_actions .btn {
+    min-width: 7rem;
+    font-weight: 800;
+}
+
 @media (max-width: 991.98px) {
     .wex_portal_budget_header {
         flex-direction: column;
+    }
+
+    .wex_portal_pending_budget_banner,
+    .wex_portal_pending_budget_item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .wex_portal_pending_budget_banner_actions .btn,
+    .wex_portal_pending_budget_item_actions .btn {
+        width: 100%;
     }
 }
 

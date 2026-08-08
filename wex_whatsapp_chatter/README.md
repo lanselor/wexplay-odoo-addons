@@ -13,6 +13,8 @@ El modulo registra en el chatter que el mensaje fue preparado desde Odoo. Esta n
 - Boton de WhatsApp en chatter.
 - Asistente `whatsapp.compose.wizard`.
 - Plantillas `whatsapp.template`.
+- Clasificacion de plantillas por modelo, grupo funcional y secuencia.
+- Filtros rapidos locales bajo el selector de plantilla, sin recargar el wizard.
 - Variables seguras tipo `${object.name}`, `${partner.name}`, `${company.name}` y `${user.name}`.
 - Alias funcionales para SAT y documentos:
   - `${portal_url}` para portal nativo de Odoo.
@@ -50,6 +52,8 @@ El portal B2B privado de reparaciones no vive en este modulo. Se integra mediant
 - El wizard sigue concentrando bastante logica, aunque ya esta dividido en helpers claros.
 - La ayuda de variables vive en XML y debe mantenerse sincronizada con el render Python.
 - `whatsapp.template.render_body()` y `whatsapp.compose.wizard._render_text()` no deben divergir conceptualmente.
+- El selector de plantillas replica de forma aislada el template Many2One nativo de Odoo; debe revisarse al actualizar Odoo.
+- Los grupos de plantillas se mantienen en Python y en el widget JavaScript; cualquier grupo nuevo debe actualizar ambas definiciones.
 - Sin API oficial no hay confirmacion tecnica de entrega, lectura ni envio real.
 
 ## Verificacion basica
@@ -58,10 +62,11 @@ El portal B2B privado de reparaciones no vive en este modulo. Se integra mediant
 2. Abrir un documento soportado con chatter.
 3. Pulsar WhatsApp.
 4. Seleccionar o revisar destinatario, telefono, plantilla y cuerpo.
-5. Si aplica, insertar enlace de portal nativo desde el bloque de enlace.
-6. Confirmar que la previsualizacion muestra el contenido esperado.
-7. Pulsar Abrir WhatsApp.
-8. Confirmar que se abre WhatsApp y que Odoo deja una nota en el chatter.
+5. Usar los filtros rapidos bajo Plantilla si se necesita acotar el desplegable; comprobar que no se recarga la modal.
+6. Si aplica, insertar enlace de portal nativo desde la pestana Portal.
+7. Confirmar que la previsualizacion muestra el contenido esperado.
+8. Pulsar Abrir WhatsApp.
+9. Confirmar que se abre WhatsApp y que Odoo deja una nota en el chatter.
 
 ## Verificacion de variables SAT
 

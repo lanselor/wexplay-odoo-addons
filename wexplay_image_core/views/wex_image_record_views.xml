@@ -46,18 +46,26 @@
                                 <field name="dms_file_id" readonly="1"/>
                                 <field name="dms_directory_id" readonly="1"/>
                                 <field name="mimetype" readonly="1"/>
-                                <field name="file_size" readonly="1"/>
+                                <field name="file_size_human" readonly="1"/>
                                 <field name="checksum" readonly="1"/>
                                 <field name="active"/>
                             </group>
                         </div>
                         <div class="col-lg-7">
                             <group string="Imagen" class="wex_repair_images_preview_group">
+                                <field name="media_kind" invisible="1"/>
                                 <field name="preview_image"
                                        nolabel="1"
                                        widget="image"
                                        class="w-100"
+                                       invisible="media_kind == 'video'"
                                        options="{'preview_image': 'preview_image', 'size': [0, 1200]}"/>
+                                <field name="media_thumbnail"
+                                       nolabel="1"
+                                       widget="image"
+                                       class="w-100"
+                                       invisible="media_kind != 'video'"
+                                       options="{'preview_image': 'media_thumbnail', 'size': [0, 1200]}"/>
                             </group>
                         </div>
                     </div>

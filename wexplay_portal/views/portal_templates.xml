@@ -189,13 +189,15 @@
                     </form>
                 </div>
 
-                <div class="wex_portal_filtertabs mb-3" role="tablist" aria-label="Repair filters">
+                <div class="wex_portal_filtertabs" role="tablist" aria-label="Repair filters">
                     <a t-foreach="searchbar_filters.items()" t-as="searchbar_filter"
                        t-att-href="searchbar_filter[1]['url']"
                        t-att-class="'wex_portal_filtertab %s' % ('is-active' if filterby == searchbar_filter[0] else '')">
-                        <t t-if="searchbar_filter[0] == 'active'">Activos</t>
-                        <t t-if="searchbar_filter[0] == 'done'">Finalizados</t>
-                        <t t-if="searchbar_filter[0] == 'all'">Todos</t>
+                        <t t-set="filter_label" t-value="searchbar_filter[1].get('label') or searchbar_filter[0]"/>
+                        <t t-if="searchbar_filter[0] == 'active'" t-set="filter_label" t-value="'Activos'"/>
+                        <t t-if="searchbar_filter[0] == 'done'" t-set="filter_label" t-value="'Finalizados'"/>
+                        <t t-if="searchbar_filter[0] == 'all'" t-set="filter_label" t-value="'Todos'"/>
+                        <t t-out="filter_label"/>
                     </a>
                 </div>
 
@@ -775,7 +777,8 @@
                                                     t-att-title="image['name']"
                                                     data-bs-toggle="modal"
                                                     t-att-data-bs-target="'#%s' % image['modal_id']">
-                                                <img t-att-src="image['thumbnail_url']" t-att-alt="image['name']" loading="lazy"/>
+                                                <img t-if="image['media_kind'] == 'image'" t-att-src="image['thumbnail_url']" t-att-alt="image['name']" loading="lazy"/>
+                                                <span t-else="" class="wex_portal_gallery_video_icon"><i class="fa fa-play"/></span>
                                                 <span class="wex_portal_gallery_caption">
                                                     <strong><t t-out="image['name']"/></strong>
                                                     <t t-if="image['description']">
@@ -814,10 +817,12 @@
                                                             <div class="row g-4">
                                                                 <div class="col-12 col-lg-8">
                                                                     <div class="wex_portal_image_modal_preview">
-                                                                        <img t-att-src="image['preview_url']"
+                                                                        <video t-if="image['media_kind'] == 'video'" controls="controls" preload="metadata" class="w-100">
+                                                                            <source t-att-src="image['preview_url']" type="video/mp4"/>
+                                                                        </video>
+                                                                        <img t-else="" t-att-src="image['preview_url']"
                                                                              t-att-alt="image['name']"
-                                                                             class="img-fluid"
-                                                                             loading="lazy"/>
+                                                                             class="img-fluid" loading="lazy"/>
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-12 col-lg-4">
@@ -853,7 +858,8 @@
                                                                     </div>
                                                                     <a t-att-href="image['download_url']"
                                                                        class="btn btn-primary w-100 mt-3">
-                                                                        Descargar imagen
+                                                                        <t t-if="image['media_kind'] == 'video'">Descargar vídeo</t>
+                                                                        <t t-else="">Descargar imagen</t>
                                                                     </a>
                                                                 </div>
                                                             </div>

@@ -12,6 +12,7 @@ class RepairOrder(models.Model):
     _inherit = "repair.order"
 
     _PORTAL_BUDGET_QUOTATION_STATES = ("draft", "sent")
+    _PORTAL_PENDING_BUDGET_ALERT_PREVIEW_LIMIT = 5
 
     def _run_portal_budget_workflow_action(self, method_name, user=None, event_type=None, **context_flags):
         self.ensure_one()
@@ -39,6 +40,48 @@ class RepairOrder(models.Model):
     def _get_portal_budget_sale_order(self):
         self.ensure_one()
         return self.sudo().sale_order_id
+
+    @api.model
+    def _get_portal_pending_budget_domain(self, user=None):
+        user = user or self.env.user
+        return self._get_portal_visible_domain(user=user) + [
+            ("x_budget_stage", "=", "waiting_customer")
+        ]
+
+    @api.model
+    def _get_portal_pending_budget_alert_values(self, user=None):
+        user = user or self.env.user
+        domain = self._get_portal_pending_budget_domain(user=user)
+        total_count = self.search_count(domain)
+        preview_repairs = self.search(
+            domain,
+            order="create_date desc, id desc",
+            limit=self._PORTAL_PENDING_BUDGET_ALERT_PREVIEW_LIMIT,
+        )
+
+        items = []
+        for repair in preview_repairs:
+            items.append(
+                {
+                    "id": repair.id,
+                    "name": repair.name or "",
+                    "device_label": repair._get_portal_budget_device_label() or "-",
+                    "reported_issue": repair.x_reported_issue or "",
+                    "create_date": repair.create_date,
+                    "budget_url": "/my/repairs/%s/budget" % repair.id,
+                }
+            )
+
+        return {
+            "show": bool(total_count),
+            "total_count": total_count,
+            "preview_limit": self._PORTAL_PENDING_BUDGET_ALERT_PREVIEW_LIMIT,
+            "remaining_count": max(total_count - len(items), 0),
+            "items": items,
+            "list_url": "/my/repairs?filterby=pending_budget",
+            "reminder_interval_hours": 5,
+            "reminder_key": "portal_pending_budget_alert_user_%s" % user.id,
+        }
 
     def _get_portal_budget_debug_values(self, user=None):
         self.ensure_one()
@@ -114,6 +157,13 @@ class RepairOrder(models.Model):
         return (
             self._has_portal_budget_sale_order()
             and self.x_budget_stage in ("waiting_customer", "accepted", "rejected")
+        )
+
+    def _can_portal_open_native_quotation(self):
+        self.ensure_one()
+        return bool(
+            self._has_portal_budget_sale_order()
+            and self.x_budget_stage != "waiting_customer"
         )
 
     def _can_portal_accept_budget(self):
@@ -266,6 +316,7 @@ class RepairOrder(models.Model):
 
     def _get_portal_related_quotation_values(self):
         self.ensure_one()
+        can_open_native_quotation = self._can_portal_open_native_quotation()
         values = []
         for sale_order in self._get_portal_related_quotation_records():
             values.append(
@@ -278,7 +329,8 @@ class RepairOrder(models.Model):
                     "state_label": dict(sale_order._fields["state"].selection).get(
                         sale_order.state, sale_order.state or ""
                     ),
-                    "portal_url": sale_order.get_portal_url(),
+                    "portal_url": sale_order.get_portal_url() if can_open_native_quotation else "",
+                    "can_open_portal_url": can_open_native_quotation,
                 }
             )
         return values

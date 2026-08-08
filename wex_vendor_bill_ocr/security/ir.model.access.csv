@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_wex_vendor_bill_ocr_job_purchase_user,wex.vendor.bill.ocr.job purchase user,model_wex_vendor_bill_ocr_job,purchase.group_purchase_user,1,1,1,0
+access_wex_vendor_bill_ocr_upload_wizard_purchase_user,wex.vendor.bill.ocr.upload.wizard purchase user,model_wex_vendor_bill_ocr_upload_wizard,purchase.group_purchase_user,1,1,1,1
+access_wex_vendor_bill_ocr_review_wizard_purchase_user,wex.vendor.bill.ocr.review.wizard purchase user,model_wex_vendor_bill_ocr_review_wizard,purchase.group_purchase_user,1,1,1,1
+access_wex_vendor_bill_ocr_review_serial_line_purchase_user,wex.vendor.bill.ocr.review.serial.line purchase user,model_wex_vendor_bill_ocr_review_serial_line,purchase.group_purchase_user,1,1,1,1

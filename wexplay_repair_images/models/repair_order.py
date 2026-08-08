@@ -5,6 +5,7 @@ import io
 import logging
 import mimetypes
 import os
+import shutil
 from uuid import uuid4
 
 from PIL import Image, ImageOps
@@ -68,6 +69,91 @@ class RepairOrder(models.Model):
         unique_token = uuid4().hex
         return "imagen-%s%s" % (unique_token, extension)
 
+    def _build_sat_video_display_name(self, media_index):
+        self.ensure_one()
+        return _("Vídeo %03d") % media_index
+
+    def _build_sat_video_filename(self):
+        self.ensure_one()
+        return "video-%s.mp4" % uuid4().hex
+
+    def _get_video_processing_settings(self):
+        params = self.env["ir.config_parameter"].sudo()
+        return {
+            "max_px": int(params.get_param("wexplay_repair_images.video_max_px", 1280)),
+            "crf": int(params.get_param("wexplay_repair_images.video_crf", 28)),
+            "max_duration_seconds": int(
+                params.get_param("wexplay_repair_images.video_max_duration_seconds", 60)
+            ),
+            "max_size_mb": int(params.get_param("wexplay_repair_images.video_max_size_mb", 100)),
+        }
+
+    def _check_video_metadata(self, metadata, file_size):
+        self.ensure_one()
+        video_stream = next(
+            (stream for stream in metadata.get("streams", []) if stream.get("codec_type") == "video"),
+            False,
+        )
+        if not video_stream:
+            raise UserError(_("El archivo no contiene una pista de vídeo válida."))
+        duration = float(metadata.get("format", {}).get("duration") or 0)
+        if duration <= 0:
+            raise UserError(_("No se pudo determinar la duración del vídeo."))
+        settings = self._get_video_processing_settings()
+        if duration > max(settings["max_duration_seconds"], 1):
+            raise UserError(_("El vídeo supera la duración máxima configurada."))
+        if file_size > max(settings["max_size_mb"], 1) * 1024 * 1024:
+            raise UserError(_("El vídeo supera el tamaño máximo configurado."))
+
+    def create_video_processing_job(self, filename, content):
+        self.ensure_one()
+        self.check_access_rights("read")
+        self.check_access_rule("read")
+        if not self.env.user.has_group("wexplay_image_core.group_wex_image_user"):
+            raise UserError(_("No tienes permisos para subir contenido multimedia."))
+        mimetype, _encoding = mimetypes.guess_type(filename or "")
+        if mimetype not in ("video/mp4", "video/quicktime", "video/webm", "video/x-matroska"):
+            raise UserError(_("Solo se admiten vídeos MP4, MOV, WebM y MKV."))
+        attachment = self.env["ir.attachment"].create({
+            "name": filename or "video",
+            "raw": content,
+            "res_model": "wex.repair.media.process.job",
+            "res_id": 0,
+            "mimetype": mimetype,
+        })
+        job = self.env["wex.repair.media.process.job"].create({
+            "repair_order_id": self.id,
+            "source_attachment_id": attachment.id,
+            "source_filename": filename or "video",
+            "progress_message": _("Vídeo en cola"),
+        })
+        job.enqueue_processing()
+        return job
+
+    def _create_video_media_from_paths(self, output_path, thumbnail_path, source_filename):
+        self.ensure_one()
+        with open(output_path, "rb") as video_file, open(thumbnail_path, "rb") as thumbnail_file:
+            video_content = base64.b64encode(video_file.read())
+            thumbnail_content = base64.b64encode(thumbnail_file.read())
+        directory = self._get_sat_image_directory()
+        media_index = self._get_next_image_index()
+        media = self.env["wex.image.record"].with_context(skip_repair_image_chatter=True).create_media_from_binary(
+            name=self._build_sat_video_display_name(media_index),
+            binary_content=video_content,
+            directory=directory,
+            res_model="repair.order",
+            res_id=self.id,
+            sequence=self._get_next_image_sequence(),
+            company_id=self.company_id.id,
+            extra_vals={
+                "repair_order_id": self.id,
+                "dms_file_name": self._build_sat_video_filename(),
+                "media_thumbnail": thumbnail_content,
+            },
+        )
+        media._post_images_batch_added_to_repair_chatter()
+        return media
+
     def _compress_sat_image(self, binary_content, filename):
         """Redimensiona y recomprime la imagen si la compresión SAT está activa.
 
@@ -128,7 +214,9 @@ class RepairOrder(models.Model):
     def _collect_sat_report_images(self):
         self.ensure_one()
         images = []
-        image_records = self.x_image_ids.filtered("x_include_in_sat_report").sorted(
+        image_records = self.x_image_ids.filtered(
+            lambda record: record.x_include_in_sat_report and record.media_kind == "image"
+        ).sorted(
             lambda r: (r.sequence, r.id)
         )
         image_records.mapped("dms_file_id").read(["mimetype"])
@@ -170,13 +258,40 @@ class RepairOrder(models.Model):
                     "sequence": image.sequence,
                     "include_in_report": image.x_include_in_sat_report,
                     "thumbnail_url": image.thumbnail_url or image.preview_url or "",
+                    "preview_url": image.preview_url or "",
+                    "content_url": image.content_url or "",
+                    "media_kind": image.media_kind or "image",
+                    "file_size_human": image.file_size_human or "",
                     "uploaded_by_name": image.uploaded_by_id.display_name or "",
                     "uploaded_at": fields.Datetime.to_string(image.uploaded_at) if image.uploaded_at else "",
                     "tags": image._get_repair_image_tag_names(),
                 }
                 for image in images
             ],
+            "jobs": self._get_repair_media_job_values(),
         }
+
+    def _get_repair_media_job_values(self):
+        self.ensure_one()
+        jobs = self.env["wex.repair.media.process.job"].search(
+            [("repair_order_id", "=", self.id), ("state", "in", ("queued", "processing", "error"))],
+            order="id desc",
+        )
+        return [
+            {
+                "id": job.id,
+                "name": job.source_filename,
+                "state": job.state,
+                "progress_percent": job.progress_percent,
+                "progress_message": job.progress_message or "",
+                "error_message": job.error_message or "",
+            }
+            for job in jobs
+        ]
+
+    def get_repair_media_job_values(self):
+        self.ensure_one()
+        return self._get_repair_media_job_values()
 
     def upload_repair_image_from_dropzone(self, filename, binary_content):
         self.ensure_one()
@@ -222,8 +337,30 @@ class RepairOrder(models.Model):
     def action_toggle_repair_image_sat_report(self, image_id):
         self.ensure_one()
         image = self._get_repair_image_for_chatter_action(image_id)
+        if image.media_kind != "image":
+            raise UserError(_("Solo las imágenes pueden incluirse en el informe SAT."))
         image.x_include_in_sat_report = not image.x_include_in_sat_report
         return image.x_include_in_sat_report
+
+    def action_requeue_repair_video_job(self, job_id):
+        self.ensure_one()
+        job = self.env["wex.repair.media.process.job"].search([
+            ("id", "=", job_id), ("repair_order_id", "=", self.id),
+        ], limit=1)
+        if not job:
+            raise UserError(_("El trabajo de vídeo no pertenece a este SAT."))
+        job.sudo().action_requeue()
+        return True
+
+    def action_cancel_repair_video_job(self, job_id):
+        self.ensure_one()
+        job = self.env["wex.repair.media.process.job"].search([
+            ("id", "=", job_id), ("repair_order_id", "=", self.id),
+        ], limit=1)
+        if not job:
+            raise UserError(_("El trabajo de vídeo no pertenece a este SAT."))
+        job.sudo().action_cancel()
+        return True
 
     def action_open_image_upload_wizard(self):
         self.ensure_one()

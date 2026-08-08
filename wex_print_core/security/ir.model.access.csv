@@ -13,3 +13,5 @@ access_wex_print_document_type_user,wex.print.document.type user,model_wex_print
 access_wex_print_trace_admin,wex.print.trace admin,model_wex_print_trace,wex_print_core.group_wex_print_core_admin,1,1,1,1
 access_wex_print_trace_user,wex.print.trace user,model_wex_print_trace,base.group_user,1,0,1,0
 access_wex_print_resolution_test_admin,wex.print.resolution.test admin,model_wex_print_resolution_test,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_device_setup_wizard_admin,wex.print.device.setup.wizard admin,model_wex_print_device_setup_wizard,wex_print_core.group_wex_print_core_admin,1,1,1,1
+access_wex_print_device_setup_document_line_admin,wex.print.device.setup.document.line admin,model_wex_print_device_setup_document_line,wex_print_core.group_wex_print_core_admin,1,1,1,1

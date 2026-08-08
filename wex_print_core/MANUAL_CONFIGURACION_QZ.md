@@ -4,15 +4,13 @@
 
 1. [Requisitos previos](#1-requisitos-previos)
 2. [Verificar la conexión con QZ Tray](#2-verificar-la-conexión-con-qz-tray)
-3. [Importar impresoras desde QZ](#3-importar-impresoras-desde-qz)
-4. [Configurar capacidades del dispositivo](#4-configurar-capacidades-del-dispositivo)
-5. [Crear perfiles de impresión](#5-crear-perfiles-de-impresión)
-6. [Crear asignaciones](#6-crear-asignaciones)
-7. [Configurar impresoras por usuario](#7-configurar-impresoras-por-usuario)
-8. [Activar el modo híbrido](#8-activar-el-modo-híbrido)
-9. [Verificar con Trazas](#9-verificar-con-trazas)
-10. [Vuelta atrás de emergencia](#10-vuelta-atrás-de-emergencia)
-11. [Referencia rápida de documentos](#11-referencia-rápida-de-documentos)
+3. [Buscar y configurar impresoras desde QZ](#3-buscar-y-configurar-impresoras-desde-qz)
+4. [Configuración avanzada](#4-configuración-avanzada)
+5. [Configurar impresoras Legacy por usuario](#5-configurar-impresoras-legacy-por-usuario)
+6. [Activar el modo híbrido](#6-activar-el-modo-híbrido)
+7. [Verificar con Trazas](#7-verificar-con-trazas)
+8. [Vuelta atrás de emergencia](#8-vuelta-atrás-de-emergencia)
+9. [Referencia rápida de documentos](#9-referencia-rápida-de-documentos)
 
 ---
 
@@ -53,35 +51,42 @@ En la sección **Estado y Diagnóstico** se muestra el estado actual de QZ Tray 
 
 ---
 
-## 3. Importar impresoras desde QZ
+## 3. Buscar y configurar impresoras desde QZ
 
-Este paso convierte las impresoras físicas del puesto en registros de Odoo.
+Este es el flujo habitual para añadir una impresora. Crea el dispositivo, el perfil y las asignaciones documentales sin modificar la configuración Legacy existente.
 
-### 3.1 Cargar el diagnóstico
+### 3.1 Buscar impresoras
 
-`Wex Print → Cargar diagnóstico desde QZ`
+`Wex Print → Buscar impresoras`
 
-Esto conecta con QZ Tray y carga la lista de impresoras disponibles en el ordenador actual como registros en `wex.print.device.snapshot`.
+Esto conecta con QZ Tray y abre **Impresoras encontradas** con los dispositivos disponibles en el ordenador actual.
 
-### 3.2 Guardar como dispositivo
+### 3.2 Configurar impresora
 
-`Wex Print → Diagnóstico de impresoras`
+En la impresora elegida, pulsa **Configurar impresora**. El asistente muestra el nombre exacto de QZ y el driver detectado.
 
-Verás la lista de snapshots con la columna **Dispositivo guardado**:
+1. Confirma el nombre, tipo físico y empresa.
+2. Añade los tipos de documento que imprimirá. El asistente enseña el reporte y formato de cada uno y los guarda como capacidades del dispositivo.
+3. Define si la regla aplica a un usuario concreto y los ajustes relevantes, como dúplex para A4.
+4. Pulsa **Crear configuración**.
 
-- Si la columna está **vacía** → la impresora no está guardada todavía. Haz clic en **Guardar como dispositivo** (botón azul).
-- Si muestra **un nombre de dispositivo** → ya existe. Haz clic en **Abrir dispositivo** para editarlo.
+El asistente crea el dispositivo, un perfil estándar y una asignación por documento. `Activar resolución nueva ahora` queda desmarcado por defecto para que el modo `Hybrid` siga utilizando el camino Legacy hasta que la nueva configuración se pruebe.
 
-Al guardar, se crea automáticamente un `wex.print.device` con:
-- **Nombre:** igual al nombre de la impresora en QZ
-- **Nombre en QZ:** el nombre exacto que QZ usa para identificarla
-- **Modelo de impresora:** pre-rellenado con el driver si está disponible
+> Para que las columnas **Reporte** y **Formato** se completen y queden como capacidades del dispositivo, el tipo documental elegido debe tener esos dos campos configurados. El nombre técnico del reporte mantiene compatibilidad con impresiones existentes, pero no sustituye la relación documental necesaria para el asistente.
 
-El formulario se abre para que completes el resto de la configuración (siguiente paso).
+> La impresora Legacy de usuario o empresa no se modifica desde este asistente. Sigue siendo el fallback operativo y se configura de forma explícita en Preferencias o Ajustes.
+
+### Ampliar una impresora ya configurada
+
+`Wex Print → Dispositivos → [impresora] → Añadir documentos`
+
+La ficha del dispositivo muestra todos los documentos que ya se resuelven hacia esa impresora, con su reporte, formato, perfil, usuario y estado de la resolución nueva. El botón **Añadir documentos** reutiliza el mismo asistente para crear o reutilizar el perfil necesario y añadir las asignaciones sin tener que navegar por Perfiles y Asignaciones.
+
+Las capacidades visibles de reporte y formato se derivan de esas asignaciones, por lo que no se mantienen manualmente en un tercer sitio.
 
 ---
 
-## 4. Configurar capacidades del dispositivo
+## 4. Configuración avanzada
 
 `Wex Print → Dispositivos → [selecciona dispositivo]`
 
@@ -96,12 +101,14 @@ El formulario se abre para que completes el resto de la configuración (siguient
 | **Nombre en QZ** | Nombre exacto como aparece en Windows. Ej: `Brother QL-710W` |
 | **Empresa** | Opcional. Deja vacío si es válido para todas |
 
-### Sección Capacidades
+### Sección Capacidades derivadas
 
-| Campo | Qué poner |
+| Campo | Cómo se completa |
 |-------|-----------|
-| **Formatos de papel soportados** | Los paperformats que acepta esta impresora física |
-| **Reportes compatibles** | Los reportes QWeb que puede imprimir |
+| **Formatos de papel soportados** | Se derivan de los tipos de documento asignados a los perfiles de esta impresora |
+| **Reportes compatibles** | Se derivan de los mismos tipos de documento |
+
+Estos campos son informativos y de solo lectura. No se mantienen manualmente: para añadir o retirar capacidad documental hay que usar **Añadir documentos** desde la ficha de la impresora o gestionar la asignación correspondiente. Así se evita que la ficha de dispositivo, los perfiles y las reglas de resolución puedan quedar desalineados.
 
 #### Capacidades por tipo de impresora
 
@@ -121,7 +128,7 @@ El formulario se abre para que completes el resto de la configuración (siguient
 
 ---
 
-## 5. Crear perfiles de impresión
+### Crear o editar perfiles de impresión
 
 Un perfil une un dispositivo con su configuración de salida (copias, dúplex).
 
@@ -151,7 +158,7 @@ Un perfil une un dispositivo con su configuración de salida (copias, dúplex).
 
 ---
 
-## 6. Crear asignaciones
+### Crear o editar asignaciones
 
 Una asignación conecta un tipo de documento con un perfil, con la posibilidad de restringirla a un usuario o empresa concretos.
 
@@ -194,7 +201,7 @@ Usuario + empresa       →  score 30  (la más específica posible)
 
 ---
 
-## 7. Configurar impresoras por usuario
+## 5. Configurar impresoras Legacy por usuario
 
 Este paso es para el **path Legacy** y como fallback. Mientras no estés en modo `Solo nuevo`, es conveniente rellenarlo.
 
@@ -223,7 +230,7 @@ Aquí se define la impresora que usan todos los usuarios que no tengan configura
 
 ---
 
-## 8. Activar el modo híbrido
+## 6. Activar el modo híbrido
 
 Una vez que tienes dispositivos, perfiles y asignaciones configurados y verificados:
 
@@ -239,7 +246,7 @@ Una vez que tienes dispositivos, perfiles y asignaciones configurados y verifica
 
 ---
 
-## 9. Verificar con Trazas
+## 7. Verificar con Trazas
 
 Tras imprimir cualquier documento, puedes ver exactamente qué ha hecho el sistema:
 
@@ -268,7 +275,7 @@ Tras imprimir cualquier documento, puedes ver exactamente qué ha hecho el siste
 
 ---
 
-## 10. Vuelta atrás de emergencia
+## 8. Vuelta atrás de emergencia
 
 ### Revertir un solo documento
 
@@ -286,7 +293,7 @@ Todos los documentos ignoran perfiles y asignaciones y vuelven a la configuraci�
 
 ---
 
-## 11. Referencia rápida de documentos
+## 9. Referencia rápida de documentos
 
 Tipos de documento preconfigurados en el sistema:
 

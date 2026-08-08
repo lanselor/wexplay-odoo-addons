@@ -16,6 +16,7 @@
         "security/ir.model.access.csv",
         "data/print_document_type_data.xml",
         "views/print_shadow_views.xml",
+        "wizard/print_device_setup_wizard_views.xml",
         "views/res_config_settings_view.xml",
         "views/res_users_views.xml",
     ],

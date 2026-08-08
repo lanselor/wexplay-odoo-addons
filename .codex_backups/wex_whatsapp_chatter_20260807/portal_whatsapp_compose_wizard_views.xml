@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_whatsapp_compose_wizard_form_portal_b2b" model="ir.ui.view">
+        <field name="name">whatsapp.compose.wizard.form.portal.b2b</field>
+        <field name="model">whatsapp.compose.wizard</field>
+        <field name="inherit_id" ref="wex_whatsapp_chatter.view_whatsapp_compose_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='portal_link_status']/.." position="after">
+                <div class="mt-2" invisible="portal_link_type != 'repair_b2b'">
+                    <span class="badge rounded-pill text-bg-success" invisible="not portal_link_available">
+                        Portal B2B activo
+                    </span>
+                    <span class="badge rounded-pill text-bg-warning" invisible="portal_link_available">
+                        Portal B2B no activo
+                    </span>
+                    <div class="text-muted small mt-2">
+                        Para insertar el enlace B2B en una posición concreta del mensaje usa
+                        <code><span>$</span>{enlaceportalB2B}</code>.
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

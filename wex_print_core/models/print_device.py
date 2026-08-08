@@ -50,3 +50,32 @@ class WexPrintDevice(models.Model):
     notes = fields.Text(string="Notas")
 
     profile_ids = fields.One2many("wex.print.profile", "device_id", string="Perfiles")
+    assignment_ids = fields.One2many(
+        "wex.print.assignment",
+        "device_id",
+        string="Documentos configurados",
+        readonly=True,
+    )
+
+    def action_open_document_setup_wizard(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Añadir documentos a impresora",
+            "res_model": "wex.print.device.setup.wizard",
+            "view_mode": "form",
+            "context": {"default_existing_device_id": self.id},
+            "target": "new",
+        }
+
+    def _sync_capabilities_from_assignments(self):
+        """Mantiene las capacidades físicas alineadas con los documentos enrutados."""
+        assignment_model = self.env["wex.print.assignment"]
+        for device in self:
+            document_types = assignment_model.search(
+                [("device_id", "=", device.id)]
+            ).mapped("document_type_id")
+            device.write({
+                "paperformat_ids": [(6, 0, document_types.mapped("paperformat_id").ids)],
+                "report_action_ids": [(6, 0, document_types.mapped("report_action_id").ids)],
+            })

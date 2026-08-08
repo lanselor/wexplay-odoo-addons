@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_mrw_shipment_created" model="mail.template">
+            <field name="name">MRW - Envío creado</field>
+            <field name="model_id" ref="model_mrw_shipping_shipment"/>
+            <field name="subject">Tu envío MRW {{ object.reference or object.name }}</field>
+            <field name="email_from">{{ object.company_id.email_formatted or user.email_formatted }}</field>
+            <field name="email_to">{{ object.partner_id.email or '' }}</field>
+            <field name="description">Aviso manual al cliente con el número de seguimiento MRW.</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 0;">
+                    <p style="font-size: 13px;">
+                        Hola <t t-out="object.partner_id.name or object.recipient_name or ''"/>,
+                        <br/><br/>
+                        Hemos creado tu envío con MRW.
+                        <br/><br/>
+                        <strong>Referencia:</strong> <t t-out="object.reference or object.name"/><br/>
+                        <strong>Número de seguimiento:</strong> <t t-out="object.mrw_shipment_number or ''"/><br/>
+                        <t t-if="object._get_tracking_url()">
+                            Puedes consultar su estado en <a t-att-href="object._get_tracking_url()" target="_blank">el seguimiento de MRW</a>.
+                        </t>
+                        <br/><br/>
+                        Un saludo,<br/>
+                        <t t-out="object.company_id.name"/>
+                    </p>
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_template_mrw_pickup_label_ready" model="mail.template">
+            <field name="name">MRW - Etiqueta de recogida disponible</field>
+            <field name="model_id" ref="model_mrw_shipping_shipment"/>
+            <field name="subject">Etiqueta para la recogida MRW {{ object.reference or object.name }}</field>
+            <field name="email_from">{{ object.company_id.email_formatted or user.email_formatted }}</field>
+            <field name="email_to">{{ object.partner_id.email or '' }}</field>
+            <field name="description">Aviso manual con la etiqueta PDF de una recogida MRW.</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0; padding: 0;">
+                    <p style="font-size: 13px;">
+                        Hola <t t-out="object.partner_id.name or object.recipient_name or ''"/>,
+                        <br/><br/>
+                        Adjuntamos la etiqueta para la recogida de tu equipo por MRW.
+                        <br/><br/>
+                        <strong>Referencia:</strong> <t t-out="object.reference or object.name"/><br/>
+                        <strong>Número de seguimiento:</strong> <t t-out="object.mrw_shipment_number or ''"/><br/>
+                        <t t-if="object._get_tracking_url()">
+                            Puedes consultar su estado en <a t-att-href="object._get_tracking_url()" target="_blank">el seguimiento de MRW</a>.
+                        </t>
+                        <br/><br/>
+                        Un saludo,<br/>
+                        <t t-out="object.company_id.name"/>
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -250,6 +250,12 @@ class WexRepairShippingOperation(models.Model):
                 )
             operation.label_attachment_id = attachment
 
+    def action_open_mrw_notification_wizard(self):
+        self.ensure_one()
+        if not self.mrw_shipment_id:
+            raise UserError(_("La operación todavía no tiene un envío MRW confirmado."))
+        return self.mrw_shipment_id.action_open_notification_wizard()
+
     def action_create_picking(self):
         for operation in self:
             operation._check_can_create_picking()

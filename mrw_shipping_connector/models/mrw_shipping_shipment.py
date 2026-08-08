@@ -220,6 +220,16 @@ class MrwShippingShipment(models.Model):
         copy=False,
     )
     log_count = fields.Integer(string="Logs", compute="_compute_log_count")
+    notification_ids = fields.One2many(
+        comodel_name="mrw.shipping.notification",
+        inverse_name="shipment_id",
+        string="Notificaciones al cliente",
+        readonly=True,
+    )
+    notification_count = fields.Integer(
+        string="Notificaciones",
+        compute="_compute_notification_count",
+    )
 
     delivery_to_franchise = fields.Boolean(string="Entrega en franquicia")
     saturday_delivery = fields.Boolean(string="Entrega en sábado")
@@ -271,6 +281,47 @@ class MrwShippingShipment(models.Model):
         counts = {item["shipment_id"][0]: item["shipment_id_count"] for item in grouped}
         for shipment in self:
             shipment.log_count = counts.get(shipment.id, 0)
+
+    def _compute_notification_count(self):
+        grouped = self.env["mrw.shipping.notification"].read_group(
+            [("shipment_id", "in", self.ids)],
+            ["shipment_id"],
+            ["shipment_id"],
+        )
+        counts = {item["shipment_id"][0]: item["shipment_id_count"] for item in grouped}
+        for shipment in self:
+            shipment.notification_count = counts.get(shipment.id, 0)
+
+    def _get_notification_default_event_type(self):
+        self.ensure_one()
+        if self.movement_type == "pickup" and self.label_attachment_id:
+            return "pickup_label_ready"
+        return "shipment_created"
+
+    def action_open_notification_wizard(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Enviar correo al cliente"),
+            "res_model": "mrw.shipping.notification.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_shipment_id": self.id,
+                "default_event_type": self._get_notification_default_event_type(),
+            },
+        }
+
+    def action_open_notifications(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Notificaciones al cliente"),
+            "res_model": "mrw.shipping.notification",
+            "view_mode": "list,form",
+            "domain": [("shipment_id", "=", self.id)],
+            "context": {"default_shipment_id": self.id},
+        }
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):

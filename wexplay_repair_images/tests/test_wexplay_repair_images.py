@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import os
+import subprocess
+import tempfile
+from unittest.mock import patch
 
 from odoo.tests.common import TransactionCase
 
@@ -59,6 +63,11 @@ class TestWexplayRepairImages(TransactionCase):
         self.assertEqual(image.dms_file_id.directory_id.parent_id.name, self.repair.name)
         self.assertEqual(image.dms_file_id.directory_id.parent_id.parent_id.name, "SAT")
 
+        chatter_values = self.repair.get_repair_images_chatter_values()
+        chatter_image = chatter_values["images"][0]
+        self.assertEqual(chatter_image["preview_url"], image.preview_url)
+        self.assertEqual(chatter_image["file_size_human"], image.file_size_human)
+
     def test_upload_images_after_signed_document_reuses_sat_tree_without_blocking(self):
         document = self.env["wex.consent.document"].get_or_create_from_repair(
             self.repair, "reception"
@@ -102,6 +111,102 @@ class TestWexplayRepairImages(TransactionCase):
         self.assertEqual(image.dms_file_id.directory_id.name, "IMAGES")
         self.assertEqual(image.dms_file_id.directory_id.parent_id.id, signed_file.directory_id.parent_id.id)
         self.assertEqual(image.dms_file_id.directory_id.parent_id.parent_id.name, "SAT")
+
+    def test_video_upload_creates_queued_processing_job(self):
+        job = self.repair.create_video_processing_job("diagnostico.mp4", b"video source")
+
+        self.assertEqual(job.repair_order_id, self.repair)
+        self.assertEqual(job.state, "queued")
+        self.assertEqual(job.source_filename, "diagnostico.mp4")
+        self.assertTrue(job.source_attachment_id)
+        queue_job = self.env["queue.job"].search([("uuid", "=", job.queue_job_uuid)])
+        self.assertTrue(queue_job)
+        self.assertEqual(queue_job.channel, "root.sat_video")
+
+    def test_video_job_can_run_synchronously_in_queue_job_test_mode(self):
+        attachment = self.env["ir.attachment"].create({
+            "name": "diagnostico.mp4",
+            "raw": b"video source",
+            "res_model": "wex.repair.media.process.job",
+            "res_id": 0,
+            "mimetype": "video/mp4",
+        })
+        job = self.env["wex.repair.media.process.job"].create({
+            "repair_order_id": self.repair.id,
+            "source_attachment_id": attachment.id,
+            "source_filename": "diagnostico.mp4",
+        })
+
+        with patch.object(type(job), "_process_job") as process_job:
+            job.with_context(queue_job__no_delay=True).enqueue_processing()
+
+        process_job.assert_called_once()
+        self.assertEqual(job.state, "processing")
+
+    def test_video_job_processes_a_real_short_video_in_queue_job_test_mode(self):
+        ffmpeg_path = self.env["ir.config_parameter"].get_param(
+            "wexplay_repair_images.ffmpeg_path", "ffmpeg"
+        )
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as video_file:
+            video_path = video_file.name
+        try:
+            try:
+                subprocess.run(
+                    [
+                        ffmpeg_path,
+                        "-hide_banner",
+                        "-loglevel",
+                        "error",
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "color=c=black:s=320x240:d=1",
+                        "-c:v",
+                        "libx264",
+                        "-pix_fmt",
+                        "yuv420p",
+                        "-y",
+                        video_path,
+                    ],
+                    check=True,
+                    timeout=30,
+                )
+            except FileNotFoundError:
+                self.skipTest("FFmpeg no está disponible para ejecutar la prueba multimedia.")
+            with open(video_path, "rb") as source:
+                content = source.read()
+        finally:
+            if os.path.exists(video_path):
+                os.unlink(video_path)
+
+        attachment = self.env["ir.attachment"].create({
+            "name": "diagnostico.mp4",
+            "raw": content,
+            "res_model": "wex.repair.media.process.job",
+            "res_id": 0,
+            "mimetype": "video/mp4",
+        })
+        job = self.env["wex.repair.media.process.job"].create({
+            "repair_order_id": self.repair.id,
+            "source_attachment_id": attachment.id,
+            "source_filename": "diagnostico.mp4",
+        })
+
+        job.with_context(queue_job__no_delay=True).enqueue_processing()
+
+        self.assertEqual(job.state, "done")
+        self.assertTrue(job.media_id)
+        self.assertFalse(job.source_attachment_id)
+
+    def test_cancelling_queued_video_removes_its_temporary_attachment(self):
+        job = self.repair.create_video_processing_job("diagnostico.mp4", b"video source")
+        attachment = job.source_attachment_id
+
+        job.action_cancel()
+
+        self.assertEqual(job.state, "cancelled")
+        self.assertFalse(job.source_attachment_id)
+        self.assertFalse(attachment.exists())
 
     def test_reupload_after_deleting_image_record_uses_new_unique_dms_filename(self):
         tag = self.env["wex.image.tag"].search([("code", "=", "entrada")], limit=1)

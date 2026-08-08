@@ -8,4 +8,6 @@ access_mrw_shipping_shipment_user,mrw.shipping.shipment user,model_mrw_shipping_
 access_mrw_shipping_shipment_manager,mrw.shipping.shipment manager,model_mrw_shipping_shipment,group_mrw_shipping_manager,1,1,1,1
 access_mrw_shipping_package_user,mrw.shipping.package user,model_mrw_shipping_package,group_mrw_shipping_user,1,1,1,1
 access_mrw_shipping_log_admin,mrw.shipping.log administrator,model_mrw_shipping_log,group_mrw_shipping_administrator,1,0,0,0
-
+access_mrw_shipping_notification_user,mrw.shipping.notification user,model_mrw_shipping_notification,group_mrw_shipping_user,1,1,1,0
+access_mrw_shipping_notification_manager,mrw.shipping.notification manager,model_mrw_shipping_notification,group_mrw_shipping_manager,1,1,1,1
+access_mrw_shipping_notification_wizard_user,mrw.shipping.notification.wizard user,model_mrw_shipping_notification_wizard,group_mrw_shipping_user,1,1,1,1

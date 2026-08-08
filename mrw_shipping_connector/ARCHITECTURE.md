@@ -193,6 +193,23 @@ MRW-specific shipment record.
 It remains user-facing for manual MRW shipments and becomes an audit record for
 pickings.
 
+### Customer Notifications
+
+Customer communication belongs to `mrw.shipping.shipment`, because that record
+is shared by manual MRW operations, native outgoing pickings, and SAT pickups.
+
+The first implementation provides manual send and resend only. It uses native
+`mail.template` records and stores every attempt in `mrw.shipping.notification`.
+Two events are supported:
+
+- shipment created: tracking number and public MRW tracking link;
+- pickup label ready: only for customer pickups and with the private PDF label
+  attached to the email.
+
+No public label URL is created. Automatic sends and delivered-status emails are
+deferred until their operational rules and a reliable MRW status source are
+validated.
+
 Manual use case:
 
 ```text

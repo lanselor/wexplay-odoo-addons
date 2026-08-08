@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Wexplay Repair Images",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "summary": "Integración SAT de imágenes sobre repair.order",
     "description": """
 Integración SAT del core de imágenes para repair.order.
@@ -13,6 +13,7 @@ Integración SAT del core de imágenes para repair.order.
     "depends": [
         "repair",
         "web_responsive_app_customizer",
+        "queue_job",
         "wexplay_repair",
         "wexplay_image_core",
         "wex_consent",
@@ -21,6 +22,8 @@ Integración SAT del core de imágenes para repair.order.
         "security/security.xml",
         "security/ir.model.access.csv",
         "data/wex_image_tag_data.xml",
+        "data/queue_job_data.xml",
+        "data/ir_cron.xml",
         "views/wex_repair_image_upload_wizard_views.xml",
         "views/repair_order_views.xml",
         "views/res_config_settings_views.xml",

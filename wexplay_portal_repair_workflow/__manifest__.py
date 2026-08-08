@@ -35,6 +35,7 @@ Current MVP:
         ],
         "web.assets_frontend": [
             "wexplay_portal_repair_workflow/static/src/js/portal_budget_debug.js",
+            "wexplay_portal_repair_workflow/static/src/js/portal_pending_budget_alert.js",
             "wexplay_portal_repair_workflow/static/src/scss/portal_repair_workflow.scss",
         ],
     },

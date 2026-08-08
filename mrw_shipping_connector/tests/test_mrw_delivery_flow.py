@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
@@ -148,16 +150,7 @@ class TestMRWDeliveryFlow(TransactionCase):
                 "reference": "TEST-PROD",
             }
         )
-        self.env["mrw.shipping.package"].create(
-            {
-                "shipment_id": shipment.id,
-                "sequence": 1,
-                "weight": 1,
-                "height": 1,
-                "width": 1,
-                "length": 1,
-            }
-        )
+        self.assertTrue(shipment.package_ids)
         shipment.action_prepare()
         self.config.environment = "production"
 
@@ -233,3 +226,104 @@ class TestMRWDeliveryFlow(TransactionCase):
         self.assertEqual(command[0], 0)
         self.assertEqual(command[2]["sequence"], 1)
         self.assertEqual(command[2]["weight"], 1.0)
+
+    def test_notification_sends_tracking_email_and_keeps_history(self):
+        partner = self._partner(self.country_es)
+        partner.email = "customer@example.com"
+        shipment = self.env["mrw.shipping.shipment"].create(
+            {
+                "company_id": self.env.company.id,
+                "config_id": self.config.id,
+                "service_id": self.national_service.id,
+                "shipment_type": "national",
+                "partner_id": partner.id,
+                "recipient_name": partner.name,
+                "recipient_phone": partner.phone,
+                "street": partner.street,
+                "zip": partner.zip,
+                "city": partner.city,
+                "country_id": self.country_es.id,
+                "reference": "NOTIFY-001",
+            }
+        )
+        self.assertTrue(shipment.package_ids)
+        shipment.write(
+            {
+                "mrw_shipment_number": "NOTIFY-%s" % shipment.id,
+                "state": "sent",
+            }
+        )
+        template = self.env.ref(
+            "mrw_shipping_connector.mail_template_mrw_shipment_created"
+        )
+
+        with patch.object(type(template), "send_mail", return_value=False) as send_mail:
+            notification = self.env["mrw.shipping.notification"].send_customer_notification(
+                shipment,
+                "shipment_created",
+                partner.email,
+            )
+
+        self.assertEqual(notification.state, "sent")
+        self.assertEqual(notification.recipient_email, partner.email)
+        self.assertFalse(notification.attachment_id)
+        send_mail.assert_called_once()
+        self.assertEqual(shipment.notification_count, 1)
+
+    def test_pickup_label_notification_requires_and_attaches_label(self):
+        partner = self._partner(self.country_es)
+        partner.email = "pickup@example.com"
+        shipment = self.env["mrw.shipping.shipment"].create(
+            {
+                "company_id": self.env.company.id,
+                "config_id": self.config.id,
+                "service_id": self.national_service.id,
+                "shipment_type": "national",
+                "movement_type": "pickup",
+                "partner_id": partner.id,
+                "recipient_name": partner.name,
+                "recipient_phone": partner.phone,
+                "street": partner.street,
+                "zip": partner.zip,
+                "city": partner.city,
+                "country_id": self.country_es.id,
+                "reference": "PICKUP-NOTIFY-001",
+            }
+        )
+        self.assertTrue(shipment.package_ids)
+        shipment.write(
+            {
+                "mrw_shipment_number": "PICKUP-NOTIFY-%s" % shipment.id,
+                "state": "sent",
+            }
+        )
+        notification_model = self.env["mrw.shipping.notification"]
+
+        with self.assertRaisesRegex(UserError, "obtener la etiqueta"):
+            notification_model.send_customer_notification(
+                shipment, "pickup_label_ready", partner.email
+            )
+
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "pickup-label.pdf",
+                "type": "binary",
+                "datas": "JVBERi0xLjQ=",
+                "res_model": "mrw.shipping.shipment",
+                "res_id": shipment.id,
+                "mimetype": "application/pdf",
+            }
+        )
+        shipment.label_attachment_id = attachment
+        template = self.env.ref(
+            "mrw_shipping_connector.mail_template_mrw_pickup_label_ready"
+        )
+
+        with patch.object(type(template), "send_mail", return_value=False) as send_mail:
+            notification = notification_model.send_customer_notification(
+                shipment, "pickup_label_ready", partner.email
+            )
+
+        self.assertEqual(notification.state, "sent")
+        self.assertEqual(notification.attachment_id, attachment)
+        self.assertEqual(send_mail.call_args.kwargs["email_values"]["attachment_ids"], [(4, attachment.id)])

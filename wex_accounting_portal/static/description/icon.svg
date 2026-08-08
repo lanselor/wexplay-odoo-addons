@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#73C799"/>
+      <stop offset="1" stop-color="#A68FCD"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="74" fill="url(#bg)"/>
+  <path d="M36 278C84 210 176 154 304 154C386 154 438 176 476 202" stroke="white" stroke-opacity="0.14" stroke-width="10" stroke-linecap="round"/>
+  <style>
+    .outline { stroke: white; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .outline.thin { stroke-width: 12; }
+    .outline.heavy { stroke-width: 20; }
+    .solid { fill: white; }
+    .soft { fill: #F6F4FB; }
+    .accent { stroke: #73C799; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .accent.strong { stroke-width: 18; }
+  </style>
+  
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <path d="M136 326L170 290L212 320L250 258" class="outline"/>
+    <circle cx="250" cy="258" r="10" fill="#73C799"/>
+    <path d="M136 224V326H268" class="outline thin"/>
+    
+</svg>

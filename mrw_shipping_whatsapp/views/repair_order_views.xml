@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="repair_order_view_form_mrw_whatsapp" model="ir.ui.view">
+        <field name="name">repair.order.form.mrw.whatsapp</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="wexplay_repair_delivery.view_repair_order_form_delivery_status_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='x_shipping_operation_ids']/list/button[last()]" position="after">
+                <button
+                    name="action_open_mrw_whatsapp"
+                    type="object"
+                    icon="fa-whatsapp"
+                    title="Preparar WhatsApp MRW"
+                    invisible="not mrw_shipment_id"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -25,7 +25,9 @@
         "web.assets_backend": [
             "wex_whatsapp_chatter/static/src/js/chatter_whatsapp_button.js",
             "wex_whatsapp_chatter/static/src/js/whatsapp_open_and_reload.js",
+            "wex_whatsapp_chatter/static/src/js/whatsapp_template_picker.js",
             "wex_whatsapp_chatter/static/src/xml/chatter_whatsapp_button.xml",
+            "wex_whatsapp_chatter/static/src/xml/whatsapp_template_picker.xml",
             "wex_whatsapp_chatter/static/src/scss/whatsapp_chatter_log.scss",
         ],
     },

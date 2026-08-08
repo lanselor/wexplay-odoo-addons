@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="seq_wex_vendor_bill_ocr_job" model="ir.sequence">
+        <field name="name">Vendor Bill OCR Job</field>
+        <field name="code">wex.vendor.bill.ocr.job</field>
+        <field name="prefix">VBOCR/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

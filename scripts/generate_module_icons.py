@@ -93,6 +93,48 @@ def draw_barcode(draw: ImageDraw.ImageDraw) -> None:
     line(draw, [(150, 420), (362, 420)], width=14, fill=WHITE_SOFT)
 
 
+def draw_browser(draw: ImageDraw.ImageDraw) -> None:
+    rounded_rect(draw, (96, 116, 416, 366), 30, outline=WHITE, width=16)
+    line(draw, [(124, 176), (388, 176)], width=12)
+    for x in (140, 174, 208):
+        circle(draw, x, 146, 10, fill=WHITE, outline=WHITE, width=1)
+
+
+def draw_chat(draw: ImageDraw.ImageDraw, *, with_phone: bool = False) -> None:
+    rounded_rect(draw, (116, 200, 346, 344), 30, outline=WHITE, width=16)
+    line(draw, [(188, 344), (154, 388), (222, 348)], width=14)
+    line(draw, [(154, 246), (304, 246)], width=12)
+    line(draw, [(154, 286), (270, 286)], width=12)
+    if with_phone:
+        line(draw, [(278, 226), (304, 206), (336, 220), (328, 248), (348, 266), (324, 286), (294, 272), (276, 244)], width=16)
+
+
+def draw_portal(draw: ImageDraw.ImageDraw, *, with_check: bool = False, with_chat: bool = False, with_phone: bool = False, with_chart: bool = False, with_knowledge: bool = False) -> None:
+    draw_browser(draw)
+    line(draw, [(194, 316), (194, 218), (248, 186), (318, 186), (318, 316)], width=16)
+    line(draw, [(246, 184), (246, 316)], width=12)
+    if with_check:
+        circle(draw, 342, 324, 56, fill=WHITE, outline=WHITE, width=1)
+        line(draw, [(314, 324), (334, 344), (372, 304)], width=16, fill=SECONDARY)
+    if with_chat:
+        rounded_rect(draw, (278, 230, 394, 312), 18, outline=WHITE_SOFT, width=12)
+        line(draw, [(316, 312), (302, 338), (334, 314)], width=10, fill=WHITE_SOFT)
+        if with_phone:
+            line(draw, [(308, 252), (322, 240), (344, 248), (338, 268), (352, 282), (334, 294), (314, 286), (304, 266)], width=12, fill=WHITE_SOFT)
+        else:
+            line(draw, [(302, 256), (370, 256)], width=10, fill=WHITE_SOFT)
+            line(draw, [(302, 284), (354, 284)], width=10, fill=WHITE_SOFT)
+    if with_chart:
+        line(draw, [(136, 326), (170, 290), (212, 320), (250, 258)], width=14)
+        circle(draw, 250, 258, 10, fill=PRIMARY, outline=PRIMARY, width=1)
+        line(draw, [(136, 224), (136, 326), (268, 326)], width=10)
+    if with_knowledge:
+        circle(draw, 352, 252, 38, outline=WHITE_SOFT, width=10)
+        line(draw, [(352, 218), (352, 286)], width=10, fill=WHITE_SOFT)
+        line(draw, [(320, 252), (384, 252)], width=10, fill=WHITE_SOFT)
+        line(draw, [(336, 276), (352, 296), (368, 276)], width=10, fill=WHITE_SOFT)
+
+
 def draw_knowledge(draw: ImageDraw.ImageDraw) -> None:
     line(draw, [(118, 166), (118, 360), (240, 342), (256, 338), (272, 342), (394, 360), (394, 166)], width=16)
     line(draw, [(256, 164), (256, 334)], width=12)
@@ -170,6 +212,19 @@ def draw_document(draw: ImageDraw.ImageDraw, *, signed: bool = False, printer: b
         circle(draw, 356, 314, 10, fill=PRIMARY, outline=PRIMARY, width=1)
 
 
+def draw_document_scan(draw: ImageDraw.ImageDraw) -> None:
+    rounded_rect(draw, (152, 104, 360, 390), 24, outline=WHITE, width=16)
+    line(draw, [(196, 184), (314, 184)], width=12)
+    line(draw, [(196, 230), (314, 230)], width=12)
+    line(draw, [(196, 276), (292, 276)], width=12)
+    line(draw, [(118, 154), (118, 118), (154, 118)], width=14)
+    line(draw, [(394, 154), (394, 118), (358, 118)], width=14)
+    line(draw, [(118, 338), (118, 374), (154, 374)], width=14)
+    line(draw, [(394, 338), (394, 374), (358, 374)], width=14)
+    line(draw, [(184, 332), (232, 300), (270, 320), (328, 252)], width=14)
+    circle(draw, 328, 252, 10, fill=PRIMARY, outline=PRIMARY, width=1)
+
+
 def draw_monitor(draw: ImageDraw.ImageDraw) -> None:
     rounded_rect(draw, (112, 126, 400, 300), 28, outline=WHITE, width=16)
     line(draw, [(202, 350), (310, 350)], width=16)
@@ -188,6 +243,15 @@ def draw_box(draw: ImageDraw.ImageDraw, with_check: bool = True) -> None:
         line(draw, [(330, 338), (354, 362), (398, 316)], width=16, fill=SECONDARY)
 
 
+def draw_layers(draw: ImageDraw.ImageDraw) -> None:
+    line(draw, [(146, 182), (256, 124), (366, 182), (256, 238), (146, 182)], width=16)
+    line(draw, [(162, 252), (256, 204), (350, 252), (256, 300), (162, 252)], width=16)
+    line(draw, [(178, 326), (256, 286), (334, 326), (256, 366), (178, 326)], width=16)
+    line(draw, [(256, 124), (256, 238)], width=12)
+    line(draw, [(256, 204), (256, 300)], width=12)
+    line(draw, [(256, 286), (256, 366)], width=12)
+
+
 def draw_clipboard(draw: ImageDraw.ImageDraw) -> None:
     rounded_rect(draw, (142, 126, 370, 402), 28, outline=WHITE, width=16)
     rounded_rect(draw, (198, 88, 314, 148), 22, fill=WHITE, outline=WHITE, width=1)
@@ -199,8 +263,44 @@ def draw_clipboard(draw: ImageDraw.ImageDraw) -> None:
     line(draw, [(176, 324), (188, 336), (208, 310)], width=10, fill=PRIMARY)
 
 
+def draw_phone(draw: ImageDraw.ImageDraw, *, with_check: bool = False, with_signal: bool = False) -> None:
+    rounded_rect(draw, (154, 96, 358, 416), 34, outline=WHITE, width=16)
+    line(draw, [(222, 130), (292, 130)], width=12)
+    circle(draw, 256, 380, 12, fill=WHITE, outline=WHITE, width=1)
+    if with_signal:
+        line(draw, [(198, 286), (224, 250), (250, 282), (286, 214), (320, 246)], width=16)
+        circle(draw, 320, 246, 10, fill=PRIMARY, outline=PRIMARY, width=1)
+    if with_check:
+        circle(draw, 334, 330, 52, fill=WHITE, outline=WHITE, width=1)
+        line(draw, [(308, 330), (326, 348), (360, 312)], width=14, fill=SECONDARY)
+
+
+def draw_app_grid(draw: ImageDraw.ImageDraw) -> None:
+    rounded_rect(draw, (108, 122, 404, 390), 30, outline=WHITE, width=16)
+    tile_boxes = [
+        (146, 178, 224, 256),
+        (252, 178, 330, 256),
+        (146, 284, 224, 362),
+        (252, 284, 330, 362),
+    ]
+    for box in tile_boxes:
+        rounded_rect(draw, box, 16, outline=WHITE_SOFT, width=12)
+    line(draw, [(364, 188), (364, 348)], width=12)
+    circle(draw, 364, 228, 16, fill=WHITE, outline=WHITE, width=1)
+    circle(draw, 364, 308, 16, fill=WHITE, outline=WHITE, width=1)
+
+
 ICON_BUILDERS: dict[str, Callable[[ImageDraw.ImageDraw], None]] = {
+    "web_responsive_app_customizer": draw_app_grid,
+    "wex_accounting_portal": lambda draw: draw_portal(draw, with_chart=True),
+    "wex_device_test": lambda draw: draw_phone(draw, with_check=True, with_signal=True),
     "wexplay_image_core": draw_image_frame,
+    "wexplay_knowledge_images": lambda draw: (draw_knowledge(draw), draw_image_frame(draw)),
+    "wexplay_knowledge_portal": lambda draw: draw_portal(draw, with_knowledge=True),
+    "wexplay_portal": draw_portal,
+    "wexplay_portal_repair_communication": lambda draw: draw_portal(draw, with_chat=True),
+    "wexplay_portal_repair_workflow": lambda draw: draw_portal(draw, with_check=True),
+    "wexplay_portal_whatsapp": lambda draw: draw_portal(draw, with_chat=True, with_phone=True),
     "wexplay_product_print": lambda draw: (draw_printer(draw), line(draw, [(122, 248), (194, 196), (246, 222), (174, 274), (122, 248)], width=14)),
     "wexplay_repair": lambda draw: draw_gear(draw, with_wrench=True),
     "wexplay_repair_delivery": draw_box,
@@ -214,14 +314,113 @@ ICON_BUILDERS: dict[str, Callable[[ImageDraw.ImageDraw], None]] = {
     "wex_print_core": draw_printer,
     "wex_product_codes": draw_barcode,
     "wex_purchase_list": draw_clipboard,
+    "wex_teardown": draw_layers,
+    "wex_vendor_bill_ocr": draw_document_scan,
 }
 
 
 SVG_SYMBOLS: dict[str, str] = {
+    "web_responsive_app_customizer": """
+    <rect x="108" y="122" width="296" height="268" rx="30" class="outline"/>
+    <rect x="146" y="178" width="78" height="78" rx="16" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <rect x="252" y="178" width="78" height="78" rx="16" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <rect x="146" y="284" width="78" height="78" rx="16" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <rect x="252" y="284" width="78" height="78" rx="16" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <path d="M364 188V348" class="outline thin"/>
+    <circle cx="364" cy="228" r="16" class="solid"/>
+    <circle cx="364" cy="308" r="16" class="solid"/>
+    """,
+    "wex_accounting_portal": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <path d="M136 326L170 290L212 320L250 258" class="outline"/>
+    <circle cx="250" cy="258" r="10" fill="#73C799"/>
+    <path d="M136 224V326H268" class="outline thin"/>
+    """,
+    "wex_device_test": """
+    <rect x="154" y="96" width="204" height="320" rx="34" class="outline"/>
+    <path d="M222 130H292" class="outline thin"/>
+    <circle cx="256" cy="380" r="12" class="solid"/>
+    <path d="M198 286L224 250L250 282L286 214L320 246" class="outline"/>
+    <circle cx="320" cy="246" r="10" fill="#73C799"/>
+    <circle cx="334" cy="330" r="52" class="solid"/>
+    <path d="M308 330L326 348L360 312" class="accent"/>
+    """,
     "wexplay_image_core": """
     <rect x="116" y="122" width="280" height="230" rx="28" class="outline"/>
     <circle cx="334" cy="186" r="22" class="solid"/>
     <path d="M150 314L218 242L274 292L334 224L364 256" class="outline"/>
+    """,
+    "wexplay_knowledge_images": """
+    <path d="M118 166V360L240 342L256 338L272 342L394 360V166" class="outline"/>
+    <path d="M256 164V334" class="outline thin"/>
+    <path d="M146 196H210M302 196H366" class="outline thin"/>
+    <circle cx="256" cy="160" r="72" class="outline"/>
+    <path d="M228 248L246 272L256 298L266 272L284 248" class="outline"/>
+    <path d="M232 314H280" class="accent"/>
+    <rect x="128" y="248" width="180" height="136" rx="22" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <circle cx="270" cy="286" r="16" fill="#F6F4FB"/>
+    <path d="M150 356L194 312L230 340L268 294L290 320" stroke="#F6F4FB" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    """,
+    "wexplay_knowledge_portal": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <circle cx="352" cy="252" r="38" stroke="#F6F4FB" stroke-width="10" fill="none"/>
+    <path d="M352 218V286M320 252H384M336 276L352 296L368 276" stroke="#F6F4FB" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    """,
+    "wexplay_portal": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    """,
+    "wexplay_portal_repair_communication": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <rect x="278" y="230" width="116" height="82" rx="18" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <path d="M316 312L302 338L334 314" stroke="#F6F4FB" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M302 256H370M302 284H354" stroke="#F6F4FB" stroke-width="10" stroke-linecap="round" fill="none"/>
+    """,
+    "wexplay_portal_repair_workflow": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <circle cx="342" cy="324" r="56" class="solid"/>
+    <path d="M314 324L334 344L372 304" class="accent"/>
+    """,
+    "wexplay_portal_whatsapp": """
+    <rect x="96" y="116" width="320" height="250" rx="30" class="outline"/>
+    <path d="M124 176H388" class="outline thin"/>
+    <circle cx="140" cy="146" r="10" class="solid"/>
+    <circle cx="174" cy="146" r="10" class="solid"/>
+    <circle cx="208" cy="146" r="10" class="solid"/>
+    <path d="M194 316V218L248 186H318V316" class="outline"/>
+    <path d="M246 184V316" class="outline thin"/>
+    <rect x="278" y="230" width="116" height="82" rx="18" stroke="#F6F4FB" stroke-width="12" fill="none"/>
+    <path d="M316 312L302 338L334 314" stroke="#F6F4FB" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M308 252L322 240L344 248L338 268L352 282L334 294L314 286L304 266" stroke="#F6F4FB" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     """,
     "wexplay_product_print": """
     <path d="M122 248L194 196L246 222L174 274L122 248Z" class="outline thin"/>
@@ -358,6 +557,19 @@ SVG_SYMBOLS: dict[str, str] = {
     <circle cx="190" cy="326" r="18" class="outline thin"/>
     <path d="M224 202H324M224 264H324M224 326H324" class="outline thin"/>
     <path d="M176 200L188 212L208 186M176 262L188 274L208 248M176 324L188 336L208 310" class="accent"/>
+    """,
+    "wex_teardown": """
+    <path d="M146 182L256 124L366 182L256 238L146 182Z" class="outline"/>
+    <path d="M162 252L256 204L350 252L256 300L162 252Z" class="outline"/>
+    <path d="M178 326L256 286L334 326L256 366L178 326Z" class="outline"/>
+    <path d="M256 124V238M256 204V300M256 286V366" class="outline thin"/>
+    """,
+    "wex_vendor_bill_ocr": """
+    <rect x="152" y="104" width="208" height="286" rx="24" class="outline"/>
+    <path d="M196 184H314M196 230H314M196 276H292" class="outline thin"/>
+    <path d="M118 154V118H154M394 154V118H358M118 338V374H154M394 338V374H358" class="outline"/>
+    <path d="M184 332L232 300L270 320L328 252" class="outline"/>
+    <circle cx="328" cy="252" r="10" fill="#73C799"/>
     """,
 }
 

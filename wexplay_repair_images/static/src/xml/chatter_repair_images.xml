@@ -12,14 +12,14 @@
                 <div class="wex-repair-images-chatter-page__header d-flex justify-content-between align-items-start gap-3">
                     <div>
                         <div class="wex-repair-images-chatter-page__eyebrow">Ficha técnica y diagnóstico</div>
-                        <div class="wex-repair-images-chatter-page__title">Imágenes SAT</div>
+                        <div class="wex-repair-images-chatter-page__title">Multimedia SAT</div>
                     </div>
                     <button t-if="this.canManageRepairImages"
                             type="button"
                             class="btn btn-primary btn-sm"
                             t-on-click="onClickRepairImagesUpload">
                         <t t-if="this.repairImagesState.uploading">Subiendo...</t>
-                        <t t-else="">Subir imágenes</t>
+                        <t t-else="">Subir archivos</t>
                     </button>
                 </div>
 
@@ -32,7 +32,7 @@
                      class="wex_repair_images_panel wex_repair_images_panel--chatter">
                     <div class="d-flex flex-wrap gap-2 mb-3 wex_repair_images_panel__toolbar">
                         <div class="text-muted align-self-center wex_repair_images_panel__counter">
-                            <t t-out="this.repairImagesCount"/> imágenes registradas
+                            <t t-out="this.repairImagesCount"/> archivos registrados
                         </div>
                     </div>
 
@@ -40,14 +40,14 @@
                          t-att-class="'wex_repair_images_dropzone ' + (this.repairImagesState.uploading ? 'is-loading' : '')"
                          tabindex="0"
                          role="button"
-                         aria-label="Zona de arrastre de imágenes"
+                        aria-label="Zona de arrastre de archivos multimedia"
                          t-on-click="onClickRepairImagesUpload"
                          t-on-keydown="onRepairImagesDropzoneKeydown"
                          t-on-dragover="onRepairImagesDragOver"
                          t-on-dragleave="onRepairImagesDragLeave"
                          t-on-drop="onRepairImagesDrop">
-                        <span class="wex_repair_images_dropzone__label">Arrastra imágenes aquí o haz clic para seleccionar</span>
-                        <span class="wex_repair_images_dropzone__hint">JPG · PNG · WebP · GIF</span>
+                        <span class="wex_repair_images_dropzone__label">Arrastra imágenes o vídeos aquí, o haz clic para seleccionar</span>
+                        <span class="wex_repair_images_dropzone__hint">JPG · PNG · WebP · GIF · MP4 · MOV · WebM · MKV</span>
                         <span class="wex_repair_images_dropzone__loading">Subiendo...</span>
                     </div>
 
@@ -56,23 +56,31 @@
                         <t t-foreach="this.repairImagesItems" t-as="image" t-key="image.id">
                             <div class="wex-repair-images-chatter-card">
                                 <div class="wex-repair-images-chatter-card__media">
-                                    <img t-if="image.thumbnail_url"
-                                         t-att-src="image.thumbnail_url"
-                                         t-att-alt="image.name"/>
-                                    <div t-else=""
-                                         class="wex-repair-images-chatter-card__placeholder">
-                                        <i class="fa fa-picture-o"/>
-                                    </div>
+                                    <button type="button"
+                                            class="wex-repair-images-chatter-card__media-button"
+                                            t-att-data-image-id="image.id"
+                                            t-att-aria-label="'Ver ' + image.name"
+                                            t-att-title="'Ver ' + image.name"
+                                            t-on-click="onClickRepairImageViewerButton">
+                                        <img t-if="image.thumbnail_url"
+                                             t-att-src="image.thumbnail_url"
+                                             t-att-alt="image.name"/>
+                                        <div t-else=""
+                                             class="wex-repair-images-chatter-card__placeholder">
+                                            <i class="fa fa-picture-o"/>
+                                        </div>
+                                    </button>
                                 </div>
                                 <div class="wex-repair-images-chatter-card__body">
                                     <div class="wex-repair-images-chatter-card__topline">
                                         <strong><t t-out="image.name"/></strong>
+                                        <span class="badge text-bg-light" t-if="image.media_kind === 'video'">Vídeo</span>
                                         <span class="badge text-bg-light" t-if="image.include_in_report">Informe</span>
                                     </div>
                                     <div class="wex-repair-images-chatter-card__meta">
-                                        <span>Orden <t t-out="image.sequence"/></span>
                                         <span t-if="image.uploaded_by_name">Por <t t-out="image.uploaded_by_name"/></span>
                                         <span t-if="image.uploaded_at"><t t-out="image.uploaded_at"/></span>
+                                        <span t-if="image.file_size_human"><t t-out="image.file_size_human"/></span>
                                     </div>
                                     <div t-if="image.description"
                                          class="wex-repair-images-chatter-card__description">
@@ -87,7 +95,7 @@
                                         </t>
                                     </div>
                                     <div class="wex-repair-images-chatter-card__actions">
-                                        <button t-if="this.canManageRepairImages"
+                                        <button t-if="this.canManageRepairImages and image.media_kind === 'image'"
                                                 type="button"
                                                 t-att-class="'btn btn-sm ' + (image.include_in_report ? 'btn-outline-success' : 'btn-outline-secondary')"
                                                 t-att-data-image-id="image.id"
@@ -99,7 +107,7 @@
                                                 class="btn btn-link btn-sm"
                                                 t-att-data-image-id="image.id"
                                                 t-on-click="onClickRepairImagePreviewButton">
-                                            Abrir imagen
+                                            Detalles
                                         </button>
                                         <button type="button"
                                                 class="btn btn-link btn-sm"
@@ -113,14 +121,49 @@
                         </t>
                     </div>
 
+                    <div t-if="this.repairMediaJobs.length" class="wex-repair-media-jobs">
+                        <div t-foreach="this.repairMediaJobs" t-as="job" t-key="job.id" class="wex-repair-media-job">
+                            <strong><t t-out="job.name"/></strong>
+                            <span t-if="job.state === 'error'" class="text-danger">
+                                <t t-out="job.error_message"/>
+                                <button t-if="this.canManageRepairImages" type="button" class="btn btn-link btn-sm p-0 ms-2" t-att-data-job-id="job.id" t-on-click="onClickRepairVideoJobRetry">Reintentar</button>
+                            </span>
+                            <div t-else="" class="wex-repair-media-job__details">
+                                <span class="wex-repair-media-job__status">
+                                    <t t-out="job.progress_message"/> (<t t-out="job.progress_percent"/>%)
+                                </span>
+                                <div class="progress wex-repair-media-job__progress" role="progressbar" t-att-aria-valuenow="job.progress_percent" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" t-att-style="'width: ' + job.progress_percent + '%'"/>
+                                </div>
+                                <button t-if="this.canManageRepairImages" type="button" class="btn btn-outline-danger btn-sm ms-2" t-att-data-job-id="job.id" t-on-click="onClickRepairVideoJobCancel" title="Cancelar vídeo" aria-label="Cancelar vídeo">
+                                    <i class="fa fa-times" title="Cancelar vídeo"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div t-else=""
                          class="wex-repair-images-chatter-page__empty">
-                        Aún no hay imágenes registradas en este SAT.
+                        Aún no hay archivos multimedia registrados en este SAT.
                     </div>
                 </div>
             </div>
         </xpath>
 
+    </t>
+
+    <t t-name="wexplay_repair_images.RepairImageViewerDialog">
+        <Dialog size="'xl'" title="props.image.name">
+            <div class="wex-repair-image-viewer">
+                <video t-if="props.image.media_kind === 'video'" controls="controls" preload="metadata">
+                    <source t-att-src="props.image.content_url" type="video/mp4"/>
+                </video>
+                <img t-else="" t-att-src="props.image.preview_url" t-att-alt="props.image.name"/>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-secondary" t-on-click="close">Cerrar</button>
+            </t>
+        </Dialog>
     </t>
 
 </templates>

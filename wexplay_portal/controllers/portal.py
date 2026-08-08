@@ -87,9 +87,14 @@ class WexplayCustomerPortal(CustomerPortal):
             raise NotFound()
         return repair, image
 
-    def _get_repair_image_binary(self, dms_file, variant="preview", download=False):
+    def _get_repair_image_binary(self, image, variant="preview", download=False):
+        dms_file = image.dms_file_id
         if download:
             return dms_file.content or dms_file.image_1920
+        if getattr(image, "media_kind", "image") == "video":
+            if variant == "thumb":
+                return image.media_thumbnail or dms_file.content
+            return dms_file.content
         if variant == "thumb":
             return (
                 getattr(dms_file, "image_512", False)
@@ -284,7 +289,7 @@ class WexplayCustomerPortal(CustomerPortal):
 
         is_download = str(download).lower() in ("1", "true", "yes")
         variant = variant if variant in ("thumb", "preview") else "preview"
-        binary = self._get_repair_image_binary(dms_file, variant=variant, download=is_download)
+        binary = self._get_repair_image_binary(image, variant=variant, download=is_download)
         if not binary:
             raise NotFound()
 

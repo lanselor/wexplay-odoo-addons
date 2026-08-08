@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#73C799"/>
+      <stop offset="1" stop-color="#A68FCD"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="74" fill="url(#bg)"/>
+  <path d="M36 278C84 210 176 154 304 154C386 154 438 176 476 202" stroke="white" stroke-opacity="0.14" stroke-width="10" stroke-linecap="round"/>
+  <style>
+    .outline { stroke: white; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .outline.thin { stroke-width: 12; }
+    .outline.heavy { stroke-width: 20; }
+    .solid { fill: white; }
+    .soft { fill: #F6F4FB; }
+    .accent { stroke: #73C799; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+    .accent.strong { stroke-width: 18; }
+  </style>
+  
+    <path d="M146 182L256 124L366 182L256 238L146 182Z" class="outline"/>
+    <path d="M162 252L256 204L350 252L256 300L162 252Z" class="outline"/>
+    <path d="M178 326L256 286L334 326L256 366L178 326Z" class="outline"/>
+    <path d="M256 124V238M256 204V300M256 286V366" class="outline thin"/>
+    
+</svg>

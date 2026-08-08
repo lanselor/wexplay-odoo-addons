@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrw_shipping_notification_view_list" model="ir.ui.view">
+        <field name="name">mrw.shipping.notification.view.list</field>
+        <field name="model">mrw.shipping.notification</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="shipment_id"/>
+                <field name="event_type"/>
+                <field name="recipient_email"/>
+                <field name="template_id"/>
+                <field name="attachment_id"/>
+                <field name="state"/>
+                <field name="sent_at"/>
+                <field name="sent_by_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_notification_view_form" model="ir.ui.view">
+        <field name="name">mrw.shipping.notification.view.form</field>
+        <field name="model">mrw.shipping.notification</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="shipment_id"/>
+                            <field name="event_type"/>
+                            <field name="recipient_email"/>
+                            <field name="template_id"/>
+                        </group>
+                        <group>
+                            <field name="attachment_id"/>
+                            <field name="state"/>
+                            <field name="sent_at"/>
+                            <field name="sent_by_id"/>
+                        </group>
+                    </group>
+                    <group invisible="not error_message">
+                        <field name="error_message" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrw_shipping_notification_wizard_view_form" model="ir.ui.view">
+        <field name="name">mrw.shipping.notification.wizard.view.form</field>
+        <field name="model">mrw.shipping.notification.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Enviar correo al cliente">
+                <group>
+                    <field name="shipment_id"/>
+                    <field name="event_type"/>
+                    <field name="recipient_email"/>
+                    <field name="template_id"/>
+                    <field name="attachment_required" invisible="1"/>
+                    <field name="attachment_id" invisible="not attachment_id"/>
+                </group>
+                <div class="alert alert-info" role="alert" invisible="not attachment_required">
+                    La etiqueta se adjuntará al correo y seguirá siendo privada dentro de Odoo.
+                </div>
+                <footer>
+                    <button name="action_send" type="object" string="Enviar correo" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

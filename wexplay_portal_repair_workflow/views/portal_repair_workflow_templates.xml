@@ -15,6 +15,105 @@
         </xpath>
     </template>
 
+    <template id="portal_repairs_pending_budget_alert"
+              inherit_id="wexplay_portal.portal_my_repairs"
+              priority="40">
+        <xpath expr="//div[hasclass('wex_portal_filtertabs')]" position="before">
+            <t t-if="pending_budget_alert and pending_budget_alert.get('show')">
+                <div class="alert alert-warning wex_portal_pending_budget_banner" role="status">
+                    <div class="wex_portal_pending_budget_banner_copy">
+                        <strong>
+                            Tienes <t t-out="pending_budget_alert['total_count']"/> presupuesto<t t-if="pending_budget_alert['total_count'] != 1">s</t> SAT pendiente<t t-if="pending_budget_alert['total_count'] != 1">s</t> de revisar.
+                        </strong>
+                        <span>
+                            Estos SAT siguen esperando tu aceptación o rechazo para poder continuar el servicio.
+                        </span>
+                    </div>
+                    <div class="wex_portal_pending_budget_banner_actions">
+                        <a t-att-href="pending_budget_alert['list_url']"
+                           class="btn btn-primary">
+                            Ver pendientes
+                        </a>
+                    </div>
+                </div>
+
+                <div id="wexPortalPendingBudgetAlertData"
+                     t-att-data-storage-key="pending_budget_alert['reminder_key']"
+                     t-att-data-reminder-hours="pending_budget_alert['reminder_interval_hours']"
+                     t-att-data-alert-count="pending_budget_alert['total_count']"/>
+
+                <div class="modal fade"
+                     id="wexPortalPendingBudgetModal"
+                     tabindex="-1"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content wex_portal_pending_budget_modal">
+                            <div class="modal-header">
+                                <div>
+                                    <span class="wex_portal_budget_eyebrow">Presupuestos pendientes</span>
+                                    <h5 class="modal-title mb-1">Tienes decisiones SAT pendientes</h5>
+                                    <p class="text-muted mb-0">
+                                        Revisa estos presupuestos para que Wexplay pueda continuar el servicio técnico.
+                                    </p>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">
+                                <div class="wex_portal_pending_budget_summary">
+                                    <strong>
+                                        <t t-out="pending_budget_alert['total_count']"/> SAT pendiente<t t-if="pending_budget_alert['total_count'] != 1">s</t> de aceptación o rechazo
+                                    </strong>
+                                </div>
+                                <div class="wex_portal_pending_budget_list">
+                                    <article t-foreach="pending_budget_alert['items']"
+                                             t-as="pending_item"
+                                             class="wex_portal_pending_budget_item">
+                                        <div class="wex_portal_pending_budget_item_copy">
+                                            <div class="wex_portal_pending_budget_item_title">
+                                                <t t-out="pending_item['name']"/>
+                                            </div>
+                                            <div class="wex_portal_pending_budget_item_device">
+                                                <t t-out="pending_item['device_label']"/>
+                                            </div>
+                                            <div class="wex_portal_pending_budget_item_meta">
+                                                <span t-if="pending_item['create_date']">
+                                                    Alta:
+                                                    <span t-out="pending_item['create_date']" t-options="{'widget': 'datetime'}"/>
+                                                </span>
+                                                <span t-if="pending_item['reported_issue']">
+                                                    Incidencia: <t t-out="pending_item['reported_issue']"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="wex_portal_pending_budget_item_actions">
+                                            <a t-att-href="pending_item['budget_url']"
+                                               class="btn btn-outline-primary btn-sm">
+                                                Revisar
+                                            </a>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div t-if="pending_budget_alert['remaining_count']"
+                                     class="wex_portal_pending_budget_more text-muted small mt-3">
+                                    Y <t t-out="pending_budget_alert['remaining_count']"/> más pendiente<t t-if="pending_budget_alert['remaining_count'] != 1">s</t> en tu listado.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Recordármelo después
+                                </button>
+                                <a t-att-href="pending_budget_alert['list_url']"
+                                   class="btn btn-primary">
+                                    Ver todos los pendientes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
     <template id="portal_repair_billing_extra_quotations"
               inherit_id="wexplay_portal.portal_repair_billing_extra"
               priority="45">
@@ -26,6 +125,13 @@
                         Cotizaciones relacionadas
                     </h6>
                 </div>
+                <t t-if="'x_budget_stage' in repair._fields and repair.x_budget_stage == 'waiting_customer'">
+                    <div class="alert alert-light border mb-3" role="status">
+                        La cotización queda bloqueada mientras el presupuesto SAT está pendiente.
+                        Revisa y decide desde
+                        <a t-att-href="'/my/repairs/%s/budget' % repair.id">Revisar presupuesto</a>.
+                    </div>
+                </t>
                 <t t-if="quotation_values">
                     <div class="table-responsive">
                         <table class="table table-sm align-middle mb-0">
@@ -55,10 +161,15 @@
                                               t-options="{'widget': 'monetary', 'display_currency': quotation_item['currency']}"/>
                                     </td>
                                     <td class="text-end">
-                                        <a t-att-href="quotation_item['portal_url']" class="btn btn-outline-secondary btn-sm">
-                                            Ver cotización
-                                            <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
-                                        </a>
+                                        <t t-if="quotation_item['can_open_portal_url']">
+                                            <a t-att-href="quotation_item['portal_url']" class="btn btn-outline-secondary btn-sm">
+                                                Ver cotización
+                                                <i class="fa fa-arrow-right ms-2" aria-hidden="true"/>
+                                            </a>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="text-muted small">Disponible tras aceptar el SAT</span>
+                                        </t>
                                     </td>
                                 </tr>
                             </tbody>

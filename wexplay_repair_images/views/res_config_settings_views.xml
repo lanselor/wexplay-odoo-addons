@@ -22,6 +22,21 @@
                         <field name="x_sat_image_quality"/>
                     </setting>
                 </block>
+                <block title="Vídeos SAT" name="wexplay_sat_video_settings">
+                    <setting string="Comprimir vídeos al subir" help="Convierte los vídeos a MP4 compatible en segundo plano.">
+                        <field name="x_sat_video_compress_enabled"/>
+                    </setting>
+                    <setting string="Resolución máxima (px)" invisible="not x_sat_video_compress_enabled">
+                        <field name="x_sat_video_max_px"/>
+                    </setting>
+                    <setting string="Calidad de vídeo (CRF)" help="Valores mayores reducen el tamaño y la calidad." invisible="not x_sat_video_compress_enabled">
+                        <field name="x_sat_video_crf"/>
+                    </setting>
+                    <setting string="Duración máxima (segundos)"><field name="x_sat_video_max_duration_seconds"/></setting>
+                    <setting string="Tamaño máximo de origen (MB)"><field name="x_sat_video_max_size_mb"/></setting>
+                    <setting string="Ruta de FFmpeg" help="Ejecutable de FFmpeg disponible para el servicio Odoo."><field name="x_sat_video_ffmpeg_path"/></setting>
+                    <setting string="Ruta de FFprobe" help="Ejecutable de FFprobe disponible para el servicio Odoo."><field name="x_sat_video_ffprobe_path"/></setting>
+                </block>
             </xpath>
         </field>
     </record>

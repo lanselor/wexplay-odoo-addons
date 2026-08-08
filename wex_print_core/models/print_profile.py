@@ -53,3 +53,9 @@ class WexPrintProfile(models.Model):
     def get_resolved_printer_name(self):
         self.ensure_one()
         return self.device_id.qz_printer_name or self.printer_name or ""
+
+    def write(self, values):
+        previous_devices = self.mapped("device_id")
+        result = super().write(values)
+        (previous_devices | self.mapped("device_id"))._sync_capabilities_from_assignments()
+        return result

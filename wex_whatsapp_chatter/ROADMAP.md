@@ -108,6 +108,9 @@ Tareas propuestas:
 
 - Separar la ayuda de variables en una estructura mas facil de mantener si sigue creciendo.
 - Revisar convergencia entre `whatsapp.template.render_body()` y `whatsapp.compose.wizard._render_text()`.
+- Revisar el widget `wex_whatsapp_template_picker` antes de cada actualizacion de Odoo y reemplazar la copia del template Many2One cuando exista un punto de extension local suficiente.
+- Centralizar o probar conjuntamente los grupos de plantilla definidos en Python y JavaScript antes de ampliar categorias.
+- Refactorizar `whatsapp.compose.wizard.write()` a batch solo si el wizard pasa a reutilizarse en operaciones multiples; no adelantar esa complejidad para el flujo actual singleton.
 - Evaluar historial/estadisticas internas de mensajes preparados sin afirmar envio real.
 - Revisar permisos granulares si en el futuro hay plantillas sensibles por area o equipo.
 - Mantener cualquier integracion nueva de portal, SAT u otros modulos mediante puente opcional cuando la dependencia no sea obligatoria.

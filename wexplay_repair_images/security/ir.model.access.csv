@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wex_repair_image_upload_wizard_user,wex.repair.image.upload.wizard.user,model_wex_repair_image_upload_wizard,wexplay_image_core.group_wex_image_user,1,1,1,1
 access_wex_repair_image_upload_wizard_line_user,wex.repair.image.upload.wizard.line.user,model_wex_repair_image_upload_wizard_line,wexplay_image_core.group_wex_image_user,1,1,1,1
+access_wex_repair_media_process_job_user,wex.repair.media.process.job.user,model_wex_repair_media_process_job,wexplay_image_core.group_wex_image_user,1,0,1,0

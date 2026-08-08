@@ -33,7 +33,7 @@ class WexPrintDeviceSnapshot(models.Model):
                 [("qz_printer_name", "=", rec.printer_name)], limit=1
             )
 
-    def action_save_as_device(self):
+    def action_open_setup_wizard(self):
         self.ensure_one()
         existing = self.env["wex.print.device"].search(
             [("qz_printer_name", "=", self.printer_name)], limit=1
@@ -48,17 +48,11 @@ class WexPrintDeviceSnapshot(models.Model):
                 "target": "current",
             }
 
-        device = self.env["wex.print.device"].create({
-            "name": self.printer_name,
-            "qz_printer_name": self.printer_name,
-            "model_hint": self.driver or "",
-            "backend": "qz",
-            "device_kind": "label",
-        })
         return {
             "type": "ir.actions.act_window",
-            "res_model": "wex.print.device",
-            "res_id": device.id,
+            "name": "Configurar impresora detectada",
+            "res_model": "wex.print.device.setup.wizard",
             "view_mode": "form",
-            "target": "current",
+            "context": {"default_snapshot_id": self.id},
+            "target": "new",
         }

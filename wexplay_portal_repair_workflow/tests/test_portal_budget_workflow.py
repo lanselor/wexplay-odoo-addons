@@ -160,3 +160,52 @@ class TestPortalBudgetWorkflow(SavepointCase):
         self.assertTrue(debug_values["can_portal_access"])
         self.assertTrue(debug_values["can_portal_review_budget"])
         self.assertTrue(debug_values["can_portal_reject_budget"])
+
+    def test_native_quotation_is_hidden_while_budget_waits_for_customer(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+
+        quotation_values = repair.with_user(
+            self.portal_user
+        )._get_portal_related_quotation_values()
+
+        self.assertEqual(len(quotation_values), 1)
+        self.assertEqual(quotation_values[0]["name"], sale_order.name)
+        self.assertFalse(quotation_values[0]["can_open_portal_url"])
+        self.assertFalse(quotation_values[0]["portal_url"])
+
+    def test_native_quotation_is_available_again_after_budget_accept(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+
+        repair.with_user(self.portal_user).action_portal_accept_budget(user=self.portal_user)
+        quotation_values = repair.with_user(
+            self.portal_user
+        )._get_portal_related_quotation_values()
+
+        self.assertEqual(len(quotation_values), 1)
+        self.assertEqual(quotation_values[0]["name"], sale_order.name)
+        self.assertTrue(quotation_values[0]["can_open_portal_url"])
+        self.assertTrue(quotation_values[0]["portal_url"])
+
+    def test_pending_budget_alert_values_only_include_waiting_customer_repairs(self):
+        pending_repair, _sale_order = self._create_budget_repair(self.company_partner)
+        accepted_repair, _sale_order = self._create_budget_repair(self.company_partner)
+        accepted_repair.write({"x_budget_stage": "accepted"})
+        foreign_pending_repair, _sale_order = self._create_budget_repair(self.other_partner)
+
+        alert_values = self.env["repair.order"].with_user(
+            self.portal_user
+        )._get_portal_pending_budget_alert_values(user=self.portal_user)
+
+        self.assertTrue(alert_values["show"])
+        self.assertEqual(alert_values["total_count"], 1)
+        self.assertEqual(len(alert_values["items"]), 1)
+        self.assertEqual(alert_values["items"][0]["id"], pending_repair.id)
+        self.assertEqual(
+            alert_values["items"][0]["budget_url"],
+            "/my/repairs/%s/budget" % pending_repair.id,
+        )
+        self.assertEqual(alert_values["list_url"], "/my/repairs?filterby=pending_budget")
+        self.assertEqual(alert_values["reminder_interval_hours"], 5)
+        self.assertIn(str(self.portal_user.id), alert_values["reminder_key"])
+        self.assertNotEqual(alert_values["items"][0]["id"], accepted_repair.id)
+        self.assertNotEqual(alert_values["items"][0]["id"], foreign_pending_repair.id)
