@@ -10,6 +10,7 @@ import tempfile
 import time
 
 from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -23,6 +24,14 @@ class WexRepairMediaProcessJob(models.Model):
     _description = "SAT Video Processing Job"
     _order = "id asc"
 
+    STATE_QUEUED = "queued"
+    STATE_PROCESSING = "processing"
+    STATE_DONE = "done"
+    STATE_ERROR = "error"
+    STATE_CANCELLED = "cancelled"
+
+    FFMPEG_TIMEOUT_SECONDS = 600
+
     repair_order_id = fields.Many2one("repair.order", required=True, ondelete="cascade", index=True)
     company_id = fields.Many2one(related="repair_order_id.company_id", store=True, readonly=True)
     source_attachment_id = fields.Many2one("ir.attachment", ondelete="set null")
@@ -31,8 +40,16 @@ class WexRepairMediaProcessJob(models.Model):
     media_id = fields.Many2one("wex.image.record", readonly=True, ondelete="set null")
     queue_job_uuid = fields.Char(readonly=True, index=True)
     state = fields.Selection(
-        [("queued", "En cola"), ("processing", "Procesando"), ("done", "Completado"), ("error", "Error"), ("cancelled", "Cancelado")],
-        default="queued", required=True, index=True,
+        [
+            (STATE_QUEUED, "En cola"),
+            (STATE_PROCESSING, "Procesando"),
+            (STATE_DONE, "Completado"),
+            (STATE_ERROR, "Error"),
+            (STATE_CANCELLED, "Cancelado"),
+        ],
+        default=STATE_QUEUED,
+        required=True,
+        index=True,
     )
     progress_percent = fields.Integer(default=0, readonly=True)
     progress_message = fields.Char(readonly=True)
@@ -43,7 +60,7 @@ class WexRepairMediaProcessJob(models.Model):
 
     def enqueue_processing(self):
         self.ensure_one()
-        if self.state != "queued":
+        if self.state != self.STATE_QUEUED:
             return
         queue_job = self.with_delay(
             channel="root.sat_video",
@@ -55,14 +72,7 @@ class WexRepairMediaProcessJob(models.Model):
     def process_queued_video(self):
         self.ensure_one()
         self._check_not_cancelled()
-        self.write({
-            "state": "processing",
-            "started_at": fields.Datetime.now(),
-            "progress_percent": 10,
-            "progress_message": _("Preparando vídeo"),
-            "error_message": False,
-        })
-        self.env.cr.commit()
+        self._mark_processing()
         self._process_job()
 
     def _process_job(self):
@@ -93,27 +103,63 @@ class WexRepairMediaProcessJob(models.Model):
                 if source_path:
                     shutil.rmtree(os.path.dirname(source_path), ignore_errors=True)
             self._remove_source_attachment()
-            self.write({"state": "done", "media_id": media.id, "finished_at": fields.Datetime.now(), "progress_percent": 100, "progress_message": _("Vídeo listo")})
-            self.env.cr.commit()
+            self._mark_done(media)
         except JobCancelled:
             self._remove_source_attachment()
-            self.write({"state": "cancelled", "finished_at": fields.Datetime.now(), "progress_message": _("Vídeo cancelado")})
-            self.env.cr.commit()
+            self._mark_cancelled()
         except Exception as exc:
             _logger.exception("SAT video processing failed for job %s", self.id)
-            self.write({"state": "error", "finished_at": fields.Datetime.now(), "error_message": str(exc), "progress_message": _("No se pudo procesar el vídeo")})
-            self.env.cr.commit()
+            self._mark_error(exc)
+
+    def _mark_processing(self):
+        self._commit_status_update({
+            "state": self.STATE_PROCESSING,
+            "started_at": fields.Datetime.now(),
+            "progress_percent": 10,
+            "progress_message": _("Preparando vídeo"),
+            "error_message": False,
+        })
+
+    def _mark_done(self, media):
+        self._commit_status_update({
+            "state": self.STATE_DONE,
+            "media_id": media.id,
+            "finished_at": fields.Datetime.now(),
+            "progress_percent": 100,
+            "progress_message": _("Vídeo listo"),
+        })
+
+    def _mark_cancelled(self):
+        self._commit_status_update({
+            "state": self.STATE_CANCELLED,
+            "finished_at": fields.Datetime.now(),
+            "progress_message": _("Vídeo cancelado"),
+        })
+
+    def _mark_error(self, error):
+        self._commit_status_update({
+            "state": self.STATE_ERROR,
+            "finished_at": fields.Datetime.now(),
+            "error_message": str(error),
+            "progress_message": _("No se pudo procesar el vídeo"),
+        })
+
+    def _commit_status_update(self, values):
+        self.write(values)
+        self.env.cr.commit()
 
     def _set_progress(self, percent, message):
-        self.write({"progress_percent": percent, "progress_message": message})
-        self.env.cr.commit()
+        self._commit_status_update({
+            "progress_percent": percent,
+            "progress_message": message,
+        })
 
     def action_requeue(self):
         for job in self:
-            if job.state != "error":
+            if job.state != self.STATE_ERROR:
                 continue
             job.write({
-                "state": "queued",
+                "state": self.STATE_QUEUED,
                 "queued_at": fields.Datetime.now(),
                 "started_at": False,
                 "finished_at": False,
@@ -127,11 +173,15 @@ class WexRepairMediaProcessJob(models.Model):
 
     def action_cancel(self):
         for job in self:
-            if job.state not in ("queued", "processing", "error"):
+            if job.state not in (
+                self.STATE_QUEUED,
+                self.STATE_PROCESSING,
+                self.STATE_ERROR,
+            ):
                 continue
-            is_processing = job.state == "processing"
+            is_processing = job.state == self.STATE_PROCESSING
             job.write({
-                "state": "cancelled",
+                "state": self.STATE_CANCELLED,
                 "finished_at": fields.Datetime.now(),
                 "progress_message": _("Cancelando vídeo") if is_processing else _("Vídeo cancelado"),
             })
@@ -164,7 +214,7 @@ class WexRepairMediaProcessJob(models.Model):
             "SELECT state FROM wex_repair_media_process_job WHERE id = %s", [self.id]
         )
         row = self.env.cr.fetchone()
-        return not row or row[0] == "cancelled"
+        return not row or row[0] == self.STATE_CANCELLED
 
     def _check_not_cancelled(self):
         if self._is_cancelled():
@@ -186,7 +236,7 @@ class WexRepairMediaProcessJob(models.Model):
                 stdout=subprocess.DEVNULL,
                 stderr=error_file,
             )
-            deadline = time.monotonic() + 600
+            deadline = time.monotonic() + self.FFMPEG_TIMEOUT_SECONDS
             while process.poll() is None:
                 if self._is_cancelled():
                     self._terminate_ffmpeg(process)
