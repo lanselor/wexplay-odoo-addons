@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Wexplay Repair Images",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.1.1",
     "summary": "Integración SAT de imágenes sobre repair.order",
     "description": """
 Integración SAT del core de imágenes para repair.order.
