@@ -178,6 +178,18 @@ class MrwShippingShipment(models.Model):
         copy=False,
     )
     mrw_response_url = fields.Char(string="URL respuesta MRW", readonly=True, copy=False)
+    mrw_tracking_status_code = fields.Char(
+        string="Código de estado tracking MRW", readonly=True, copy=False
+    )
+    mrw_tracking_status_description = fields.Char(
+        string="Estado tracking MRW", readonly=True, copy=False
+    )
+    mrw_tracking_last_checked_at = fields.Datetime(
+        string="Última consulta de tracking", readonly=True, copy=False
+    )
+    mrw_tracking_message = fields.Text(
+        string="Mensaje tracking MRW", readonly=True, copy=False
+    )
     package_ids = fields.One2many(
         comodel_name="mrw.shipping.package",
         inverse_name="shipment_id",
@@ -443,6 +455,12 @@ class MrwShippingShipment(models.Model):
         result = False
         for shipment in self:
             result = shipment._get_label_from_mrw()
+        return result
+
+    def action_get_mrw_tracking(self):
+        result = False
+        for shipment in self:
+            result = shipment._get_tracking_from_mrw()
         return result
 
     def action_extract_mrw_effective_date_from_logs(self):
@@ -1068,6 +1086,92 @@ class MrwShippingShipment(models.Model):
         self.ensure_one()
         if not self.label_attachment_id:
             raise UserError(_("No MRW label attachment is available."))
+
+    def _get_tracking_from_mrw(self):
+        self.ensure_one()
+        if not self.config_id.enable_tracking_queries:
+            raise UserError(
+                _("Enable tracking queries in the MRW configuration before querying MRW.")
+            )
+        if not self.mrw_shipment_number:
+            raise UserError(_("A MRW shipment number is required to query tracking."))
+        started = time.monotonic()
+        try:
+            result = MRWClient(self.config_id).get_tracking(self)
+        except MRWError as error:
+            duration_ms = int((time.monotonic() - started) * 1000)
+            self.write(
+                {
+                    "mrw_tracking_last_checked_at": fields.Datetime.now(),
+                    "mrw_tracking_message": str(error),
+                }
+            )
+            self._create_log(
+                operation="get_tracking",
+                status="error",
+                error_message=str(error),
+                duration_ms=duration_ms,
+            )
+            return self._notify_mrw_result(
+                title=_("MRW tracking query failed."),
+                message=str(error),
+                notification_type="danger",
+            )
+
+        duration_ms = int((time.monotonic() - started) * 1000)
+        mrw_result = result["result"]
+        mrw_status = str(mrw_result.get("Estado") or "")
+        mrw_message = mrw_result.get("Mensaje") or ""
+        tracking_shipment = mrw_result.get("Envio") or {}
+        if mrw_status.lower() not in ("1", "true"):
+            error_message = mrw_message or _("MRW rejected the tracking query.")
+            self.write(
+                {
+                    "mrw_tracking_last_checked_at": fields.Datetime.now(),
+                    "mrw_tracking_message": error_message,
+                }
+            )
+            self._create_log(
+                operation="get_tracking",
+                status="error",
+                request_raw=result["request_xml"],
+                response_raw=result["response_xml"],
+                mrw_status=mrw_status,
+                mrw_message=mrw_message,
+                error_message=error_message,
+                duration_ms=duration_ms,
+            )
+            return self._notify_mrw_result(
+                title=_("MRW rejected the tracking query."),
+                message=error_message,
+                notification_type="warning",
+            )
+
+        status_code = tracking_shipment.get("Estado", "")
+        status_description = tracking_shipment.get("EstadoDescripcion", "")
+        self.write(
+            {
+                "mrw_tracking_status_code": status_code,
+                "mrw_tracking_status_description": status_description,
+                "mrw_tracking_last_checked_at": fields.Datetime.now(),
+                "mrw_tracking_message": mrw_message,
+            }
+        )
+        self._create_log(
+            operation="get_tracking",
+            status="success",
+            request_raw=result["request_xml"],
+            response_raw=result["response_xml"],
+            mrw_status=mrw_status,
+            mrw_message=mrw_message,
+            duration_ms=duration_ms,
+        )
+        display_status = status_description or status_code or _("No status returned.")
+        return self._notify_mrw_result(
+            title=_("MRW tracking query successful."),
+            message=_("Current MRW status: %s") % display_status,
+            notification_type="success",
+        )
 
     def _get_tracking_url(self):
         self.ensure_one()

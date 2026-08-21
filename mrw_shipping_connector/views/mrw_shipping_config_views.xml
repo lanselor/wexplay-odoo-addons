@@ -30,6 +30,13 @@
                         icon="fa-plug"
                     />
                     <button
+                        name="action_test_tracking_connection"
+                        type="object"
+                        string="Probar tracking"
+                        class="btn-secondary"
+                        icon="fa-map-marker"
+                    />
+                    <button
                         name="action_inspect_wsdl"
                         type="object"
                         string="Inspeccionar WSDL"
@@ -78,6 +85,21 @@
                                 <field name="last_connection_test_at"/>
                                 <field name="last_connection_test_status"/>
                                 <field name="last_connection_test_message"/>
+                            </group>
+                        </page>
+                        <page string="Tracking">
+                            <div class="alert alert-info" role="alert">
+                                La prueba valida el WSDL. Para consultar un envío real,
+                                activa las consultas y usa el botón del envío MRW.
+                            </div>
+                            <group string="Endpoint y activación">
+                                <field name="tracking_wsdl_url"/>
+                                <field name="enable_tracking_queries"/>
+                            </group>
+                            <group string="Última prueba">
+                                <field name="last_tracking_connection_test_at"/>
+                                <field name="last_tracking_connection_test_status"/>
+                                <field name="last_tracking_connection_test_message"/>
                             </group>
                         </page>
                         <page string="Diagnóstico">

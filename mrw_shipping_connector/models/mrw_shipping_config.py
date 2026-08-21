@@ -51,6 +51,33 @@ class MrwShippingConfig(models.Model):
             "WSDL de diagnóstico."
         ),
     )
+    tracking_wsdl_url = fields.Char(
+        string="URL WSDL de seguimiento",
+        required=True,
+        default="http://seguimiento.mrw.es/swc/wssgmntnvs.asmx?WSDL",
+        help="Servicio SOAP MRW independiente para consultar el seguimiento nacional.",
+    )
+    enable_tracking_queries = fields.Boolean(
+        string="Permitir consultas de seguimiento",
+        default=False,
+        help="Activa las consultas manuales de tracking. No modifica el estado de Odoo.",
+    )
+    last_tracking_connection_test_at = fields.Datetime(
+        string="Última prueba de tracking",
+        readonly=True,
+        copy=False,
+    )
+    last_tracking_connection_test_status = fields.Selection(
+        selection=[("success", "Correcto"), ("error", "Error")],
+        string="Estado última prueba de tracking",
+        readonly=True,
+        copy=False,
+    )
+    last_tracking_connection_test_message = fields.Text(
+        string="Mensaje última prueba de tracking",
+        readonly=True,
+        copy=False,
+    )
     agency_code = fields.Char(string="Código de franquicia", required=True)
     subscriber_code = fields.Char(string="Código de abonado", required=True)
     department_code = fields.Char(string="Código de departamento")
@@ -264,6 +291,12 @@ class MrwShippingConfig(models.Model):
             result = config._test_wsdl_connection()
         return result
 
+    def action_test_tracking_connection(self):
+        result = False
+        for config in self:
+            result = config._test_tracking_wsdl_connection()
+        return result
+
     def action_inspect_wsdl(self):
         result = False
         for config in self:
@@ -303,6 +336,41 @@ class MrwShippingConfig(models.Model):
         )
         self._create_connection_log("test_connection", "success", message)
         return self._notification(_("MRW WSDL connection successful."), message, "success")
+
+    def _test_tracking_wsdl_connection(self):
+        self.ensure_one()
+        started_at = fields.Datetime.now()
+        try:
+            content = self._fetch_wsdl(self.tracking_wsdl_url)
+            self._check_wsdl_content(content)
+            operations = self._extract_wsdl_operations(content)
+            expected_operation = "SeguimientoNumeroEnvioMRWNacional"
+            if expected_operation not in operations:
+                raise ValueError(
+                    _("The tracking WSDL does not expose %s.") % expected_operation
+                )
+        except (HTTPError, URLError, TimeoutError, ElementTree.ParseError, ValueError) as error:
+            self.write(
+                {
+                    "last_tracking_connection_test_at": started_at,
+                    "last_tracking_connection_test_status": "error",
+                    "last_tracking_connection_test_message": str(error),
+                }
+            )
+            self._create_connection_log("test_tracking_connection", "error", str(error))
+            return self._notification(
+                _("MRW tracking connection failed."), str(error), "danger"
+            )
+        message = _("MRW tracking WSDL connection successful: %s") % self.tracking_wsdl_url
+        self.write(
+            {
+                "last_tracking_connection_test_at": started_at,
+                "last_tracking_connection_test_status": "success",
+                "last_tracking_connection_test_message": message,
+            }
+        )
+        self._create_connection_log("test_tracking_connection", "success", message)
+        return self._notification(_("MRW tracking connection successful."), message, "success")
 
     def _inspect_wsdl(self):
         self.ensure_one()

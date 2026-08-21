@@ -28,6 +28,7 @@ LOG_OPERATION_SELECTION = [
     ("test_connection", "Prueba de conexión"),
     ("inspect_wsdl", "Inspección WSDL"),
     ("run_diagnostic", "Ejecutar diagnóstico"),
+    ("test_tracking_connection", "Probar conexión de tracking"),
     ("preview_create_shipment", "Previsualizar creación de envío"),
     ("preview_label", "Previsualizar etiqueta"),
     ("preview_cancel_shipment", "Previsualizar cancelación"),
@@ -35,6 +36,7 @@ LOG_OPERATION_SELECTION = [
     ("create_shipment", "Crear envío"),
     ("get_label", "Obtener etiqueta"),
     ("cancel_shipment", "Cancelar envío"),
+    ("get_tracking", "Consultar seguimiento"),
 ]
 
 LOG_STATUS_SELECTION = [

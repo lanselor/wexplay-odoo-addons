@@ -495,3 +495,28 @@ Consequences:
   delivery order if a real MRW shipment is required.
 - Label retrieval failures after successful MRW creation no longer roll back
   the local tracking reference; they are kept as retryable errors.
+
+## 2026-08-21 - Tracking SOAP validation isolated from shipment operations
+
+Decision:
+
+Add a first, manual MRW SOAP tracking path based on the publicly available
+`SeguimientoNumeroEnvioMRWNacional` WSDL contract and the legacy PrestaShop
+tracking module.
+
+Rules:
+
+- The tracking WSDL endpoint and opt-in switch live in `mrw.shipping.config`.
+- A configuration action checks only WSDL reachability and the national
+  tracking operation; it does not send credentials.
+- A manual action on a shipment with an MRW number performs the real query.
+- The query stores sanitized request/response logs and returned tracking data,
+  but never changes the Odoo shipment state or notifies customers.
+- International tracking, proof of delivery, scheduled polling, portal output,
+  and delivery-state automation remain pending validation.
+
+Reason:
+
+The evidence confirms a national SOAP operation and response fields, but does
+not yet establish stable mappings for all MRW states or the operational rules
+needed for automatic business actions.

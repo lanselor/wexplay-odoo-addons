@@ -95,6 +95,14 @@
                         invisible="not mrw_shipment_number"
                     />
                     <button
+                        name="action_get_mrw_tracking"
+                        type="object"
+                        string="Consultar tracking MRW"
+                        class="btn-secondary"
+                        icon="fa-refresh"
+                        invisible="not mrw_shipment_number"
+                    />
+                    <button
                         name="action_cancel_internal"
                         type="object"
                         string="Cancelar"
@@ -186,6 +194,9 @@
                             <field name="package_count"/>
                             <field name="label_attachment_id"/>
                             <field name="label_generated_at"/>
+                            <field name="mrw_tracking_status_code"/>
+                            <field name="mrw_tracking_status_description"/>
+                            <field name="mrw_tracking_last_checked_at"/>
                             <button
                                 name="action_extract_mrw_effective_date_from_logs"
                                 type="object"
@@ -197,6 +208,17 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Tracking MRW">
+                            <div class="alert alert-info" role="alert">
+                                Consulta manual de seguimiento: no cambia el estado del envío ni notifica al cliente.
+                            </div>
+                            <group>
+                                <field name="mrw_tracking_status_code"/>
+                                <field name="mrw_tracking_status_description"/>
+                                <field name="mrw_tracking_last_checked_at"/>
+                                <field name="mrw_tracking_message" nolabel="1"/>
+                            </group>
+                        </page>
                         <page string="Cliente / dirección">
                             <group>
                                 <group>

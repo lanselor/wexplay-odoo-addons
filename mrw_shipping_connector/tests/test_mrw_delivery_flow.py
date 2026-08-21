@@ -3,6 +3,8 @@ from unittest.mock import patch
 from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
+from odoo.addons.mrw_shipping_connector.services.mrw_client import MRWClient
+
 
 class TestMRWDeliveryFlow(TransactionCase):
     @classmethod
@@ -116,6 +118,51 @@ class TestMRWDeliveryFlow(TransactionCase):
             link,
             "http://www.mrw.es/seguimiento_envios/MRW_historico_nacional.asp?enviament=01400F001137",
         )
+
+    def test_manual_tracking_query_stores_mrw_status_without_changing_shipment_state(self):
+        partner = self._partner(self.country_es)
+        shipment = self.env["mrw.shipping.shipment"].create(
+            {
+                "company_id": self.env.company.id,
+                "config_id": self.config.id,
+                "service_id": self.national_service.id,
+                "shipment_type": "national",
+                "partner_id": partner.id,
+                "recipient_name": partner.name,
+                "recipient_phone": partner.phone,
+                "street": partner.street,
+                "zip": partner.zip,
+                "city": partner.city,
+                "country_id": self.country_es.id,
+                "reference": "TRACKING-001",
+            }
+        )
+        shipment.write({"mrw_shipment_number": "01400F001137", "state": "sent"})
+        self.config.enable_tracking_queries = True
+        soap_response = """<?xml version=\"1.0\"?>
+            <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
+              <soap:Body>
+                <SeguimientoNumeroEnvioMRWNacionalResponse xmlns=\"http://www.mrw.es/webservices/seguimiento\">
+                  <SeguimientoNumeroEnvioMRWNacionalResult>
+                    <Estado>true</Estado><Mensaje>Consulta correcta</Mensaje>
+                    <Envio><Numero>01400F001137</Numero><Estado>01</Estado><EstadoDescripcion>En tránsito</EstadoDescripcion></Envio>
+                  </SeguimientoNumeroEnvioMRWNacionalResult>
+                </SeguimientoNumeroEnvioMRWNacionalResponse>
+              </soap:Body>
+            </soap:Envelope>"""
+
+        with patch.object(MRWClient, "_call_tracking", return_value=soap_response):
+            shipment.action_get_mrw_tracking()
+
+        self.assertEqual(shipment.state, "sent")
+        self.assertEqual(shipment.mrw_tracking_status_code, "01")
+        self.assertEqual(shipment.mrw_tracking_status_description, "En tránsito")
+        log = self.env["mrw.shipping.log"].search(
+            [("shipment_id", "=", shipment.id), ("operation", "=", "get_tracking")],
+            limit=1,
+        )
+        self.assertEqual(log.status, "success")
+        self.assertNotIn(self.config.password, log.request_raw)
 
     def test_existing_tracking_is_recovered_without_creating_new_remote_attempt(self):
         picking = self._picking(

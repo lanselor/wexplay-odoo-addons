@@ -210,6 +210,22 @@ No public label URL is created. Automatic sends and delivered-status emails are
 deferred until their operational rules and a reliable MRW status source are
 validated.
 
+### MRW SOAP Tracking (First Validation Version)
+
+The tracking service is intentionally independent from shipment creation,
+labels, and cancellation. `mrw.shipping.config` stores a dedicated tracking
+WSDL endpoint and an explicit opt-in flag. A WSDL check proves endpoint
+reachability and operation availability without sending credentials.
+
+For a real manual check, a national `mrw.shipping.shipment` with an MRW number
+can call `SeguimientoNumeroEnvioMRWNacional`. The request and response are
+stored as sanitized technical logs, while the returned status code,
+description, message, and check timestamp are kept on the shipment.
+
+This first version does not change the Odoo shipment state, notify customers,
+run on a cron, retrieve proof of delivery, or expose tracking through the
+portal. International SOAP tracking remains unvalidated.
+
 Manual use case:
 
 ```text
