@@ -164,6 +164,41 @@ class TestMRWDeliveryFlow(TransactionCase):
         self.assertEqual(log.status, "success")
         self.assertNotIn(self.config.password, log.request_raw)
 
+    def test_manual_tracking_query_keeps_malformed_mrw_response_in_log(self):
+        partner = self._partner(self.country_es)
+        shipment = self.env["mrw.shipping.shipment"].create(
+            {
+                "company_id": self.env.company.id,
+                "config_id": self.config.id,
+                "service_id": self.national_service.id,
+                "shipment_type": "national",
+                "partner_id": partner.id,
+                "recipient_name": partner.name,
+                "recipient_phone": partner.phone,
+                "street": partner.street,
+                "zip": partner.zip,
+                "city": partner.city,
+                "country_id": self.country_es.id,
+                "reference": "TRACKING-MALFORMED-001",
+            }
+        )
+        shipment.write({"mrw_shipment_number": "01400F001138", "state": "sent"})
+        self.config.enable_tracking_queries = True
+        malformed_response = "<Envelope><Body><Envio></Body></Envelope>"
+
+        with patch.object(
+            MRWClient, "_call_tracking", return_value=malformed_response
+        ):
+            shipment.action_get_mrw_tracking()
+
+        log = self.env["mrw.shipping.log"].search(
+            [("shipment_id", "=", shipment.id), ("operation", "=", "get_tracking")],
+            limit=1,
+        )
+        self.assertEqual(log.status, "error")
+        self.assertEqual(log.response_raw, malformed_response)
+        self.assertIn("<Password>***</Password>", log.request_raw)
+
     def test_existing_tracking_is_recovered_without_creating_new_remote_attempt(self):
         picking = self._picking(
             self.outgoing_type,

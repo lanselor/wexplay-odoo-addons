@@ -515,6 +515,25 @@ Rules:
 - International tracking, proof of delivery, scheduled polling, portal output,
   and delivery-state automation remain pending validation.
 
+## 2026-08-21 - Preserve malformed tracking responses for diagnosis
+
+Decision:
+
+When MRW returns a tracking response that cannot be parsed as XML, retain its
+sanitized raw content in the technical log together with the sanitized request.
+
+Reason:
+
+The live endpoint can return malformed XML. Without the response body, the
+integration cannot distinguish a transient MRW response defect from an
+unhandled response shape.
+
+Consequences:
+
+- The response remains available only through restricted technical logs.
+- Passwords remain masked before any request is persisted.
+- The error remains non-destructive; no Odoo shipment state is changed.
+
 Reason:
 
 The evidence confirms a national SOAP operation and response fields, but does

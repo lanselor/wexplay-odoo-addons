@@ -4,7 +4,11 @@ from urllib.request import Request, urlopen
 from xml.etree import ElementTree
 from xml.sax.saxutils import escape
 
-from .mrw_exceptions import MRWConnectionError, MRWUnsupportedOperationError
+from .mrw_exceptions import (
+    MRWConnectionError,
+    MRWTrackingResponseError,
+    MRWUnsupportedOperationError,
+)
 from .mrw_mapper import MRWMapper, sanitize_payload
 
 
@@ -71,7 +75,14 @@ class MRWClient:
         operation = "SeguimientoNumeroEnvioMRWNacional"
         request_xml = self._prepare_tracking_request(shipment, operation)
         response_xml = self._call_tracking(operation, request_xml)
-        result = self._parse_tracking_result(response_xml, f"{operation}Result")
+        try:
+            result = self._parse_tracking_result(response_xml, f"{operation}Result")
+        except MRWConnectionError as error:
+            raise MRWTrackingResponseError(
+                str(error),
+                request_raw=sanitize_payload(request_xml),
+                response_raw=sanitize_payload(response_xml),
+            ) from error
         return {
             "operation": operation,
             "request_xml": sanitize_payload(request_xml),
