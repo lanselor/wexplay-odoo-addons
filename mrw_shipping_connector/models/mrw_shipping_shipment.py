@@ -13,6 +13,7 @@ from odoo.addons.mrw_shipping_connector.services.mrw_exceptions import MRWError
 from odoo.addons.mrw_shipping_connector.services.mrw_mapper import (
     MRWMapper,
     normalize_label_payload,
+    sanitize_payload,
 )
 
 from .mrw_shipping_constants import (
@@ -1109,8 +1110,8 @@ class MrwShippingShipment(models.Model):
             self._create_log(
                 operation="get_tracking",
                 status="error",
-                request_raw=getattr(error, "request_raw", False),
-                response_raw=getattr(error, "response_raw", False),
+                request_raw=sanitize_payload(getattr(error, "request_raw", False)),
+                response_raw=sanitize_payload(getattr(error, "response_raw", False)),
                 error_message=str(error),
                 duration_ms=duration_ms,
             )

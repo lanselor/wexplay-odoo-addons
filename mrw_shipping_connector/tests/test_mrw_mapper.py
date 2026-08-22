@@ -6,6 +6,7 @@ from odoo.tests.common import TransactionCase
 from odoo.addons.mrw_shipping_connector.services.mrw_mapper import (
     MRWMapper,
     normalize_label_payload,
+    sanitize_payload,
 )
 from odoo.addons.mrw_shipping_connector.services.mrw_client import MRWClient
 
@@ -99,6 +100,13 @@ class TestMRWMapper(TransactionCase):
             }
         )
         return shipment
+
+    def test_sanitize_payload_masks_password_with_attributes(self):
+        payload = '<Password type="string">secret</Password>'
+
+        sanitized = sanitize_payload(payload)
+
+        self.assertEqual(sanitized, '<Password type="string">***</Password>')
 
     def test_national_spanish_phone_is_mapped_without_country_prefix(self):
         preview = MRWMapper(self._create_shipment()).prepare_create_shipment_request()

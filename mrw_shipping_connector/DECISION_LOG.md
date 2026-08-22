@@ -534,6 +534,27 @@ Consequences:
 - Passwords remain masked before any request is persisted.
 - The error remains non-destructive; no Odoo shipment state is changed.
 
+## 2026-08-22 - Enforce HTTPS and sanitize tracking diagnostics twice
+
+Decision:
+
+Use HTTPS for every tracking WSDL and SOAP request, including legacy
+configurations whose stored URL still begins with HTTP. Sanitize diagnostic
+payloads both in the SOAP client and immediately before writing the log.
+
+Reason:
+
+The HTTP tracking endpoint returned the ASMX HTML landing page rather than a
+SOAP response, and a live diagnostic showed that a password could reach a log
+without being masked.
+
+Consequences:
+
+- Existing configurations continue to work without manual URL migration.
+- HTML responses report an endpoint-specific error and remain available only
+  as sanitized technical evidence.
+- No tracking request can persist a matching `Password` element in plain text.
+
 Reason:
 
 The evidence confirms a national SOAP operation and response fields, but does

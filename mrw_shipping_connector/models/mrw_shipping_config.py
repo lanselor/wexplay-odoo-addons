@@ -1,4 +1,5 @@
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 from xml.etree import ElementTree
 
@@ -54,7 +55,7 @@ class MrwShippingConfig(models.Model):
     tracking_wsdl_url = fields.Char(
         string="URL WSDL de seguimiento",
         required=True,
-        default="http://seguimiento.mrw.es/swc/wssgmntnvs.asmx?WSDL",
+        default="https://seguimiento.mrw.es/swc/wssgmntnvs.asmx?WSDL",
         help="Servicio SOAP MRW independiente para consultar el seguimiento nacional.",
     )
     enable_tracking_queries = fields.Boolean(
@@ -275,6 +276,13 @@ class MrwShippingConfig(models.Model):
             return self.production_wsdl_url
         return self.test_wsdl_url
 
+    def _get_tracking_wsdl_url(self):
+        """Use TLS for tracking, including configurations created before HTTPS."""
+        self.ensure_one()
+        parts = urlsplit(self.tracking_wsdl_url)
+        scheme = "https" if parts.scheme == "http" else parts.scheme
+        return urlunsplit((scheme, parts.netloc, parts.path, parts.query, ""))
+
     def _prepare_auth_header(self):
         self.ensure_one()
         return {
@@ -341,7 +349,8 @@ class MrwShippingConfig(models.Model):
         self.ensure_one()
         started_at = fields.Datetime.now()
         try:
-            content = self._fetch_wsdl(self.tracking_wsdl_url)
+            tracking_wsdl_url = self._get_tracking_wsdl_url()
+            content = self._fetch_wsdl(tracking_wsdl_url)
             self._check_wsdl_content(content)
             operations = self._extract_wsdl_operations(content)
             expected_operation = "SeguimientoNumeroEnvioMRWNacional"
@@ -361,7 +370,7 @@ class MrwShippingConfig(models.Model):
             return self._notification(
                 _("MRW tracking connection failed."), str(error), "danger"
             )
-        message = _("MRW tracking WSDL connection successful: %s") % self.tracking_wsdl_url
+        message = _("MRW tracking WSDL connection successful: %s") % tracking_wsdl_url
         self.write(
             {
                 "last_tracking_connection_test_at": started_at,

@@ -199,6 +199,15 @@ class TestMRWDeliveryFlow(TransactionCase):
         self.assertEqual(log.response_raw, malformed_response)
         self.assertIn("<Password>***</Password>", log.request_raw)
 
+    def test_tracking_endpoint_forces_https_for_legacy_http_configuration(self):
+        self.config.tracking_wsdl_url = (
+            "http://seguimiento.mrw.es/swc/wssgmntnvs.asmx?WSDL"
+        )
+
+        endpoint = MRWClient(self.config)._get_tracking_endpoint()
+
+        self.assertEqual(endpoint, "https://seguimiento.mrw.es/swc/wssgmntnvs.asmx")
+
     def test_existing_tracking_is_recovered_without_creating_new_remote_attempt(self):
         picking = self._picking(
             self.outgoing_type,

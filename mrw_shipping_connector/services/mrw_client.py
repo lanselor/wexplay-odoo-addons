@@ -156,7 +156,7 @@ class MRWClient:
         return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
     def _get_tracking_endpoint(self):
-        parts = urlsplit(self.config.tracking_wsdl_url)
+        parts = urlsplit(self.config._get_tracking_wsdl_url())
         return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
     def _get_soap_action(self, operation):
@@ -222,6 +222,11 @@ class MRWClient:
         ).format(operation=operation, body=body)
 
     def _parse_tracking_result(self, response_xml, expected_result_tag):
+        if response_xml.lstrip().lower().startswith("<html"):
+            raise MRWConnectionError(
+                "MRW returned an HTML page instead of a tracking SOAP response. "
+                "Verify the HTTPS tracking endpoint."
+            )
         try:
             root = ElementTree.fromstring(response_xml)
         except ElementTree.ParseError as error:

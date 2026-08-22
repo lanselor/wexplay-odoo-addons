@@ -20,7 +20,11 @@ def sanitize_payload(payload):
         return payload
     sanitized = str(payload)
     for tag in SENSITIVE_TAGS:
-        pattern = rf"(<(?:\w+:)?{tag}>)(.*?)(</(?:\w+:)?{tag}>)"
+        escaped_tag = re.escape(tag)
+        pattern = (
+            rf"(<(?:[\w.-]+:)?{escaped_tag}(?:\s[^>]*)?>)"
+            rf"(.*?)(</(?:[\w.-]+:)?{escaped_tag}>)"
+        )
         sanitized = re.sub(pattern, rf"\1***\3", sanitized, flags=re.DOTALL)
     return sanitized
 
