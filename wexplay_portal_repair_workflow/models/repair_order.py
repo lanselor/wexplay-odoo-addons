@@ -341,13 +341,13 @@ class RepairOrder(models.Model):
             sale_order.state, sale_order.state or ""
         )
 
-    def _prepare_portal_repair_event_vals(self, event_type, user=None):
+    def _prepare_portal_repair_event_vals(self, event_type, user=None, extra_values=None):
         self.ensure_one()
         repair = self.sudo()
         sale_order = repair._get_portal_budget_sale_order()
         user = user or self.env.user
         currency = sale_order.currency_id or repair.company_id.currency_id
-        return {
+        values = {
             "event_type": event_type,
             "repair_id": repair.id,
             "sale_order_id": sale_order.id if sale_order else False,
@@ -368,10 +368,16 @@ class RepairOrder(models.Model):
                 else ""
             ),
         }
+        values.update(extra_values or {})
+        return values
 
-    def _create_portal_repair_event(self, event_type, user=None):
+    def _create_portal_repair_event(self, event_type, user=None, extra_values=None):
         self.ensure_one()
-        vals = self._prepare_portal_repair_event_vals(event_type, user=user)
+        vals = self._prepare_portal_repair_event_vals(
+            event_type,
+            user=user,
+            extra_values=extra_values,
+        )
         return self.env["wex.portal.repair.event"].sudo().create(vals)
 
     def _get_portal_repair_context_bar_values(self):

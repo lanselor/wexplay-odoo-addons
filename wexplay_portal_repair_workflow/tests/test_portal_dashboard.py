@@ -78,7 +78,7 @@ class TestPortalDashboard(SavepointCase):
 
         self.assertEqual(data["period_days"], 7)
         self.assertEqual(len(data["attention_cards"]), 4)
-        self.assertEqual(len(data["summary_cards"]), 5)
+        self.assertEqual(len(data["summary_cards"]), 6)
         self.assertTrue(data["activity_preview"]["rows"])
         self.assertTrue(data["quick_actions"])
 

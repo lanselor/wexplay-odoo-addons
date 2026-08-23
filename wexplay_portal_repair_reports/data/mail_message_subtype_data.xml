@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="mt_repair_portal_report_downloaded" model="mail.message.subtype">
+        <field name="name">Informe descargado desde portal</field>
+        <field name="res_model">repair.order</field>
+        <field name="default" eval="False"/>
+        <field name="internal" eval="True"/>
+    </record>
+</odoo>

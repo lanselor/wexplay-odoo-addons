@@ -105,6 +105,7 @@ class WexPortalDashboard(models.AbstractModel):
             "budget_viewed": "fa fa-eye",
             "budget_accepted": "fa fa-check",
             "budget_rejected": "fa fa-times",
+            "report_downloaded": "fa fa-download",
         }.get(event_type, "fa fa-bell")
 
     @api.model
@@ -257,6 +258,18 @@ class WexPortalDashboard(models.AbstractModel):
                 ),
                 tone="warning",
                 icon="fa fa-thumbs-down",
+            ),
+            self._make_metric_card(
+                _("Informes descargados"),
+                event_model.search_count(period_domain + [("event_type", "=", "report_downloaded")]),
+                _("Generados desde el portal en los últimos %s días") % period["period_days"],
+                action=self._get_action_dict(
+                    _("Informes descargados"),
+                    "wex.portal.repair.event",
+                    domain=period_domain + [("event_type", "=", "report_downloaded")],
+                ),
+                tone="info",
+                icon="fa fa-download",
             ),
             self._make_metric_card(
                 _("Esperando decisión del cliente"),
@@ -416,6 +429,19 @@ class WexPortalDashboard(models.AbstractModel):
                     "wex.portal.repair.event",
                     domain=[
                         ("event_type", "=", "budget_rejected"),
+                        ("event_date", ">=", period["period_start"]),
+                    ],
+                ),
+            },
+            {
+                "label": _("Informes"),
+                "description": _("Descargados en el periodo"),
+                "icon": "fa fa-download",
+                "action": self._get_action_dict(
+                    _("Informes descargados"),
+                    "wex.portal.repair.event",
+                    domain=[
+                        ("event_type", "=", "report_downloaded"),
                         ("event_date", ">=", period["period_start"]),
                     ],
                 ),

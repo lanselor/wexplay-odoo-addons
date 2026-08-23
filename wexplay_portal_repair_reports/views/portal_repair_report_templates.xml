@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_repair_report_actions" inherit_id="wexplay_portal.portal_repair_page">
+        <xpath expr="//ul[@id='repairDetailTabs']" position="inside">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-informes-btn"
+                        data-bs-toggle="tab" data-bs-target="#tab-informes"
+                        type="button" role="tab"
+                        aria-controls="tab-informes" aria-selected="false">
+                    <i class="fa fa-file-pdf-o me-1" aria-hidden="true"/>
+                    Informes
+                </button>
+            </li>
+        </xpath>
+        <xpath expr="//div[@id='repairDetailTabsContent']" position="inside">
+            <div class="tab-pane fade" id="tab-informes" role="tabpanel" aria-labelledby="tab-informes-btn">
+                <section class="wex_portal_report_actions card border-0">
+                    <div class="card-body d-lg-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <span class="wex_portal_report_actions__eyebrow">Documentación</span>
+                            <h2 class="h5 mb-1">Informe técnico</h2>
+                            <p class="text-muted mb-0">Genera un PDF actualizado con el diagnóstico, el trabajo realizado y todas las fotografías del expediente.</p>
+                        </div>
+                        <div class="wex_portal_report_actions__buttons" data-wex-portal-report-actions="1">
+                            <a t-att-href="'/my/repairs/%s/service-report/wexplay' % repair.id" class="btn btn-outline-secondary" data-wex-portal-report-download="wexplay">
+                                <i class="fa fa-download me-1" data-wex-portal-report-icon="1" aria-hidden="true"/><span data-wex-portal-report-label="1">Informe con datos Wexplay</span>
+                            </a>
+                            <a t-att-href="'/my/repairs/%s/service-report/custom' % repair.id" class="btn btn-primary" data-wex-portal-report-download="custom">
+                                <i class="fa fa-download me-1" data-wex-portal-report-icon="1" aria-hidden="true"/><span data-wex-portal-report-label="1">Informe personalizado</span>
+                            </a>
+                            <a href="/my/repair-report-brand" class="wex_portal_report_actions__settings">
+                                <i class="fa fa-paint-brush me-1" aria-hidden="true"/>Configurar identidad
+                            </a>
+                            <p class="wex_portal_report_actions__feedback mb-0 w-100" data-wex-portal-report-feedback="1" role="status" aria-live="polite" hidden="hidden"></p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="portal_repair_report_brand" name="Portal Repair Report Brand">
+        <t t-call="portal.portal_layout">
+            <div class="o_portal_wrap wex_portal_report_brand_wrap">
+                <div class="wex_portal_report_brand_heading">
+                    <a href="/my/repairs" class="small text-muted text-decoration-none"><i class="fa fa-arrow-left me-1"/>Volver a reparaciones</a>
+                    <h1>Identidad de los informes</h1>
+                    <p>Esta identidad se utilizará en los informes personalizados de toda tu empresa. Los informes con datos Wexplay no cambian.</p>
+                </div>
+
+                <t t-if="error">
+                    <div class="alert alert-danger">Revisa el color corporativo. Debe tener formato <strong>#1A5E8A</strong>.</div>
+                </t>
+
+                <form action="/my/repair-report-brand/save" method="post" enctype="multipart/form-data" class="wex_portal_report_brand_form">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <section class="card border-0 mb-4">
+                        <div class="card-body">
+                            <h2 class="h5">Origen de los datos</h2>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="identity_source" id="identity_source_billing" value="billing" t-att-checked="'checked' if brand.identity_source == 'billing' else None"/>
+                                <label class="form-check-label" for="identity_source_billing">Usar los datos de facturación de mi empresa</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="identity_source" id="identity_source_custom" value="custom" t-att-checked="'checked' if brand.identity_source == 'custom' else None"/>
+                                <label class="form-check-label" for="identity_source_custom">Usar una identidad personalizada</label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card border-0 mb-4">
+                        <div class="card-body">
+                            <h2 class="h5">Identidad personalizada</h2>
+                            <p class="text-muted small">Estos campos se usan únicamente cuando seleccionas datos personalizados.</p>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="report_brand_logo">Logotipo</label>
+                                    <input class="form-control" id="report_brand_logo" type="file" name="logo" accept="image/png,image/jpeg,image/webp" data-wex-portal-logo-input="1"/>
+                                    <div class="wex_portal_report_brand_logo_preview" data-wex-portal-logo-preview="1">
+                                        <img class="wex_portal_report_brand_logo_preview__image"
+                                             data-wex-portal-logo-image="1"
+                                             t-att-src="brand._get_logo_preview_data_uri() or ''"
+                                             t-att-hidden="not brand.logo"
+                                             alt="Vista previa del logotipo"/>
+                                        <div class="wex_portal_report_brand_logo_preview__placeholder" data-wex-portal-logo-placeholder="1" t-att-hidden="brand.logo">
+                                            <i class="fa fa-image" aria-hidden="true"/>
+                                            <span>No hay logotipo personalizado configurado.</span>
+                                        </div>
+                                        <p class="wex_portal_report_brand_logo_preview__status mb-0" data-wex-portal-logo-status="1" aria-live="polite">
+                                            <t t-if="brand.logo">Logotipo personalizado guardado.</t>
+                                            <t t-else="">Elige una imagen para verla antes de guardar.</t>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="report_brand_color">Color corporativo</label>
+                                    <div class="d-flex gap-2">
+                                        <input class="form-control form-control-color" id="report_brand_color_picker" type="color" t-att-value="brand.primary_color or '#7b68b5'" onchange="document.getElementById('report_brand_color').value = this.value"/>
+                                        <input class="form-control" id="report_brand_color" type="text" name="primary_color" t-att-value="brand.primary_color or '#7b68b5'" pattern="#[0-9A-Fa-f]{6}" maxlength="7" required="required"/>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-8"><label class="form-label" for="report_brand_name">Nombre comercial</label><input class="form-control" id="report_brand_name" type="text" name="name" t-att-value="brand.name or ''"/></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_vat">NIF / CIF</label><input class="form-control" id="report_brand_vat" type="text" name="vat" t-att-value="brand.vat or ''"/></div>
+                                <div class="col-12 col-md-8"><label class="form-label" for="report_brand_street">Dirección</label><input class="form-control" id="report_brand_street" type="text" name="street" t-att-value="brand.street or ''"/></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_street2">Dirección 2</label><input class="form-control" id="report_brand_street2" type="text" name="street2" t-att-value="brand.street2 or ''"/></div>
+                                <div class="col-12 col-md-3"><label class="form-label" for="report_brand_zip">Código postal</label><input class="form-control" id="report_brand_zip" type="text" name="zip" t-att-value="brand.zip or ''"/></div>
+                                <div class="col-12 col-md-5"><label class="form-label" for="report_brand_city">Ciudad</label><input class="form-control" id="report_brand_city" type="text" name="city" t-att-value="brand.city or ''"/></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_country">País</label><select class="form-select" id="report_brand_country" name="country_id"><option value="">Selecciona un país</option><option t-foreach="countries" t-as="country" t-att-value="country.id" t-att-selected="'selected' if country == brand.country_id else None"><t t-out="country.name"/></option></select></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_phone">Teléfono</label><input class="form-control" id="report_brand_phone" type="text" name="phone" t-att-value="brand.phone or ''"/></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_email">Correo electrónico</label><input class="form-control" id="report_brand_email" type="email" name="email" t-att-value="brand.email or ''"/></div>
+                                <div class="col-12 col-md-4"><label class="form-label" for="report_brand_website">Sitio web</label><input class="form-control" id="report_brand_website" type="text" name="website" t-att-value="brand.website or ''"/></div>
+                            </div>
+                        </div>
+                    </section>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"/>Guardar identidad</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>

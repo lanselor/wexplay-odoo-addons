@@ -27,6 +27,7 @@ Este modulo cubre:
 - detalle de SAT con informacion operativa visible para cliente
 - integracion con facturas relacionadas desde la ficha SAT
 - visualizacion y descarga controlada de fotografias SAT
+- generación bajo demanda de informes SAT desde extensiones de portal
 - placeholder de `Mantenimiento IT`
 
 ---
@@ -318,6 +319,26 @@ La integracion de fotografias en portal fue tratada como zona sensible.
 La arquitectura de exposicion de imagenes debe seguir acotada al SAT
 autorizado, no al repositorio documental.
 
+### Informes SAT bajo demanda
+
+La generación de informes para clientes B2B se implementa en un módulo puente
+independiente. El PDF se renderiza y descarga en el momento, sin guardarse en
+DMS ni crear historial documental. Antes de renderizar se valida el SAT por
+`commercial_partner_id`; después, el modelo recopila internamente todas las
+fotografías de tipo imagen de ese SAT que el cliente ya puede consultar en el
+portal. No se aceptan ids de imágenes ni selecciones enviadas por navegador, y
+los vídeos se excluyen.
+
+Hay dos variantes: identidad Wexplay e identidad personalizada del cliente.
+La personalizada usa un perfil por empresa comercial, con datos de facturación
+o datos propios, logotipo y un único color hexadecimal validado. No admite CSS
+ni plantillas libres. En esa variante no deben aparecer la identidad de Wexplay
+ni nombres de personal técnico. Se renderiza con una plantilla QWeb y formato
+de papel propios: muestra los datos corporativos configurados, utiliza solo la
+referencia del cliente cuando existe y omite la referencia SAT, estados de
+workflow, consentimientos y firmas. El contenido técnico procede siempre del
+SAT y el cliente no puede modificarlo.
+
 ---
 
 ## Portal y mantenimiento IT
@@ -403,3 +424,12 @@ Puntos detectados para sanear en futuras iteraciones, sin bloquear el MVP actual
 - `internal_notes` como diagnostico visible
 - imagenes servidas por ruta segura del portal y no por DMS directo
 - `website` como dependencia obligatoria
+
+---
+
+## Trazabilidad de informes portal
+
+- La descarga de un informe solo se registra después de que el PDF se haya renderizado correctamente.
+- Cada descarga crea un evento `report_downloaded` en `wex.portal.repair.event`, con la variante Wexplay o personalizada, y queda cerrada automáticamente porque no requiere gestión interna.
+- La misma acción publica una nota interna en el chatter del SAT. Es trazabilidad operativa, no una notificación al cliente.
+- El dashboard de Portal clientes muestra las descargas del periodo y las incorpora a la actividad reciente.

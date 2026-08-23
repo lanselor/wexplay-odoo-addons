@@ -1,6 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
+        <record id="mail_template_sat_service_report" model="mail.template">
+            <field name="name">SAT - Informe técnico</field>
+            <field name="model_id" ref="repair.model_repair_order"/>
+            <field name="email_from">{{ object.company_id.email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="subject">Informe técnico {{ object.name or 'SAT' }} - {{ object.product_id.display_name or 'Dispositivo' }}</field>
+            <field name="description">Envío manual del informe técnico de una reparación SAT.</field>
+            <field name="body_html" type="html">
+<div style="margin: 0; padding: 0;">
+    <p style="margin: 0; padding: 0; font-size: 13px;">
+        Hola <t t-out="object.partner_id.name or ''"/>,
+        <br/><br/>
+        Te enviamos el informe técnico de tu reparación.
+        <br/><br/>
+        <strong>Referencia SAT:</strong> <t t-out="object.name or ''"/><br/>
+        <strong>Dispositivo:</strong> <t t-out="object.product_id.display_name or ''"/><br/>
+        <t t-if="object.x_model_id or object.x_model">
+            <strong>Modelo:</strong>
+            <t t-out="object.x_model_id.display_name if object.x_model_id else object.x_model"/><br/>
+        </t>
+        <t t-if="object.x_imei">
+            <strong>IMEI / Serie:</strong> <t t-out="object.x_imei"/><br/>
+        </t>
+        <br/>
+        Adjuntamos el PDF para tu archivo y consulta.
+        <br/><br/>
+        Si necesitas cualquier aclaración, puedes responder a este correo.
+        <br/><br/>
+        Un saludo,<br/>
+        <t t-out="object.company_id.name or ''"/>
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
         <record id="email_template_edi_invoice_sat_v2" model="mail.template">
             <field name="name">Factura SAT - Completa</field>
             <field name="model_id" ref="account.model_account_move"/>

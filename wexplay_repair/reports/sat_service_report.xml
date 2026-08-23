@@ -21,7 +21,11 @@
     <template id="report_sat_service_document">
         <t t-call="web.external_layout">
             <t t-set="ctx" t-value="o._prepare_sat_report_context()"/>
+            <t t-call="wexplay_repair.report_sat_service_body"/>
+        </t>
+    </template>
 
+    <template id="report_sat_service_body">
             <style>
                 .page {
                     position: relative;
@@ -71,6 +75,14 @@
                     font-size: 7.5pt;
                     margin-top: 3px;
                     line-height: 1.3;
+                }
+                .wex_hdr_logo {
+                    display: block;
+                    max-width: 130px;
+                    max-height: 42px;
+                    margin: 0 0 5px auto;
+                    object-fit: contain;
+                    object-position: right center;
                 }
                 .wex_hdr_ref {
                     text-align: right;
@@ -124,6 +136,12 @@
                 /* ── Sección ── */
                 .wex_sec {
                     margin-bottom: 13px;
+                    page-break-inside: avoid;
+                }
+                .wex_sec--flow {
+                    page-break-inside: auto;
+                }
+                .wex_sec--diagnosis {
                     page-break-inside: avoid;
                 }
                 .wex_sec_title {
@@ -289,28 +307,35 @@
                 }
 
                 /* ── Imágenes ── */
-                .wex_img_table {
-                    width: 100%;
-                    border-collapse: separate;
-                    border-spacing: 7px;
-                    margin: -3px;
+                .wex_photo_page {
+                    page-break-after: always;
                 }
-                .wex_img_cell {
-                    width: 50%;
-                    vertical-align: top;
+                .wex_photo_page--last {
+                    page-break-after: auto;
                 }
-                .wex_img_box {
+                .wex_photo_figure {
                     border: 1px solid #dde4ef;
                     background: #f8f9fb;
                     padding: 5px;
                     border-top: 2px solid #b9c6d8;
+                    margin-bottom: 12px;
+                    page-break-inside: avoid;
                 }
-                .wex_img_box img {
-                    width: 100%;
-                    max-height: 185px;
-                    object-fit: contain;
-                    display: block;
+                .wex_photo_canvas {
+                    height: 260px;
+                    padding: 5px;
+                    box-sizing: border-box;
                     background: #ffffff;
+                    text-align: center;
+                }
+                .wex_photo_canvas img {
+                    max-width: 100%;
+                    max-height: 250px;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    display: inline-block;
+                    vertical-align: middle;
                 }
                 .wex_img_cap {
                     margin-top: 4px;
@@ -391,7 +416,7 @@
                         <div class="wex_cell wex_cell--half wex_cell--gap-r">
                             <h2 class="wex_hdr_title">Informe de Servicio Técnico</h2>
                             <div class="wex_hdr_sub">
-                                <t t-esc="ctx['company'].name"/>
+                                <t t-esc="ctx['issuer_name']"/>
                                 <!-- Badge solo para prioridades relevantes (no "Normal") -->
                                 <t t-if="ctx['repair'].x_sat_priority == 'urgent'">
                                     &#160;&#160;<span class="wex_badge wex_badge--priority">Urgente</span>
@@ -405,6 +430,9 @@
                             </div>
                         </div>
                         <div class="wex_cell wex_cell--half wex_cell--gap-l">
+                            <t t-if="ctx.get('show_issuer_logo') and ctx.get('issuer_logo')">
+                                <img class="wex_hdr_logo" t-att-src="ctx['issuer_logo']" alt=""/>
+                            </t>
                             <div class="wex_hdr_ref">
                                 <t t-esc="ctx['repair'].name"/>
                             </div>
@@ -533,12 +561,12 @@
                                         <span class="wex_val"><t t-esc="ctx['unlock_type_label']"/></span>
                                     </div>
                                 </t>
-                                <div class="wex_fl">
-                                    <span class="wex_lbl">Técnico responsable</span>
-                                    <span class="wex_val">
-                                        <t t-esc="ctx['responsible'].name if ctx['responsible'] else '—'"/>
-                                    </span>
-                                </div>
+                                <t t-if="ctx['responsible']">
+                                    <div class="wex_fl">
+                                        <span class="wex_lbl">Técnico responsable</span>
+                                        <span class="wex_val"><t t-esc="ctx['responsible'].name"/></span>
+                                    </div>
+                                </t>
                                 <t t-if="ctx['reception_employee']">
                                     <div class="wex_fl">
                                         <span class="wex_lbl">Recepcionó</span>
@@ -563,13 +591,28 @@
                     </t>
                 </div>
 
-                <!-- ════ TRABAJO REALIZADO ════ -->
-                <div class="wex_sec">
-                    <span class="wex_sec_title">Trabajo realizado</span>
+                <!-- ════ DIAGNÓSTICO E INTERVENCIÓN ════ -->
+                <t t-if="ctx['internal_notes']">
+                    <div class="wex_sec wex_sec--diagnosis">
+                        <span class="wex_sec_title">Diagnóstico e intervención técnica</span>
+                        <div class="wex_textblock"><t t-esc="ctx['internal_notes']"/></div>
+                    </div>
+                </t>
+
+                <t t-if="ctx['report_notes']">
+                    <div class="wex_sec wex_sec--diagnosis">
+                        <span class="wex_sec_title">Notas complementarias del informe</span>
+                        <div class="wex_textblock"><t t-esc="ctx['report_notes']"/></div>
+                    </div>
+                </t>
+
+                <!-- ════ MATERIAL Y SERVICIOS APLICADOS ════ -->
+                <div class="wex_sec wex_sec--flow">
+                    <span class="wex_sec_title">Material y servicios aplicados</span>
 
                     <t t-if="ctx['parts']">
                         <div class="wex_sub">
-                            <span class="wex_sub_label">Repuestos utilizados</span>
+                            <span class="wex_sub_label">Material consumido</span>
                             <table class="wex_table">
                                 <thead>
                                     <tr>
@@ -598,16 +641,14 @@
                     </t>
 
                     <t t-if="ctx['services']">
-                        <div class="wex_sub">
+                        <div class="wex_sub" style="margin-bottom:0;">
                             <span class="wex_sub_label">Servicios y mano de obra</span>
                             <table class="wex_table">
                                 <thead>
                                     <tr>
-                                        <th style="width:44%;">Descripción</th>
-                                        <th class="wex_tr" style="width:11%;">Cant.</th>
-                                        <th class="wex_tr" style="width:9%;">Ud.</th>
-                                        <th class="wex_tr" style="width:18%;">P. unitario</th>
-                                        <th class="wex_tr" style="width:18%;">Subtotal</th>
+                                        <th style="width:76%;">Descripción</th>
+                                        <th class="wex_tr" style="width:14%;">Cant.</th>
+                                        <th class="wex_tr" style="width:10%;">Ud.</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -616,8 +657,6 @@
                                             <td><t t-esc="svc['name']"/></td>
                                             <td class="wex_tr"><t t-esc="svc['qty']"/></td>
                                             <td class="wex_tr"><t t-esc="svc['uom']"/></td>
-                                            <td class="wex_tr wex_tmono"><t t-esc="svc['price_unit_fmt']"/></td>
-                                            <td class="wex_tr wex_tmono"><t t-esc="svc['price_subtotal_fmt']"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
@@ -625,75 +664,42 @@
                         </div>
                     </t>
 
-                    <t t-if="ctx['internal_notes']">
-                        <div class="wex_sub" style="margin-bottom:0;">
-                            <span class="wex_sub_label">Notas técnicas</span>
-                            <div class="wex_textblock"><t t-esc="ctx['internal_notes']"/></div>
-                        </div>
-                    </t>
-
-                    <t t-if="not ctx['parts'] and not ctx['services'] and not ctx['internal_notes']">
-                        <span class="wex_empty">Sin detalle de trabajo registrado.</span>
+                    <t t-if="not ctx['parts'] and not ctx['services']">
+                        <span class="wex_empty">Sin material ni servicios registrados.</span>
                     </t>
                 </div>
 
-                <!-- ════ RESUMEN ECONÓMICO ════ -->
-                <t t-if="ctx['has_sale']">
-                    <div class="wex_sec">
-                        <span class="wex_sec_title">Resumen económico</span>
-                        <div class="wex_totals">
-                            <div class="wex_trow">
-                                <span class="wex_tlbl">Base imponible</span>
-                                <span class="wex_tamt"><t t-esc="ctx['amount_untaxed_fmt']"/></span>
-                            </div>
-                            <div class="wex_trow">
-                                <span class="wex_tlbl">IVA</span>
-                                <span class="wex_tamt"><t t-esc="ctx['amount_tax_fmt']"/></span>
-                            </div>
-                            <div class="wex_trow wex_trow--total">
-                                <span class="wex_tlbl">Total</span>
-                                <span class="wex_tamt"><t t-esc="ctx['amount_total_fmt']"/></span>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-
                 <!-- ════ EVIDENCIA FOTOGRÁFICA ════ -->
-                <!-- page-break-before: always → texto + totales en pág 1, fotos en pág 2 -->
+                <!-- Las fotos empiezan en página propia: dos bloques como máximo por página. -->
                 <t t-if="ctx.get('image_pairs')">
-                    <div class="wex_sec" style="page-break-before: always;">
+                    <div class="wex_sec wex_sec--flow" style="page-break-before: always;">
                         <span class="wex_sec_title">Evidencia fotográfica</span>
-                        <table class="wex_img_table">
-                            <t t-foreach="ctx['image_pairs']" t-as="pair">
-                                <tr>
-                                    <t t-foreach="pair" t-as="img">
-                                        <td class="wex_img_cell">
-                                            <div class="wex_img_box">
-                                                <img t-att-src="img['src']" alt=""/>
-                                                <div class="wex_img_cap">
-                                                    <span class="wex_img_cap_name">
-                                                        <t t-esc="img['name']"/>
-                                                    </span>
-                                                    <t t-if="img.get('description')">
-                                                        <span class="wex_img_cap_desc">
-                                                            <t t-esc="img['description']"/>
-                                                        </span>
-                                                    </t>
-                                                    <t t-if="img.get('tags')">
-                                                        <span class="wex_img_cap_tags">
-                                                            <t t-esc="img['tags']"/>
-                                                        </span>
-                                                    </t>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </t>
-                                    <t t-if="len(pair) == 1">
-                                        <td class="wex_img_cell"/>
-                                    </t>
-                                </tr>
-                            </t>
-                        </table>
+                        <t t-foreach="ctx['image_pairs']" t-as="pair">
+                            <div t-attf-class="wex_photo_page#{' wex_photo_page--last' if pair_last else ''}">
+                                <t t-foreach="pair" t-as="img">
+                                    <div class="wex_photo_figure">
+                                        <div class="wex_photo_canvas">
+                                            <img t-att-src="img['src']" alt=""/>
+                                        </div>
+                                        <div class="wex_img_cap">
+                                            <span class="wex_img_cap_name">
+                                                <t t-esc="img['name']"/>
+                                            </span>
+                                            <t t-if="img.get('description')">
+                                                <span class="wex_img_cap_desc">
+                                                    <t t-esc="img['description']"/>
+                                                </span>
+                                            </t>
+                                            <t t-if="img.get('tags')">
+                                                <span class="wex_img_cap_tags">
+                                                    <t t-esc="img['tags']"/>
+                                                </span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
                     </div>
                 </t>
 
@@ -738,7 +744,7 @@
                 <div class="wex_foot">
                     <div class="wex_foot_l">
                         Orden:&#160;<strong><t t-esc="ctx['repair'].name"/></strong>
-                        &#160;·&#160;<t t-esc="ctx['company'].name"/>
+                        &#160;·&#160;<t t-esc="ctx['issuer_name']"/>
                     </div>
                     <div class="wex_foot_r">
                         Generado el
@@ -750,7 +756,6 @@
                 </div>
 
             </div>
-        </t>
     </template>
 
 </odoo>

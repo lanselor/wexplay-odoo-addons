@@ -252,49 +252,101 @@
                                 </page>
 
                                 <page name="wex_sat_documents_page" string="Documentos">
-                                    <!-- wexplay_sat_print reemplaza este div con sus botones de etiquetas -->
-                                    <div class="alert alert-light mb-0" role="alert">
-                                        Espacio reservado para etiquetas e impresiones SAT.
-                                    </div>
+                                    <div class="wex_repair_documents_workspace">
+                                        <div class="wex_repair_documents_intro">
+                                            <div class="wex_repair_form_eyebrow">Documentación SAT</div>
+                                            <div class="wex_repair_documents_intro_title">
+                                                <i class="fa fa-folder-open-o"/>
+                                                <span>Documentos operativos</span>
+                                            </div>
+                                            <p class="wex_repair_documents_intro_copy">
+                                                Gestiona las impresiones de recepción y el informe técnico del expediente.
+                                            </p>
+                                        </div>
 
-                                    <!-- Informe de servicio técnico -->
-                                    <div class="mt-3">
-                                        <p class="fw-semibold text-muted mb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;">
-                                            Informe de servicio técnico
-                                        </p>
-                                        <field name="x_sat_report_dms_file_id" invisible="1"/>
-                                        <div class="d-flex align-items-center gap-3 flex-wrap">
-                                            <span class="badge text-bg-secondary d-inline-flex align-items-center gap-1"
-                                                  invisible="x_sat_report_dms_file_id">
-                                                <i class="fa fa-circle-o"/>
-                                                Sin generar
-                                            </span>
-                                            <span class="badge text-bg-success d-inline-flex align-items-center gap-1"
-                                                  invisible="not x_sat_report_dms_file_id">
-                                                <i class="fa fa-check-circle"/>
-                                                Archivado en DMS
-                                            </span>
-                                            <button name="action_generate_sat_report"
-                                                    type="object"
-                                                    class="btn btn-primary d-inline-flex align-items-center gap-2"
-                                                    invisible="x_sat_report_dms_file_id">
-                                                <i class="fa fa-file-text-o"/>
-                                                Generar informe
-                                            </button>
-                                            <button name="action_download_sat_report"
-                                                    type="object"
-                                                    class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
-                                                    invisible="not x_sat_report_dms_file_id">
-                                                <i class="fa fa-download"/>
-                                                Descargar
-                                            </button>
-                                            <button name="action_generate_sat_report"
-                                                    type="object"
-                                                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
-                                                    invisible="not x_sat_report_dms_file_id">
-                                                <i class="fa fa-refresh"/>
-                                                Regenerar
-                                            </button>
+                                        <div class="wex_repair_documents_grid">
+                                            <div class="wex_repair_form_card wex_repair_documents_card wex_repair_documents_card--print">
+                                                <div class="wex_repair_form_eyebrow">Impresiones SAT</div>
+                                                <div class="wex_repair_form_heading">
+                                                    <i class="fa fa-print"/>
+                                                    <span>Etiquetas y resguardo</span>
+                                                </div>
+                                                <p class="wex_repair_documents_card_copy">
+                                                    Prepara los documentos físicos para identificar y entregar el equipo.
+                                                </p>
+                                                <!-- wexplay_sat_print reemplaza este ancla con sus acciones. -->
+                                                <div name="wex_sat_print_actions_anchor"
+                                                     class="wex_repair_documents_actions alert d-none">
+                                                    <span class="wex_repair_documents_placeholder">
+                                                        Las acciones de impresión SAT estarán disponibles al instalar su módulo.
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="wex_repair_form_card wex_repair_documents_card wex_repair_documents_card--report">
+                                                <div class="wex_repair_form_eyebrow">Informe técnico</div>
+                                                <div class="wex_repair_form_heading">
+                                                    <i class="fa fa-file-text-o"/>
+                                                    <span>Informe de servicio</span>
+                                                </div>
+                                                <p class="wex_repair_documents_card_copy">
+                                                    Resume la incidencia, el diagnóstico, la intervención y la evidencia del SAT.
+                                                </p>
+                                                <field name="x_sat_report_dms_file_id" invisible="1"/>
+                                                <field name="x_sat_report_notes" invisible="1"/>
+                                                <div class="wex_repair_documents_actions">
+                                                    <span class="wex_repair_documents_status wex_repair_documents_status--pending"
+                                                          invisible="x_sat_report_dms_file_id">
+                                                        <i class="fa fa-circle-o"/>
+                                                        Sin generar
+                                                    </span>
+                                                    <span class="wex_repair_documents_status wex_repair_documents_status--ready"
+                                                          invisible="not x_sat_report_dms_file_id">
+                                                        <i class="fa fa-check-circle"/>
+                                                        Archivado en DMS
+                                                    </span>
+                                                    <button name="action_generate_sat_report"
+                                                            type="object"
+                                                            class="btn btn-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            invisible="x_sat_report_dms_file_id">
+                                                        <i class="fa fa-file-text-o"/>
+                                                        Generar informe
+                                                    </button>
+                                                    <button name="action_download_sat_report"
+                                                            type="object"
+                                                            class="btn btn-outline-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            invisible="not x_sat_report_dms_file_id">
+                                                        <i class="fa fa-download"/>
+                                                        Descargar
+                                                    </button>
+                                                    <button name="action_send_sat_report"
+                                                            type="object"
+                                                            class="btn btn-outline-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            invisible="not x_sat_report_dms_file_id">
+                                                        <i class="fa fa-envelope-o"/>
+                                                        Enviar
+                                                    </button>
+                                                    <button name="action_generate_sat_report"
+                                                            type="object"
+                                                            class="btn btn-outline-secondary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            invisible="not x_sat_report_dms_file_id">
+                                                        <i class="fa fa-refresh"/>
+                                                        Regenerar
+                                                    </button>
+                                                    <button name="action_open_sat_report_notes_wizard"
+                                                            type="object"
+                                                            class="btn btn-outline-secondary wex_repair_document_notes_action"
+                                                            title="Notas complementarias del informe"
+                                                            aria-label="Notas complementarias del informe">
+                                                        <span class="wex_repair_document_notes_icon">
+                                                            <i class="fa fa-sticky-note-o"/>
+                                                            <span class="wex_repair_document_notes_indicator"
+                                                                  invisible="not x_sat_report_notes"/>
+                                                        </span>
+                                                        <span class="visually-hidden">Notas complementarias del informe</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </page>

@@ -5,7 +5,6 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import formatLang
 
 _logger = logging.getLogger(__name__)
 
@@ -19,6 +18,11 @@ class RepairOrder(models.Model):
         readonly=True,
         copy=False,
         ondelete="set null",
+    )
+    x_sat_report_notes = fields.Text(
+        string="Notas complementarias del informe SAT",
+        copy=False,
+        help="Texto adicional incluido únicamente en el informe técnico SAT.",
     )
 
     # ── Hooks extensibles ──────────────────────────────────────────────────────
@@ -54,11 +58,6 @@ class RepairOrder(models.Model):
             return ""
         return dict(field.selection).get(budget_stage, budget_stage)
 
-    # ── Formateo monetario ────────────────────────────────────────────────────
-
-    def _fmt_monetary(self, amount, currency):
-        return formatLang(self.env, amount, currency_obj=currency)
-
     # ── Colectores de líneas ──────────────────────────────────────────────────
 
     def _get_sat_report_parts(self):
@@ -81,13 +80,10 @@ class RepairOrder(models.Model):
             return []
         lines = []
         for line in self.sale_order_id.order_line:
-            currency = line.currency_id
             lines.append({
                 "name": line.name or "",
                 "qty": "%.2f" % line.product_uom_qty,
                 "uom": line.product_uom.name or "",
-                "price_unit_fmt": self._fmt_monetary(line.price_unit, currency),
-                "price_subtotal_fmt": self._fmt_monetary(line.price_subtotal, currency),
             })
         return lines
 
@@ -95,16 +91,18 @@ class RepairOrder(models.Model):
 
     def _prepare_sat_report_context(self):
         self.ensure_one()
-        sale = self.sale_order_id
         images = self._collect_sat_report_images()
         consents = self._collect_sat_report_consents()
 
-        # Agrupar imágenes en pares para el grid de 2 columnas
+        # Agrupar imágenes en pares: cada par ocupa una página de evidencia.
         image_pairs = [images[i:i + 2] for i in range(0, len(images), 2)]
 
         return {
             "repair": self,
             "company": self.company_id,
+            "issuer_name": self.company_id.name,
+            "issuer_logo": False,
+            "issuer_primary_color": "#7b68b5",
             "generated_at": fields.Datetime.now(),
             # Cliente
             "partner": self.partner_id,
@@ -123,6 +121,7 @@ class RepairOrder(models.Model):
             # Diagnóstico
             "reported_issue": self.x_reported_issue or "",
             "internal_notes": self.internal_notes or "",
+            "report_notes": self.x_sat_report_notes or "",
             # Trabajo realizado
             "parts": self._get_sat_report_parts(),
             "services": self._get_sat_report_services(),
@@ -133,20 +132,6 @@ class RepairOrder(models.Model):
             ),
             "responsible": self.user_id,
             "reception_employee": self.x_reception_employee_id,
-            # Económico (importes pre-formateados en Python)
-            "has_sale": bool(sale),
-            "amount_untaxed_fmt": self._fmt_monetary(
-                sale.amount_untaxed if sale else 0.0,
-                sale.currency_id if sale else self.company_id.currency_id,
-            ),
-            "amount_tax_fmt": self._fmt_monetary(
-                sale.amount_tax if sale else 0.0,
-                sale.currency_id if sale else self.company_id.currency_id,
-            ),
-            "amount_total_fmt": self._fmt_monetary(
-                sale.amount_total if sale else 0.0,
-                sale.currency_id if sale else self.company_id.currency_id,
-            ),
             # Evidencia (pueden estar vacíos si los módulos no están instalados)
             "image_pairs": image_pairs,
             "consents": consents,
@@ -198,8 +183,7 @@ class RepairOrder(models.Model):
 
     # ── Acciones ──────────────────────────────────────────────────────────────
 
-    def action_generate_sat_report(self):
-        """Genera (o regenera) el informe SAT, lo guarda en DMS y lo descarga."""
+    def _generate_sat_report_pdf(self, message_body):
         self.ensure_one()
         report = self.env.ref("wexplay_repair.action_report_sat_service")
         pdf_bytes, _fmt = self.env["ir.actions.report"]._render_qweb_pdf(
@@ -208,9 +192,46 @@ class RepairOrder(models.Model):
         )
         dms_file = self._save_sat_report_to_dms(pdf_bytes)
         self.message_post(
-            body=_("Informe de servicio técnico generado y archivado en DMS."),
+            body=message_body,
             message_type="comment",
             subtype_xmlid="mail.mt_note",
+        )
+        return dms_file
+
+    def _regenerate_sat_report_after_notes_update(self):
+        """Keep the archived report synchronized when its note changes."""
+        self.ensure_one()
+        if not self._get_sat_report_dms_file():
+            return False
+
+        self._generate_sat_report_pdf(
+            _("Informe de servicio técnico actualizado con las notas complementarias.")
+        )
+        return True
+
+    def action_open_sat_report_notes_wizard(self):
+        self.ensure_one()
+        wizard = self.env["wex.repair.sat.report.notes.wizard"].create({
+            "repair_id": self.id,
+            "notes": self.x_sat_report_notes,
+        })
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Notas complementarias del informe"),
+            "res_model": "wex.repair.sat.report.notes.wizard",
+            "view_mode": "form",
+            "view_id": self.env.ref(
+                "wexplay_repair.view_wex_repair_sat_report_notes_wizard_form"
+            ).id,
+            "res_id": wizard.id,
+            "target": "new",
+        }
+
+    def action_generate_sat_report(self):
+        """Genera (o regenera) el informe SAT, lo guarda en DMS y lo descarga."""
+        self.ensure_one()
+        dms_file = self._generate_sat_report_pdf(
+            _("Informe de servicio técnico generado y archivado en DMS.")
         )
         return {
             "type": "ir.actions.act_url",
@@ -232,4 +253,44 @@ class RepairOrder(models.Model):
             "url": "/web/content/dms.file/%s/content/%s?download=true"
             % (dms_file.id, self._get_sat_report_dms_filename()),
             "target": "self",
+        }
+
+    def _create_sat_report_mail_attachment(self, dms_file):
+        """Create the temporary composer attachment from the archived DMS file."""
+        self.ensure_one()
+        return self.env["ir.attachment"].with_context(dms_file=True).create({
+            "name": dms_file.name or self._get_sat_report_dms_filename(),
+            "datas": dms_file.content,
+            "mimetype": dms_file.mimetype or "application/pdf",
+            "res_model": "mail.compose.message",
+            "res_id": 0,
+        })
+
+    def action_send_sat_report(self):
+        """Open Odoo's standard composer with the archived report attached."""
+        self.ensure_one()
+        dms_file = self._get_sat_report_dms_file()
+        if not dms_file:
+            raise UserError(
+                _("No hay informe generado para esta orden. Usa 'Generar informe' primero.")
+            )
+
+        attachment = self._create_sat_report_mail_attachment(dms_file)
+        template = self.env.ref("wexplay_repair.mail_template_sat_service_report")
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Enviar informe técnico"),
+            "res_model": "mail.compose.message",
+            "view_mode": "form",
+            "view_id": self.env.ref("mail.email_compose_message_wizard_form").id,
+            "target": "new",
+            "context": {
+                "default_model": self._name,
+                "default_res_ids": str(self.ids),
+                "default_composition_mode": "comment",
+                "default_template_id": template.id,
+                "default_partner_ids": [(6, 0, self.partner_id.ids)],
+                "default_attachment_ids": [(6, 0, attachment.ids)],
+                "force_email": True,
+            },
         }

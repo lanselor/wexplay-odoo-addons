@@ -8,6 +8,7 @@
                 <field name="event_date" string="Fecha"/>
                 <field name="pending_days" string="Días"/>
                 <field name="event_type" string="Evento" widget="badge"/>
+                <field name="report_variant" string="Informe" optional="hide"/>
                 <field name="handled_state" string="Gestión" widget="badge"/>
                 <field name="repair_id" string="SAT"/>
                 <field name="sale_order_id" string="Cotización"/>
@@ -52,6 +53,7 @@
                         <group string="Evento">
                             <field name="name" readonly="1"/>
                             <field name="event_type" readonly="1"/>
+                            <field name="report_variant" readonly="1" invisible="not report_variant"/>
                             <field name="event_date" readonly="1"/>
                             <field name="pending_days" readonly="1"/>
                             <field name="company_id" readonly="1" groups="base.group_multi_company"/>
@@ -105,6 +107,7 @@
                 <filter name="budget_accepted" string="Aceptaciones" domain="[('event_type', '=', 'budget_accepted')]"/>
                 <filter name="budget_rejected" string="Rechazos" domain="[('event_type', '=', 'budget_rejected')]"/>
                 <filter name="budget_viewed" string="Presupuestos vistos" domain="[('event_type', '=', 'budget_viewed')]"/>
+                <filter name="report_downloaded" string="Informes descargados" domain="[('event_type', '=', 'report_downloaded')]"/>
                 <separator/>
                 <filter name="group_event_type" string="Agrupar por evento" context="{'group_by': 'event_type'}"/>
                 <filter name="group_handled_state" string="Agrupar por gestión" context="{'group_by': 'handled_state'}"/>

@@ -18,29 +18,26 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="wexplay_repair.view_repair_order_form_wexplay"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='wex_sat_documents_page']//div[hasclass('alert')]" position="replace">
-                <div>
-                    <p class="fw-semibold text-muted mb-3" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Documentos descargables</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button name="%(wexplay_sat_print.report_repair_label_29x90)d"
-                                type="action"
-                                class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
-                            <i class="fa fa-barcode"/>
-                            Etiqueta SAT 29×90
-                        </button>
-                        <button name="%(wexplay_sat_print.report_repair_label_29x42)d"
-                                type="action"
-                                class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
-                            <i class="fa fa-tag"/>
-                            Etiqueta accesorios 29×42
-                        </button>
-                        <button name="%(wexplay_sat_print.report_repair_ticket_80x170)d"
-                                type="action"
-                                class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
-                            <i class="fa fa-file-text-o"/>
-                            Resguardo 80×170
-                        </button>
-                    </div>
+            <xpath expr="//div[@name='wex_sat_print_actions_anchor']" position="replace">
+                <div name="wex_sat_print_actions_anchor" class="wex_repair_documents_actions">
+                    <button name="%(wexplay_sat_print.report_repair_label_29x90)d"
+                            type="action"
+                            class="btn btn-outline-secondary wex_repair_document_action d-inline-flex align-items-center gap-2">
+                        <i class="fa fa-barcode"/>
+                        Etiqueta SAT 29×90
+                    </button>
+                    <button name="%(wexplay_sat_print.report_repair_label_29x42)d"
+                            type="action"
+                            class="btn btn-outline-secondary wex_repair_document_action d-inline-flex align-items-center gap-2">
+                        <i class="fa fa-tag"/>
+                        Etiqueta accesorios 29×42
+                    </button>
+                    <button name="%(wexplay_sat_print.report_repair_ticket_80x170)d"
+                            type="action"
+                            class="btn btn-outline-secondary wex_repair_document_action d-inline-flex align-items-center gap-2">
+                        <i class="fa fa-file-text-o"/>
+                        Resguardo 80×170
+                    </button>
                 </div>
             </xpath>
         </field>

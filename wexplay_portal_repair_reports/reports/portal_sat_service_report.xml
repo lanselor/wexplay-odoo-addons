@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_portal_custom_sat_service" model="report.paperformat">
+        <field name="name">Portal Custom SAT Service</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">12</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">12</field>
+        <field name="margin_right">12</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_portal_sat_service" model="ir.actions.report">
+        <field name="name">Informe SAT Portal Wexplay</field>
+        <field name="model">repair.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wexplay_portal_repair_reports.report_portal_sat_service</field>
+        <field name="report_file">wexplay_portal_repair_reports.report_portal_sat_service</field>
+    </record>
+
+    <record id="action_report_portal_custom_sat_service" model="ir.actions.report">
+        <field name="name">Informe SAT Portal Personalizado</field>
+        <field name="model">repair.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wexplay_portal_repair_reports.report_portal_custom_sat_service</field>
+        <field name="report_file">wexplay_portal_repair_reports.report_portal_custom_sat_service</field>
+        <field name="paperformat_id" ref="paperformat_portal_custom_sat_service"/>
+    </record>
+
+    <template id="report_portal_sat_service">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="ctx" t-value="o._prepare_portal_wexplay_sat_report_context()"/>
+                    <t t-call="wexplay_repair.report_sat_service_body"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_portal_custom_sat_service">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="ctx" t-value="o._prepare_portal_custom_sat_report_context()"/>
+                <t t-call="web.basic_layout">
+                    <style>
+                        .page { color: #243248; font-family: 'Roboto', sans-serif; font-size: 9pt; line-height: 1.45; }
+                        .pc-row { display: table; table-layout: fixed; width: 100%; }
+                        .pc-cell { display: table-cell; vertical-align: top; }
+                        .pc-half { width: 50%; }
+                        .pc-left { padding-right: 9px; }
+                        .pc-right { padding-left: 9px; }
+                        .pc-brand-row { min-height: 72px; margin-bottom: 10px; }
+                        .pc-logo { display: block; max-height: 70px; max-width: 200px; object-fit: contain; object-position: left center; margin-bottom: 5px; }
+                        .pc-issuer-name { color: #243248; font-size: 11.5pt; font-weight: 800; }
+                        .pc-issuer-meta { color: #607087; font-size: 7.7pt; line-height: 1.55; padding-top: 3px; text-align: right; }
+                        .pc-title-row { border-bottom: 1px solid #dce4ef; border-top: 3px solid <t t-esc="ctx['issuer']['issuer_primary_color']"/>; margin-bottom: 16px; padding: 9px 0 10px; }
+                        .pc-title { color: <t t-esc="ctx['issuer']['issuer_primary_color']"/>; font-size: 16pt; font-weight: 900; letter-spacing: .2px; line-height: 1.1; margin: 0; text-transform: uppercase; }
+                        .pc-title-sub { color: #7b8798; font-size: 7.5pt; margin-top: 3px; }
+                        .pc-document-meta { color: #536276; font-size: 8pt; line-height: 1.55; text-align: right; }
+                        .pc-document-meta strong { color: #243248; }
+                        .pc-section { margin: 0 0 14px; }
+                        .pc-section-title { border-bottom: 2px solid <t t-esc="ctx['issuer']['issuer_primary_color']"/>; color: <t t-esc="ctx['issuer']['issuer_primary_color']"/>; display: block; font-size: 7.8pt; font-weight: 900; letter-spacing: 1px; margin-bottom: 7px; padding-bottom: 4px; text-transform: uppercase; }
+                        .pc-card { border: 1px solid #dce4ef; border-top: 2px solid <t t-esc="ctx['issuer']['issuer_primary_color']"/>; box-sizing: border-box; min-height: 90px; padding: 8px 10px; }
+                        .pc-field { margin-bottom: 6px; }
+                        .pc-field:last-child { margin-bottom: 0; }
+                        .pc-label { color: #8290a3; display: block; font-size: 6.9pt; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; }
+                        .pc-value { color: #243248; display: block; font-size: 8.8pt; font-weight: 700; }
+                        .pc-text { background: #fafbfd; border-left: 3px solid <t t-esc="ctx['issuer']['issuer_primary_color']"/>; color: #344257; line-height: 1.55; padding: 8px 11px; white-space: pre-wrap; word-wrap: break-word; }
+                        .pc-empty { color: #8a96a8; font-style: italic; }
+                        .pc-subtitle { color: #536276; display: block; font-size: 7.3pt; font-weight: 800; margin: 9px 0 4px; text-transform: uppercase; }
+                        .pc-table { border-collapse: collapse; border: 1px solid #dce4ef; font-size: 8.2pt; table-layout: fixed; width: 100%; }
+                        .pc-table th { background: #f5f7fa; border-bottom: 1px solid #ccd6e3; color: #536276; font-size: 7.1pt; letter-spacing: .3px; padding: 5px 7px; text-align: left; text-transform: uppercase; }
+                        .pc-table td { border-bottom: 1px solid #e9eef5; padding: 5px 7px; vertical-align: top; }
+                        .pc-table tr:last-child td { border-bottom: 0; }
+                        .pc-number { text-align: right !important; white-space: nowrap; }
+                        .pc-photo-section { page-break-before: always; }
+                        .pc-photo-page { page-break-after: always; }
+                        .pc-photo-page-last { page-break-after: auto; }
+                        .pc-photo { border: 1px solid #dce4ef; border-top: 2px solid <t t-esc="ctx['issuer']['issuer_primary_color']"/>; margin-bottom: 12px; padding: 5px; page-break-inside: avoid; }
+                        .pc-photo-canvas { background: #fafbfd; height: 255px; text-align: center; }
+                        .pc-photo-canvas img { display: inline-block; height: auto; max-height: 250px; max-width: 100%; vertical-align: middle; width: auto; }
+                        .pc-photo-caption { color: #536276; font-size: 7.8pt; margin-top: 4px; }
+                        .pc-photo-name { color: #243248; font-weight: 800; }
+                        .pc-photo-description { margin-left: 5px; }
+                        .pc-footer { border-top: 1px solid #dce4ef; color: #8290a3; display: table; font-size: 7pt; margin-top: 14px; padding-top: 5px; width: 100%; }
+                        .pc-footer-left, .pc-footer-right { display: table-cell; vertical-align: middle; }
+                        .pc-footer-right { text-align: right; }
+                    </style>
+
+                    <div class="page">
+                        <div class="pc-brand-row pc-row">
+                            <div class="pc-cell pc-half pc-left">
+                                <t t-if="ctx['issuer']['issuer_logo']"><img class="pc-logo" t-att-src="ctx['issuer']['issuer_logo']" alt=""/></t>
+                                <div class="pc-issuer-name"><t t-esc="ctx['issuer']['issuer_name']"/></div>
+                            </div>
+                            <div class="pc-cell pc-half pc-right pc-issuer-meta">
+                                <t t-if="ctx['issuer']['issuer_vat']"><div>NIF: <t t-esc="ctx['issuer']['issuer_vat']"/></div></t>
+                                <t t-if="ctx['issuer']['issuer_address']"><div><t t-esc="ctx['issuer']['issuer_address']"/></div></t>
+                                <t t-if="ctx['issuer']['issuer_phone']"><div><t t-esc="ctx['issuer']['issuer_phone']"/></div></t>
+                                <t t-if="ctx['issuer']['issuer_email']"><div><t t-esc="ctx['issuer']['issuer_email']"/></div></t>
+                                <t t-if="ctx['issuer']['issuer_website']"><div><t t-esc="ctx['issuer']['issuer_website']"/></div></t>
+                            </div>
+                        </div>
+
+                        <div class="pc-title-row pc-row">
+                            <div class="pc-cell pc-half pc-left"><h1 class="pc-title">Informe técnico de intervención</h1><div class="pc-title-sub">Resumen de revisión, diagnóstico y trabajo realizado</div></div>
+                            <div class="pc-cell pc-half pc-right pc-document-meta">
+                                <div><strong>Fecha de emisión</strong> <t t-esc="ctx['generated_at'].strftime('%d/%m/%Y')"/></div>
+                                <t t-if="ctx['customer_reference']"><div><strong>Referencia</strong> <t t-esc="ctx['customer_reference']"/></div></t>
+                            </div>
+                        </div>
+
+                        <div class="pc-section">
+                            <span class="pc-section-title">Cliente y dispositivo</span>
+                            <div class="pc-row">
+                                <div class="pc-cell pc-half pc-left"><div class="pc-card">
+                                    <div class="pc-field"><span class="pc-label">Cliente</span><span class="pc-value"><t t-esc="ctx['customer'].name or '—'"/></span></div>
+                                    <t t-if="ctx['customer'].vat"><div class="pc-field"><span class="pc-label">NIF / DNI</span><span class="pc-value"><t t-esc="ctx['customer'].vat"/></span></div></t>
+                                    <t t-if="ctx['customer'].phone or ctx['customer'].mobile"><div class="pc-field"><span class="pc-label">Teléfono</span><span class="pc-value"><t t-esc="ctx['customer'].phone or ctx['customer'].mobile"/></span></div></t>
+                                    <t t-if="ctx['customer'].email"><div class="pc-field"><span class="pc-label">Correo electrónico</span><span class="pc-value"><t t-esc="ctx['customer'].email"/></span></div></t>
+                                </div></div>
+                                <div class="pc-cell pc-half pc-right"><div class="pc-card">
+                                    <t t-if="ctx['device_type_label']"><div class="pc-field"><span class="pc-label">Tipo</span><span class="pc-value"><t t-esc="ctx['device_type_label']"/></span></div></t>
+                                    <t t-if="ctx['brand']"><div class="pc-field"><span class="pc-label">Marca</span><span class="pc-value"><t t-esc="ctx['brand']"/></span></div></t>
+                                    <t t-if="ctx['model']"><div class="pc-field"><span class="pc-label">Modelo</span><span class="pc-value"><t t-esc="ctx['model']"/></span></div></t>
+                                    <t t-if="ctx['imei']"><div class="pc-field"><span class="pc-label">IMEI / Nº de serie</span><span class="pc-value"><t t-esc="ctx['imei']"/></span></div></t>
+                                    <t t-if="ctx['accessories']"><div class="pc-field"><span class="pc-label">Accesorios entregados</span><span class="pc-value"><t t-esc="ctx['accessories']"/></span></div></t>
+                                </div></div>
+                            </div>
+                        </div>
+
+                        <div class="pc-section"><span class="pc-section-title">Avería reportada</span><t t-if="ctx['reported_issue']"><div class="pc-text"><t t-esc="ctx['reported_issue']"/></div></t><t t-else=""><span class="pc-empty">No se indicó una avería de entrada.</span></t></div>
+                        <t t-if="ctx['diagnosis']"><div class="pc-section"><span class="pc-section-title">Diagnóstico e intervención técnica</span><div class="pc-text"><t t-esc="ctx['diagnosis']"/></div></div></t>
+                        <t t-if="ctx['report_notes']"><div class="pc-section"><span class="pc-section-title">Notas complementarias</span><div class="pc-text"><t t-esc="ctx['report_notes']"/></div></div></t>
+
+                        <div class="pc-section">
+                            <span class="pc-section-title">Material y servicios aplicados</span>
+                            <t t-if="ctx['parts']"><span class="pc-subtitle">Material consumido</span><table class="pc-table"><thead><tr><th style="width:54%;">Producto</th><th class="pc-number" style="width:23%;">Cantidad solicitada</th><th class="pc-number" style="width:23%;">Cantidad usada</th></tr></thead><tbody><t t-foreach="ctx['parts']" t-as="part"><tr><td><t t-esc="part['product_name']"/></td><td class="pc-number"><t t-esc="'%.2f' % part['qty_demand']"/> <t t-esc="part['uom']"/></td><td class="pc-number"><t t-esc="'%.2f' % part['qty_done']"/> <t t-esc="part['uom']"/></td></tr></t></tbody></table></t>
+                            <t t-if="ctx['services']"><span class="pc-subtitle">Servicios y mano de obra</span><table class="pc-table"><thead><tr><th style="width:76%;">Descripción</th><th class="pc-number" style="width:14%;">Cantidad</th><th class="pc-number" style="width:10%;">Ud.</th></tr></thead><tbody><t t-foreach="ctx['services']" t-as="service"><tr><td><t t-esc="service['name']"/></td><td class="pc-number"><t t-esc="service['qty']"/></td><td class="pc-number"><t t-esc="service['uom']"/></td></tr></t></tbody></table></t>
+                            <t t-if="not ctx['parts'] and not ctx['services']"><span class="pc-empty">Sin material ni servicios registrados.</span></t>
+                        </div>
+
+                        <t t-if="ctx['image_pairs']"><div class="pc-section pc-photo-section"><span class="pc-section-title">Evidencia fotográfica</span><t t-foreach="ctx['image_pairs']" t-as="pair"><div t-attf-class="pc-photo-page#{' pc-photo-page-last' if pair_last else ''}"><t t-foreach="pair" t-as="image"><div class="pc-photo"><div class="pc-photo-canvas"><img t-att-src="image['src']" alt=""/></div><div class="pc-photo-caption"><span class="pc-photo-name"><t t-esc="image['name']"/></span><t t-if="image['description']"><span class="pc-photo-description"><t t-esc="image['description']"/></span></t></div></div></t></div></t></div></t>
+
+                        <div class="pc-footer"><div class="pc-footer-left"><t t-esc="ctx['issuer']['issuer_name']"/><t t-if="ctx['issuer']['issuer_vat']"> · NIF <t t-esc="ctx['issuer']['issuer_vat']"/></t></div><div class="pc-footer-right">Emitido el <t t-esc="ctx['generated_at'].strftime('%d/%m/%Y')"/></div></div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

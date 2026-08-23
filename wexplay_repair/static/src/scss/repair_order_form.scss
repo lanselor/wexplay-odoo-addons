@@ -74,6 +74,144 @@
         linear-gradient(180deg, #ffffff 0%, #fcfcfe 100%);
 }
 
+.o_form_view .wex_repair_documents_workspace {
+    margin: 0.35rem 0 1.75rem;
+}
+
+.o_form_view .wex_repair_documents_intro {
+    margin-bottom: 0.9rem;
+}
+
+.o_form_view .wex_repair_documents_intro_title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--wex-repair-form-ink);
+    font-size: 1.12rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_documents_intro_title .fa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid rgba(99, 91, 154, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--wex-repair-form-accent);
+}
+
+.o_form_view .wex_repair_documents_intro_copy,
+.o_form_view .wex_repair_documents_card_copy {
+    margin: 0;
+    color: var(--wex-repair-form-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.o_form_view .wex_repair_documents_intro_copy {
+    margin-top: 0.35rem;
+}
+
+.o_form_view .wex_repair_documents_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.o_form_view .wex_repair_documents_card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.o_form_view .wex_repair_documents_card--print {
+    background:
+        radial-gradient(circle at top right, rgba(24, 119, 155, 0.035), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.o_form_view .wex_repair_documents_card--report {
+    background:
+        radial-gradient(circle at top right, rgba(99, 91, 154, 0.04), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+}
+
+.o_form_view .wex_repair_documents_actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+
+.o_form_view .wex_repair_document_action {
+    min-height: 2.4rem;
+    padding: 0.48rem 0.7rem;
+}
+
+.o_form_view .wex_repair_document_notes_action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    min-height: 2.4rem;
+    padding: 0.35rem;
+}
+
+.o_form_view .wex_repair_document_notes_icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_form_view .wex_repair_document_notes_indicator {
+    position: absolute;
+    top: -0.28rem;
+    right: -0.38rem;
+    width: 0.52rem;
+    height: 0.52rem;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: #23a35a;
+}
+
+.o_form_view .wex_repair_documents_status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.o_form_view .wex_repair_documents_status .fa {
+    margin-right: 0.35rem;
+}
+
+.o_form_view .wex_repair_documents_status--pending {
+    border-color: #d5dce8;
+    background: #f3f5f8;
+    color: #526172;
+}
+
+.o_form_view .wex_repair_documents_status--ready {
+    border-color: #a7dfbe;
+    background: #edf9f1;
+    color: #1f7a45;
+}
+
+.o_form_view .wex_repair_documents_placeholder {
+    color: var(--wex-repair-form-muted);
+    font-size: 0.82rem;
+    font-style: italic;
+}
+
 .o_form_view .wex_repair_form_section_marker {
     display: flex;
     align-items: center;
@@ -761,6 +899,10 @@
     .o_form_view .wex_repair_form_card {
         padding: 1rem;
         border-radius: 16px;
+    }
+
+    .o_form_view .wex_repair_documents_grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .o_form_view .wex_repair_form_contact_list {

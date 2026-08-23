@@ -1,0 +1,109 @@
+.wex_portal_report_actions,
+.wex_portal_report_brand_form .card {
+    border: 1px solid var(--wex-portal-panel-border, #dce3ef) !important;
+    border-radius: 0.9rem;
+    box-shadow: 0 0.45rem 1.2rem rgba(35, 53, 82, 0.05);
+}
+
+.wex_portal_report_actions {
+    background: linear-gradient(110deg, #f8fafc 0%, #fff 58%, #f5f1fb 100%);
+}
+
+.wex_portal_report_actions__eyebrow {
+    color: var(--wex-portal-primary-dark, #685496);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wex_portal_report_actions__buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: flex-end;
+}
+
+.wex_portal_report_actions__settings {
+    color: var(--wex-portal-primary-dark, #685496);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wex_portal_report_actions__buttons .btn.is-loading {
+    cursor: wait;
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.wex_portal_report_actions__feedback {
+    color: var(--wex-portal-primary-dark, #685496);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.wex_portal_report_actions__feedback.is-error {
+    color: #a33c3c;
+}
+
+.wex_portal_report_brand_wrap {
+    max-width: 920px;
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+}
+
+.wex_portal_report_brand_heading {
+    margin-bottom: 1.75rem;
+}
+
+.wex_portal_report_brand_heading h1 {
+    margin: 0.75rem 0 0.5rem;
+    color: var(--wex-portal-primary-dark, #685496);
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.wex_portal_report_brand_logo_preview {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.65rem;
+}
+
+.wex_portal_report_brand_logo_preview__image,
+.wex_portal_report_brand_logo_preview__placeholder {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--wex-portal-panel-border, #dce3ef);
+    border-radius: 0.5rem;
+    display: flex;
+    height: 4.5rem;
+    justify-content: center;
+    object-fit: contain;
+    padding: 0.45rem;
+    width: 8rem;
+}
+
+.wex_portal_report_brand_logo_preview__placeholder {
+    color: #6c778a;
+    flex-direction: column;
+    font-size: 0.72rem;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.wex_portal_report_brand_logo_preview__status {
+    color: #647086;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+    .wex_portal_report_actions__buttons {
+        justify-content: flex-start;
+        margin-top: 1rem;
+    }
+}

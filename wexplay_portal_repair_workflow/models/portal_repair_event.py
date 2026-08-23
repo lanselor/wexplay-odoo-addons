@@ -19,9 +19,18 @@ class WexPortalRepairEvent(models.Model):
             ("budget_viewed", "Presupuesto visto"),
             ("budget_accepted", "Presupuesto aceptado"),
             ("budget_rejected", "Presupuesto rechazado"),
+            ("report_downloaded", "Informe descargado"),
         ],
         string="Tipo de evento",
         required=True,
+        readonly=True,
+    )
+    report_variant = fields.Selection(
+        selection=[
+            ("wexplay", "Informe con datos Wexplay"),
+            ("custom", "Informe personalizado"),
+        ],
+        string="Variante de informe",
         readonly=True,
     )
     event_date = fields.Datetime(
@@ -127,7 +136,7 @@ class WexPortalRepairEvent(models.Model):
         string="Nota interna",
     )
 
-    @api.depends("event_type", "repair_id.name")
+    @api.depends("event_type", "report_variant", "repair_id.name")
     def _compute_name(self):
         for event in self:
             label = event._get_event_type_label()
@@ -154,15 +163,21 @@ class WexPortalRepairEvent(models.Model):
 
     @api.model
     def _get_default_handled_state(self, event_type):
-        if event_type == "budget_viewed":
+        if event_type in ("budget_viewed", "report_downloaded"):
             return "done"
         return "pending"
 
     def _get_event_type_label(self):
         self.ensure_one()
-        return dict(self._fields["event_type"].selection).get(
+        label = dict(self._fields["event_type"].selection).get(
             self.event_type, self.event_type or ""
         )
+        if self.event_type == "report_downloaded" and self.report_variant:
+            variant = dict(self._fields["report_variant"].selection).get(
+                self.report_variant, self.report_variant
+            )
+            return "%s: %s" % (label, variant)
+        return label
 
     def _prepare_handled_values(self, handled_state):
         values = {"handled_state": handled_state}

@@ -35,6 +35,7 @@ consolas y otros dispositivos electrÃƒÂ³nicos).
         "views/repair_order_card_view.xml",
         "views/repair_order_search.xml",
         "views/account_move_view_inherit.xml",
+        "wizard/repair_sat_report_notes_wizard_views.xml",
         "reports/report_invoice_sat.xml",
         "reports/sat_service_report.xml",
     ],
