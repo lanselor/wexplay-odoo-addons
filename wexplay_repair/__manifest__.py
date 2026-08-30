@@ -27,6 +27,7 @@ consolas y otros dispositivos electrÃƒÂ³nicos).
         "sale",
     ],
     "data": [
+        "security/sat_report_security.xml",
         "security/ir.model.access.csv",
         "data/mail_template_data.xml",
         "views/res_config_settings_views.xml",

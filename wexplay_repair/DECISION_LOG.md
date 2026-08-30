@@ -49,3 +49,55 @@ Reason:
 - It is installation-sensitive.
 - The current phase should not alter setup behavior.
 - It is explicitly tracked as debt for a later hardening phase.
+
+## 2026-08 Technical service reports
+
+### Treat the SAT report as technical documentation
+
+Decision:
+- Redesign the service report from the existing QWeb base instead of creating a
+  second document model.
+- Remove economic totals and prices from the report while keeping material and
+  services as technical evidence.
+
+Reason:
+- A service report should explain what was received, found and carried out.
+- Financial information is already owned by quotes, proformas and invoices.
+
+### Keep the report PDF in DMS, but use the native mail composer
+
+Decision:
+- The internal SAT report remains archived as the current PDF in DMS.
+- Sending the report opens Odoo's standard email composer with a temporary
+  attachment generated from that archived PDF.
+
+Reason:
+- The sent PDF must be identical to the document available for download.
+- A temporary mail attachment avoids duplicate DMS documents while preserving
+  the normal email and chatter traceability of Odoo.
+
+### Separate complementary report notes from repair notes
+
+Decision:
+- Store report-only text in `x_sat_report_notes` and expose it through a
+  compact action in the document card.
+- Regenerate the archived report automatically when those notes are saved.
+
+Reason:
+- Legal, insurance or client-specific clarifications must not pollute the
+  technician's normal repair notes.
+- The field is marginal to daily SAT work and should not occupy permanent space
+  in the main repair form.
+
+### Separate report permission from generic DMS permission
+
+Decision:
+- Create two explicit SAT report groups: consult/download, and manage.
+- Authorize actions in Python and provide report download through a controlled
+  route after confirming access to the repair.
+
+Reason:
+- A TPV or restricted internal user may need a specific report capability
+  without browsing or modifying SAT DMS folders.
+- View-level visibility is insufficient because actions and file URLs must also
+  resist direct invocation.

@@ -18,11 +18,12 @@ class RepairSatReportNotesWizard(models.TransientModel):
     def action_save(self):
         self.ensure_one()
         repair = self.repair_id
+        repair._check_sat_report_access("manage")
         current_notes = repair.x_sat_report_notes or ""
         updated_notes = self.notes or ""
         if current_notes == updated_notes:
             return {"type": "ir.actions.act_window_close"}
 
-        repair.write({"x_sat_report_notes": updated_notes or False})
+        repair.sudo().write({"x_sat_report_notes": updated_notes or False})
         repair._regenerate_sat_report_after_notes_update()
         return {"type": "ir.actions.act_window_close"}

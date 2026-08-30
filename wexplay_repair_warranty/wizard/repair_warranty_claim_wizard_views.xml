@@ -7,22 +7,16 @@
             <form string="Tramitar garantía">
                 <group>
                     <field name="repair_id" invisible="1"/>
-                    <field name="is_out_of_warranty" invisible="1"/>
-                    <field name="can_override_expired_warranty" invisible="1"/>
+                    <field name="is_exception_claim" invisible="1"/>
 
                     <div class="alert alert-info" role="alert">
                         ¿Está seguro de que desea tramitar la garantía?
                     </div>
 
-                    <field name="override_expired_warranty"
-                           invisible="not is_out_of_warranty"
-                           required="is_out_of_warranty"
-                           readonly="not can_override_expired_warranty"/>
-
                     <div class="alert alert-warning"
                          role="alert"
-                         invisible="not is_out_of_warranty or can_override_expired_warranty">
-                        La orden está fuera de plazo y su usuario no tiene permisos para forzar la tramitación.
+                         invisible="not is_exception_claim">
+                        Esta garantía se tramitará por excepción, sin cobertura automática aplicable.
                     </div>
                 </group>
                 <footer>

@@ -128,7 +128,8 @@
                                     <div class="wex_repair_form_eyebrow">Garantía SAT</div>
                                     <div class="wex_repair_form_heading">
                                         <i class="fa fa-shield"/>
-                                        <span>Garantía y RMA</span>
+                                        <span invisible="x_is_warranty_case">Garantía y RMA</span>
+                                        <span invisible="not x_is_warranty_case">Garantía de origen</span>
                                     </div>
                                 </div>
 
@@ -136,23 +137,27 @@
                                     <field name="x_warranty_status"
                                            class="wex_repair_warranty_badge"
                                            widget="badge"
-                                           invisible="not x_show_warranty_status"
+                                           invisible="x_is_warranty_case or not x_show_warranty_status"
                                            decoration-success="x_warranty_status == 'valid'"
                                            decoration-danger="x_warranty_status in ('expired', 'forced_no_warranty', 'none')"/>
+                                    <field name="x_warranty_claim_admission"
+                                           class="wex_repair_warranty_badge"
+                                           widget="badge"
+                                           invisible="not x_is_warranty_case"
+                                           decoration-success="x_warranty_claim_admission == 'automatic'"
+                                           decoration-warning="x_warranty_claim_admission == 'exception'"/>
                                     <button name="action_open_warranty_claim_wizard"
                                             type="object"
                                             string="Tramitar garantía"
                                             class="btn btn-secondary"
-                                            invisible="x_is_warranty_case or x_force_no_warranty or not x_warranty_source_invoice_id or (x_warranty_parts_months == 0 and x_warranty_labor_months == 0)"/>
+                                            invisible="x_is_warranty_case or x_force_no_warranty or not (x_is_any_warranty_valid or x_force_warranty_claim)"/>
                                 </div>
                             </div>
 
-                            <group col="2" class="wex_repair_form_group">
+                            <group col="2" class="wex_repair_form_group" invisible="x_is_warranty_case">
                                 <group>
                                     <field name="x_force_no_warranty" string="Forzar sin garantía"/>
-                                    <field name="x_force_warranty_claim"
-                                           string="Tramitar como garantía de todos modos"
-                                           readonly="not x_can_override_expired_warranty"/>
+                                    <field name="x_force_warranty_claim" string="Tramitar como garantía de todos modos"/>
                                     <field name="x_warranty_parts_months" string="Meses garantía piezas" readonly="1"/>
                                     <field name="x_warranty_labor_months" string="Meses garantía mano de obra" readonly="1"/>
                                 </group>
@@ -182,16 +187,31 @@
                                 </group>
                             </group>
 
+                            <group col="2" class="wex_repair_form_group" invisible="not x_is_warranty_case">
+                                <group>
+                                    <field name="x_warranty_origin_repair_id" string="SAT origen" readonly="1"/>
+                                    <field name="x_warranty_claim_admission" string="Admisión" readonly="1"/>
+                                    <field name="x_warranty_parts_months" string="Cobertura piezas" readonly="1"/>
+                                    <field name="x_warranty_labor_months" string="Cobertura mano de obra" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="x_warranty_source_invoice_id" string="Factura de origen" readonly="1"/>
+                                    <field name="x_warranty_source_invoice_date" string="Fecha factura origen" readonly="1"/>
+                                    <field name="x_warranty_parts_deadline" string="Límite original piezas" readonly="1"/>
+                                    <field name="x_warranty_labor_deadline" string="Límite original mano de obra" readonly="1"/>
+                                </group>
+                            </group>
+
                             <div class="alert alert-warning mt-2 mb-0"
                                  role="alert"
-                                 invisible="not x_force_no_warranty">
+                                 invisible="x_is_warranty_case or not x_force_no_warranty">
                                 Esta orden se ha marcado manualmente como sin garantía.
                             </div>
 
                             <div class="alert alert-info mt-2 mb-0"
                                  role="alert"
-                                 invisible="not x_force_warranty_claim">
-                                Esta orden se podrá tramitar como garantía aunque esté fuera de plazo.
+                                 invisible="x_is_warranty_case or not x_force_warranty_claim">
+                                Esta orden se podrá tramitar como garantía aunque no tenga cobertura automática.
                             </div>
                         </div>
                     </div>
@@ -243,10 +263,10 @@
                 <field name="x_warranty_origin_repair_id" invisible="1"/>
                 <field name="x_warranty_child_count" invisible="1"/>
                 <field name="x_show_warranty_status" invisible="1"/>
-                <field name="x_can_override_expired_warranty" invisible="1"/>
+                <field name="x_is_any_warranty_valid" invisible="1"/>
             </xpath>
 
-            <xpath expr="//field[@name='x_can_override_expired_warranty']" position="after">
+            <xpath expr="//field[@name='x_is_any_warranty_valid']" position="after">
                 <div class="wex_repair_form_sections wex_repair_form_sections--admin">
                     <div class="wex_repair_form_section_marker is-secondary">
                         <span>Datos administrativos</span>

@@ -3,6 +3,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
+from odoo.exceptions import ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -10,11 +11,6 @@ class TestRepairWarranty(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.override_group = cls.env.ref(
-            "wexplay_repair_warranty.group_wex_repair_warranty_override_expired"
-        )
-        cls.env.user.groups_id |= cls.override_group
-
         cls.partner = cls.env["res.partner"].create({"name": "Cliente garantia"})
         cls.repair_product = cls.env["product.product"].create({"name": "Equipo SAT"})
         cls.sale_product = cls.env["product.product"].create({"name": "Producto facturable"})
@@ -148,6 +144,43 @@ class TestRepairWarranty(TransactionCase):
         self.assertEqual(repair.x_warranty_labor_months, 6)
         self.assertIn(second_invoice, repair._get_posted_customer_invoices())
 
+    def test_snapshot_refreshes_when_service_is_added_after_invoice(self):
+        sale_order = self._create_sale_order()
+        invoice_date = fields.Date.context_today(self.env.user) - relativedelta(days=1)
+        self._create_posted_invoice(sale_order, invoice_date)
+
+        repair = self._create_repair(sale_order, [])
+
+        self.assertEqual(repair.x_warranty_parts_months, 0)
+        self.assertEqual(repair.x_warranty_labor_months, 0)
+
+        repair.write(
+            {
+                "repair_service_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": self.service_product_basic.id,
+                            "product_uom_qty": 1.0,
+                        },
+                    )
+                ]
+            }
+        )
+
+        self.assertEqual(repair.x_warranty_parts_months, 6)
+        self.assertEqual(repair.x_warranty_labor_months, 3)
+        self.assertEqual(
+            repair.x_warranty_labor_deadline,
+            invoice_date + relativedelta(months=3),
+        )
+        self.assertTrue(repair.x_is_any_warranty_valid)
+
+        child_repair = repair._create_warranty_child_repair()
+        self.assertEqual(child_repair.product_id, repair.product_id)
+        self.assertTrue(child_repair.x_is_warranty_case)
+
     def test_force_no_warranty_zeroes_snapshot(self):
         sale_order = self._create_sale_order()
         self._create_posted_invoice(sale_order, fields.Date.to_date("2026-03-05"))
@@ -179,23 +212,14 @@ class TestRepairWarranty(TransactionCase):
             child_repair.x_warranty_parts_months,
             repair.x_warranty_parts_months,
         )
+        self.assertEqual(child_repair.x_warranty_claim_admission, "automatic")
         self.assertFalse(child_repair.repair_service_ids)
         self.assertTrue(child_repair.name.startswith("SATRMA"))
 
-    def test_wizard_allows_expired_override_when_forced(self):
+    def test_forced_warranty_claim_allows_exception_without_coverage(self):
         sale_order = self._create_sale_order()
-        self._create_posted_invoice(sale_order, fields.Date.to_date("2024-01-15"))
-
-        repair = self._create_repair(sale_order, [self.service_product_basic])
-        repair.write(
-            {
-                "x_warranty_source_invoice_date": fields.Date.context_today(self.env.user)
-                - relativedelta(years=2),
-                "x_warranty_parts_months": 1,
-                "x_warranty_labor_months": 1,
-                "x_force_warranty_claim": True,
-            }
-        )
+        repair = self._create_repair(sale_order, [])
+        repair.write({"x_force_warranty_claim": True})
 
         wizard = self.env["wex.repair.warranty.claim.wizard"].create(
             {"repair_id": repair.id}
@@ -203,9 +227,21 @@ class TestRepairWarranty(TransactionCase):
         action = wizard.action_confirm_claim()
         child_repair = self.env["repair.order"].browse(action["res_id"])
 
-        self.assertTrue(wizard.is_out_of_warranty)
         self.assertTrue(child_repair.exists())
         self.assertEqual(child_repair.x_warranty_origin_repair_id, repair)
+        self.assertEqual(child_repair.x_warranty_claim_admission, "exception")
+
+    def test_force_no_warranty_blocks_forced_warranty_claim(self):
+        sale_order = self._create_sale_order()
+        repair = self._create_repair(sale_order, [])
+
+        with self.assertRaises(ValidationError):
+            repair.write(
+                {
+                    "x_force_no_warranty": True,
+                    "x_force_warranty_claim": True,
+                }
+            )
 
     def test_warranty_case_accept_does_not_require_sale_order(self):
         sale_order = self._create_sale_order()

@@ -6,6 +6,7 @@ from odoo import SUPERUSER_ID, _, api, models
 from odoo.exceptions import AccessError, UserError
 
 _logger = logging.getLogger(__name__)
+PORTAL_BUDGET_DEBUG_PARAMETER = "wexplay_portal_repair_workflow.portal_budget_debug_enabled"
 
 
 class RepairOrder(models.Model):
@@ -88,25 +89,13 @@ class RepairOrder(models.Model):
         user = user or self.env.user
         repair = self.sudo()
         sale_order = repair._get_portal_budget_sale_order().sudo()
-        partner = user.partner_id
-        commercial_partner = partner.commercial_partner_id
         debug_values = {
             "repair_id": repair.id,
             "repair_name": repair.name or "",
             "repair_state": repair.state or "",
             "budget_stage": repair.x_budget_stage or "",
-            "sale_order_id": sale_order.id if sale_order else False,
-            "sale_order_name": sale_order.name if sale_order else "",
             "sale_order_state": sale_order.state if sale_order else "",
-            "sale_order_line_count": len(sale_order.order_line) if sale_order else 0,
             "portal_user_id": user.id,
-            "portal_user_login": user.login or "",
-            "portal_partner_id": partner.id,
-            "portal_partner_name": partner.display_name or "",
-            "commercial_partner_id": commercial_partner.id,
-            "commercial_partner_name": commercial_partner.display_name or "",
-            "repair_partner_id": repair.partner_id.id,
-            "repair_partner_name": repair.partner_id.display_name or "",
             "can_portal_access": repair._can_portal_user_access(user),
             "has_sale_order": bool(sale_order),
             "is_waiting_customer": repair._is_portal_budget_waiting_customer(),
@@ -121,8 +110,16 @@ class RepairOrder(models.Model):
         }
         return debug_values
 
+    @api.model
+    def _is_portal_budget_debug_enabled(self):
+        return self.env["ir.config_parameter"].sudo().get_param(
+            PORTAL_BUDGET_DEBUG_PARAMETER
+        ) == "True"
+
     def _log_portal_budget_debug_snapshot(self, stage, user=None, extra=None):
         self.ensure_one()
+        if not self._is_portal_budget_debug_enabled():
+            return {}
         debug_values = self._get_portal_budget_debug_values(user=user)
         if extra:
             debug_values.update(extra)

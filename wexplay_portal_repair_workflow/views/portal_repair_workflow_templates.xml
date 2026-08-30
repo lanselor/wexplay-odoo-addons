@@ -218,42 +218,6 @@
                 <div t-if="result == 'error'" class="alert alert-warning wex_portal_budget_result" role="alert">
                     No se ha podido completar la accion. Revisa el estado del presupuesto o contacta con Wexplay.
                 </div>
-                <div t-if="debug_enabled" class="alert alert-secondary wex_portal_budget_result" role="note">
-                    <div class="fw-semibold mb-2">Debug portal activo</div>
-                    <div class="small text-muted mb-2">
-                        Esta vista muestra un snapshot tecnico del SAT y la cotizacion para diagnosticar el flujo del portal.
-                    </div>
-                    <script id="wexPortalBudgetDebugData" type="application/json"><t t-esc="debug_values_json"/></script>
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0">
-                            <tbody>
-                                <tr><th>repair_id</th><td><t t-out="debug_values.get('repair_id')"/></td></tr>
-                                <tr><th>repair_name</th><td><t t-out="debug_values.get('repair_name') or '-'"/></td></tr>
-                                <tr><th>repair_state</th><td><t t-out="debug_values.get('repair_state') or '-'"/></td></tr>
-                                <tr><th>budget_stage</th><td><t t-out="debug_values.get('budget_stage') or '-'"/></td></tr>
-                                <tr><th>sale_order_id</th><td><t t-out="debug_values.get('sale_order_id') or '-'"/></td></tr>
-                                <tr><th>sale_order_name</th><td><t t-out="debug_values.get('sale_order_name') or '-'"/></td></tr>
-                                <tr><th>sale_order_state</th><td><t t-out="debug_values.get('sale_order_state') or '-'"/></td></tr>
-                                <tr><th>sale_order_line_count</th><td><t t-out="debug_values.get('sale_order_line_count')"/></td></tr>
-                                <tr><th>portal_user_login</th><td><t t-out="debug_values.get('portal_user_login') or '-'"/></td></tr>
-                                <tr><th>portal_partner</th><td><t t-out="debug_values.get('portal_partner_name') or '-'"/></td></tr>
-                                <tr><th>commercial_partner</th><td><t t-out="debug_values.get('commercial_partner_name') or '-'"/></td></tr>
-                                <tr><th>repair_partner</th><td><t t-out="debug_values.get('repair_partner_name') or '-'"/></td></tr>
-                                <tr><th>can_portal_access</th><td><t t-out="debug_values.get('can_portal_access')"/></td></tr>
-                                <tr><th>has_sale_order</th><td><t t-out="debug_values.get('has_sale_order')"/></td></tr>
-                                <tr><th>is_waiting_customer</th><td><t t-out="debug_values.get('is_waiting_customer')"/></td></tr>
-                                <tr><th>is_sale_order_accept_ready</th><td><t t-out="debug_values.get('is_sale_order_accept_ready')"/></td></tr>
-                                <tr><th>is_sale_order_already_accepted</th><td><t t-out="debug_values.get('is_sale_order_already_accepted')"/></td></tr>
-                                <tr><th>is_sale_order_cancelled</th><td><t t-out="debug_values.get('is_sale_order_cancelled')"/></td></tr>
-                                <tr><th>can_portal_review_budget</th><td><t t-out="debug_values.get('can_portal_review_budget')"/></td></tr>
-                                <tr><th>can_portal_accept_budget</th><td><t t-out="debug_values.get('can_portal_accept_budget')"/></td></tr>
-                                <tr><th>can_portal_reject_budget</th><td><t t-out="debug_values.get('can_portal_reject_budget')"/></td></tr>
-                                <tr><th>result</th><td><t t-out="debug_values.get('result') or '-'"/></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div class="wex_portal_budget_header">
                     <div>
                         <span class="wex_portal_budget_eyebrow">Resumen de presupuesto</span>
@@ -416,10 +380,8 @@
                                     Volver
                                 </button>
                                 <form t-att-action="'/my/repairs/%s/budget/accept' % repair.id"
-                                      method="post"
-                                      data-wex-portal-debug-action="accept">
+                                      method="post">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                    <input t-if="debug_enabled" type="hidden" name="debug" value="1"/>
                                     <button type="submit" class="btn btn-success">
                                         Aceptar presupuesto
                                     </button>
@@ -444,10 +406,8 @@
                                     Volver
                                 </button>
                                 <form t-att-action="'/my/repairs/%s/budget/reject' % repair.id"
-                                      method="post"
-                                      data-wex-portal-debug-action="reject">
+                                      method="post">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                    <input t-if="debug_enabled" type="hidden" name="debug" value="1"/>
                                     <button type="submit" class="btn btn-danger">
                                         Rechazar presupuesto
                                     </button>

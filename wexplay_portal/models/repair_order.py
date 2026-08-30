@@ -297,16 +297,14 @@ class RepairOrder(models.Model):
 
     def _get_portal_warranty_values(self):
         self.ensure_one()
-        if "x_show_warranty_status" not in self._fields or not self.x_show_warranty_status:
+        if "x_warranty_status" not in self._fields:
             return {}
 
         self._check_portal_related_read_access()
         repair = self.sudo()
-        warranty_status = ""
-        if "x_warranty_status" in repair._fields:
-            warranty_status = dict(repair._fields["x_warranty_status"].selection).get(
-                repair.x_warranty_status, repair.x_warranty_status or ""
-            )
+        warranty_status = dict(repair._fields["x_warranty_status"].selection).get(
+            repair.x_warranty_status, repair.x_warranty_status or ""
+        )
 
         warranty_budget_status = ""
         if "x_warranty_budget_stage" in repair._fields:

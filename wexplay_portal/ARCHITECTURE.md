@@ -339,6 +339,26 @@ referencia del cliente cuando existe y omite la referencia SAT, estados de
 workflow, consentimientos y firmas. El contenido técnico procede siempre del
 SAT y el cliente no puede modificarlo.
 
+La identidad personalizada muestra al cliente una vista previa del logotipo
+que ya está guardado y otra inmediata al seleccionar un archivo nuevo. Esa
+previsualización se genera dentro de la página autenticada como datos de imagen;
+no se añade una ruta pública de imagen ni un acceso de portal genérico al modelo
+de identidad.
+
+El logotipo se valida en servidor por contenido real: solo se aceptan PNG,
+JPEG y WebP de hasta 6 MB. Se rechazan formatos no admitidos, archivos
+corruptos y dimensiones de origen desproporcionadas; antes de persistirlo se
+normaliza como PNG estático dentro de una caja proporcional de 1024 x 768 px.
+Como defensa adicional de infraestructura, cuando el proxy pueda aplicar una
+regla exclusiva a esta ruta deberá limitar `/my/repair-report-brand/save` a 7
+MB; no se debe aplicar ese límite a todo el servidor porque el portal también
+admite vídeos de mayor tamaño.
+
+La descarga se realiza con una petición controlada desde frontend para mostrar
+progreso, bloquear los dos botones de informe y evitar dobles pulsaciones. El
+servidor sigue siendo la autoridad: solo registra la descarga cuando el PDF se
+ha renderizado correctamente.
+
 ---
 
 ## Portal y mantenimiento IT
@@ -378,6 +398,8 @@ La UI del portal debe seguir una linea hibrida:
 - `/my/repairs`
 - `/my/repairs/<id>`
 - `/my/repairs/<repair_id>/images/<image_id>`
+- `/my/repairs/<repair_id>/service-report/<identity_mode>`
+- `/my/repair-report-brand`
 - `/my/it-maintenance`
 
 ---
@@ -433,3 +455,5 @@ Puntos detectados para sanear en futuras iteraciones, sin bloquear el MVP actual
 - Cada descarga crea un evento `report_downloaded` en `wex.portal.repair.event`, con la variante Wexplay o personalizada, y queda cerrada automáticamente porque no requiere gestión interna.
 - La misma acción publica una nota interna en el chatter del SAT. Es trazabilidad operativa, no una notificación al cliente.
 - El dashboard de Portal clientes muestra las descargas del periodo y las incorpora a la actividad reciente.
+- El evento de descarga conserva si se generó la variante Wexplay o la
+  personalizada. Es informativo y se marca como gestionado automáticamente.

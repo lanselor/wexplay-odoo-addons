@@ -108,9 +108,15 @@ class RepairOrder(models.Model):
         string="Mostrar estado de garantía",
         compute="_compute_warranty_state",
     )
-    x_can_override_expired_warranty = fields.Boolean(
-        string="Puede forzar garantía caducada",
-        compute="_compute_x_can_override_expired_warranty",
+    x_warranty_claim_admission = fields.Selection(
+        [
+            ("automatic", "Cobertura vigente"),
+            ("exception", "Admitida por excepción"),
+        ],
+        string="Admisión de garantía",
+        copy=False,
+        readonly=True,
+        tracking=True,
     )
     x_warranty_budget_stage = fields.Selection(
         [
@@ -134,10 +140,6 @@ class RepairOrder(models.Model):
     def _compute_x_warranty_budget_stage(self):
         for repair in self:
             repair.x_warranty_budget_stage = repair.x_budget_stage
-
-    def _compute_x_can_override_expired_warranty(self):
-        for repair in self:
-            repair.x_can_override_expired_warranty = repair._can_override_expired_warranty()
 
     @api.depends(
         "x_force_no_warranty",
@@ -317,18 +319,14 @@ class RepairOrder(models.Model):
             and (self.x_warranty_parts_months or self.x_warranty_labor_months)
         )
 
-    def _can_override_expired_warranty(self):
-        self.ensure_one()
-        return self.env.user.has_group(
-            "wexplay_repair_warranty.group_wex_repair_warranty_override_expired"
-        )
-
     def _can_claim_warranty(self):
         self.ensure_one()
         if self.x_is_warranty_case:
             return False
         if self._is_manually_forced_no_warranty():
             return False
+        if self._is_warranty_claim_forced():
+            return True
         return self._has_warranty_snapshot()
 
     def _should_confirm_wait_customer_without_sale_order(self):
@@ -427,6 +425,8 @@ class RepairOrder(models.Model):
             raise UserError(_("Una garantía no puede generar otra garantía."))
         if self._is_manually_forced_no_warranty():
             raise UserError(_("Este SAT se ha marcado manualmente como sin garantía."))
+        if self._is_warranty_claim_forced():
+            return
         if not self.x_warranty_source_invoice_id:
             raise UserError(_("No se ha encontrado ninguna factura de cliente publicada para este SAT."))
         if not self.x_warranty_parts_months and not self.x_warranty_labor_months:
@@ -467,6 +467,9 @@ class RepairOrder(models.Model):
             "x_warranty_labor_months": self.x_warranty_labor_months,
             "x_warranty_source_invoice_id": self.x_warranty_source_invoice_id.id,
             "x_warranty_source_invoice_date": self.x_warranty_source_invoice_date,
+            "x_warranty_claim_admission": (
+                "exception" if self._is_warranty_claim_forced() else "automatic"
+            ),
         }
 
         priority_value = self._get_warranty_priority_value()
@@ -549,19 +552,10 @@ class RepairOrder(models.Model):
         return repairs
 
     def write(self, vals):
-        if vals.get("x_force_warranty_claim"):
-            unauthorized_repairs = self.filtered(
-                lambda repair: not repair._can_override_expired_warranty()
-            )
-            if unauthorized_repairs:
-                raise UserError(
-                    _(
-                        "No tiene permisos para forzar la tramitación de una garantía caducada."
-                    )
-                )
-
         if "x_is_warranty_case" in vals:
             vals.pop("x_is_warranty_case")
+        if "x_warranty_claim_admission" in vals:
+            vals.pop("x_warranty_claim_admission")
 
         res = super().write(vals)
 
@@ -569,7 +563,7 @@ class RepairOrder(models.Model):
             return res
 
         if {"sale_order_id", "repair_service_ids"}.intersection(vals):
-            self._refresh_warranty_snapshot()
+            self._refresh_warranty_snapshot(force=True)
 
         if "x_force_no_warranty" in vals:
             self._refresh_warranty_snapshot(force=True)

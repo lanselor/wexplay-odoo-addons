@@ -37,7 +37,7 @@ class RepairOrder(models.Model):
         repair = self.sudo()
         context = repair._prepare_sat_report_context()
         images = repair._collect_portal_sat_report_images()
-        context["image_pairs"] = [images[index:index + 2] for index in range(0, len(images), 2)]
+        context["image_pages"] = list(images)
         context.update({
             "issuer_name": repair.company_id.name,
             "issuer_logo": False,
@@ -84,7 +84,7 @@ class RepairOrder(models.Model):
             "report_notes": repair.x_sat_report_notes or "",
             "parts": repair._get_sat_report_parts(),
             "services": repair._get_sat_report_services(),
-            "image_pairs": [images[index:index + 2] for index in range(0, len(images), 2)],
+            "image_pages": list(images),
         }
 
     def _render_portal_sat_report_pdf(self, identity_mode):

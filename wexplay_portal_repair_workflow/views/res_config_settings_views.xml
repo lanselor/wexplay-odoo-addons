@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_wexplay_portal_repair_workflow" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wexplay.portal.repair.workflow</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Wexplay Portal" name="wexplay_portal_repair_workflow_settings" groups="base.group_system">
+                    <block title="Diagnóstico" name="wexplay_portal_repair_workflow_diagnostics">
+                        <setting string="Registrar diagnóstico técnico de presupuestos portal"
+                                 help="Guarda trazas reducidas en el log del servidor. Nunca muestra datos técnicos en el portal.">
+                            <field name="x_portal_budget_debug_enabled"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

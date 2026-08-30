@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import base64
 from urllib.parse import quote
 
 from werkzeug.exceptions import NotFound
@@ -78,9 +77,9 @@ class WexplayPortalRepairReports(http.Controller):
             "state_id": int(post["state_id"]) if post.get("state_id", "").isdigit() else False,
         }
         logo = request.httprequest.files.get("logo")
-        if logo and logo.filename:
-            values["logo"] = base64.b64encode(logo.read())
         try:
+            if logo and logo.filename:
+                values["logo"] = brand._prepare_portal_logo_upload(logo)
             brand.write(values)
         except ValidationError:
             return request.redirect("/my/repair-report-brand?error=invalid")

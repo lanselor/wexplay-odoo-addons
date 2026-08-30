@@ -10,6 +10,9 @@ En esta primera fase solo cubre el portal B2B autenticado para clientes empresa:
 - expone un listado y detalle de SAT sobre `repair.order`
 - prepara una entrada futura para mantenimiento IT
 
+Las extensiones de portal pueden añadir informes SAT bajo demanda sin convertir
+el portal base en propietario de la lógica documental.
+
 No implementa acceso por token, vistas publicas ni logica B2C.
 
 ## Documentacion de arquitectura
@@ -36,7 +39,8 @@ No declara dependencias Python externas.
 - No se mete logica portal dentro de `wexplay_repair`.
 - La seguridad de SAT se apoya en ACL de solo lectura para portal + record rule por partner comercial.
 - Los controladores no usan `sudo()`.
-- Las vistas portal solo muestran campos seguros y evitan notas internas, chatter, followers y adjuntos.
+- Las vistas portal excluyen `x_internal_notes`, chatter, followers y adjuntos;
+  `internal_notes` es el diagnóstico técnico que se ha decidido mostrar al cliente.
 - La integracion IT es opcional de verdad: solo aparece la entrada si existe el campo `x_is_it_maintenance_customer` y esta activado.
 
 ## Rutas
@@ -48,10 +52,12 @@ No declara dependencias Python externas.
 
 ## Limites del MVP
 
-- Sin documentos SAT descargables desde portal
-- Sin adjuntos
-- Sin chatter
-- Sin firmas ni consentimientos
+- Sin DMS, adjuntos, chatter, firmas ni consentimientos expuestos directamente
+  en portal.
+- Los informes SAT bajo demanda se implementan en el módulo puente
+  `wexplay_portal_repair_reports`, con validación por empresa comercial y sin
+  persistencia del PDF en DMS. Sus logos se validan por contenido real y se
+  normalizan antes de guardarse.
 - Sin funcionalidad operativa de mantenimiento IT
 
 ## Check de seguridad aplicado

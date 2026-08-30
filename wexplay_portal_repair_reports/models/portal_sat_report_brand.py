@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import base64
+import io
 import re
+import warnings
+
+from PIL import Image, UnidentifiedImageError
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
 
 HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
+ALLOWED_LOGO_FORMATS = {"PNG", "JPEG", "WEBP"}
+MAX_LOGO_UPLOAD_SIZE = 6 * 1024 * 1024
+MAX_LOGO_SOURCE_PIXELS = 16_777_216
+MAX_LOGO_SIZE = (1024, 768)
 
 
 class PortalSatReportBrand(models.Model):
@@ -39,7 +48,7 @@ class PortalSatReportBrand(models.Model):
         required=True,
         default="billing",
     )
-    logo = fields.Image(string="Logotipo", max_width=1024, max_height=1024)
+    logo = fields.Image(string="Logotipo", max_width=1024, max_height=768)
     name = fields.Char(string="Nombre comercial")
     vat = fields.Char(string="NIF / CIF")
     street = fields.Char(string="Dirección")
@@ -97,6 +106,41 @@ class PortalSatReportBrand(models.Model):
         if self.manager_user_id != user:
             raise AccessError(_("Solo el gestor de identidad de tu empresa puede modificarla."))
         return True
+
+    @api.model
+    def _prepare_portal_logo_upload(self, uploaded_file):
+        """Validate the real image content and store a bounded static logo."""
+        image_bytes = uploaded_file.read(MAX_LOGO_UPLOAD_SIZE + 1)
+        if len(image_bytes) > MAX_LOGO_UPLOAD_SIZE:
+            raise ValidationError(_("El logotipo no puede superar 6 MB."))
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", Image.DecompressionBombWarning)
+                with Image.open(io.BytesIO(image_bytes)) as source:
+                    image_format = source.format
+                    if image_format not in ALLOWED_LOGO_FORMATS:
+                        raise ValidationError(_("El logotipo debe ser PNG, JPEG o WebP."))
+                    if source.width * source.height > MAX_LOGO_SOURCE_PIXELS:
+                        raise ValidationError(_("Las dimensiones originales del logotipo son demasiado grandes."))
+                    source.verify()
+
+                with Image.open(io.BytesIO(image_bytes)) as source:
+                    source.load()
+                    normalized = source.convert("RGBA")
+                    normalized.thumbnail(MAX_LOGO_SIZE, Image.Resampling.LANCZOS)
+                    output = io.BytesIO()
+                    normalized.save(output, format="PNG", optimize=True)
+        except (
+            Image.DecompressionBombError,
+            Image.DecompressionBombWarning,
+            UnidentifiedImageError,
+            OSError,
+            ValueError,
+        ):
+            raise ValidationError(_("El archivo seleccionado no es una imagen válida.")) from None
+
+        return base64.b64encode(output.getvalue())
 
     def _prepare_report_identity(self):
         self.ensure_one()

@@ -1,0 +1,71 @@
+<odoo>
+    <template id="portal_repair_delivery_tab"
+              inherit_id="wexplay_portal.portal_repair_page"
+              priority="45">
+        <xpath expr="//div[hasclass('wex_portal_tab_nav_wrap')]" position="before">
+            <t t-set="shipping_values" t-value="repair._get_portal_shipping_values()"/>
+        </xpath>
+
+        <xpath expr="//ul[@id='repairDetailTabs']" position="inside">
+            <li t-if="shipping_values['show']" class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-envios-btn"
+                        data-bs-toggle="tab" data-bs-target="#tab-envios"
+                        type="button" role="tab"
+                        aria-controls="tab-envios" aria-selected="false">
+                    <i class="fa fa-truck me-1" aria-hidden="true"/>
+                    Envíos
+                </button>
+            </li>
+        </xpath>
+
+        <xpath expr="//div[@id='repairDetailTabsContent']" position="inside">
+            <div t-if="shipping_values['show']" class="tab-pane fade" id="tab-envios"
+                 role="tabpanel" aria-labelledby="tab-envios-btn">
+                <div class="row g-3">
+                    <div t-foreach="shipping_values['operations']" t-as="operation"
+                         class="col-12 col-lg-6">
+                        <div class="card h-100 wex_portal_panel">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fa fa-truck wex_portal_card_icon" aria-hidden="true"/>
+                                    <t t-out="operation['title']"/>
+                                </h5>
+                                <t t-if="operation['exists']">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5">Estado</dt>
+                                        <dd class="col-sm-7"><t t-out="operation['status'] or '-'"/></dd>
+                                        <dt class="col-sm-5">Referencia MRW</dt>
+                                        <dd class="col-sm-7"><t t-out="operation['tracking_reference'] or '-'"/></dd>
+                                        <dt t-if="operation['effective_shipping_date']" class="col-sm-5">Fecha de envío</dt>
+                                        <dd t-if="operation['effective_shipping_date']" class="col-sm-7">
+                                            <span t-out="operation['effective_shipping_date']" t-options="{'widget': 'date'}"/>
+                                        </dd>
+                                    </dl>
+                                    <div class="d-flex flex-wrap gap-2 mt-4">
+                                        <a t-if="operation['tracking_url']"
+                                           t-att-href="operation['tracking_url']"
+                                           class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                            Seguir envío en MRW
+                                            <i class="fa fa-external-link ms-2" aria-hidden="true"/>
+                                        </a>
+                                        <a t-if="operation['has_label']"
+                                           t-att-href="'/my/repairs/%s/shipping/%s/label' % (repair.id, operation['operation_id'])"
+                                           class="btn btn-outline-secondary">
+                                            Descargar etiqueta
+                                            <i class="fa fa-download ms-2" aria-hidden="true"/>
+                                        </a>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-light mb-0" role="status">
+                                        <t t-out="operation['empty_message']"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -4,7 +4,7 @@ import base64
 import logging
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -24,6 +24,27 @@ class RepairOrder(models.Model):
         copy=False,
         help="Texto adicional incluido únicamente en el informe técnico SAT.",
     )
+
+    def _check_sat_report_access(self, operation):
+        """Authorize report actions without granting generic DMS access."""
+        self.ensure_one()
+        if operation not in ("download", "manage"):
+            raise ValueError("Unsupported SAT report operation: %s" % operation)
+
+        self.check_access("read")
+        self.check_access_rule("read")
+        user = self.env.user
+        if self.env.is_superuser() or user.has_group("base.group_system"):
+            return True
+
+        group_xmlid = (
+            "wexplay_repair.group_wex_repair_sat_report_manage"
+            if operation == "manage"
+            else "wexplay_repair.group_wex_repair_sat_report_download"
+        )
+        if not user.has_group(group_xmlid):
+            raise AccessError(_("No tienes permiso para realizar esta acción sobre informes SAT."))
+        return True
 
     # ── Hooks extensibles ──────────────────────────────────────────────────────
     # Cada módulo extensor sobreescribe el hook correspondiente.
@@ -94,8 +115,8 @@ class RepairOrder(models.Model):
         images = self._collect_sat_report_images()
         consents = self._collect_sat_report_consents()
 
-        # Agrupar imágenes en pares: cada par ocupa una página de evidencia.
-        image_pairs = [images[i:i + 2] for i in range(0, len(images), 2)]
+        # Una imagen por página conserva legibles capturas y detalles técnicos.
+        image_pages = list(images)
 
         return {
             "repair": self,
@@ -133,7 +154,7 @@ class RepairOrder(models.Model):
             "responsible": self.user_id,
             "reception_employee": self.x_reception_employee_id,
             # Evidencia (pueden estar vacíos si los módulos no están instalados)
-            "image_pairs": image_pairs,
+            "image_pages": image_pages,
             "consents": consents,
         }
 
@@ -185,13 +206,15 @@ class RepairOrder(models.Model):
 
     def _generate_sat_report_pdf(self, message_body):
         self.ensure_one()
-        report = self.env.ref("wexplay_repair.action_report_sat_service")
-        pdf_bytes, _fmt = self.env["ir.actions.report"]._render_qweb_pdf(
+        self._check_sat_report_access("manage")
+        repair = self.sudo()
+        report = repair.env.ref("wexplay_repair.action_report_sat_service")
+        pdf_bytes, _fmt = repair.env["ir.actions.report"]._render_qweb_pdf(
             report.report_name,
-            res_ids=self.ids,
+            res_ids=repair.ids,
         )
-        dms_file = self._save_sat_report_to_dms(pdf_bytes)
-        self.message_post(
+        dms_file = repair._save_sat_report_to_dms(pdf_bytes)
+        repair.message_post(
             body=message_body,
             message_type="comment",
             subtype_xmlid="mail.mt_note",
@@ -201,7 +224,8 @@ class RepairOrder(models.Model):
     def _regenerate_sat_report_after_notes_update(self):
         """Keep the archived report synchronized when its note changes."""
         self.ensure_one()
-        if not self._get_sat_report_dms_file():
+        self._check_sat_report_access("manage")
+        if not self.sudo()._get_sat_report_dms_file():
             return False
 
         self._generate_sat_report_pdf(
@@ -211,6 +235,7 @@ class RepairOrder(models.Model):
 
     def action_open_sat_report_notes_wizard(self):
         self.ensure_one()
+        self._check_sat_report_access("manage")
         wizard = self.env["wex.repair.sat.report.notes.wizard"].create({
             "repair_id": self.id,
             "notes": self.x_sat_report_notes,
@@ -235,23 +260,22 @@ class RepairOrder(models.Model):
         )
         return {
             "type": "ir.actions.act_url",
-            "url": "/web/content/dms.file/%s/content/%s?download=true"
-            % (dms_file.id, self._get_sat_report_dms_filename()),
+            "url": "/wexplay/repair/%s/sat-report/download" % self.id,
             "target": "self",
         }
 
     def action_download_sat_report(self):
         """Descarga el informe existente sin regenerarlo."""
         self.ensure_one()
-        dms_file = self._get_sat_report_dms_file()
+        self._check_sat_report_access("download")
+        dms_file = self.sudo()._get_sat_report_dms_file()
         if not dms_file:
             raise UserError(
                 _("No hay informe generado para esta orden. Usa 'Generar informe' primero.")
             )
         return {
             "type": "ir.actions.act_url",
-            "url": "/web/content/dms.file/%s/content/%s?download=true"
-            % (dms_file.id, self._get_sat_report_dms_filename()),
+            "url": "/wexplay/repair/%s/sat-report/download" % self.id,
             "target": "self",
         }
 
@@ -269,7 +293,8 @@ class RepairOrder(models.Model):
     def action_send_sat_report(self):
         """Open Odoo's standard composer with the archived report attached."""
         self.ensure_one()
-        dms_file = self._get_sat_report_dms_file()
+        self._check_sat_report_access("manage")
+        dms_file = self.sudo()._get_sat_report_dms_file()
         if not dms_file:
             raise UserError(
                 _("No hay informe generado para esta orden. Usa 'Generar informe' primero.")

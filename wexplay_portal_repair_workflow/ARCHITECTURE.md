@@ -35,6 +35,8 @@ La cotizacion vinculada sigue siendo el documento comercial real:
 - Guarda actividad portal SAT persistente para control interno.
 - Distingue trazabilidad informativa de eventos que requieren gestion.
 - Permite marcar eventos como pendiente, en gestion, hecho o sin accion.
+- Incluye `report_downloaded` con la variante Wexplay o personalizada cuando
+  `wexplay_portal_repair_reports` registra una descarga correcta.
 
 ### `controllers/portal.py`
 
@@ -81,8 +83,22 @@ Flujo:
 - Rechazar presupuesto no cancela automaticamente la reparacion.
 - Ver un presupuesto queda registrado como trazabilidad ya atendida.
 - Aceptar o rechazar un presupuesto crea trabajo interno pendiente de revisar.
+- Descargar un informe es trazabilidad informativa: se registra solo tras
+  renderizar el PDF y se marca como hecho automáticamente.
 - `schedule_date` se muestra como dato de contexto porque actualmente no es una
   fecha fiable para priorizar alertas.
+
+## Activity extension contract
+
+The portal event factory accepts optional extra values in addition to its
+common SAT context. This keeps `wexplay_portal_repair_workflow` as the
+single activity/dashboard infrastructure while allowing a specialized portal
+module to add a small event-specific value such as `report_variant`.
+
+The workflow module does not generate reports or know report security rules.
+Those remain in `wexplay_portal_repair_reports`; this module only stores and
+shows the resulting activity in the Portal clientes dashboard, event list and
+quick actions.
 
 ## Incidencia resuelta: rechazo portal con error 403
 
@@ -134,7 +150,9 @@ Este criterio aplica tanto a aceptar como a rechazar presupuesto desde portal.
   rechace desde portal.
 - Evaluar conversacion/notificacion con tecnico o responsable asociado al SAT.
 - Anadir motivo opcional de rechazo.
-- Revisar y reducir la instrumentacion temporal de debug portal cuando la
-  incidencia quede suficientemente cerrada en entornos reales.
+- La instrumentación de diagnóstico de presupuestos se mantiene desactivada
+  por defecto y solo puede activarla un administrador desde Ajustes. Sus
+  trazas reducidas se escriben en el log del servidor; no existe un parámetro
+  URL ni una vista de depuración para usuarios portal.
 - Evaluar recordatorios automaticos para aceptaciones pendientes de gestion
   durante varios dias.

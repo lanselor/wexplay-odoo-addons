@@ -322,15 +322,16 @@
                     page-break-inside: avoid;
                 }
                 .wex_photo_canvas {
-                    height: 260px;
+                    height: 575px;
                     padding: 5px;
                     box-sizing: border-box;
                     background: #ffffff;
                     text-align: center;
+                    line-height: 565px;
                 }
                 .wex_photo_canvas img {
                     max-width: 100%;
-                    max-height: 250px;
+                    max-height: 565px;
                     width: auto;
                     height: auto;
                     object-fit: contain;
@@ -670,34 +671,32 @@
                 </div>
 
                 <!-- ════ EVIDENCIA FOTOGRÁFICA ════ -->
-                <!-- Las fotos empiezan en página propia: dos bloques como máximo por página. -->
-                <t t-if="ctx.get('image_pairs')">
+                <!-- Las fotos empiezan en página propia: una evidencia por página. -->
+                <t t-if="ctx.get('image_pages')">
                     <div class="wex_sec wex_sec--flow" style="page-break-before: always;">
                         <span class="wex_sec_title">Evidencia fotográfica</span>
-                        <t t-foreach="ctx['image_pairs']" t-as="pair">
-                            <div t-attf-class="wex_photo_page#{' wex_photo_page--last' if pair_last else ''}">
-                                <t t-foreach="pair" t-as="img">
-                                    <div class="wex_photo_figure">
-                                        <div class="wex_photo_canvas">
-                                            <img t-att-src="img['src']" alt=""/>
-                                        </div>
-                                        <div class="wex_img_cap">
-                                            <span class="wex_img_cap_name">
-                                                <t t-esc="img['name']"/>
-                                            </span>
-                                            <t t-if="img.get('description')">
-                                                <span class="wex_img_cap_desc">
-                                                    <t t-esc="img['description']"/>
-                                                </span>
-                                            </t>
-                                            <t t-if="img.get('tags')">
-                                                <span class="wex_img_cap_tags">
-                                                    <t t-esc="img['tags']"/>
-                                                </span>
-                                            </t>
-                                        </div>
+                        <t t-foreach="ctx['image_pages']" t-as="img">
+                            <div t-attf-class="wex_photo_page#{' wex_photo_page--last' if img_last else ''}">
+                                <div class="wex_photo_figure">
+                                    <div class="wex_photo_canvas">
+                                        <img t-att-src="img['src']" alt=""/>
                                     </div>
-                                </t>
+                                    <div class="wex_img_cap">
+                                        <span class="wex_img_cap_name">
+                                            <t t-esc="img['name']"/>
+                                        </span>
+                                        <t t-if="img.get('description')">
+                                            <span class="wex_img_cap_desc">
+                                                <t t-esc="img['description']"/>
+                                            </span>
+                                        </t>
+                                        <t t-if="img.get('tags')">
+                                            <span class="wex_img_cap_tags">
+                                                <t t-esc="img['tags']"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
                             </div>
                         </t>
                     </div>

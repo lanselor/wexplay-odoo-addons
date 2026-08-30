@@ -66,6 +66,13 @@ This module is currently both:
 ### `views/repair_order_views.xml`
 - Applies the main SAT form customization
 
+### `models/repair_order_sat_report.py`
+- Generates the internal SAT technical service report through QWeb.
+- Keeps the current generated PDF in the SAT DMS directory.
+- Provides download, regeneration, complementary report notes and native email actions.
+- Opens Odoo's standard mail composer with the archived PDF as a temporary
+  mail attachment and the SAT report template selected.
+
 ## Boundaries
 
 This module should remain the base SAT layer.
@@ -259,6 +266,58 @@ instead of heavy stacks of mini-cards.
   - assignment `SAT A4 Default`
   - duplex mode `Double-sided (long edge)`
 - SAT invoice printing should continue to be treated as a functional SAT document owned by `account.move`, not as a detached PDF with no business area
+
+## Technical Service Report
+
+The internal service report is a technical document, not an invoice with extra
+information. It must prioritize the incident, initial diagnosis, intervention,
+consumed material, technical notes and photographic evidence.
+
+### Document lifecycle
+
+- `x_sat_report_dms_file_id` points to the current report PDF in DMS.
+- Generating or regenerating replaces the document with the same deterministic
+  SAT filename; it does not create an uncontrolled document history.
+- `x_sat_report_notes` stores complementary text that belongs only to the
+  report, not to the daily repair notes. If a report already exists, saving
+  those notes automatically regenerates the archived PDF.
+- The document tab exposes generation, download, regeneration, complementary
+  notes and email as compact actions within the report card.
+
+### Layout and content rules
+
+- The report does not show prices, taxes or totals. Commercial amounts belong
+  to a quote, proforma or invoice.
+- Repair notes may flow over pages when genuinely long. QWeb page-break
+  behaviour can move a whole technical block to the next page when it cannot
+  fit cleanly; that is preferable to splitting a small structured block.
+- Photographic evidence uses one framed image per page so screenshots and
+  technical details remain legible without distortion or cropping.
+- Images are selected by the existing SAT image-report flag. The report does
+  not invent a second manual photo selection workflow.
+
+### Email delivery
+
+- `Enviar` uses `mail.compose.message`, never a custom mail flow.
+- The attachment is copied temporarily from the current DMS PDF for the
+  composer. It does not create another DMS document or expose a DMS URL.
+- The template `SAT - Informe técnico` belongs to `repair.order`, is editable
+  through Odoo's template UI and is preselected when opening the composer.
+- The sent message and its attachment remain traceable in the SAT chatter.
+
+### Report permissions
+
+Report actions use module-owned groups instead of generic DMS access:
+
+- `Informes Wexplay: Consultar y descargar` can download the report associated with
+  a repair the user may read.
+- `Informes Wexplay: Generar, editar y enviar` implies the previous group and can
+  generate, regenerate, edit complementary notes and send the report.
+
+The groups are created on module installation/update but are not assigned
+automatically. DMS access is encapsulated after the repair and report-group
+checks, so a user granted report download does not gain general access to SAT
+directories or files.
 
 ## Notes For Next Phases
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_wexplay_portal_repair_delivery" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.wexplay.portal.repair.delivery</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="wexplay_repair_delivery.res_config_settings_view_form_wexplay_repair_delivery"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='wexplay_sat_delivery_notification_settings']" position="inside">
+                <setting string="Avisos automáticos de logística en portal"
+                         help="Avisa a los usuarios portal autorizados cuando MRW confirma una recogida o entrega y su etiqueta está disponible.">
+                    <field name="x_portal_shipping_notifications_enabled"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

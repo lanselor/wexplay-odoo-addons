@@ -23,6 +23,7 @@ Current MVP:
     "data": [
         "security/wex_portal_repair_event_security.xml",
         "security/ir.model.access.csv",
+        "views/res_config_settings_views.xml",
         "views/portal_dashboard_views.xml",
         "views/portal_repair_event_views.xml",
         "views/portal_repair_workflow_templates.xml",
@@ -34,7 +35,6 @@ Current MVP:
             "wexplay_portal_repair_workflow/static/src/scss/portal_dashboard.scss",
         ],
         "web.assets_frontend": [
-            "wexplay_portal_repair_workflow/static/src/js/portal_budget_debug.js",
             "wexplay_portal_repair_workflow/static/src/js/portal_pending_budget_alert.js",
             "wexplay_portal_repair_workflow/static/src/scss/portal_repair_workflow.scss",
         ],

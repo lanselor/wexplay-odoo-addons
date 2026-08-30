@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from odoo.exceptions import AccessError
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase
 
 
-class TestPortalRepairSecurity(SavepointCase):
+class TestPortalRepairSecurity(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -127,3 +127,14 @@ class TestPortalRepairSecurity(SavepointCase):
 
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0]["name"], self.service_product.display_name)
+
+    def test_portal_shows_warranty_for_an_open_repair_without_coverage(self):
+        if "x_warranty_status" not in self.own_repair._fields:
+            self.skipTest("El módulo de garantías no está instalado.")
+
+        values = self.own_repair.with_user(
+            self.portal_user
+        )._get_portal_warranty_values()
+
+        self.assertTrue(values["show"])
+        self.assertFalse(values["is_valid"])

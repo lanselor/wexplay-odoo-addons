@@ -18,7 +18,8 @@ vinculada como documento comercial real.
   - cancela la cotizacion vinculada si esta en borrador o enviada
   - marca el presupuesto SAT como rechazado
 - Registro backend:
-  - guarda eventos de presupuesto visto, aceptado y rechazado
+  - guarda eventos de presupuesto visto, aceptado y rechazado, y muestra las
+    descargas correctas de informes registradas por el módulo de informes
   - deja aceptaciones y rechazos como pendientes de gestion interna
   - permite abrir el SAT o la cotizacion desde `Reparaciones > Portal clientes`
 
@@ -28,5 +29,10 @@ vinculada como documento comercial real.
 - No abre conversacion ni notifica automaticamente al tecnico.
 - No reemplaza el portal nativo de cotizaciones/facturas.
 - No usa `schedule_date` como prioridad automatica de avisos.
+- No genera ni autoriza informes: solo ofrece la infraestructura común de
+  actividad interna y dashboard para sus descargas.
+- No expone depuración técnica en el portal ni acepta `?debug=1`. El registro
+  reducido para soporte se activa únicamente desde Ajustes por administradores
+  y se conserva solo en el log del servidor.
 
 Las decisiones y deuda tecnica estan documentadas en `ARCHITECTURE.md`.

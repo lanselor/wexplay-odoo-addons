@@ -155,7 +155,6 @@ class TestPortalBudgetWorkflow(SavepointCase):
         )
 
         self.assertEqual(debug_values["repair_id"], repair.id)
-        self.assertEqual(debug_values["sale_order_id"], sale_order.id)
         self.assertEqual(debug_values["sale_order_state"], "draft")
         self.assertTrue(debug_values["can_portal_access"])
         self.assertTrue(debug_values["can_portal_review_budget"])

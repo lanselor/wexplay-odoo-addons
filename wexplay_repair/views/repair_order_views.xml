@@ -308,6 +308,7 @@
                                                     <button name="action_generate_sat_report"
                                                             type="object"
                                                             class="btn btn-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            groups="wexplay_repair.group_wex_repair_sat_report_manage"
                                                             invisible="x_sat_report_dms_file_id">
                                                         <i class="fa fa-file-text-o"/>
                                                         Generar informe
@@ -315,6 +316,7 @@
                                                     <button name="action_download_sat_report"
                                                             type="object"
                                                             class="btn btn-outline-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            groups="wexplay_repair.group_wex_repair_sat_report_download,wexplay_repair.group_wex_repair_sat_report_manage"
                                                             invisible="not x_sat_report_dms_file_id">
                                                         <i class="fa fa-download"/>
                                                         Descargar
@@ -322,6 +324,7 @@
                                                     <button name="action_send_sat_report"
                                                             type="object"
                                                             class="btn btn-outline-primary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            groups="wexplay_repair.group_wex_repair_sat_report_manage"
                                                             invisible="not x_sat_report_dms_file_id">
                                                         <i class="fa fa-envelope-o"/>
                                                         Enviar
@@ -329,6 +332,7 @@
                                                     <button name="action_generate_sat_report"
                                                             type="object"
                                                             class="btn btn-outline-secondary wex_repair_document_action d-inline-flex align-items-center gap-2"
+                                                            groups="wexplay_repair.group_wex_repair_sat_report_manage"
                                                             invisible="not x_sat_report_dms_file_id">
                                                         <i class="fa fa-refresh"/>
                                                         Regenerar
@@ -336,6 +340,7 @@
                                                     <button name="action_open_sat_report_notes_wizard"
                                                             type="object"
                                                             class="btn btn-outline-secondary wex_repair_document_notes_action"
+                                                            groups="wexplay_repair.group_wex_repair_sat_report_manage"
                                                             title="Notas complementarias del informe"
                                                             aria-label="Notas complementarias del informe">
                                                         <span class="wex_repair_document_notes_icon">
