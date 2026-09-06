@@ -1,0 +1,15 @@
+<odoo>
+    <record id="repair_customer_portal_badge" model="ir.ui.view">
+        <field name="name">repair.customer.portal.badge</field><field name="model">repair.order</field>
+        <field name="inherit_id" ref="wexplay_repair.view_repair_order_form_wexplay"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="attributes">
+                <attribute name="class" add="wex_repair_portal_title" separator=" "/>
+            </xpath>
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="inside">
+                <field name="wex_customer_has_portal" invisible="1" groups="base.group_user"/>
+                <span class="badge text-bg-success fs-6 px-3 py-2 wex_repair_portal_badge" groups="base.group_user" invisible="not wex_customer_has_portal" title="La empresa cliente tiene acceso portal activo.">CLIENTE PORTAL</span>
+            </xpath>
+        </field>
+    </record>
+</odoo>

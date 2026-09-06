@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_professional_sat" model="ir.ui.view">
+        <field name="name">res.partner.form.professional.sat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="x_is_professional_sat_customer" invisible="not is_company"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_partner_search_professional_sat" model="ir.ui.view">
+        <field name="name">res.partner.search.professional.sat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="professional_sat_customer" string="Clientes SAT profesionales"
+                        domain="[('is_company', '=', True), ('x_is_professional_sat_customer', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

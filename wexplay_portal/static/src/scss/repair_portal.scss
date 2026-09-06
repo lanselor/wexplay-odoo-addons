@@ -1,0 +1,14 @@
+.o_form_view .wex_repair_portal_title {
+    width: 100%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    > label { grid-column: 1; }
+    > h1 { grid-column: 1; }
+    > .wex_repair_portal_badge { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+    @media (max-width: 767px) {
+        grid-template-columns: minmax(0, 1fr);
+        > .wex_repair_portal_badge { grid-column: 1; grid-row: auto; justify-self: start; margin-bottom: 1rem; }
+    }
+}

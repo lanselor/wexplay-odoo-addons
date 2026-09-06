@@ -1,0 +1,32 @@
+<odoo>
+    <record id="finish_repair_billing" model="ir.ui.view">
+        <field name="name">repair.finish.portal.billing</field>
+        <field name="model">wex.finish.repair.glue.choice.wizard</field>
+        <field name="inherit_id" ref="wexplay_repair_workflow.view_wex_finish_repair_glue_choice_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes"><attribute name="edit">1</attribute></xpath>
+            <xpath expr="//sheet/group/p" position="attributes"><attribute name="invisible">not wex_requires_glue</attribute></xpath>
+            <xpath expr="//sheet" position="inside">
+                <field name="wex_requires_glue" invisible="1"/>
+                <field name="wex_ask_billing" invisible="1"/>
+                <field name="wex_auto_billing" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="not wex_ask_billing">
+                    Estás finalizando una reparación de cliente portal.
+                    ¿Quieres añadir este SAT a la lista de facturación pendiente?
+                </div>
+                <div class="alert alert-info" role="alert" invisible="not wex_auto_billing">
+                    Este SAT se añadirá automáticamente a facturación pendiente al finalizar.
+                </div>
+                <group invisible="not wex_requires_glue or not wex_ask_billing">
+                    <field name="wex_billing_choice" widget="radio"/>
+                </group>
+            </xpath>
+            <button name="action_finish_to_glue_desk" position="attributes"><attribute name="invisible">not wex_requires_glue</attribute></button>
+            <button name="action_finish_to_pickup" position="attributes"><attribute name="invisible">not wex_requires_glue</attribute></button>
+            <xpath expr="//footer/button[1]" position="before">
+                <button name="action_finish_with_billing" type="object" string="Finalizar y añadir" class="btn-primary" invisible="wex_requires_glue"/>
+                <button name="action_finish_without_billing" type="object" string="Finalizar sin añadir" invisible="wex_requires_glue"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

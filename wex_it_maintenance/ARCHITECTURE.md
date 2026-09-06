@@ -2,6 +2,11 @@
 
 ## Purpose
 
+The existing `x_is_it_maintenance_customer` flag also appears in the main
+company contact form, keeping the IT user group visibility. It remains owned
+by this module and independent of SAT classification and portal access.
+The existing IT tab and customer data remain available without migration.
+
 `wex_it_maintenance` models the IT maintenance service that Wexplay provides to business customers.
 
 The module is built around:

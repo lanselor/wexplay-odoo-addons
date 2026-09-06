@@ -280,7 +280,24 @@ imagenes o mantenimiento IT.
 
 ---
 
-## Facturacion
+## Indicador interno de acceso portal en Contactos
+
+`res.partner.wex_has_active_portal` es un indicador calculado, no almacenado y
+buscable, disponible solo para usuarios internos. En personas representa su
+usuario portal activo; en empresas contempla usuarios portal activos de la
+misma entidad comercial, incluidos contactos anidados. No implica que se haya
+completado la invitación o iniciado sesión. No concede ni revoca permisos.
+
+La ficha muestra `CLIENTE PORTAL` en empresas y `ACCESO PORTAL` en personas.
+La consulta elevada de usuarios queda encapsulada en el modelo para permitir
+la lectura del indicador sin conceder administración de usuarios. Los dominios
+de búsqueda finales siguen sujetos a las reglas de acceso de Contactos.
+
+La clasificación SAT pertenece a `wexplay_repair` y la clasificación IT a
+`wex_it_maintenance`. Ninguna clasificación modifica el acceso portal, el
+workflow comercial, los plazos de pago o la facturación.
+
+## Facturacion nativa
 
 La facturacion del portal debe reutilizar `account`.
 
@@ -457,3 +474,9 @@ Puntos detectados para sanear en futuras iteraciones, sin bloquear el MVP actual
 - El dashboard de Portal clientes muestra las descargas del periodo y las incorpora a la actividad reciente.
 - El evento de descarga conserva si se generó la variante Wexplay o la
   personalizada. Es informativo y se marca como gestionado automáticamente.
+
+## Portal badge on the repair form
+
+The repair header uses the commercial partner's active portal indicator. A scoped
+backend stylesheet positions the badge beside the repair reference and below it
+on narrow screens. The badge does not represent billing or warranty status.

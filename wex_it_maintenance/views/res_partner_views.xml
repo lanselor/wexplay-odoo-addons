@@ -257,6 +257,10 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="x_is_it_maintenance_customer" invisible="not is_company"
+                       groups="wex_it_maintenance.group_it_maintenance_user"/>
+            </xpath>
             <xpath expr="//sheet/notebook" position="inside">
                 <page string="Mantenimiento IT" groups="wex_it_maintenance.group_it_maintenance_user">
                     <group>

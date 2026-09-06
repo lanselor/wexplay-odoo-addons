@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_portal_status" model="ir.ui.view">
+        <field name="name">res.partner.form.portal.status</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_type']" position="after">
+                <field name="wex_has_active_portal" invisible="1" groups="base.group_user"/>
+                <div class="mb-2" invisible="not wex_has_active_portal" groups="base.group_user">
+                    <span class="badge text-bg-success fs-6 px-3 py-2" invisible="not is_company"
+                          title="La empresa o alguno de sus contactos tiene acceso portal habilitado.">
+                        CLIENTE PORTAL
+                    </span>
+                    <span class="badge text-bg-success fs-6 px-3 py-2" invisible="is_company"
+                          title="Este contacto tiene acceso portal propio habilitado.">
+                        ACCESO PORTAL
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_partner_search_portal_status" model="ir.ui.view">
+        <field name="name">res.partner.search.portal.status</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="active_portal_customer" string="Portal activo"
+                        domain="[('wex_has_active_portal', '=', True)]" groups="base.group_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

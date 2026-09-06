@@ -1,0 +1,11 @@
+<odoo>
+    <record id="partner_auto_portal_billing" model="ir.ui.view">
+        <field name="name">res.partner.auto.portal.billing</field><field name="model">res.partner</field>
+        <field name="inherit_id" ref="wexplay_repair.view_partner_form_professional_sat"/>
+        <field name="arch" type="xml">
+            <field name="x_is_professional_sat_customer" position="after">
+                <field name="wex_auto_portal_billing" invisible="not is_company or not x_is_professional_sat_customer" groups="base.group_user"/>
+            </field>
+        </field>
+    </record>
+</odoo>

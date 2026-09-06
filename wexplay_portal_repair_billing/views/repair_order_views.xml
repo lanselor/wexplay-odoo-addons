@@ -1,0 +1,47 @@
+<odoo>
+    <record id="repair_portal_billing_form" model="ir.ui.view">
+        <field name="name">repair.portal.billing.form</field><field name="model">repair.order</field>
+        <field name="inherit_id" ref="wexplay_repair.view_repair_order_form_wexplay"/>
+        <field name="arch" type="xml">
+            <field name="x_customer_reference" position="after">
+                <field name="wex_portal_billing_pending" invisible="1" groups="base.group_user"/>
+                <field name="wex_billing_tracking_state" readonly="1" groups="base.group_user"/>
+                <div class="badge text-bg-info" invisible="not wex_portal_billing_pending" groups="base.group_user">Pendiente de facturación administrativa</div>
+            </field>
+        </field>
+    </record>
+    <record id="portal_billing_list" model="ir.ui.view">
+        <field name="name">repair.portal.billing.list</field><field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" default_order="wex_portal_billing_added_at asc">
+                <header><button name="action_create_portal_billing_invoices" type="object" string="Crear facturas (Odoo)"/></header>
+                <field name="wex_billing_partner_id"/>
+                <field name="name"/><field name="x_customer_reference"/>
+                <field name="sale_order_id"/><field name="state"/>
+                <field name="wex_billing_invoice_status" widget="badge"/>
+                <field name="wex_billing_issue"/>
+                <field name="wex_portal_billing_added_at"/><field name="wex_portal_billing_added_by" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <button name="action_remove_portal_billing" type="object" icon="fa-trash" class="text-danger"
+                        string="" title="Retirar de facturación pendiente"
+                        confirm="¿Retirar este SAT de facturación pendiente? La reparación, el pedido y sus facturas se conservarán. No volverá automáticamente; podrás añadirlo de nuevo desde Acción."/>
+            </list>
+        </field>
+    </record>
+    <record id="action_portal_billing_pending" model="ir.actions.act_window">
+        <field name="name">Facturación administrativa por cliente</field><field name="res_model">repair.order</field>
+        <field name="view_mode">list,form</field><field name="view_id" ref="portal_billing_list"/>
+        <field name="domain">[("wex_portal_billing_pending", "=", True)]</field>
+        <field name="context">{"group_by": ["wex_billing_partner_id"], "active_test": False}</field>
+        <field name="help" type="html"><p>Los SAT salen al completar la facturación o cancelar su pedido. Vuelven cuando corresponde mientras su seguimiento siga activo.</p></field>
+    </record>
+    <record id="action_add_portal_billing" model="ir.actions.server">
+        <field name="name">Añadir a facturación pendiente de cliente portal</field>
+        <field name="model_id" ref="repair.model_repair_order"/>
+        <field name="binding_model_id" ref="repair.model_repair_order"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[(4, ref('stock.group_stock_user'))]"/>
+        <field name="state">code</field><field name="code">action = records.action_add_portal_billing()</field>
+    </record>
+    <menuitem id="menu_portal_billing" name="Facturación pendiente" parent="wexplay_portal_repair_workflow.menu_wex_portal_repair_activity_root" action="action_portal_billing_pending" sequence="25" groups="stock.group_stock_user"/>
+</odoo>

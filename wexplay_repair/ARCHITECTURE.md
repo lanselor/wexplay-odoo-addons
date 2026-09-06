@@ -20,6 +20,12 @@ This module is currently both:
 
 ## Current Responsibilities
 
+### `models/res_partner.py` and `views/res_partner_views.xml`
+- Own the independent `x_is_professional_sat_customer` classification.
+- Expose it on company contact forms and provide a company-only search filter.
+- Do not infer portal access, payment terms or invoicing eligibility from it.
+- IT customer classification remains owned by `wex_it_maintenance`.
+
 ### `models/repair_order.py`
 - Adds SAT fields to `repair.order`
 - Keeps Odoo's technical `done` state, but labels it as `Finalizado` for SAT
@@ -330,3 +336,15 @@ directories or files.
   - SAT functional area
   - its report action
   - its paperformat
+
+## Customer references on native invoice lines
+
+SaleOrderLine._prepare_invoice_line delegates to Odoo and appends the SAT customer
+reference to the returned description only. The persisted invoice description
+preserves that value if the repair changes later. No posted invoices are rewritten.
+Sections, notes and native down-payment lines are excluded. Empty references add
+nothing. The bounded SAT lookup follows an authorized sale order in the same
+company so sales users need not gain repair access. For orders linked to multiple
+repairs, a unique repair stock-move relationship resolves the line; ambiguous
+references raise a clear error rather than attributing a service to the wrong SAT.
+The existing SAT and native invoice reports consume the stored line description.

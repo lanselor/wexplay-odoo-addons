@@ -7,6 +7,11 @@ from odoo.exceptions import AccessError
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
+    wex_customer_has_portal = fields.Boolean(
+        related="partner_id.commercial_partner_id.wex_has_active_portal",
+        string="Cliente portal", groups="base.group_user", compute_sudo=False,
+    )
+
     x_portal_state_label = fields.Char(
         string="Portal status label",
         compute="_compute_x_portal_state_label",
