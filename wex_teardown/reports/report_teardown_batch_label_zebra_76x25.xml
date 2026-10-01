@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_teardown_batch_label_zebra_76x25">
+        <t t-name="wex_teardown.report_teardown_batch_label_zebra_76x25">
+            <t t-set="full_width" t-value="True"/>
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="base_url" t-value="env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                    <style>
+                        @page { size: 76mm 25mm; margin: 0; }
+                        html, body { margin: 0 !important; padding: 0 !important; font-family: Arial, sans-serif !important; }
+                        .wex-label-page { width: 76mm !important; min-width: 76mm !important; min-height: 0 !important; height: 25mm !important; margin: 0 !important; padding: 1.2mm 1.5mm !important; box-sizing: border-box !important; color: #000; overflow: hidden; }
+                        .wex-label-page table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        .wex-label-title { font-size: 5.5pt; font-weight: 800; letter-spacing: .35mm; }
+                        .wex-label-reference { margin-top: .5mm; font-size: 13pt; font-weight: 900; line-height: 1; white-space: nowrap; }
+                        .wex-label-device { text-align: right; font-weight: 700; line-height: 1.05; text-transform: uppercase; }
+                        .wex-label-device-type { font-size: 6.5pt; }
+                        .wex-label-device-model { font-size: 9.5pt; font-weight: 800; line-height: 1; }
+                        .wex-label-divider { border-top: .35mm solid #000; height: 1.2mm; }
+                        .wex-label-content { height: 12.8mm; }
+                        .wex-label-barcode { width: 100%; height: 9.8mm; display: block; }
+                        .wex-label-code { margin-top: .3mm; text-align: center; font-family: monospace; font-size: 7pt; font-weight: 800; white-space: nowrap; }
+                    </style>
+                    <div class="page wex-label-page">
+                        <table>
+                            <tr>
+                                <td style="width: 65%; vertical-align: top;">
+                                    <div class="wex-label-title">LOTE DE DESPIECE</div>
+                                    <div class="wex-label-reference"><t t-esc="o.name"/></div>
+                                </td>
+                                <td style="width: 35%; vertical-align: top;">
+                                    <div class="wex-label-device">
+                                        <t t-set="device_label" t-value="{'console': 'CONSOLA', 'gpu': 'GRAFICA', 'imac': 'IMAC', 'mini_pc': 'MINI PC', 'monitor': 'MONITOR', 'mobile': 'MOVIL', 'motherboard': 'PLACA BASE', 'laptop': 'PORTATIL', 'smartwatch': 'SMARTWATCH', 'desktop': 'SOBREMESA', 'tablet': 'TABLET', 'all_in_one': 'TODO EN UNO', 'pos': 'TPV'}.get(o.device_type, 'OTROS')"/>
+                                        <div class="wex-label-device-type" t-esc="device_label"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="wex-label-divider"/>
+                        <table class="wex-label-content">
+                            <tr>
+                                <td style="width: 58%; vertical-align: top; padding-right: 2mm;">
+                                    <img t-att-src="'%s/report/barcode/Code128/%s?width=560&amp;height=110&amp;humanreadable=0' % (base_url, o.name)" class="wex-label-barcode" alt="Barcode"/>
+                                    <div class="wex-label-code"><t t-esc="o.name"/></div>
+                                </td>
+                                <td style="width: 42%; vertical-align: middle;">
+                                    <div class="wex-label-device">
+                                        <div class="wex-label-device-model"><span t-esc="o.brand_id.name or ''"/> <span t-esc="o.model_id.name or ''"/></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

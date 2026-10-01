@@ -1,8 +1,4 @@
-from odoo import api, SUPERUSER_ID
-
-
-def post_init_hook(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
+def post_init_hook(env):
     repair_picking_types = env["stock.picking.type"].sudo().search([
         ("code", "=", "repair_operation"),
     ])

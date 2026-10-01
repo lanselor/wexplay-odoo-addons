@@ -165,11 +165,16 @@ export async function testQzConnection() {
     }
 }
 
-export function buildQlLabelConfig(printer, opts = {}) {
+export function buildLabelConfig(printer, opts = {}) {
     const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
-    const size = { width: 29 };
-    if (opts.height && opts.height > 0) {
-        size.height = opts.height;
+    const pageWidth = Number(opts.width || 29);
+    const pageHeight = Number(opts.height || 0);
+    const size = { width: pageWidth };
+    if (pageHeight > 0) {
+        // Etiquetas landscape: QZ recibe lado corto × lado largo. Conserva
+        // el comportamiento Brother y permite Zebra 76×25.
+        size.width = Math.min(pageWidth, pageHeight);
+        size.height = Math.max(pageWidth, pageHeight);
     }
 
     return window.qz.configs.create(printer, {
@@ -186,6 +191,9 @@ export function buildQlLabelConfig(printer, opts = {}) {
         copies,
     });
 }
+
+// Compatibilidad para las llamadas existentes del stack Brother.
+export const buildQlLabelConfig = buildLabelConfig;
 
 export function buildThermalConfig(printer) {
     return window.qz.configs.create(printer, {
@@ -221,13 +229,13 @@ export function buildA4Config(printer, opts = {}) {
 function getConfigBuilderByKind(kind, opts = {}) {
     switch (kind) {
         case "label":
-            return buildQlLabelConfig;
+            return buildLabelConfig;
         case "thermal":
             return buildThermalConfig;
         case "a4":
             return (printer) => buildA4Config(printer, opts);
         default:
-            return buildQlLabelConfig;
+            return buildLabelConfig;
     }
 }
 
@@ -295,7 +303,7 @@ async function _printOdooPdfUrlWithConfig(reportUrl, printerName, buildConfigFn)
 
 export async function printOdooPdfUrl(reportUrl, printerName = "Brother QL-710W") {
     return _printOdooPdfUrlWithConfig(reportUrl, printerName, (printer) =>
-        buildQlLabelConfig(printer, { copies: 1 })
+        buildLabelConfig(printer, { copies: 1 })
     );
 }
 
@@ -384,6 +392,7 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
     const nextResolution = route.nextResolution || {};
     const effectiveOpts = { ...opts };
     const useNewResolution = route.resolutionSource === "new" && nextResolution.found;
+    const requiresNewResolution = !!opts.requireNewResolution;
 
     if (useNewResolution) {
         effectiveOpts.printerName = nextResolution.printer_name || "";
@@ -396,11 +405,21 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
         (!nextResolution.printer_name || nextResolution.printer_name === info.printerName);
 
     try {
+        if (requiresNewResolution && !useNewResolution) {
+            throw new Error(
+                "Configure una asignación Zebra para este documento y active 'Resolución nueva' antes de imprimir."
+            );
+        }
         if (useNewResolution) {
-            const labelHeight = route.documentType?.paperformat_label_length || 0;
+            const labelWidth = route.documentType?.paperformat_page_width || 0;
+            const labelHeight = route.documentType?.paperformat_page_height || 0;
             const buildConfigFn = (printer) => {
                 if (route.kind === "label") {
-                    return buildQlLabelConfig(printer, { copies, height: labelHeight || undefined });
+                    return buildLabelConfig(printer, {
+                        copies,
+                        width: labelWidth || undefined,
+                        height: labelHeight || undefined,
+                    });
                 }
                 if (route.kind === "thermal") {
                     return buildThermalConfig(printer);
@@ -441,7 +460,7 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
         });
         return true;
     } catch (error) {
-        if (useNewResolution && route.requestedMode === "hybrid") {
+        if (!requiresNewResolution && useNewResolution && route.requestedMode === "hybrid") {
             try {
                 await printOdooPdfUrlByKind(route.kind, reportUrl, env, opts);
                 await _tracePrint(env, {

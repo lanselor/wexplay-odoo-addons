@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_wex_teardown_batch_print_center" model="ir.actions.client">
+        <field name="name">Imprimir etiqueta de lote</field>
+        <field name="tag">wex_teardown.print_batch_label</field>
+    </record>
+    <record id="view_wex_teardown_batch_form_print_label" model="ir.ui.view">
+        <field name="name">wex.teardown.batch.form.print.label</field>
+        <field name="model">wex.teardown.batch</field>
+        <field name="inherit_id" ref="wex_teardown.view_wex_teardown_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_wex_teardown_batch_print_center)d" type="action" string="Imprimir etiqueta" class="btn-secondary" invisible="name == '/' or state == 'cancelled'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

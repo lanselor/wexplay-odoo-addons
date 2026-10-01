@@ -87,3 +87,25 @@ Cuando se construyan `act_window` manualmente para consumo desde widgets OWL,
 devolver siempre `views` de forma explicita si el flujo depende del cliente web
 moderno. Eso reduce diferencias entre instalaciones y evita errores opacos en
 frontend.
+
+
+---
+
+## 2026-09-13 — Preparación y stock
+
+La ejecución original unía creación de producto y stock y capturaba excepciones sin savepoint por
+pieza. Se separó en preparación archivada y finalización atómica; un fallo revierte activación y
+movimiento, y el reintento no duplica cantidades.
+
+En Odoo 18, el movimiento podía quedar `assigned` al llamar `_action_done()` sin marcar `picked`.
+Se marca explícitamente tras fijar cantidad, se evita fusión y se comprueba el estado `done`.
+
+La validación rechazaba el part number vacío aunque la ausencia estuviera confirmada. Ahora respeta
+la confirmación por pieza. La entrada en Completar datos ya no borra indiscriminadamente la
+confirmación de advertencias; se invalida cuando cambian datos relevantes.
+
+La instalación limpia encontró `post_init_hook(cr, registry)` en `wexplay_repair`. Se adaptó a la firma
+nativa de Odoo 18 `post_init_hook(env)`, manteniendo su comportamiento de configuración de secuencias.
+
+Se añaden pruebas con usuario de Despieces, galería nativa, cancelación/recuperación, aislamiento por
+compañía, stock, errores y conexiones simultáneas. No se actualizó la base operativa ni la impresión.

@@ -142,7 +142,7 @@ class WexTeardownBatch(models.Model):
             rec.line_count = len(lines)
             rec.created_count = len(lines.filtered(lambda line: line.state == "created"))
             rec.discarded_count = len(lines.filtered(lambda line: line.state == "discarded"))
-            rec.error_count = len(lines.filtered(lambda line: line.state == "error"))
+            rec.error_count = len(lines.filtered(lambda line: line.state == "error" or line.validation_status == "error"))
             rec.warning_count = len(lines.filtered(lambda line: line.validation_status == "warning"))
             rec.pending_count = len(
                 lines.filtered(lambda line: line.state not in ("created", "discarded", "error"))
@@ -310,22 +310,6 @@ class WexTeardownBatch(models.Model):
             rec.message_post(body=_("Despiece validado."))
         return True
 
-    def action_create_or_update_products(self):
-        for rec in self:
-            if rec.state not in ("validated", "partial_created"):
-                raise UserError(_("Solo se pueden procesar despieces validados o parcialmente creados."))
-            rec._check_stock_location()
-            processable_lines = rec.line_ids.filtered(lambda line: line._can_process_product())
-            if not processable_lines:
-                raise UserError(_("No hay lineas pendientes para procesar."))
-            for line in processable_lines:
-                line.action_create_or_update_product()
-            rec._update_state_after_processing()
-            rec.processed_at = fields.Datetime.now()
-            rec.processed_by = self.env.user
-            rec.message_post(body=_("Creacion/actualizacion de productos ejecutada."))
-        return True
-
     def action_cancel(self):
         self.write({"state": "cancelled"})
         return True
@@ -364,7 +348,6 @@ class WexTeardownBatch(models.Model):
         self.ensure_one()
         self._check_can_focus_data_completion()
         self._normalize_data_completion_decisions()
-        self.warning_confirmed = False
 
     def _check_can_focus_data_completion(self):
         self.ensure_one()
@@ -414,7 +397,7 @@ class WexTeardownBatch(models.Model):
 
     def _get_data_completion_lines(self):
         self.ensure_one()
-        return self.line_ids.filtered(lambda line: line.qc_state == "ok" and line.state != "discarded")
+        return self.line_ids.filtered(lambda line: line.qc_state == "ok" and line.state not in ("discarded", "created", "product_prepared"))
 
     def _get_available_sale_tax_options(self):
         self.ensure_one()
@@ -462,11 +445,3 @@ class WexTeardownBatch(models.Model):
         self.ensure_one()
         if not self.company_id.wex_teardown_default_location_id:
             raise UserError(_("Configure la ubicacion destino de despieces en la compania."))
-
-    def _update_state_after_processing(self):
-        self.ensure_one()
-        active_lines = self.line_ids.filtered(lambda line: line.state != "discarded")
-        if active_lines and all(line.state == "created" for line in active_lines):
-            self.state = "done"
-        else:
-            self.state = "partial_created"

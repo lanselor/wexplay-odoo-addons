@@ -317,9 +317,11 @@ class WexTeardownLine(models.Model):
 
     def action_choose_existing_product(self, product_id, update_name=False):
         self.ensure_one()
-        product = self.env["product.template"].browse(product_id).exists()
+        self.check_access("write")
+        product = self.env["product.template"].with_context(active_test=False).browse(product_id).exists()
         if not product:
             raise UserError(_("No se ha encontrado el producto seleccionado."))
+        self._check_product_scope(product)
         generated_name = self.name_final or self.name_suggested or product.name
         vals = {
             "existing_product_id": product.id,
@@ -333,9 +335,14 @@ class WexTeardownLine(models.Model):
         return self._get_operational_row_data()
 
     def action_open_existing_product(self, product_id):
-        product = self.env["product.template"].browse(product_id).exists()
+        self.ensure_one()
+        self.check_access("read")
+        product = self.env["product.template"].with_context(active_test=False).browse(product_id).exists()
         if not product:
             raise UserError(_("No se ha encontrado el producto solicitado."))
+        product.check_access("read")
+        if product.company_id and product.company_id != self.company_id:
+            raise UserError(_("El producto pertenece a otra compañía."))
         form_view = self.env.ref("product.product_template_only_form_view", raise_if_not_found=False)
         return {
             "type": "ir.actions.act_window",
@@ -345,6 +352,7 @@ class WexTeardownLine(models.Model):
             "view_mode": "form",
             "views": [(form_view.id, "form")] if form_view else [(False, "form")],
             "target": "current",
+            "context": {"active_test": False},
         }
 
     def action_regenerate_name(self):
@@ -355,21 +363,6 @@ class WexTeardownLine(models.Model):
 
     def action_unlock_manual_name(self):
         self.write({"name_manual_locked": True})
-        return True
-
-    def action_create_or_update_product(self):
-        for rec in self:
-            try:
-                rec._process_product()
-            except Exception as error:
-                rec.write(
-                    {
-                        "state": "error",
-                        "validation_status": "error",
-                        "validation_message": str(error),
-                    }
-                )
-                rec.batch_id.message_post(body=_("Error en linea %s: %s") % (rec.display_name, error))
         return True
 
     def _mark_qc(self, qc_state):
@@ -504,6 +497,9 @@ class WexTeardownLine(models.Model):
                     "part_number": candidate.wex_teardown_part_number or candidate.default_code or "",
                     "model_name": candidate.wex_teardown_model_id.display_name or "",
                     "is_selected": self.existing_product_id == candidate,
+                    "catalog_state": ("Activo" if candidate.active else
+                                      "En preparación" if candidate.wex_teardown_preparation_state == "pending" else
+                                      "Preparación cancelada (responsable)" if candidate.wex_teardown_preparation_state == "cancelled" else "Archivado"),
                 }
             )
         serialized.sort(
@@ -538,60 +534,11 @@ class WexTeardownLine(models.Model):
 
     def _is_active_review_line(self):
         self.ensure_one()
-        return self.qc_state in ("pending", "ok") and self.state != "discarded"
+        return self.qc_state in ("pending", "ok") and self.state not in ("discarded", "created", "product_prepared")
 
     def _is_failed_review_line(self):
         self.ensure_one()
         return self.qc_state in ("fail", "not_applicable") or self.state == "discarded"
-
-    def _can_process_product(self):
-        self.ensure_one()
-        return self.state in ("ready", "warning", "error", "draft") and self.decision in (
-            "create_new",
-            "use_existing",
-        )
-
-    def _process_product(self):
-        self.ensure_one()
-        errors, warnings = self._validate_line()
-        if errors:
-            raise UserError("\n".join(errors))
-        if self.stock_move_id and self.stock_move_id.state == "done":
-            raise UserError(_("Esta linea ya tiene un movimiento de stock validado."))
-        if self.decision == "use_existing":
-            product = self._update_existing_product()
-        elif self.decision == "create_new":
-            product = self.product_tmpl_id or self._create_product()
-        else:
-            raise UserError(_("La linea no tiene una decision procesable."))
-        if self.product_tmpl_id != product:
-            self.product_tmpl_id = product
-        stock_move = self._create_stock_entry(product)
-        self.write(
-            {
-                "product_tmpl_id": product.id,
-                "stock_move_id": stock_move.id,
-                "stock_ref": stock_move.reference or stock_move.name,
-                "state": "created",
-                "validation_status": "warning" if warnings else "ok",
-                "validation_message": "\n".join(warnings),
-            }
-        )
-
-    def _create_product(self):
-        self.ensure_one()
-        vals = self._prepare_product_create_vals()
-        return self.env["product.template"].with_company(self.company_id).create(vals)
-
-    def _update_existing_product(self):
-        self.ensure_one()
-        if not self.existing_product_id:
-            raise UserError(_("Debe seleccionar el producto existente."))
-        product = self.existing_product_id.with_company(self.company_id)
-        vals = self._prepare_product_update_vals(product)
-        if vals:
-            product.write(vals)
-        return product
 
     def _prepare_product_create_vals(self):
         self.ensure_one()
@@ -673,6 +620,7 @@ class WexTeardownLine(models.Model):
             if move.state == "draft":
                 move._action_confirm()
             self._set_move_done_quantity(move)
+            move.picked = True
             move._action_done()
             return move
         variant = product.product_variant_id
@@ -697,8 +645,9 @@ class WexTeardownLine(models.Model):
             }
         )
         self.write({"stock_move_id": move.id, "stock_ref": move.reference or move.name})
-        move._action_confirm()
+        move._action_confirm(merge=False)
         self._set_move_done_quantity(move)
+        move.picked = True
         move._action_done()
         return move
 
@@ -728,8 +677,11 @@ class WexTeardownLine(models.Model):
 
     def _get_duplicate_candidates(self):
         self.ensure_one()
-        Product = self.env["product.template"]
-        domain = [("wex_condition", "=", "refurbished")]
+        Product = self.env["product.template"].with_context(active_test=False)
+        domain = self._get_catalog_domain()
+        exact = self._get_exact_products()
+        if exact:
+            return exact
         structured_domain = self._get_structured_duplicate_domain()
         if structured_domain:
             candidates = Product.search(expression.AND([domain, structured_domain]), limit=10)
@@ -1086,11 +1038,11 @@ class WexTeardownLine(models.Model):
             errors.append(_("%s: debe seleccionar producto existente.") % prefix)
         if self.qc_state in ("fail", "not_applicable"):
             return errors, warnings
-        if not self.part_number:
+        if not self.part_number and not self.missing_part_number_confirmed:
             errors.append(_("%s: sin part number confirmado.") % prefix)
         status = "error" if errors else ("warning" if warnings else "ok")
         self.write({"validation_status": status, "validation_message": "\n".join(errors + warnings)})
-        if not errors and self.state not in ("created", "discarded"):
+        if not errors and self.state not in ("created", "discarded", "product_prepared"):
             self.state = "warning" if warnings else "ready"
         return errors, warnings
 

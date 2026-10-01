@@ -1,5 +1,7 @@
 # Wexplay Despieces
 
+Actualizado: 2026-09-13. Versión 18.0.2.0.0; impresión excluida de esta iteración.
+
 ## Objetivo
 
 `wex_teardown` gestiona procesos internos de despiece de dispositivos fisicos y
@@ -14,6 +16,8 @@ Odoo, no altera ventas y no manipula `stock.quant` directamente.
 - `product`
 - `stock`
 - `mail`
+- `web`
+- `website_sale`: galería nativa de producto, sin almacenamiento propio de imágenes.
 - `wexplay_repair`
 - `wex_product_codes`
 
@@ -135,8 +139,10 @@ No crea marcas, modelos ni tipos de dispositivo paralelos.
 12. El usuario decide usar existente, usar existente actualizando nombre o
     continuar mas adelante con creacion/descartes en la fase de coincidencias.
 13. Se valida el despiece.
-14. Se crean o actualizan productos linea a linea.
-15. Se crea stock real mediante movimientos estandar.
+14. `Preparar productos` crea fichas nuevas archivadas o vincula productos existentes, sin stock.
+15. En `Productos pendientes`, se abre la ficha definitiva para completar imagen principal y galería.
+16. `Finalizar pieza` activa la ficha nueva y genera el movimiento de stock en una operación atómica.
+17. Los existentes conservan su activación; sus cambios propuestos se aplican al finalizar su línea.
 
 ## Estado real y foco interno
 
@@ -303,7 +309,10 @@ desplegar.
 
 ## Stock
 
-El modulo crea stock real al finalizar/procesar lineas validas.
+El módulo crea stock real exclusivamente al finalizar piezas preparadas con imagen principal.
+Preparar productos y guardar fotos no genera stock. Se exige producto almacenable con una sola
+variante y sin seguimiento por lote/serie en esta fase; el resto se bloquea antes de activar.
+Los movimientos se confirman sin fusionar, se marca `picked` y se verifica que terminen en `done`.
 
 El flujo es:
 
@@ -400,41 +409,94 @@ iteracion futura si el volumen de catalogo o la complejidad de comparacion lo
 justifican. La idea prevista es escalar solo cuando el matcher local no sea
 suficiente, no sustituirlo por defecto.
 
-## Creacion y actualizacion de productos
+## Preparación de productos y finalización
 
-La creacion usa `product.template.create()` estandar. `wex_product_codes` genera
-la referencia interna si la categoria tiene regla.
+`wex_teardown_line_lifecycle.py` concentra preparación, revisión de propuestas, finalización,
+rectificación y bloqueos. `wex_teardown_batch_lifecycle.py` concentra identidad y orquestación del lote.
+Los modelos originales conservan QC, nombres, matching, cálculo y preparación de valores.
 
-Para productos existentes se actualizan:
+Los nuevos productos se crean con `product.template.create()`, `active=False`, sin publicación web
+y con compañía del lote. La categoría inicial procede del componente; `wex_product_codes` genera
+la referencia, también en productos archivados. `product_tmpl_id` significa producto preparado,
+no stock ingresado. Se conserva el estado histórico de línea `created` para las finalizadas;
+el nuevo estado `product_prepared` indica preparación sin movimiento.
 
-- precio
-- condicion Wexplay
-- etiquetas
-- datos faltantes
-- stock mediante movimiento estandar
+El lote pasa a `products_prepared`, `partial_created` cuando hay finalizaciones parciales y `done`
+cuando terminan todas las piezas recuperables. `workflow_focus=products` abre los pendientes.
+Las líneas preparadas dejan de aparecer en los widgets operativos de Piezas/Completar datos.
+
+El producto guarda `wex_teardown_origin_line_id` y un único estado de preparación de catálogo:
+`pending`, `ready`, `cancelled`. Es necesario distinguir catálogo preparado de cada entrada física:
+varias líneas pueden reutilizar una misma ficha y generar cantidades independientes.
+
+La imagen y los datos del producto nuevo se editan en su ficha; los valores antiguos de la línea
+no los sobrescriben al finalizar. Para existentes se guarda una instantánea de nombre, precios,
+impuestos y huella al preparar. Si cambian, `Revisar propuesta` carga los valores actuales y retira
+la propuesta de renombrado. Después se pueden ajustar los importes antes de finalizar.
+
+La finalización exige imagen principal, validaciones de compañía y ubicación, producto válido y
+pieza apta. Activación, modificación del existente y movimiento ocurren en un savepoint por pieza.
+Si falla, se revierte esa pieza y se registra el error fuera del savepoint. Las carreras de PostgreSQL
+se propagan para que Odoo reintente la transacción completa. Una finalización repetida ya completada
+no genera otro movimiento. `Finalizar piezas listas` conserva las no finalizables con su motivo visible.
+
+La activación/publicación manual de fichas pendientes o canceladas está bloqueada en Python,
+incluyendo activación de variantes. Las escrituras internas usan una identidad Python privada que
+no puede fabricarse mediante un diccionario de contexto RPC. No se utiliza `sudo()` para el flujo.
+Activar mediante despiece no publica el producto en tienda.
+
+## Identidad física, catálogo y concurrencia
+
+Antes de cargar la plantilla se exige IMEI/serie o confirmación de que dispositivo/bandeja está
+identificado físicamente con la referencia. El IMEI acepta 15 dígitos, eliminando espacios. La serie
+conserva puntuación, elimina espacios exteriores y normaliza mayúsculas. La clave de serie incluye
+la marca; ambas identidades están acotadas por compañía y protegidas por unicidad en PostgreSQL.
+Sin identificador real, la confirmación física no garantiza deduplicación automática.
+
+La búsqueda de catálogo incluye archivados y muestra si están activos, pendientes o retirados.
+Solo activos y pendientes pueden reutilizarse normalmente. Un responsable puede recuperar una
+preparación cancelada mediante selección explícita y preparación desde otra pieza validada, si el
+producto no tiene movimientos finalizados. Un archivado ordinario no se reactiva por este flujo.
+
+Se busca coincidencia exacta nuevamente antes de crear. Las preparaciones se serializan mediante
+un UPDATE sin cambio de valor sobre la fila de la secuencia de despieces; no consume números.
+Esto permite que PostgreSQL detecte conflictos de snapshot en el aislamiento REPEATABLE READ de
+Odoo. Las finalizaciones bloquean lote, pieza y producto; cada línea conserva su movimiento propio.
+Los bloqueos son transaccionales y se liberan al confirmar o revertir la petición.
+
+## Cancelación, rectificación e históricos
+
+Un lote sin movimientos puede cancelarse: conserva fichas y fotos archivadas y libera su identidad.
+Si otro lote está preparando el mismo producto, se reasigna el origen a esa línea en vez de cancelar
+la preparación compartida. Un lote con movimientos no se cancela ni vuelve genéricamente a revisión.
+
+Un responsable puede rectificar una preparación sin stock. Si creó una ficha no compartida, esta
+queda cancelada y archivada, conservando el vínculo de origen; puede recuperarse expresamente como
+existente. No se eliminan productos o fotos automáticamente. Las relaciones y las validaciones de
+borrado preservan la trazabilidad de productos preparados y movimientos.
+
+No hay migración destructiva. Las líneas históricas `created` conservan sus movimientos; no se exige
+foto retroactivamente ni se genera stock de nuevo. Si un histórico tiene ficha o movimiento pero un
+estado ambiguo, no se reconcilia automáticamente: requiere revisión operativa. El responsable debe
+revisar especialmente los movimientos históricos que no estén en `done`.
 
 ## Etiquetas
 
-V1 solo conserva campos de trazabilidad:
+Las etiquetas de Zebra se implementan reutilizando `wex_print_core`. El lote tiene su propia etiqueta física y la etiqueta de producto permanece en `wexplay_product_print`; los campos históricos de trazabilidad no son una confirmación de impresión física.
 
-- `label_printed`
-- `label_printed_at`
+## Imágenes
 
-La impresion queda pendiente. Antes de implementarla se debe revisar
-`wexplay_product_print`, `wexplay_sat_print` y `wex_print_core` para reutilizar
-APIs existentes y evitar duplicar logica.
+Se utiliza `image_1920` como principal y `product_template_image_ids` / `product.image` para la
+galería de `website_sale`. Las fotos se suben directamente al producto archivado, sin copia temporal
+en Despieces, sin DMS ni manipulación de rutas de filestore. La miniatura en pendientes es related,
+no se almacena otra imagen. Una foto adicional no sustituye al requisito de imagen principal.
 
-## Imagenes
-
-No se implementan en V1.
-
-Cuando se retomen, deben definirse almacenamiento real, impacto en DMS/adjuntos y
-estrategia de acceso antes de escribir codigo.
+Las fotos son compartidas por el catálogo, no evidencia individual de cada unidad. La imagen ya
+existente satisface el requisito; no se reemplaza automáticamente al reutilizar un producto.
 
 ## Etiqueta de lote
 
-Queda documentada para futuro una etiqueta fisica del lote `DESP-XXXX` para
-trazabilidad y trabajo compartido. No se implementa impresion de lote en V1.
+La etiqueta física del lote `DESP-XXXX` está implementada con Zebra a 76 x 25 mm. Se imprime desde la cabecera del despiece mediante una acción QZ configurada.
 
 ## Seguridad
 
@@ -444,3 +506,28 @@ Grupos:
 - Responsable Despieces
 
 Las reglas operativas filtran batches y lineas por companias permitidas.
+
+El grupo Usuario Despieces implica Usuario de Inventario para trabajar con stock nativo. Se concede
+crear/editar producto y variante, gestionar medios nativos y leer reglas de referencia (sin editarlas).
+La galería comprueba acceso de escritura al producto propietario y compañías; los lotes/líneas
+mantienen sus reglas. El archivado es una condición operativa, no una barrera de seguridad para
+cualquier integración externa que busque también registros inactivos.
+
+## Verificación de esta iteración
+
+Instalación/actualización y pruebas sobre `codex_teardown_test_20260913`, una base local aislada.
+La base operativa no se ha actualizado. Suite ORM: `tests/test_teardown_lifecycle.py`.
+Las vistas efectivas y la presencia de la galería se comprueban también con usuario normal.
+`tests/concurrency_check.py` prueba carreras con conexiones independientes y commits reales;
+solo permite ejecutarse en bases cuyo nombre empieza por `codex_teardown_test_`.
+
+La dependencia `wexplay_repair` necesitó corregir la firma de su hook de instalación a `post_init_hook(env)`
+para Odoo 18. No se modificó su lógica funcional. La impresión no se ha implementado ni alterado.
+
+## Etiquetas Zebra de despiece
+
+El despiece dispone de `teardown_batch_label_zebra`, una etiqueta de lote de 76 x 25 mm. Se imprime desde el encabezado del lote y contiene la referencia `DESP-…`, tipo/modelo y un Code128 de la referencia; no muestra IMEI ni serie.
+
+La etiqueta de producto vive en `wexplay_product_print` como `product_label_zebra`. Incluye nombre, PVP IVA incluido y la referencia interna generada por Odoo como identificador y payload del Code128. No utiliza el ID técnico de Odoo ni un contador paralelo.
+
+Ambas rutas requieren una asignación Zebra mediante la resolución nueva de Wex Print. No caen al dispositivo Brother configurado en legacy. La etiqueta de lote no cambia estados ni marca una impresión como físicamente realizada: QZ solo confirma que el trabajo se envió.

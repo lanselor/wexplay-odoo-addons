@@ -23,19 +23,19 @@
                             <field name="device_type" readonly="1"/>
                             <field name="component_type_id" readonly="state in ('created', 'discarded')"/>
                             <field name="product_category_id"/>
-                            <field name="part_number"/>
-                            <field name="quantity"/>
+                            <field name="part_number" readonly="product_tmpl_id or state == 'created'"/>
+                            <field name="quantity" readonly="product_tmpl_id or state == 'created'"/>
                         </group>
                         <group string="Precio">
-                            <field name="list_price"/>
-                            <field name="pvp_tax_included"/>
+                            <field name="list_price" readonly="state == 'created' or (product_tmpl_id and decision == 'create_new')"/>
+                            <field name="pvp_tax_included" readonly="state == 'created' or (product_tmpl_id and decision == 'create_new')"/>
                             <field name="tax_ids" widget="many2many_tags"/>
-                            <field name="standard_price"/>
+                            <field name="standard_price" readonly="state == 'created' or (product_tmpl_id and decision == 'create_new')"/>
                         </group>
                     </group>
                     <group>
                         <group string="Control de calidad">
-                            <field name="qc_state"/>
+                            <field name="qc_state" readonly="product_tmpl_id or state == 'created'"/>
                             <field name="qc_notes"/>
                             <field name="reviewed_by"/>
                             <field name="reviewed_at"/>
@@ -47,7 +47,7 @@
                     </group>
                     <group string="Nombre de producto">
                         <field name="name_suggested"/>
-                        <field name="name_final"/>
+                        <field name="name_final" readonly="product_tmpl_id or state == 'created'"/>
                         <field name="name_manual_locked"/>
                         <button name="action_unlock_manual_name" type="object" string="Editar manualmente"/>
                         <button name="action_regenerate_name" type="object" string="Regenerar nombre"/>
@@ -56,11 +56,15 @@
                         <group string="Coincidencias">
                             <field name="duplicate_status"/>
                             <field name="duplicate_message"/>
-                            <field name="decision"/>
-                            <field name="existing_product_id"/>
+                            <field name="decision" readonly="product_tmpl_id or state == 'created'"/>
+                            <field name="existing_product_id" context="{'active_test': False}"/>
                         </group>
                         <group string="Producto y stock">
-                            <field name="product_tmpl_id"/>
+                            <field name="product_tmpl_id" context="{'active_test': False}"/>
+                            <button name="action_open_prepared_product" type="object" string="Abrir producto e imágenes" invisible="not product_tmpl_id"/>
+                            <button name="action_finalize_piece" type="object" string="Finalizar pieza" invisible="state != 'product_prepared'"/>
+                            <button name="action_reset_preparation" type="object" string="Rectificar preparación" groups="wex_teardown.group_wex_teardown_manager" invisible="state != 'product_prepared'"/>
+                            <button name="action_refresh_product_proposal" type="object" string="Cargar valores actuales del producto" invisible="state != 'product_prepared' or decision != 'use_existing'"/>
                             <field name="stock_move_id"/>
                             <field name="stock_ref"/>
                             <field name="validation_status"/>
@@ -82,6 +86,7 @@
                 <field name="device_type" string="Tipo"/>
                 <field name="brand_id" string="Marca"/>
                 <field name="model_id" string="Modelo"/>
+                <field name="device_identifier" optional="show"/>
                 <field name="technician_id" string="Técnico"/>
                 <field name="line_count" string="Piezas"/>
                 <field name="created_count" string="Creadas"/>
@@ -103,14 +108,15 @@
                             invisible="state != 'template_loaded'"/>
                     <button name="action_validate_teardown" type="object" string="Validar"
                             class="btn-primary" invisible="state not in ('review', 'template_loaded')"/>
-                    <button name="action_create_or_update_products" type="object" string="Crear / actualizar productos"
-                            class="btn-primary" invisible="state not in ('validated', 'partial_created')"/>
+                    <button name="action_prepare_products" type="object" string="Preparar productos"
+                            class="btn-primary" invisible="state not in ('validated', 'products_prepared', 'partial_created')"/>
+                    <button name="action_finalize_ready_lines" type="object" string="Finalizar piezas listas" class="btn-primary" invisible="state not in ('products_prepared', 'partial_created')"/>
                     <button name="action_reset_to_review" type="object" string="Volver a revisión"
-                            invisible="state not in ('validated', 'partial_created')"/>
+                            invisible="state != 'validated' or prepared_count"/>
                     <button name="action_cancel" type="object" string="Cancelar"
-                            invisible="state in ('done', 'cancelled')"/>
+                            invisible="state in ('done', 'cancelled') or created_count > 0"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,template_loaded,review,validated,partial_created,done"/>
+                           statusbar_visible="draft,template_loaded,review,validated,products_prepared,partial_created,done"/>
                 </header>
                 <sheet>
                     <field name="workflow_focus" invisible="1"/>
@@ -125,6 +131,7 @@
                         </group>
                         <group string="Pendiente">
                             <field name="pending_count" string="Pendientes"/>
+                            <field name="prepared_count"/>
                             <field name="warning_count" string="Advertencias"/>
                             <field name="error_count" string="Errores"/>
                         </group>
@@ -139,6 +146,9 @@
                                 <field name="brand_id" string="Marca"/>
                                 <field name="template_id" string="Plantilla"
                                        readonly="state not in ('draft', 'template_loaded')"/>
+                                <field name="device_identifier_type" readonly="prepared_count > 0 or created_count > 0"/>
+                                <field name="device_identifier" readonly="prepared_count > 0 or created_count > 0"/>
+                                <field name="physical_identity_confirmed" readonly="prepared_count > 0 or created_count > 0" invisible="device_identifier"/>
                                 <field name="technician_id" string="Técnico"/>
                                 <field name="company_id" string="Compañía" groups="base.group_multi_company"/>
                             </group>
@@ -205,21 +215,30 @@
                         <page string="Completar datos" name="data_completion">
                             <group>
                                 <field name="validation_message" string="Mensaje de validación" nolabel="1"/>
+                                <field name="warning_confirmed"/>
                             </group>
                             <field name="data_completion_anchor"
                                    widget="wex_teardown_data_completion"
                                    nolabel="1"/>
                         </page>
-                        <page string="Productos" name="products">
-                            <field name="line_ids">
-                                <list string="Productos">
-                                    <field name="component_type_id" string="Componente"/>
-                                    <field name="decision" string="Decisión"/>
-                                    <field name="existing_product_id" string="Producto existente"/>
-                                    <field name="product_tmpl_id" string="Producto creado"/>
-                                    <field name="stock_move_id" string="Movimiento stock"/>
-                                    <field name="stock_ref" string="Referencia stock"/>
-                                    <field name="state" string="Estado"/>
+                        <page string="Productos pendientes" name="products">
+                            <div class="alert alert-info" role="status">
+                                Abra el producto para subir su imagen principal y las imágenes adicionales.
+                                Guardar imágenes no activa el producto ni genera stock. Finalice cada pieza cuando esté lista.
+                            </div>
+                            <field name="prepared_line_ids" readonly="1" context="{'active_test': False}">
+                                <list create="0" delete="0" decoration-danger="validation_status == 'error'">
+                                    <field name="product_image" widget="image" options="{'size': [48, 48]}"/>
+                                    <field name="component_type_id" readonly="product_tmpl_id or state == 'created'"/>
+                                    <field name="product_code"/>
+                                    <field name="product_tmpl_id"/>
+                                    <field name="decision"/>
+                                    <field name="quantity"/>
+                                    <field name="validation_status" column_invisible="True"/>
+                                    <field name="validation_message"/>
+                                    <button name="action_open_prepared_product" type="object" string="Abrir producto" icon="fa-picture-o"/>
+                                    <button name="action_refresh_product_proposal" type="object" string="Revisar propuesta" invisible="decision != 'use_existing' or parent.state == 'cancelled'"/>
+                                    <button name="action_finalize_piece" type="object" string="Finalizar pieza" icon="fa-check" invisible="parent.state == 'cancelled'"/>
                                 </list>
                             </field>
                         </page>
@@ -252,6 +271,25 @@
                 </sheet>
                 <chatter/>
             </form>
+        </field>
+    </record>
+
+    <record id="view_wex_teardown_batch_search" model="ir.ui.view">
+        <field name="name">wex.teardown.batch.search</field>
+        <field name="model">wex.teardown.batch</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="device_identifier" string="IMEI / número de serie"/>
+                <field name="model_id"/>
+                <field name="technician_id"/>
+                <filter name="pending_products" string="Productos pendientes" domain="[('state', 'in', ['products_prepared', 'partial_created'])]"/>
+                <filter name="cancelled" string="Cancelados" domain="[('state', '=', 'cancelled')]"/>
+                <group expand="0" string="Agrupar">
+                    <filter name="by_technician" string="Técnico" context="{'group_by': 'technician_id'}"/>
+                    <filter name="by_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
         </field>
     </record>
 

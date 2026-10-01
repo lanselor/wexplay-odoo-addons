@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_product_label_zebra_76x25">
+        <t t-name="wexplay_product_print.report_product_label_zebra_76x25">
+            <t t-set="full_width" t-value="True"/>
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="company" t-value="o.company_id or env.company"/>
+                    <t t-set="currency" t-value="company.currency_id"/>
+                    <t t-set="taxes" t-value="o.taxes_id"/>
+                    <t t-set="price_result" t-value="taxes and taxes.compute_all(o.list_price or 0.0, currency=currency, quantity=1.0, product=o, partner=None)"/>
+                    <t t-set="price_inc" t-value="(price_result and price_result.get('total_included')) or (o.list_price or 0.0)"/>
+                    <t t-set="label_code" t-value="o.default_code or o.barcode or ''"/>
+                    <t t-set="base_url" t-value="env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                    <style>
+                        @page { size: 76mm 25mm; margin: 0; }
+                        html, body { margin: 0 !important; padding: 0 !important; font-family: Arial, sans-serif !important; }
+                        .wex-label-page { width: 76mm !important; min-width: 76mm !important; min-height: 0 !important; height: 25mm !important; margin: 0 !important; padding: 1.2mm 1.5mm !important; box-sizing: border-box !important; color: #000; overflow: hidden; }
+                        .wex-label-page table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        .wex-product-name { height: 7.2mm; overflow: hidden; font-size: 7.2pt; font-weight: 800; line-height: 1.05; text-transform: uppercase; }
+                        .wex-price-caption { font-size: 4.8pt; font-weight: 700; letter-spacing: .25mm; text-align: right; }
+                        .wex-price-value { margin-top: .4mm; font-size: 13pt; font-weight: 900; line-height: 1; text-align: right; white-space: nowrap; }
+                        .wex-label-divider { border-top: .35mm solid #000; height: 1.2mm; }
+                        .wex-label-barcode { width: 100%; height: 7.5mm; display: block; }
+                        .wex-label-code { text-align: center; font-family: monospace; font-size: 6.5pt; font-weight: 800; white-space: nowrap; }
+                        .wex-label-brand { text-align: right; font-weight: 900; line-height: 1; }
+                        .wex-label-brand-main { font-size: 9pt; letter-spacing: -.2mm; }
+                        .wex-label-brand-sub { margin-top: .3mm; font-size: 5.5pt; letter-spacing: .45mm; }
+                    </style>
+                    <div class="page wex-label-page">
+                        <table>
+                            <tr>
+                                <td style="width: 70%; vertical-align: top; padding-right: 2mm;">
+                                    <div class="wex-product-name"><t t-esc="o.name or o.display_name or ''"/></div>
+                                </td>
+                                <td style="width: 30%; vertical-align: top;">
+                                    <div class="wex-price-caption">PVP IVA INC.</div>
+                                    <div class="wex-price-value"><t t-esc="'%.2f' % price_inc"/></div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="wex-label-divider"/>
+                        <table>
+                            <tr>
+                                <td style="width: 70%; vertical-align: top; padding-right: 2mm;">
+                                    <img t-if="label_code" t-att-src="'%s/report/barcode/Code128/%s?width=520&amp;height=90&amp;humanreadable=0' % (base_url, label_code)" class="wex-label-barcode" alt="Barcode"/>
+                                    <div class="wex-label-code"><t t-esc="label_code"/></div>
+                                </td>
+                                <td style="width: 30%; vertical-align: bottom;">
+                                    <div class="wex-label-brand">
+                                        <div class="wex-label-brand-main">WEXPLAY</div>
+                                        <div class="wex-label-brand-sub">SPARES</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

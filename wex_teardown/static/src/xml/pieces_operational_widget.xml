@@ -116,6 +116,7 @@
                                                         <div class="wex_td_piece_candidate_title">
                                                             <span class="badge text-bg-light"
                                                                   t-esc="row.primary_candidate.status_label"/>
+                                                            <span class="badge text-bg-light" t-esc="row.primary_candidate.catalog_state"/>
                                                             <span t-if="row.primary_candidate.is_selected"
                                                                   class="badge text-bg-success">
                                                                 Seleccionado
@@ -166,6 +167,7 @@
                                                                 <div class="wex_td_piece_candidate_title">
                                                                     <span class="badge text-bg-light"
                                                                           t-esc="candidate.status_label"/>
+                                                                    <span class="badge text-bg-light" t-esc="candidate.catalog_state"/>
                                                                     <span t-if="candidate.is_selected"
                                                                           class="badge text-bg-success">
                                                                         Seleccionado

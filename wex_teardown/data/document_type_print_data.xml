@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="wex_print_document_type_teardown_batch_label_zebra" model="wex.print.document.type">
+        <field name="name">Teardown Batch Label Zebra 76x25</field>
+        <field name="code">teardown_batch_label_zebra</field>
+        <field name="domain_area">other</field>
+        <field name="model_name">wex.teardown.batch</field>
+        <field name="legacy_kind">label</field>
+        <field name="report_action_id" ref="wex_teardown.action_report_teardown_batch_label_zebra_76x25"/>
+        <field name="paperformat_id" ref="wex_teardown.paperformat_teardown_batch_label_zebra_76x25"/>
+        <field name="report_name">wex_teardown.report_teardown_batch_label_zebra_76x25</field>
+        <field name="description">Etiqueta Zebra de 76 x 25 mm para un lote de despiece.</field>
+    </record>
+</odoo>

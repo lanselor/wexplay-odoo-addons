@@ -341,7 +341,7 @@
         <field name="tag">wex_print_core.load_printer_diagnostics</field>
     </record>
 
-    <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin" web_icon="wex_print_core,static/description/icon.png"/>
+    <menuitem id="menu_wex_print_root" name="Wex Print" sequence="90" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_devices" name="Dispositivos" parent="menu_wex_print_root" action="action_wex_print_devices" sequence="10" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_document_types" name="Tipos de documento" parent="menu_wex_print_root" action="action_wex_print_document_types" sequence="20" groups="wex_print_core.group_wex_print_core_admin"/>
     <menuitem id="menu_wex_print_profiles" name="Perfiles" parent="menu_wex_print_root" action="action_wex_print_profiles" sequence="30" groups="wex_print_core.group_wex_print_core_admin"/>

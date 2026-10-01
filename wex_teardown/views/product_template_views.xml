@@ -9,6 +9,12 @@
                 <field name="wex_condition" string="Estado Wexplay"/>
             </xpath>
             <xpath expr="//sheet" position="inside">
+                <group string="Preparación de despiece" groups="wex_teardown.group_wex_teardown_user" invisible="not wex_teardown_preparation_state">
+                    <field name="wex_teardown_preparation_state"/>
+                    <field name="wex_teardown_origin_line_id"/>
+                    <button name="action_open_teardown_origin" type="object" string="Abrir pieza de origen" invisible="not wex_teardown_origin_line_id"/>
+                    <div class="text-muted">Suba las imágenes en esta ficha. Para activar y generar stock, finalice la pieza desde Despieces.</div>
+                </group>
                 <group string="Reacondicionamiento"
                        invisible="wex_condition != 'refurbished' and not wex_teardown_component_id and not wex_teardown_part_number and not wex_teardown_model_id">
                     <group>

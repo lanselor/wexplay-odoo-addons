@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="wex_print_document_type_product_label_zebra" model="wex.print.document.type">
+        <field name="name">Product Label Zebra 76x25</field>
+        <field name="code">product_label_zebra</field>
+        <field name="domain_area">product</field>
+        <field name="model_name">product.template</field>
+        <field name="legacy_kind">label</field>
+        <field name="report_action_id" ref="wexplay_product_print.action_report_product_label_zebra_76x25"/>
+        <field name="paperformat_id" ref="wexplay_product_print.paperformat_product_label_zebra_76x25"/>
+        <field name="report_name">wexplay_product_print.report_product_label_zebra_76x25</field>
+        <field name="description">Etiqueta de producto Zebra de 76 x 25 mm.</field>
+    </record>
+</odoo>

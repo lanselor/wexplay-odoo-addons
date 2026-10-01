@@ -1,13 +1,18 @@
 {
     "name": "Wexplay - Product Print Center",
-    "version": "18.0.1.0.0",
+    "version": "18.0.3.0.0",
     "category": "Wexplay",
+    "license": "LGPL-3",
     "depends": ["web", "product", "wex_print_core"],
     "data": [
         "reports/paperformat_product.xml",
         "reports/report_actions.xml",
         "reports/report_product_label_ql700.xml",
         "data/document_type_update.xml",
+        "reports/paperformat_product_zebra.xml",
+        "reports/report_actions_zebra.xml",
+        "reports/report_product_label_zebra_76x25.xml",
+        "data/document_type_zebra.xml",
         "views/product_print_views.xml",
     ],
     "assets": {

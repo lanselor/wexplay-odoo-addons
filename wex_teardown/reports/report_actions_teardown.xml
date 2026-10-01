@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_teardown_batch_label_zebra_76x25" model="ir.actions.report">
+        <field name="name">Etiqueta Zebra lote de despiece 76x25</field>
+        <field name="model">wex.teardown.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wex_teardown.report_teardown_batch_label_zebra_76x25</field>
+        <field name="report_file">wex_teardown.report_teardown_batch_label_zebra_76x25</field>
+        <field name="paperformat_id" ref="wex_teardown.paperformat_teardown_batch_label_zebra_76x25"/>
+        <field name="binding_model_id" ref="wex_teardown.model_wex_teardown_batch"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

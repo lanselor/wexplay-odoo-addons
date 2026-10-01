@@ -11,3 +11,7 @@ access_wex_teardown_component_type_user,wex.teardown.component.type user,model_w
 access_wex_teardown_component_type_manager,wex.teardown.component.type manager,model_wex_teardown_component_type,wex_teardown.group_wex_teardown_manager,1,1,1,1
 access_wex_teardown_reject_wizard_user,wex.teardown.reject.wizard user,model_wex_teardown_reject_wizard,wex_teardown.group_wex_teardown_user,1,1,1,1
 access_wex_teardown_reject_wizard_manager,wex.teardown.reject.wizard manager,model_wex_teardown_reject_wizard,wex_teardown.group_wex_teardown_manager,1,1,1,1
+access_teardown_product_template,teardown product template,product.model_product_template,wex_teardown.group_wex_teardown_user,1,1,1,0
+access_teardown_product_variant,teardown product variant,product.model_product_product,wex_teardown.group_wex_teardown_user,1,1,1,0
+access_teardown_product_image,teardown product image,website_sale.model_product_image,wex_teardown.group_wex_teardown_user,1,1,1,1
+access_teardown_product_code_rule,teardown code rules,wex_product_codes.model_wex_product_code_rule,wex_teardown.group_wex_teardown_user,1,0,0,0

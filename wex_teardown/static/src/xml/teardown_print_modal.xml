@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="wexplay_product_print.PrintCenterModal">
+    <t t-name="wex_teardown.TeardownBatchLabelPrintModal">
         <div class="modal fade show d-block" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title"><i class="fa fa-barcode me-2"/>Centro de impresión - Productos</h5>
+                        <h5 class="modal-title"><i class="fa fa-barcode me-2"/>Etiqueta del lote de despiece</h5>
                         <button type="button" class="btn-close btn-close-white" t-on-click="close" aria-label="Close"/>
                     </div>
                     <div class="modal-body p-4">
-                        <p class="text-muted small">La Zebra imprime la nueva etiqueta de 76 × 25 mm. La referencia interna de Odoo identifica el producto.</p>
+                        <p class="text-muted small">Etiqueta Zebra de 76 × 25 mm con la referencia del lote y código de barras.</p>
                         <label class="fw-bold text-dark mb-2">Cantidad a imprimir</label>
                         <div class="input-group mb-3" style="max-width: 170px;">
                             <button type="button" class="btn btn-secondary px-3" t-on-click="decrementQty" title="Restar"><i class="fa fa-minus"/></button>
@@ -17,9 +17,8 @@
                             <button type="button" class="btn btn-secondary px-3" t-on-click="incrementQty" title="Sumar"><i class="fa fa-plus"/></button>
                         </div>
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary py-2" t-on-click="printZebraLabel"><i class="fa fa-print me-2"/>Imprimir Zebra 76 × 25</button>
-                            <button type="button" class="btn btn-outline-primary" t-on-click="downloadZebraLabel"><i class="fa fa-download me-2"/>Descargar PDF Zebra 76 × 25</button>
-                            <button type="button" class="btn btn-outline-secondary" t-on-click="printBrotherLabel"><i class="fa fa-print me-2"/>Etiqueta Brother 42 × 29</button>
+                            <button type="button" class="btn btn-primary py-2" t-on-click="printLabel"><i class="fa fa-print me-2"/>Imprimir etiqueta Zebra</button>
+                            <button type="button" class="btn btn-outline-primary" t-on-click="downloadLabel"><i class="fa fa-download me-2"/>Descargar PDF Zebra</button>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 justify-content-center">
