@@ -195,6 +195,27 @@ export function buildLabelConfig(printer, opts = {}) {
 // Compatibilidad para las llamadas existentes del stack Brother.
 export const buildQlLabelConfig = buildLabelConfig;
 
+export function buildZebraLabelConfig(printer, opts = {}) {
+    const copies = Number.isInteger(opts.copies) && opts.copies > 0 ? opts.copies : 1;
+    const width = Number(opts.width || 76);
+    const height = Number(opts.height || 25);
+
+    return window.qz.configs.create(printer, {
+        units: "mm",
+        size: { width, height },
+        margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        orientation: "portrait",
+        rotation: 0,
+        scaleContent: false,
+        colorType: "blackwhite",
+        density: 8,
+        interpolation: "nearest",
+        rasterize: false,
+        forceDetailed: true,
+        copies,
+    });
+}
+
 export function buildThermalConfig(printer) {
     return window.qz.configs.create(printer, {
         units: "mm",
@@ -385,6 +406,10 @@ export async function printOdooPdfUrlByKind(kind, reportUrl, env, opts = {}) {
     return _printOdooPdfUrlWithConfig(reportUrl, defaultPrinter, buildConfigFn);
 }
 
+function isZebraLabelDocument(documentCode) {
+    return ["product_label_zebra", "teardown_batch_label_zebra"].includes(documentCode);
+}
+
 export async function printOdooDocument(documentCode, reportUrl, env, opts = {}) {
     const route = await resolvePrintRoute(documentCode, env, opts);
     const info = await resolvePrinterName(route.kind, env);
@@ -415,6 +440,13 @@ export async function printOdooDocument(documentCode, reportUrl, env, opts = {})
             const labelHeight = route.documentType?.paperformat_page_height || 0;
             const buildConfigFn = (printer) => {
                 if (route.kind === "label") {
+                    if (isZebraLabelDocument(documentCode)) {
+                        return buildZebraLabelConfig(printer, {
+                            copies,
+                            width: labelWidth || undefined,
+                            height: labelHeight || undefined,
+                        });
+                    }
                     return buildLabelConfig(printer, {
                         copies,
                         width: labelWidth || undefined,

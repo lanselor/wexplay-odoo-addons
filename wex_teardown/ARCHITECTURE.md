@@ -482,7 +482,7 @@ revisar especialmente los movimientos históricos que no estén en `done`.
 
 ## Etiquetas
 
-Las etiquetas de Zebra se implementan reutilizando `wex_print_core`. El lote tiene su propia etiqueta física y la etiqueta de producto permanece en `wexplay_product_print`; los campos históricos de trazabilidad no son una confirmación de impresión física.
+Las etiquetas de Zebra se implementan reutilizando `wex_print_core`. El lote tiene su propia etiqueta física y la etiqueta de producto permanece en `wexplay_product_print`; los campos históricos de trazabilidad no son una confirmación de impresión física. Ambos asistentes permiten enviar el trabajo a QZ o descargar el mismo PDF para validarlo sin una impresora disponible.
 
 ## Imágenes
 
@@ -496,7 +496,13 @@ existente satisface el requisito; no se reemplaza automáticamente al reutilizar
 
 ## Etiqueta de lote
 
-La etiqueta física del lote `DESP-XXXX` está implementada con Zebra a 76 x 25 mm. Se imprime desde la cabecera del despiece mediante una acción QZ configurada.
+La etiqueta física del lote `DESP-XXXX` está implementada con Zebra a 76 x 25 mm. Se imprime desde la cabecera del despiece mediante una acción QZ configurada o se descarga como PDF. Incluye la referencia, tipo de dispositivo, modelo y Code128 de la referencia, sin IMEI ni serie.
+
+## Categorías y estado comercial
+
+La categoría responde a qué repuesto es, no a su estado, origen ni canal futuro de venta. Cada tipo de componente de despiece apunta a una categoría hoja de `Repuestos`; esa categoría se usa al crear el producto y al buscar coincidencias de catálogo. Las piezas de despiece se crean con `wex_condition = refurbished`, conservan el vínculo con la línea de origen y no necesitan una categoría paralela de reacondicionados.
+
+La taxonomía debe crecer solo con familias estables de producto. La primera ampliación prevista cubre móvil/tablet, portátil, consola, sobremesa/all-in-one, monitores/televisores, smartwatch y electrónica universal. Marca, calidad, defectuoso/no vendible, origen y publicación no se modelan como categorías. No se ha ejecutado todavía una migración ni un cambio de categorías existentes: antes hay que revisar el mapeo de cada tipo de componente hacia una categoría hoja.
 
 ## Seguridad
 
@@ -522,7 +528,7 @@ Las vistas efectivas y la presencia de la galería se comprueban también con us
 solo permite ejecutarse en bases cuyo nombre empieza por `codex_teardown_test_`.
 
 La dependencia `wexplay_repair` necesitó corregir la firma de su hook de instalación a `post_init_hook(env)`
-para Odoo 18. No se modificó su lógica funcional. La impresión no se ha implementado ni alterado.
+para Odoo 18. No se modificó su lógica funcional. La impresión Zebra se valida localmente mediante PDF y queda pendiente de verificación física en producción.
 
 ## Etiquetas Zebra de despiece
 
@@ -531,3 +537,7 @@ El despiece dispone de `teardown_batch_label_zebra`, una etiqueta de lote de 76 
 La etiqueta de producto vive en `wexplay_product_print` como `product_label_zebra`. Incluye nombre, PVP IVA incluido y la referencia interna generada por Odoo como identificador y payload del Code128. No utiliza el ID técnico de Odoo ni un contador paralelo.
 
 Ambas rutas requieren una asignación Zebra mediante la resolución nueva de Wex Print. No caen al dispositivo Brother configurado en legacy. La etiqueta de lote no cambia estados ni marca una impresión como físicamente realizada: QZ solo confirma que el trabajo se envió.
+
+## Pruebas pendientes en producción
+
+Durante las próximas semanas se debe validar en una Zebra real: orientación y corte de ambos documentos 76 x 25 mm, lectura del Code128 del lote y de la referencia interna de producto, y varias copias desde QZ. También debe recorrerse el flujo completo de una pieza: preparación archivada, carga de imagen principal con la galería nativa, finalización, activación del producto y creación de un único movimiento de stock. La descarga PDF ya permite revisar el contenido antes de esas pruebas físicas.

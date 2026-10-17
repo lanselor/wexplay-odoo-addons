@@ -13,10 +13,10 @@ La Zebra muestra nombre, PVP IVA incluido, código Code128 y referencia interna 
 
 ## Flujo Zebra
 
-1. Desde el producto, abrir **Impresión** y elegir **Etiqueta Zebra 76 x 25**.
+1. Desde el producto, abrir **Impresión** y elegir **Etiqueta Zebra 76 x 25**, o descargar su PDF para revisión previa.
 2. El servidor exige que exista referencia interna.
 3. El router solo permite la ruta de resolución nueva para este documento. Una asignación de Zebra debe estar configurada y activada; así no se envía por error a la Brother configurada en el flujo legacy.
-4. QZ recibe las dos dimensiones del paperformat y entrega el PDF a la impresora configurada.
+4. QZ recibe el formato Zebra en su orden físico, 76 x 25 mm, sin la rotación usada por las etiquetas Brother, y entrega el PDF a la impresora configurada.
 
 La acción **Etiqueta Brother 42 x 29** mantiene el comportamiento anterior y su fallback legacy.
 

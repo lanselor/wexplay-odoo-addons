@@ -88,6 +88,40 @@ devolver siempre `views` de forma explicita si el flujo depende del cliente web
 moderno. Eso reduce diferencias entre instalaciones y evita errores opacos en
 frontend.
 
+---
+
+## Fecha
+
+2026-10-05
+
+## Error
+
+La descarga de etiquetas Zebra podía fallar en el cliente con un acceso a
+`context` no disponible. Además, la primera configuración común de impresión
+trataba las etiquetas Zebra como si fueran Brother, de modo que una Zebra física
+podía recibir el PDF girado.
+
+## Causa
+
+El asistente OWL asumía que el servicio de usuario siempre exponía el contexto
+en la misma ubicación. Por otro lado, la configuración genérica de etiquetas
+ordenaba siempre las medidas como lado corto por lado largo y forzaba
+`landscape`, comportamiento heredado de Brother.
+
+## Solucion
+
+La descarga usa un contexto vacío seguro cuando el servicio no lo expone. QZ
+mantiene intacta la configuración Brother y resuelve los documentos Zebra con
+76 x 25 mm en su orden físico, orientación `portrait` y rotación `0`. El PDF se
+puede descargar antes de enviar una impresión real.
+
+## Prevencion
+
+No generalizar parámetros de soporte físico entre impresoras solo por compartir
+el tipo documental `label`. Cada familia debe declarar dimensiones, orientación
+y rotación de forma explícita. La orientación final sigue pendiente de prueba
+en una Zebra de producción.
+
 
 ---
 

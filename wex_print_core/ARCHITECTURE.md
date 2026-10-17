@@ -197,6 +197,6 @@ Construye la configuración QZ para impresoras de etiquetas Brother QL.
 
 ### Etiquetas de tamaño configurable
 
-`buildLabelConfig(printer, opts)` usa `width` y `height` del paperformat en la ruta nueva. Para una etiqueta horizontal, QZ recibe el lado corto y el largo con orientación `landscape`; esto mantiene Brother 42 x 29 y permite Zebra 76 x 25.
+`buildLabelConfig(printer, opts)` conserva el comportamiento histórico de Brother: recibe el lado corto y el largo con orientación `landscape`. Las etiquetas Zebra (`product_label_zebra` y `teardown_batch_label_zebra`) usan `buildZebraLabelConfig(printer, opts)`, que respeta el orden real 76 x 25 del paperformat, usa orientación `portrait` y rotación `0`. La separación evita trasladar a Zebra la orientación necesaria para los diseños Brother.
 
 Los documentos que establecen `requireNewResolution` no hacen fallback a `legacy`: si no existe una asignación válida, la interfaz muestra el error de configuración. Se usa para etiquetas Zebra que no deben salir por accidente en una impresora Brother configurada por tipo genérico.
