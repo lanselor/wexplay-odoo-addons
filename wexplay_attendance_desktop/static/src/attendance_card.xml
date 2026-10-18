@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web_responsive.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('app-menu-container')]" position="inside">
+            <AttendanceCard/>
+        </xpath>
+    </t>
+
+    <t t-name="wexplay_attendance_desktop.AttendanceCard">
+        <section t-if="isVisible || state.error" class="o_wex_attendance_card"
+                 aria-label="Tu jornada" t-att-aria-busy="state.busy || state.refreshing">
+            <div class="o_wex_attendance_card_heading">
+                <span><i class="fa fa-clock-o" aria-hidden="true"/> Tu jornada</span>
+                <button type="button" class="o_wex_attendance_refresh" t-on-click="refresh"
+                        t-att-disabled="state.busy || state.refreshing" title="Actualizar estado"
+                        aria-label="Actualizar estado">
+                    <i class="fa fa-refresh" aria-hidden="true"/>
+                </button>
+            </div>
+            <t t-if="isVisible">
+                <div class="o_wex_attendance_status">
+                    <i t-att-class="'fa fa-circle ' + (checkedIn ? 'o_wex_working' : 'o_wex_stopped')" aria-hidden="true"/>
+                    <strong t-if="!state.ready">Estado sin confirmar</strong>
+                    <strong t-elif="checkedIn">Trabajando</strong>
+                    <strong t-else="">Fuera de jornada</strong>
+                </div>
+                <p t-if="state.ready &amp;&amp; checkedIn">Entrada registrada: <t t-esc="entryTime"/></p>
+                <p t-elif="state.ready">No tienes una entrada abierta.</p>
+                <div t-if="state.ready" class="o_wex_attendance_hours">
+                    <span>Horas registradas hoy</span><strong t-esc="hoursToday"/>
+                </div>
+                <button type="button" class="o_wex_attendance_action" t-on-click="signInOut"
+                        t-att-class="{'o_wex_attendance_exit': checkedIn}"
+                        t-att-disabled="state.busy || state.refreshing || !state.ready">
+                    <t t-if="state.busy"><i class="fa fa-spinner fa-spin" aria-hidden="true"/> Registrando…</t>
+                    <t t-elif="checkedIn"><i class="fa fa-sign-out" aria-hidden="true"/> Registrar salida</t>
+                    <t t-else=""><i class="fa fa-sign-in" aria-hidden="true"/> Registrar entrada</t>
+                </button>
+            </t>
+            <p t-if="state.message" class="o_wex_attendance_message" role="status" t-esc="state.message"/>
+            <p t-if="state.error" class="o_wex_attendance_error" role="alert" t-esc="state.error"/>
+        </section>
+    </t>
+</templates>
