@@ -30,12 +30,15 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,pending_signature,signed,cancelled"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-info" invisible="state != 'pending_signature'">
+                        El contenido está fijado para esta solicitud. Para actualizarlo, cancela la solicitud y vuelve a enviarla.
+                    </div>
                     <group col="2">
                         <group>
-                            <field name="name" string="Nombre"/>
-                            <field name="repair_order_id" string="Reparación"/>
+                            <field name="name" string="Nombre" readonly="state in ('pending_signature', 'signed')"/>
+                            <field name="repair_order_id" string="Reparación" readonly="state in ('pending_signature', 'signed')"/>
                             <field name="partner_id" string="Cliente"/>
-                            <field name="document_type" string="Tipo de documento"/>
+                            <field name="document_type" string="Tipo de documento" readonly="state in ('pending_signature', 'signed')"/>
                         </group>
                         <group>
                             <field name="signer_name" string="Firmante" readonly="1"/>
@@ -50,23 +53,23 @@
                         <page string="Contenido">
                             <group col="2">
                                 <group invisible="document_type != 'reception'">
-                                    <field name="legal_text" string="Texto legal" widget="text"/>
-                                    <field name="legal_data_protection" string="Protección de datos"/>
-                                    <field name="allow_email_non_commercial" string="Email no comercial"/>
-                                    <field name="allow_email_commercial" string="Email comercial"/>
-                                    <field name="allow_whatsapp_non_commercial" string="WhatsApp no comercial"/>
-                                    <field name="allow_whatsapp_commercial" string="WhatsApp comercial"/>
-                                    <field name="warranty_conditions_accepted" string="Condiciones de garantía aceptadas"/>
+                                    <field name="legal_text" string="Texto legal" widget="text" readonly="state in ('pending_signature', 'signed')"/>
+                                    <field name="legal_data_protection" readonly="state == 'signed'" string="Protección de datos"/>
+                                    <field name="allow_email_non_commercial" readonly="state == 'signed'" string="Email no comercial"/>
+                                    <field name="allow_email_commercial" readonly="state == 'signed'" string="Email comercial"/>
+                                    <field name="allow_whatsapp_non_commercial" readonly="state == 'signed'" string="WhatsApp no comercial"/>
+                                    <field name="allow_whatsapp_commercial" readonly="state == 'signed'" string="WhatsApp comercial"/>
+                                    <field name="warranty_conditions_accepted" readonly="state == 'signed'" string="Condiciones de garantía aceptadas"/>
                                 </group>
                                 <group invisible="document_type != 'delivery'">
-                                    <field name="confirmation_ok" string="Dispositivo revisado"/>
-                                    <field name="customer_review_statement" string="Declaración del cliente"/>
+                                    <field name="confirmation_ok" readonly="state == 'signed'" string="Dispositivo revisado"/>
+                                    <field name="customer_review_statement" string="Declaración del cliente" readonly="state in ('pending_signature', 'signed')"/>
                                 </group>
                             </group>
                             <group>
-                                <field name="device_description" string="Descripción del dispositivo"/>
-                                <field name="issue_description" string="Descripción de la avería"/>
-                                <field name="repair_notes" string="Notas de reparación" invisible="document_type != 'delivery'"/>
+                                <field name="device_description" string="Descripción del dispositivo" readonly="state in ('pending_signature', 'signed')"/>
+                                <field name="issue_description" string="Descripción de la avería" readonly="state in ('pending_signature', 'signed')"/>
+                                <field name="repair_notes" string="Notas de reparación" invisible="document_type != 'delivery'" readonly="state in ('pending_signature', 'signed')"/>
                             </group>
                         </page>
                         <page string="Firma">
@@ -81,7 +84,7 @@
                         <page string="Solicitudes">
                             <field name="request_ids" readonly="1">
                                 <list create="0" delete="0">
-                                    <field name="name" string="Nombre"/>
+                                    <field name="name" string="Nombre" readonly="state in ('pending_signature', 'signed')"/>
                                     <field name="state" string="Estado"/>
                                     <field name="requested_by_id" string="Solicitado por"/>
                                     <field name="queued_at" string="En cola desde"/>

@@ -480,3 +480,40 @@ Puntos detectados para sanear en futuras iteraciones, sin bloquear el MVP actual
 The repair header uses the commercial partner's active portal indicator. A scoped
 backend stylesheet positions the badge beside the repair reference and below it
 on narrow screens. The badge does not represent billing or warranty status.
+
+## Reception inspection in Ficha — 2026-10-17
+
+The base portal shows a readonly “Estado del dispositivo en recepción” card in
+Ficha immediately below “Diagnóstico y notas visibles”. Hero tabs and Reparación
+remain unchanged. Description and tags are visible; native details/summary keeps
+the two diagrams collapsed initially. Empty content omits the card; no marks means
+no drawing disclosure. Faces stack on narrow screens and descriptions/tags wrap.
+
+Source selection belongs to the portal model: prefer signed reception and label
+it “Recepción firmada”. Use its frozen description, tag names and composed images,
+never live values mixed into the signed copy. For legacy signed snapshots without
+the inspection object, expose only the saved description, not current tags/marks.
+If signed content is empty, omit the card even when current repair data exists.
+Without signed reception or the optional wex_consent model, use current saved
+inspection labelled “Estado registrado en la reparación”. Pending, cancelled and
+delivery documents are not inspection sources. No hard consent dependency added.
+
+Security: native repair read access and existing commercial-partner scope are
+checked before bounded sudo. Optional signed lookup is restricted to this repair,
+reception type and signed state. The controller receives only description, tag
+names, labelled SVG data images and a source label. No document/attachment ids,
+DMS links, legal data, signature image, generic snapshots or technician notes are
+exposed. Internal inspection fields retain their group restrictions; portal still
+cannot read/write them through ORM. Remote image URLs are not admitted. Text is
+escaped by QWeb. No new endpoint, public/token access, generic model ACL or DMS
+permission is introduced. Existing photo routes continue to serve photographs;
+inspection diagrams are embedded from trusted preparation or signed snapshots.
+
+## Referencia consolidada y aceptación — 2026-10-17
+
+El usuario confirmó el funcionamiento del conjunto de inspección, informes,
+firmas y portal. La [guía transversal](../wexplay_repair/docs/DEVICE_INSPECTION_GUIDE.md)
+describe su matriz de fuentes y actualización. Se mantienen las fronteras de cada
+módulo: base SAT prepara evidencia, firmas conserva la copia presentada y portal
+solo entrega valores autorizados. Esta confirmación no registra un cambio de
+estado del módulo ni un despliegue de producción realizado por el agente.

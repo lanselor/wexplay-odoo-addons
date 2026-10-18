@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Consola de sobremesa, vista trasera</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <path d="M25 154 L75 98 H295 V222 L245 278 H25 Z" stroke-width="6"/>
+    <path d="M25 154 H245 L295 98 M245 154 V278" fill="none" stroke-width="3"/>
+    <ellipse cx="160" cy="126" rx="49" ry="20" fill="#e5e5e5" stroke-width="3"/>
+    <path d="M125 117 H195 M115 125 H205 M121 133 H199" fill="none" stroke-width="2"/>
+    <path d="M43 176 H226 M43 185 H226 M43 194 H226" fill="none" stroke="#777" stroke-width="2"/>
+    <rect x="42" y="230" width="23" height="13" rx="2" stroke-width="2"/>
+    <rect x="77" y="230" width="23" height="13" rx="2" stroke-width="2"/>
+    <rect x="112" y="226" width="22" height="21" rx="2" stroke-width="2"/>
+    <path d="M148 229 H174 L170 243 H152 Z" stroke-width="2"/>
+    <rect x="187" y="227" width="38" height="19" rx="8" stroke-width="2"/>
+    <path d="M42 282 H69 M203 282 H230" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

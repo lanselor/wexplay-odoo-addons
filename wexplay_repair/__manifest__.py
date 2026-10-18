@@ -1,6 +1,6 @@
 {
     "name": "Wexplay Repair Management",
-    "version": "18.0.1.0.3",
+    "version": "18.0.1.5.1",
     "summary": "Personalizaciones del mÃƒÂ³dulo de reparaciones para Wexplay",
     "description": """
 Wexplay Repair Management
@@ -29,6 +29,7 @@ consolas y otros dispositivos electrÃƒÂ³nicos).
     "data": [
         "security/sat_report_security.xml",
         "security/ir.model.access.csv",
+        "data/device_condition_data.xml",
         "data/mail_template_data.xml",
         "views/res_config_settings_views.xml",
         "views/res_partner_views.xml",
@@ -43,6 +44,10 @@ consolas y otros dispositivos electrÃƒÂ³nicos).
     ],
     "assets": {
         "web.assets_backend": [
+            "wexplay_repair/static/src/js/device_inspection_confirmation.js",
+            "wexplay_repair/static/src/js/repair_device_inspection_field.js",
+            "wexplay_repair/static/src/xml/repair_device_inspection_field.xml",
+            "wexplay_repair/static/src/scss/repair_device_inspection.scss",
             "wexplay_repair/static/src/js/repair_device_type_picker_field.js",
             "wexplay_repair/static/src/js/repair_sat_priority_field.js",
             "wexplay_repair/static/src/js/repair_unlock_pattern_field.js",

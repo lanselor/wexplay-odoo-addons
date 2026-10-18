@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from unittest.mock import patch
+
+from odoo import Command
 from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase
 
@@ -138,3 +141,96 @@ class TestPortalRepairSecurity(TransactionCase):
 
         self.assertTrue(values["show"])
         self.assertFalse(values["is_valid"])
+
+    def _set_reception_inspection(self):
+        self.own_repair.write({
+            "x_device_type": "mobile", "x_device_description": "Portal device description",
+            "x_device_condition_ids": [Command.set(self.env.ref("wexplay_repair.device_condition_broken_screen").ids)],
+            "x_device_inspection_marks": {"device_type": "mobile", "front": [[[0.1, 0.2]]], "back": []},
+        })
+        return self.own_repair.with_user(self.portal_user)
+
+    def _signed_reception(self, snapshot):
+        if "wex.consent.document" not in self.env:
+            self.skipTest("Optional consent module is not installed")
+        import json
+        return self.env["wex.consent.document"].create({
+            "name": "Portal signed snapshot", "repair_order_id": self.own_repair.id,
+            "document_type": "reception", "snapshot_json": json.dumps(snapshot), "state": "signed",
+        })
+
+    def test_portal_inspection_requires_own_repair(self):
+        self._set_reception_inspection()
+        with self.assertRaises(AccessError):
+            self.foreign_repair.with_user(self.portal_user)._get_portal_reception_inspection_values()
+        with self.assertRaises(AccessError):
+            self.foreign_repair.with_user(self.portal_user).sudo()._get_portal_reception_inspection_values()
+        with self.assertRaises(AccessError):
+            self.own_repair.with_user(self.env.ref("base.public_user"))._get_portal_reception_inspection_values()
+
+    def test_portal_inspection_values_are_allowlisted(self):
+        repair = self._set_reception_inspection()
+        self.own_repair.x_internal_notes = "PRIVATE TECHNICIAN NOTES"
+        values = repair._get_portal_reception_inspection_values()
+        self.assertEqual(set(values), {"description", "conditions", "views", "source_label"})
+        self.assertEqual(values["description"], "Portal device description")
+        self.assertEqual(len(values["views"]), 2)
+        self.assertNotIn("PRIVATE TECHNICIAN NOTES", str(values))
+        self.assertTrue(all(set(view) == {"label", "src"} for view in values["views"]))
+        with self.assertRaises(AccessError):
+            repair.read(["x_device_inspection_marks", "x_device_condition_ids"])
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            repair.write({"x_device_description": "Portal write"})
+
+    def test_empty_portal_inspection_is_omitted(self):
+        self.assertFalse(self.own_repair.with_user(self.portal_user)._get_portal_reception_inspection_values())
+        self.own_repair.write({"x_device_type": "console", "x_device_inspection_marks": {
+            "device_type": "console", "console_format": "desktop", "front": [], "back": [],
+        }})
+        self.assertFalse(self.own_repair.with_user(self.portal_user)._get_portal_reception_inspection_values())
+
+    def test_portal_signed_snapshot_has_priority_and_no_model_access(self):
+        repair = self._set_reception_inspection()
+        original = self.own_repair._prepare_device_inspection_snapshot()
+        original["secret"] = "DO NOT EXPOSE"
+        document = self._signed_reception({"device_inspection": original, "legal_text": "PRIVATE LEGAL SNAPSHOT"})
+        self.own_repair.write({"x_device_description": "Edited after signing", "x_device_inspection_marks": False})
+        with patch.object(type(self.own_repair), "_prepare_device_inspection_snapshot", side_effect=AssertionError("live repair read")):
+            values = repair._get_portal_reception_inspection_values()
+        self.assertEqual(values["description"], "Portal device description")
+        self.assertEqual(len(values["views"]), 2)
+        self.assertNotIn("DO NOT EXPOSE", str(values))
+        self.assertNotIn("PRIVATE LEGAL SNAPSHOT", str(values))
+        with self.assertRaises(AccessError):
+            document.with_user(self.portal_user).read(["snapshot_json"])
+
+    def test_portal_legacy_signed_reception_does_not_merge_live_marks(self):
+        repair = self._set_reception_inspection()
+        self._signed_reception({"device_description": "Legacy signed description"})
+        values = repair._get_portal_reception_inspection_values()
+        self.assertEqual(values["description"], "Legacy signed description")
+        self.assertFalse(values["conditions"])
+        self.assertFalse(values["views"])
+
+    def test_portal_empty_signed_reception_does_not_fall_back(self):
+        repair = self._set_reception_inspection()
+        self._signed_reception({"device_inspection": False})
+        self.assertFalse(repair._get_portal_reception_inspection_values())
+
+    def test_pending_reception_uses_current_registered_inspection(self):
+        repair = self._set_reception_inspection()
+        if "wex.consent.document" not in self.env:
+            self.skipTest("Optional consent module is not installed")
+        self.env["wex.consent.document"].create({
+            "name": "Pending portal snapshot", "repair_order_id": self.own_repair.id,
+            "document_type": "reception", "state": "pending_signature",
+            "snapshot_json": '{"device_inspection":{"description":"PENDING SECRET"}}',
+        })
+        self.assertEqual(repair._get_portal_reception_inspection_values()["description"], "Portal device description")
+
+    def test_portal_inspection_rejects_remote_image_urls(self):
+        values = self.env["repair.order"]._prepare_portal_inspection_values({
+            "description": "Registered text", "conditions": [],
+            "views": [{"label": "External", "src": "https://example.invalid/tracking.svg"}],
+        })
+        self.assertFalse(values["views"])

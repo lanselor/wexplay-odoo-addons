@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair.RepairDeviceInspectionField">
+        <div class="wex_device_inspection_field">
+            <div class="wex_inspection_field_heading">
+                <label t-att-for="props.id">Descripción del dispositivo</label>
+                <button t-if="!props.readonly" type="button" class="btn btn-outline-secondary wex_inspection_open_button"
+                        t-att-title="hasInspectionMarks ? 'Revisar estado del dispositivo: contiene marcas' : 'Revisar estado del dispositivo'"
+                        t-att-aria-label="hasInspectionMarks ? 'Revisar estado del dispositivo: contiene marcas' : 'Revisar estado del dispositivo'"
+                        t-on-click="openInspection">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"/>
+                    <span t-if="hasInspectionMarks" class="wex_inspection_saved_indicator" aria-hidden="true"/>
+                </button>
+            </div>
+            <TextField name="props.name" record="props.record" id="props.id"
+                       readonly="props.readonly || !props.record.data.x_device_type"
+                       placeholder="'Color, estado estético, capacidad, configuración entregada...'"/>
+            <small t-if="!props.record.data.x_device_type &amp;&amp; !props.readonly" class="d-block text-muted mt-1">
+                Selecciona el tipo de dispositivo para editar la descripción o abre la inspección.
+            </small>
+        </div>
+    </t>
+
+    <t t-name="wexplay_repair.DeviceInspectionDialog">
+        <Dialog title="'Estado del dispositivo'" size="'xl'" bodyClass="'wex_device_inspection'">
+            <div class="wex_repair_form_card wex_inspection_device_card mb-3">
+                <DeviceTypePicker value="state.deviceType" options="deviceTypes" required="true"
+                                  readonly="state.applying || state.changingType"
+                                  onSelect="(value) => this.changeDeviceType(value)"/>
+                <small class="d-block text-muted mt-2">Cambiar de tipo reinicia las marcas y los desperfectos. La descripción se conserva.</small>
+                <div t-if="state.deviceType === 'console'" class="wex_inspection_console_formats mt-3"
+                     role="group" aria-label="Formato de consola">
+                    <button t-foreach="consoleFormats" t-as="format" t-key="format.value" type="button"
+                            class="wex_inspection_console_format"
+                            t-att-class="state.consoleFormat === format.value ? 'is-selected' : ''"
+                            t-att-aria-pressed="state.consoleFormat === format.value ? 'true' : 'false'"
+                            t-att-disabled="state.applying || state.changingType"
+                            t-on-click="() => this.changeConsoleFormat(format.value)">
+                        <svg viewBox="0 85 320 230" aria-hidden="true">
+                            <image t-att-href="consolePreviewUrl(format)" width="320" height="400"/>
+                        </svg>
+                        <span t-esc="format.label"/>
+                    </button>
+                </div>
+            </div>
+            <div t-if="state.error" class="alert alert-warning" role="alert"><t t-esc="state.error"/></div>
+            <t t-if="state.deviceType">
+                <div class="wex_inspection_layout">
+                    <section class="wex_repair_form_card wex_inspection_visual">
+                        <div class="wex_repair_form_eyebrow">Inspección visual</div>
+                        <div t-if="hasDiagram || hasMarks" class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <div class="btn-group me-auto" role="group" aria-label="Cara del dispositivo">
+                                <button t-foreach="['front', 'back']" t-as="side" t-key="side" type="button"
+                                        t-att-class="state.activeView === side ? 'btn btn-primary' : 'btn btn-outline-secondary'"
+                                        t-att-aria-pressed="state.activeView === side ? 'true' : 'false'"
+                                        t-att-disabled="state.applying" t-on-click="() => this.selectView(side)">
+                                    <t t-esc="viewLabel(side)"/>
+                                    <i t-if="state[side].length" class="fa fa-circle ms-2 wex_inspection_mark_indicator"
+                                       title="Esta cara tiene marcas" aria-label="Con marcas"/>
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" t-on-click="undo" t-att-disabled="!hasActiveMarks || state.applying">Deshacer</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" t-on-click="clearMarks" t-att-disabled="!hasActiveMarks || state.applying">Borrar esta cara</button>
+                        </div>
+                        <div t-if="hasDiagram" class="wex_inspection_view">
+                            <small class="d-block text-muted mb-2"><i class="fa fa-pencil me-1"/> Dibuja sobre el esquema para marcar daños</small>
+                            <figure class="m-0">
+                                <t t-set="view" t-value="state.activeView"/>
+                                <svg class="wex_inspection_board" viewBox="0 0 320 400" role="img" t-att-aria-label="viewLabel(view)"
+                                     t-on-pointerdown="(event) => this.startStroke(event, view)"
+                                     t-on-pointermove="moveStroke" t-on-pointerup="endStroke"
+                                     t-on-pointercancel="endStroke" t-on-lostpointercapture="endStroke">
+                                    <image t-att-href="imageUrl(view)" width="320" height="400"/>
+                                    <path t-foreach="state[view]" t-as="stroke" t-key="stroke_index"
+                                          t-att-d="pathFor(stroke)" fill="none" stroke="#d83a3a" stroke-width="3"
+                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </figure>
+                        </div>
+                        <div t-elif="hasIncompatibleMarks" class="alert alert-warning">
+                            Las marcas guardadas corresponden a otro tipo de dispositivo. Bórralas antes de continuar.
+                        </div>
+                        <div t-elif="state.deviceType === 'console'" class="wex_inspection_console_placeholder"/>
+                        <div t-else="" class="alert alert-light border">
+                            Este tipo todavía no tiene esquema. Puedes registrar desperfectos y descripción.
+                        </div>
+                    </section>
+                    <section class="wex_repair_form_card wex_inspection_conditions">
+                        <div class="wex_repair_form_eyebrow">Estado de recepción</div>
+                        <h6 class="wex_inspection_section_title">Desperfectos observados</h6>
+                        <label t-foreach="availableConditions" t-as="condition" t-key="condition.id" class="wex_inspection_condition">
+                            <input type="checkbox" class="form-check-input m-0"
+                                   t-att-checked="state.conditionIds.includes(condition.id)" t-att-disabled="state.applying"
+                                   t-on-change="() => this.toggleCondition(condition.id)"/>
+                            <span t-esc="condition.name"/>
+                        </label>
+                        <div class="d-flex flex-wrap gap-1 mt-3" aria-label="Desperfectos seleccionados">
+                            <button t-foreach="selectedConditions" t-as="condition" t-key="condition.id"
+                                    type="button" class="wex_inspection_tag" t-att-disabled="state.applying"
+                                    t-att-aria-label="'Retirar ' + condition.name"
+                                    t-on-click="() => this.toggleCondition(condition.id)">
+                                <t t-esc="condition.name"/><i class="fa fa-times ms-1"/>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+                <div class="wex_repair_form_card mt-3 wex_inspection_description_card">
+                    <label for="wex_inspection_description" class="wex_repair_form_eyebrow">Descripción del dispositivo</label>
+                    <textarea id="wex_inspection_description" class="form-control" rows="2" t-model="state.description"
+                              t-att-disabled="state.applying" placeholder="Color, estado estético, capacidad, configuración entregada..."/>
+                </div>
+            </t>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-on-click="apply" t-att-disabled="!canApply">Aplicar</button>
+                <button type="button" class="btn btn-secondary" t-on-click="props.close" t-att-disabled="state.applying">Cancelar</button>
+                <small class="text-muted ms-auto">Los cambios se guardan al guardar la reparación.</small>
+            </t>
+        </Dialog>
+    </t>
+</templates>

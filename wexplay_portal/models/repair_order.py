@@ -347,6 +347,61 @@ class RepairOrder(models.Model):
             raise AccessError(_("You cannot access this repair from the portal."))
         return True
 
+    def _get_portal_reception_inspection_values(self):
+        self.ensure_one()
+        self.check_access("read")
+        self._check_portal_related_read_access()
+        repair = self.sudo()
+        signed_inspection = repair._get_portal_signed_reception_inspection()
+        if signed_inspection is not None:
+            return self._prepare_portal_inspection_values(signed_inspection, signed=True)
+        return self._prepare_portal_inspection_values(
+            repair._prepare_device_inspection_snapshot(), signed=False
+        )
+
+    def _get_portal_signed_reception_inspection(self):
+        # Solo se invoca tras autorizar el SAT, desde el colector del portal.
+        self.ensure_one()
+        if "wex.consent.document" not in self.env:
+            return None
+        document = self.env["wex.consent.document"].search([
+            ("repair_order_id", "=", self.id),
+            ("document_type", "=", "reception"),
+            ("state", "=", "signed"),
+        ], order="signed_at desc, id desc", limit=1)
+        if not document:
+            return None
+        snapshot = document._get_document_snapshot()
+        if "device_inspection" in snapshot:
+            return snapshot["device_inspection"] or False
+        # Una recepción antigua no se completa con datos actuales no firmados.
+        return {
+            "description": snapshot.get("device_description", document.device_description) or "",
+            "conditions": [], "views": [],
+        }
+
+    @api.model
+    def _prepare_portal_inspection_values(self, inspection, signed=False):
+        if not inspection or not isinstance(inspection, dict):
+            return False
+        description = inspection.get("description") or ""
+        conditions = [name for name in inspection.get("conditions", []) if isinstance(name, str)]
+        views = [
+            {"label": view["label"], "src": view["src"]}
+            for view in inspection.get("views", [])
+            if isinstance(view, dict) and isinstance(view.get("label"), str)
+            and isinstance(view.get("src"), str)
+            and view["src"].startswith("data:image/svg+xml;base64,")
+        ]
+        if not isinstance(description, str):
+            description = ""
+        if not description.strip() and not conditions and not views:
+            return False
+        return {
+            "description": description, "conditions": conditions, "views": views,
+            "source_label": _("Recepción firmada") if signed else _("Estado registrado en la reparación"),
+        }
+
     def _get_portal_image_records(self, tag_code=None):
         self.ensure_one()
         self._check_portal_related_read_access()

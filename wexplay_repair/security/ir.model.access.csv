@@ -2,3 +2,5 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_wex_repair_device_model_user,wex.repair.device_model user,model_wex_repair_device_model,base.group_user,1,1,1,0
 access_wex_repair_brand_user,wex.repair.brand user,model_wex_repair_brand,base.group_user,1,1,1,0
 access_wex_repair_sat_report_notes_wizard_user,wex.repair.sat.report.notes.wizard user,model_wex_repair_sat_report_notes_wizard,base.group_user,1,1,1,1
+access_device_condition_user,Device condition read,model_wex_repair_device_condition,base.group_user,1,0,0,0
+access_device_condition_admin,Device condition administration,model_wex_repair_device_condition,base.group_system,1,1,1,1

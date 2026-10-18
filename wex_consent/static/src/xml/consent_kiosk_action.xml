@@ -41,11 +41,27 @@
                                     </div>
 
                                     <div class="wex_consent_kiosk_summary">
-                                        <p><strong>Dispositivo:</strong> <span t-esc="state.document?.device_description"/></p>
+                                        <p t-if="!documentInspection"><strong>Dispositivo:</strong> <span t-esc="state.document?.device_description"/></p>
                                         <p><strong>Averia:</strong> <span t-esc="state.document?.issue_description"/></p>
                                         <p t-if="documentAccessories"><strong>Accesorios entregados:</strong> <span t-esc="documentAccessories"/></p>
                                         <p t-if="state.document?.repair_notes"><strong>Notas:</strong> <span t-esc="state.document?.repair_notes"/></p>
                                     </div>
+
+                                    <section t-if="documentInspection" class="wex_consent_inspection" aria-label="Estado del dispositivo en recepción">
+                                        <h3>Estado del dispositivo en recepción</h3>
+                                        <p t-if="documentInspection.description" class="wex_consent_inspection_description"
+                                           t-esc="documentInspection.description"/>
+                                        <div t-if="documentInspection.conditions.length" class="wex_consent_inspection_tags">
+                                            <span t-foreach="documentInspection.conditions" t-as="condition" t-key="condition_index"
+                                                  class="wex_consent_inspection_tag" t-esc="condition"/>
+                                        </div>
+                                        <div t-if="documentInspection.views.length" class="wex_consent_inspection_faces">
+                                            <figure t-foreach="documentInspection.views" t-as="view" t-key="view_index">
+                                                <figcaption t-esc="view.label"/>
+                                                <img t-att-src="view.src" t-att-alt="view.label"/>
+                                            </figure>
+                                        </div>
+                                    </section>
 
                                     <div t-if="state.document?.document_type === 'reception'" class="wex_consent_kiosk_legal">
                                         <label class="form-label">Texto legal</label>

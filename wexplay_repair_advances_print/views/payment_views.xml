@@ -1,0 +1,13 @@
+<odoo>
+    <record id="payment_form_advance_print" model="ir.ui.view">
+        <field name="name">account.payment.form.advance.print</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="wexplay_repair_advances.payment_form_advances"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_print_advance_receipt']" position="after">
+                <button name="action_qz_print_advance_receipt" type="object" string="Imprimir térmica"
+                        invisible="not wex_advance_repair_id or state not in ['in_process', 'paid']"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -201,6 +201,13 @@
                                                            nolabel="1"
                                                            placeholder="Cargador, funda, tarjeta SIM..."/>
                                                 </div>
+                                                <div class="wex_repair_form_accessories" groups="base.group_user">
+                                                    <field name="x_device_inspection_marks" invisible="1"/>
+                                                    <field name="x_device_description" widget="wex_repair_device_inspection" nolabel="1" class="w-100"/>
+                                                    <field name="x_device_condition_ids" widget="many2many_tags"
+                                                           readonly="1" force_save="1" nolabel="1" class="wex_inspection_tags"
+                                                           options="{'no_open': True, 'no_create': True}"/>
+                                                </div>
                                             </div>
                                         </div>
 

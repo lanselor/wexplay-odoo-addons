@@ -108,6 +108,9 @@ class RepairOrder(models.Model):
             })
         return lines
 
+    def _prepare_sat_report_inspection(self):
+        return self._prepare_device_inspection_snapshot()
+
     # ── Contexto principal para QWeb ──────────────────────────────────────────
 
     def _prepare_sat_report_context(self):
@@ -136,6 +139,7 @@ class RepairOrder(models.Model):
             "model": self.x_model_id.name if self.x_model_id else (self.x_model or ""),
             "imei": self.x_imei or "",
             "accessories": self.x_accessories or "",
+            "device_inspection": self._prepare_sat_report_inspection(),
             "unlock_type_label": self._get_sat_report_selection_label(
                 "x_unlock_type", self.x_unlock_type
             ),

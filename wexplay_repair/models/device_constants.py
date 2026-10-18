@@ -14,3 +14,7 @@ DEVICE_TYPE_SELECTION = [
     ("all_in_one", "Todo en Uno"),
     ("pos", "TPV"),
 ]
+
+DEVICE_INSPECTION_TYPES = (
+    "mobile", "tablet", "laptop", "all_in_one", "mini_pc", "monitor", "smartwatch", "console",
+)

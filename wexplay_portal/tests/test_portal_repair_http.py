@@ -49,7 +49,7 @@ class TestPortalRepairHTTP(HttpCase):
                 "product_uom": cls.product.uom_id.id,
                 "product_qty": 1.0,
                 "name": "SAT/PORTAL/DELIVERED",
-                "state": "delivered",
+                "state": "delivered" if "delivered" in dict(cls.env["repair.order"]._fields["state"].selection) else "done",
                 "x_reported_issue": "Delivered repair",
             }
         )
@@ -78,3 +78,36 @@ class TestPortalRepairHTTP(HttpCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.own_delivered_repair.name, response.text)
+
+    def test_portal_inspection_card_is_inside_ficha_and_escaped(self):
+        from lxml import html
+        self.own_delivered_repair.write({
+            "x_device_type": "mobile", "x_device_description": "Recorded <script>unsafe()</script> & text",
+            "x_device_inspection_marks": {"device_type": "mobile", "front": [[[0.1, 0.2]]], "back": []},
+            "x_internal_notes": "PRIVATE PORTAL INSPECTION NOTE",
+        })
+        self.authenticate(self.portal_user.login, self.portal_password)
+        response = self.url_open("/my/repairs/%s" % self.own_delivered_repair.id)
+        self.assertEqual(response.status_code, 200)
+        tree = html.fromstring(response.content)
+        section = tree.xpath("//div[@id='tab-ficha']//section[contains(@class,'wex_portal_inspection')]")
+        self.assertEqual(len(section), 1)
+        self.assertIn(self.own_delivered_repair.x_device_description, section[0].text_content())
+        self.assertFalse(section[0].xpath(".//script"))
+        self.assertEqual(len(section[0].xpath(".//details//img")), 2)
+        self.assertFalse(section[0].xpath(".//details[@open]"))
+        self.assertFalse(tree.xpath("//div[@id='tab-reparacion']//section[contains(@class,'wex_portal_inspection')]"))
+        self.assertNotIn("PRIVATE PORTAL INSPECTION NOTE", response.text)
+
+    def test_foreign_repair_inspection_is_not_accessible_by_url(self):
+        self.foreign_repair.write({"x_device_type": "mobile", "x_device_description": "FOREIGN INSPECTION SECRET"})
+        self.authenticate(self.portal_user.login, self.portal_password)
+        response = self.url_open("/my/repairs/%s" % self.foreign_repair.id)
+        self.assertEqual(response.status_code, 404)
+        self.assertNotIn("FOREIGN INSPECTION SECRET", response.text)
+
+    def test_anonymous_user_cannot_read_inspection(self):
+        self.own_delivered_repair.write({"x_device_type": "mobile", "x_device_description": "AUTHENTICATED INSPECTION ONLY"})
+        response = self.url_open("/my/repairs/%s" % self.own_delivered_repair.id)
+        self.assertNotIn("AUTHENTICATED INSPECTION ONLY", response.text)
+        self.assertIn("/web/login", response.url)

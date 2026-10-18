@@ -53,6 +53,17 @@ export class ConsentKioskAction extends Component {
         return labels[this.state.document?.document_type] || this.state.document?.document_type || "";
     }
 
+    get documentInspection() {
+        if (this.state.document?.document_type !== "reception") {
+            return false;
+        }
+        try {
+            return JSON.parse(this.state.document.snapshot_json || "{}").device_inspection || false;
+        } catch {
+            return false;
+        }
+    }
+
     get documentAccessories() {
         if (this.state.document?.accessories) {
             return this.state.document.accessories;

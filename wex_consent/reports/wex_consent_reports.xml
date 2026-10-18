@@ -22,12 +22,23 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <t t-call="web.external_layout">
+                    <t t-set="snapshot" t-value="doc._get_document_snapshot()"/>
+                    <t t-set="inspection" t-value="doc._get_reception_inspection_snapshot()"/>
+                    <style>
+                        .wex_consent_pdf_inspection { page-break-before: always; }
+                        .wex_consent_pdf_description { white-space: pre-wrap; word-wrap: break-word; }
+                        .wex_consent_pdf_tag { display: inline-block; border: 1px solid #dce3e8; background: #eef2f5; padding: 4px 8px; margin: 0 5px 5px 0; border-radius: 5px; }
+                        .wex_consent_pdf_faces { width: 100%; table-layout: fixed; page-break-inside: avoid; margin-top: 16px; }
+                        .wex_consent_pdf_faces td { width: 50%; text-align: center; vertical-align: top; padding: 8px; }
+                        .wex_consent_pdf_faces img { width: 100%; max-width: 260px; height: auto; }
+                        .wex_consent_pdf_signature { page-break-inside: avoid; }
+                    </style>
                     <div class="page">
                         <h2>Documento de recepción</h2>
-                        <p><strong>Reparación:</strong> <span t-esc="doc.repair_order_id.name"/></p>
-                        <p><strong>Cliente:</strong> <span t-esc="doc.partner_id.name"/></p>
+                        <p><strong>Reparación:</strong> <span t-esc="snapshot.get('repair_name', doc.repair_order_id.name)"/></p>
+                        <p><strong>Cliente:</strong> <span t-esc="snapshot.get('customer_name', doc.partner_id.name)"/></p>
                         <p><strong>DNI/NIF:</strong> <span t-esc="doc.signer_vat or doc.partner_vat"/></p>
-                        <p><strong>Dispositivo:</strong> <span t-esc="doc.device_description"/></p>
+                        <p t-if="not inspection"><strong>Dispositivo:</strong> <span t-esc="doc.device_description"/></p>
                         <p><strong>Avería:</strong> <span t-esc="doc.issue_description"/></p>
                         <p><strong>Texto legal:</strong> <span t-esc="doc.legal_text"/></p>
                         <ul>
@@ -38,7 +49,29 @@
                             <li>WhatsApp comercial: <span t-esc="'Sí' if doc.allow_whatsapp_commercial else 'No'"/></li>
                             <li>Condiciones de garantía: <span t-esc="'Sí' if doc.warranty_conditions_accepted else 'No'"/></li>
                         </ul>
-                        <div class="mt32">
+                        <div t-if="inspection" class="wex_consent_pdf_inspection">
+                            <h3>Estado del dispositivo en recepción</h3>
+                            <t t-if="inspection['description'].strip()">
+                                <p><strong>Descripción del dispositivo</strong></p>
+                                <p class="wex_consent_pdf_description" t-esc="inspection['description']"/>
+                            </t>
+                            <t t-if="inspection['conditions']">
+                                <p><strong>Desperfectos observados</strong></p>
+                                <div>
+                                    <span t-foreach="inspection['conditions']" t-as="condition"
+                                          class="wex_consent_pdf_tag" t-esc="condition"/>
+                                </div>
+                            </t>
+                            <table t-if="inspection['views']" class="wex_consent_pdf_faces">
+                                <tr>
+                                    <td t-foreach="inspection['views']" t-as="view">
+                                        <p><strong t-esc="view['label']"/></p>
+                                        <img t-att-src="view['src']" t-att-alt="view['label']"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="mt32 wex_consent_pdf_signature">
                             <p><strong>Firmante:</strong> <span t-esc="doc.signer_name"/></p>
                             <p><strong>Fecha:</strong> <span t-esc="doc.signed_at"/></p>
                             <img t-if="doc.signature_image"

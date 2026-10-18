@@ -130,6 +130,8 @@ class WexConsentRequest(models.Model):
             raise UserError(_("La solicitud ya no está activa."))
 
     def action_cancel_request(self):
+        self.mapped("document_id")._lock_signature_content()
+        self.invalidate_recordset(["state"])
         for rec in self:
             rec._assert_cancellable()
             rec.write(
@@ -156,6 +158,8 @@ class WexConsentRequest(models.Model):
 
     def action_cancel_from_kiosk(self):
         self._check_kiosk_access()
+        self.mapped("document_id")._lock_signature_content()
+        self.invalidate_recordset(["state"])
         for rec in self:
             rec._assert_cancellable()
             rec.write(
@@ -226,6 +230,8 @@ class WexConsentRequest(models.Model):
     ):
         self.ensure_one()
         self._check_kiosk_access()
+        self.document_id._lock_signature_content()
+        self.invalidate_recordset(["state", "cancel_requested"])
         if self.state != "presented":
             raise UserError(_("La solicitud ya no está disponible para firmar."))
         if self.cancel_requested:

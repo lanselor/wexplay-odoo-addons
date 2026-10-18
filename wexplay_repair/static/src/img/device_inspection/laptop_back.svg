@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Portátil, parte inferior</title>
+  <g fill="#fff" stroke="#383838">
+    <rect x="18" y="65" width="284" height="270" rx="15" stroke-width="6"/>
+    <path d="M36 88 H284 M36 98 H284 M36 108 H284 M36 118 H284" stroke-width="2"/>
+    <rect x="117" y="185" width="86" height="42" rx="3" stroke="#aaa" stroke-width="1.5"/>
+  </g>
+  <g fill="#555">
+    <rect x="36" y="76" width="42" height="5" rx="2"/><rect x="242" y="76" width="42" height="5" rx="2"/>
+    <rect x="36" y="317" width="42" height="5" rx="2"/><rect x="242" y="317" width="42" height="5" rx="2"/>
+    <circle cx="33" cy="148" r="2"/><circle cx="287" cy="148" r="2"/>
+    <circle cx="33" cy="298" r="2"/><circle cx="287" cy="298" r="2"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<odoo>
+    <record id="document_sat_advance_receipt" model="wex.print.document.type">
+        <field name="name">SAT Advance Receipt</field>
+        <field name="code">sat_advance_receipt</field>
+        <field name="domain_area">sat</field>
+        <field name="model_name">account.payment</field>
+        <field name="legacy_kind">thermal</field>
+        <field name="report_name">wexplay_repair_advances.advance_receipt</field>
+        <field name="report_action_id" ref="wexplay_repair_advances.action_advance_receipt"/>
+        <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_ticket_80x170"/>
+    </record>
+    <record id="wexplay_repair_advances.action_advance_receipt" model="ir.actions.report">
+        <field name="paperformat_id" ref="wexplay_sat_print.paperformat_sat_ticket_80x170"/>
+    </record>
+</odoo>

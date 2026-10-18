@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="device_condition_swollen_battery" model="wex.repair.device.condition">
+        <field name="name">Batería hinchada</field><field name="sequence">10</field>
+    </record>
+    <record id="device_condition_broken_screen" model="wex.repair.device.condition">
+        <field name="name">Pantalla rota</field><field name="sequence">20</field>
+    </record>
+    <record id="device_condition_dents" model="wex.repair.device.condition">
+        <field name="name">Golpes en carcasa</field><field name="sequence">30</field>
+    </record>
+    <record id="device_condition_scratches" model="wex.repair.device.condition">
+        <field name="name">Arañazos visibles</field><field name="sequence">40</field>
+    </record>
+    <record id="device_condition_moisture" model="wex.repair.device.condition">
+        <field name="name">Signos de humedad</field><field name="sequence">50</field>
+    </record>
+    <record id="device_condition_loose_parts" model="wex.repair.device.condition">
+        <field name="name">Piezas sueltas o ausentes</field><field name="sequence">60</field>
+    </record>
+    <record id="device_condition_charging_port" model="wex.repair.device.condition">
+        <field name="name">Conector de carga dañado</field><field name="sequence">70</field>
+    </record>
+    <record id="device_condition_mobile_back" model="wex.repair.device.condition">
+        <field name="name">Tapa trasera rota</field><field name="device_type">mobile</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_tablet_back" model="wex.repair.device.condition">
+        <field name="name">Tapa trasera rota</field><field name="device_type">tablet</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_mobile_frame" model="wex.repair.device.condition">
+        <field name="name">Marco dañado</field><field name="device_type">mobile</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_tablet_frame" model="wex.repair.device.condition">
+        <field name="name">Marco dañado</field><field name="device_type">tablet</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_mobile_camera" model="wex.repair.device.condition">
+        <field name="name">Cámaras dañadas</field><field name="device_type">mobile</field><field name="sequence">100</field>
+    </record>
+    <record id="device_condition_tablet_camera" model="wex.repair.device.condition">
+        <field name="name">Cámaras dañadas</field><field name="device_type">tablet</field><field name="sequence">100</field>
+    </record>
+    <record id="device_condition_laptop_cover" model="wex.repair.device.condition">
+        <field name="name">Carcasa o tapa rota</field><field name="device_type">laptop</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_laptop_hinges" model="wex.repair.device.condition">
+        <field name="name">Bisagras dañadas</field><field name="device_type">laptop</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_laptop_keys" model="wex.repair.device.condition">
+        <field name="name">Teclas dañadas o ausentes</field><field name="device_type">laptop</field><field name="sequence">100</field>
+    </record>
+    <record id="device_condition_all_in_one_stand" model="wex.repair.device.condition">
+        <field name="name">Base o soporte dañado</field><field name="device_type">all_in_one</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_all_in_one_ports" model="wex.repair.device.condition">
+        <field name="name">Puertos o conectores dañados</field><field name="device_type">all_in_one</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_mini_pc_cover" model="wex.repair.device.condition">
+        <field name="name">Carcasa rota</field><field name="device_type">mini_pc</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_mini_pc_ports" model="wex.repair.device.condition">
+        <field name="name">Puertos o conectores dañados</field><field name="device_type">mini_pc</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_monitor_stand" model="wex.repair.device.condition">
+        <field name="name">Base o soporte dañado</field><field name="device_type">monitor</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_monitor_ports" model="wex.repair.device.condition">
+        <field name="name">Puertos o conectores dañados</field><field name="device_type">monitor</field><field name="sequence">90</field>
+    </record>
+    <record id="device_condition_smartwatch_strap" model="wex.repair.device.condition">
+        <field name="name">Correa o anclaje dañado</field><field name="device_type">smartwatch</field><field name="sequence">80</field>
+    </record>
+    <record id="device_condition_smartwatch_buttons" model="wex.repair.device.condition">
+        <field name="name">Corona o botones dañados</field><field name="device_type">smartwatch</field><field name="sequence">90</field>
+    </record>
+</odoo>

@@ -407,6 +407,37 @@
                 }
                 .wex_foot_l { display: table-cell; vertical-align: middle; }
                 .wex_foot_r { display: table-cell; vertical-align: middle; text-align: right; }
+                .wex_inspection_description {
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    margin-bottom: 14px;
+                }
+                .wex_inspection_tag {
+                    display: inline-block;
+                    padding: 3px 8px;
+                    margin: 0 5px 5px 0;
+                    border: 1px solid #dce3e8;
+                    border-radius: 5px;
+                    background: #eef2f5;
+                    color: #465563;
+                }
+                .wex_inspection_faces {
+                    width: 100%;
+                    table-layout: fixed;
+                    margin-top: 15px;
+                    page-break-inside: avoid;
+                }
+                .wex_inspection_faces td {
+                    width: 50%;
+                    text-align: center;
+                    vertical-align: top;
+                    padding: 8px;
+                }
+                .wex_inspection_faces img {
+                    width: 100%;
+                    max-width: 260px;
+                    height: auto;
+                }
             </style>
 
             <div class="page">
@@ -669,6 +700,33 @@
                         <span class="wex_empty">Sin material ni servicios registrados.</span>
                     </t>
                 </div>
+
+                <!-- Estado de recepción: se omite si no hay contenido. -->
+                <t t-if="ctx.get('device_inspection')">
+                    <t t-set="inspection" t-value="ctx['device_inspection']"/>
+                    <div class="wex_sec wex_sec--flow wex_report_inspection" style="page-break-before: always;">
+                        <span class="wex_sec_title">Estado del dispositivo en recepción</span>
+                        <t t-if="inspection['description'].strip()">
+                            <span class="wex_lbl">Descripción del dispositivo</span>
+                            <div class="wex_inspection_description" t-esc="inspection['description']"/>
+                        </t>
+                        <t t-if="inspection['conditions']">
+                            <span class="wex_lbl">Desperfectos observados</span>
+                            <div>
+                                <span t-foreach="inspection['conditions']" t-as="condition"
+                                      class="wex_inspection_tag" t-esc="condition"/>
+                            </div>
+                        </t>
+                        <table t-if="inspection['views']" class="wex_inspection_faces">
+                            <tr>
+                                <td t-foreach="inspection['views']" t-as="view">
+                                    <span class="wex_lbl" t-esc="view['label']"/>
+                                    <img t-att-src="view['src']" t-att-alt="view['label']"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
 
                 <!-- ════ EVIDENCIA FOTOGRÁFICA ════ -->
                 <!-- Las fotos empiezan en página propia: una evidencia por página. -->

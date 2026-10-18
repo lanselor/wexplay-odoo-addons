@@ -81,6 +81,59 @@ This module is currently both:
 
 ## Boundaries
 
+### Internal reception inspection
+
+`models/repair_order_inspection.py` owns the existing `x_device_description` Text
+field, previously declared in `wex_consent`, preserving its name, SQL column and
+consent consumers. `wex_consent` no longer inserts a duplicate description block.
+Update both modules together when deploying this change.
+
+The inspection adds internal-only `x_device_condition_ids` and
+`x_device_inspection_marks` to the same repair. The controlled shared catalog
+`wex.repair.device.condition` has common or device-specific entries; internal
+users read it and administrators maintain it. Native repair ACLs and multi-company
+rules govern the inspection. No sudo or public route is introduced.
+
+Python validates the required device type, condition compatibility and normalized,
+bounded stroke coordinates. Editing description requires a type; unrelated writes
+to legacy untyped repairs remain possible. Changing type resets old marks and all
+tags, preserving free text. Both type selectors request the same confirmation when
+there is evidence; cancel/close preserves everything, and empty inspections change
+directly. Python prepares reset values only for records whose type actually changes.
+Explicitly supplied new inspection values (drawn after a confirmed modal type
+change) are retained and validated against the new type.
+
+The OWL text wrapper opens a native Dialog with a local draft. Apply updates the
+parent form; native Save/Discard persist/revert all inspection fields together.
+The description spans the same width as accessories. Its heading contains the
+inspection action as a right-aligned icon with a tooltip and accessible name.
+The 42px action button displays a green indicator derived from front/back strokes;
+tags alone do not activate it. No extra stored indicator field is introduced.
+`DeviceTypePicker` is a shared presentation component used by the native field
+wrapper and the inspection draft, with one icon catalog/template. Each parent
+retains its existing confirmed-reset behaviour. SAT palette variables, base cards,
+eyebrows and device-picker styles are scoped to both form and inspection dialog;
+they are reused rather than copied into a second theme.
+Cancel or closing the modal discards its draft, including confirmed type resets.
+Only one face is visible at a time, selected by buttons with mark indicators.
+Undo and clear affect that active face only; switching faces preserves both drafts.
+Opening the inspection or changing type selects the first face. Twenty static SVG
+silhouettes cover mobile, tablet, laptop, all-in-one, Mini PC, monitor, smartwatch
+and three console formats.
+`DEVICE_INSPECTION_TYPES` in device_constants.py is the source of supported types;
+get_device_inspection_diagrams returns authorized clients their face labels. The
+modal fetches this metadata alongside the condition catalog; Python uses the same
+constant to validate strokes. Device-specific conditions complement the existing
+common catalog. Stored data contains coordinates, never user SVG/HTML.
+The inspection editor does not generate documents. The existing technical report
+now includes saved description, tags and annotated diagrams as explicitly approved.
+wex_consent captures the same content for reception signature snapshots;
+wexplay_portal exposes authorized readonly values with signed-source precedence.
+Existing signed PDFs are not rewritten and internal field ACLs remain restricted.
+
+See `docs/DEVICE_INSPECTION_GUIDE.md` for the consolidated current behaviour,
+`docs/SPEC_DEVICE_INSPECTION.md` and `docs/PLAN_DEVICE_INSPECTION.md` for scope/history.
+
 This module should remain the base SAT layer.
 
 It should contain:
@@ -302,6 +355,26 @@ consumed material, technical notes and photographic evidence.
 - Images are selected by the existing SAT image-report flag. The report does
   not invent a second manual photo selection workflow.
 
+### Reception inspection in the report
+
+The Python report context includes a conditional `device_inspection` payload.
+Description and selected condition names are read from the repair; format-only
+metadata does not create a section. If either face has strokes, both faces are
+included with the existing device-specific labels and console-format assets.
+Trusted local SVGs are composed server-side with the stored normalized coordinates,
+using the same 320 × 400 space and red stroke style as the editor, then embedded
+as data images. No browser screenshot, external image URL or new attachment is
+needed. Text is escaped in QWeb and preserves line breaks.
+
+The reception section starts on a new page before photographic evidence. Long
+text may flow, while the paired diagrams stay together. Photos retain their own
+page break. Empty inspection content adds no page. These values are visible to
+recipients of the technical report, not exposed through new portal endpoints.
+The existing authorized generation, DMS replacement, download and send lifecycle
+is unchanged. Editing inspection data does not automatically rewrite an archived
+PDF; generation/regeneration captures its current saved values. As before, saving
+complementary report notes can also regenerate the report.
+
 ### Email delivery
 
 - `Enviar` uses `mail.compose.message`, never a custom mail flow.
@@ -348,3 +421,28 @@ company so sales users need not gain repair access. For orders linked to multipl
 repairs, a unique repair stock-move relationship resolves the line; ambiguous
 references raise a clear error rather than attributing a service to the wrong SAT.
 The existing SAT and native invoice reports consume the stored line description.
+
+## Console inspection formats
+
+The repair type remains `console`. Only its internal inspection has a visual format:
+`desktop`, `classic_handheld` or `handheld_pc`. Python supplies translated names and
+image prefixes through the existing read-authorized diagram metadata method.
+Three illustrated cards show names only: Sobremesa, Portátil clásica and PC de mano.
+There is no new repair subtype field or model. Console JSON requires the fourth
+key `console_format` alongside `device_type`, `front` and `back`; other device
+payloads retain their existing three-key shape. Format metadata persists without
+strokes and does not activate the green mark indicator. No console diagram is
+shown and Apply stays disabled until a format is selected.
+Changing format confirms only when either face has strokes. Confirmation clears
+both faces, retaining damage tags and description. Cancelling retains the draft;
+cancelling the whole modal also discards confirmed local format changes. General
+device-type changes continue to clear both marks and tags after confirmation.
+
+## Shared document inspection preparation — 2026-10-17
+
+`repair_order_inspection.py` owns `_prepare_device_inspection_snapshot`,
+`_get_device_inspection_document_views` and `_get_device_inspection_document_image`.
+The technical report keeps its context collector wrapper. wex_consent copies the
+same composed images/text/names when requesting reception signature, then reads
+only its frozen snapshot for kiosk/PDF. Changes to later assets do not affect that
+copy. Existing report output and inspection validation remain unchanged.

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Mini PC, vista frontal</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <path d="M25 137 L52 103 H268 L295 137" stroke-width="5"/>
+    <rect x="25" y="137" width="270" height="127" rx="11" stroke-width="6"/>
+    <path d="M42 153 H278" stroke="#888" stroke-width="1.5"/>
+    <rect x="47" y="196" width="39" height="16" rx="2" stroke-width="3"/>
+    <rect x="99" y="196" width="39" height="16" rx="2" stroke-width="3"/>
+    <rect x="154" y="200" width="25" height="8" rx="4" stroke-width="2"/>
+    <circle cx="200" cy="204" r="6" stroke-width="2"/>
+    <circle cx="258" cy="201" r="14" stroke-width="3"/>
+    <path d="M258 191 V202" stroke-width="2"/>
+    <path d="M44 268 H79 M241 268 H276" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

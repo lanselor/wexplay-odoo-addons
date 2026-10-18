@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Consola portátil clásica, vista trasera</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <rect x="22" y="111" width="276" height="178" rx="40" stroke-width="6"/>
+    <rect x="82" y="157" width="156" height="99" rx="10" stroke-width="2"/>
+    <circle cx="160" cy="132" r="6" stroke-width="2"/>
+    <path d="M45 125 H100 M220 125 H275" stroke-width="3" stroke-linecap="round"/>
+    <path d="M44 172 V239 M276 172 V239" stroke="#777" stroke-width="2"/>
+  </g>
+  <g fill="#777"><circle cx="67" cy="147" r="2"/><circle cx="253" cy="147" r="2"/><circle cx="67" cy="269" r="2"/><circle cx="253" cy="269" r="2"/></g>
+</svg>

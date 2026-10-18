@@ -1,4 +1,5 @@
-.o_form_view .wex_repair_form_sheet {
+.o_form_view .wex_repair_form_sheet,
+.wex_device_inspection {
     --wex-repair-form-border: #bcc7d8;
     --wex-repair-form-border-strong: #98a8c0;
     --wex-repair-form-surface: linear-gradient(180deg, #ffffff 0%, #fafbfd 100%);
@@ -24,7 +25,7 @@
     gap: 1rem;
 }
 
-.o_form_view .wex_repair_form_card {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_form_card {
     height: 100%;
     padding: 0.95rem 1rem 1rem;
     border: 1px solid var(--wex-repair-form-border);
@@ -238,7 +239,7 @@
     margin-top: 1.15rem;
 }
 
-.o_form_view .wex_repair_form_eyebrow {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_form_eyebrow {
     margin-bottom: 0.35rem;
     color: var(--wex-repair-form-muted);
     font-size: 0.74rem;
@@ -579,11 +580,11 @@
     padding-right: 0;
 }
 
-.o_form_view .wex_repair_device_picker {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker {
     position: relative;
 }
 
-.o_form_view .wex_repair_device_picker_trigger {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_trigger {
     display: grid;
     grid-template-columns: 2.5rem minmax(0, 1fr) auto;
     gap: 0.75rem;
@@ -596,7 +597,7 @@
     text-align: left;
 }
 
-.o_form_view .wex_repair_device_picker_preview {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_preview {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -608,12 +609,12 @@
     font-size: 1.1rem;
 }
 
-.o_form_view .wex_repair_device_picker_meta {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_meta {
     display: grid;
     min-width: 0;
 }
 
-.o_form_view .wex_repair_device_picker_meta strong {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_meta strong {
     color: var(--wex-repair-form-muted);
     font-size: 0.68rem;
     font-weight: 800;
@@ -621,7 +622,7 @@
     text-transform: uppercase;
 }
 
-.o_form_view .wex_repair_device_picker_meta small {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_meta small {
     overflow: hidden;
     color: var(--wex-repair-form-ink);
     font-size: 1rem;
@@ -630,12 +631,12 @@
     white-space: nowrap;
 }
 
-.o_form_view .wex_repair_device_picker_chevron {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_chevron {
     align-self: center;
     color: var(--wex-repair-form-muted);
 }
 
-.o_form_view .wex_repair_device_picker_panel {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_panel {
     position: absolute;
     z-index: 20;
     top: calc(100% + 0.45rem);
@@ -648,13 +649,13 @@
     box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
 
-.o_form_view .wex_repair_device_picker_grid {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 0.55rem;
 }
 
-.o_form_view .wex_repair_device_option {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_option {
     display: grid;
     grid-template-columns: 1.8rem minmax(0, 1fr);
     gap: 0.55rem;
@@ -667,12 +668,12 @@
     text-align: left;
 }
 
-.o_form_view .wex_repair_device_option.is-selected {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_option.is-selected {
     border-color: rgba(99, 91, 154, 0.55);
     background: rgba(99, 91, 154, 0.1);
 }
 
-.o_form_view .wex_repair_device_option_icon {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_option_icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -683,7 +684,7 @@
     color: var(--wex-repair-form-accent);
 }
 
-.o_form_view .wex_repair_device_option_label {
+:is(.o_form_view, .wex_device_inspection) .wex_repair_device_option_label {
     overflow: hidden;
     font-size: 0.84rem;
     font-weight: 700;
@@ -915,7 +916,7 @@
         font-size: 1.3rem;
     }
 
-    .o_form_view .wex_repair_device_picker_grid {
+    :is(.o_form_view, .wex_device_inspection) .wex_repair_device_picker_grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 

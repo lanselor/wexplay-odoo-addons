@@ -3,6 +3,8 @@
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { Component, useState } from "@odoo/owl";
+import { useService } from "@web/core/utils/hooks";
+import { confirmDeviceInspectionReset } from "./device_inspection_confirmation";
 
 const DEVICE_TYPE_ICONS = {
     all_in_one: "fa fa-desktop",
@@ -21,10 +23,14 @@ const DEVICE_TYPE_ICONS = {
     tablet: "fa fa-tablet",
 };
 
-class RepairDeviceTypePickerField extends Component {
-    static template = "wexplay_repair.RepairDeviceTypePickerField";
+export class DeviceTypePicker extends Component {
+    static template = "wexplay_repair.DeviceTypePicker";
     static props = {
-        ...standardFieldProps,
+        value: String,
+        options: Array,
+        onSelect: Function,
+        readonly: { type: Boolean, optional: true },
+        required: { type: Boolean, optional: true },
     };
 
     setup() {
@@ -32,11 +38,11 @@ class RepairDeviceTypePickerField extends Component {
     }
 
     get value() {
-        return this.props.record.data[this.props.name] || false;
+        return this.props.value;
     }
 
     get options() {
-        return this.props.record.fields[this.props.name]?.selection || [];
+        return this.props.options;
     }
 
     get currentOption() {
@@ -63,8 +69,53 @@ class RepairDeviceTypePickerField extends Component {
     }
 
     async selectValue(value) {
-        await this.props.record.update({ [this.props.name]: value });
         this.state.isOpen = false;
+        if (this.props.readonly || value === this.value) {
+            return;
+        }
+        await this.props.onSelect(value);
+    }
+}
+
+class RepairDeviceTypePickerField extends Component {
+    static template = "wexplay_repair.RepairDeviceTypePickerField";
+    static components = { DeviceTypePicker };
+    static props = { ...standardFieldProps };
+
+    setup() {
+        this.state = useState({ changing: false });
+        this.dialog = useService("dialog");
+    }
+
+    get value() {
+        return this.props.record.data[this.props.name] || "";
+    }
+
+    get options() {
+        return this.props.record.fields[this.props.name]?.selection || [];
+    }
+
+    async selectValue(value) {
+        if (this.props.readonly || this.state.changing || value === this.value) {
+            return;
+        }
+        this.state.changing = true;
+        try {
+            const data = this.props.record.data;
+            const marks = data.x_device_inspection_marks;
+            const hasEvidence = marks?.front?.length || marks?.back?.length
+                || data.x_device_condition_ids?.currentIds.length;
+            if (hasEvidence && !await confirmDeviceInspectionReset(this.dialog)) {
+                return;
+            }
+            await this.props.record.update({
+                [this.props.name]: value,
+                x_device_inspection_marks: false,
+                x_device_condition_ids: [[6, 0, []]],
+            });
+        } finally {
+            this.state.changing = false;
+        }
     }
 }
 

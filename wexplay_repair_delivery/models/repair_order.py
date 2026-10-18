@@ -212,6 +212,24 @@ class RepairOrder(models.Model):
         self.action_mark_delivered()
         return {"type": "ir.actions.client", "tag": "reload"}
 
+    def action_offer_delivery_after_payment(self, invoice):
+        self.ensure_one()
+        self.check_access("write")
+        invoice.ensure_one()
+        invoice.check_access("read")
+        if (invoice.payment_state != "paid" or invoice.state != "posted"
+                or invoice.move_type != "out_invoice"
+                or invoice.company_id != self.company_id
+                or invoice._get_sat_repairs() != self
+                or not self._can_mark_delivered()):
+            return {"type": "ir.actions.client", "tag": "reload"}
+        return {
+            "type": "ir.actions.act_window", "name": _("Confirmar entrega"),
+            "res_model": "wex.repair.delivery.wizard", "view_mode": "form", "target": "new",
+            "views": [(False, "form")],
+            "context": {"default_repair_id": self.id, "default_invoice_id": invoice.id},
+        }
+
     def action_budget_accept(self):
         previous_budget_stages = {repair.id: repair.x_budget_stage for repair in self}
         result = super().action_budget_accept()

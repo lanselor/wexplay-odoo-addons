@@ -568,6 +568,36 @@
                                 </div>
                             </div>
                         </div>
+                        <div t-if="reception_inspection" class="row g-3 mt-0">
+                            <div class="col-12">
+                                <section class="card wex_portal_panel wex_portal_inspection" aria-label="Estado del dispositivo en recepción">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fa fa-clipboard wex_portal_card_icon" aria-hidden="true"/>
+                                                Estado del dispositivo en recepción
+                                            </h5>
+                                            <span class="wex_portal_inspection_source" t-out="reception_inspection['source_label']"/>
+                                        </div>
+                                        <p t-if="reception_inspection['description'].strip()" class="wex_portal_inspection_description"
+                                           t-out="reception_inspection['description']"/>
+                                        <div t-if="reception_inspection['conditions']" class="wex_portal_inspection_tags" aria-label="Desperfectos observados">
+                                            <span t-foreach="reception_inspection['conditions']" t-as="condition"
+                                                  class="wex_portal_inspection_tag" t-out="condition"/>
+                                        </div>
+                                        <details t-if="reception_inspection['views']" class="wex_portal_inspection_disclosure">
+                                            <summary>Ver inspección visual</summary>
+                                            <div class="wex_portal_inspection_faces">
+                                                <figure t-foreach="reception_inspection['views']" t-as="view">
+                                                    <figcaption t-out="view['label']"/>
+                                                    <img t-att-src="view['src']" t-att-alt="view['label']"/>
+                                                </figure>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ══════════════════════════════════════════

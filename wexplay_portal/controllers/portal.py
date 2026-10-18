@@ -255,6 +255,7 @@ class WexplayCustomerPortal(CustomerPortal):
             {
                 "page_name": "repair_detail",
                 "repair": repair,
+                "reception_inspection": repair._get_portal_reception_inspection_values(),
                 "image_tag": image_tag,
                 "image_filter_values": image_filter_values,
             }

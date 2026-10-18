@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import repair_order
+from . import device_condition
+from . import repair_order_inspection
 from . import repair_order_dms
 from . import repair_order_sat_report
 

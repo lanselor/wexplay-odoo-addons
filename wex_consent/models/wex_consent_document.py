@@ -225,7 +225,52 @@ class WexConsentDocument(models.Model):
         self._check_no_active_document_duplicates_batch(candidates)
         return super().create(vals_list)
 
+    def _lock_signature_content(self):
+        self.check_access("write")
+        if not self:
+            return
+        self.flush_recordset()
+        self.env.cr.execute(
+            "SELECT id FROM wex_consent_document WHERE id IN %s ORDER BY id FOR UPDATE",
+            [tuple(self.ids)],
+        )
+        self.invalidate_recordset(["state", "request_ids", "snapshot_json", "pdf_file"])
+        self.mapped("request_ids").invalidate_recordset(["state"])
+
+    def _has_active_signature_request(self):
+        self.ensure_one()
+        return any(request.state in ("queued", "presented") for request in self.request_ids)
+
+    def _check_frozen_content_values(self, vals):
+        content_fields = {
+            "snapshot_json", "device_description", "issue_description", "accessories",
+            "repair_notes", "legal_text", "customer_review_statement", "repair_order_id",
+            "document_type", "name",
+        }
+        signed_fields = content_fields | {
+            "state", "signature_image", "signer_name", "signer_vat", "signed_at",
+            "confirmation_ok", "legal_data_protection", "allow_email_non_commercial",
+            "allow_email_commercial", "allow_whatsapp_non_commercial",
+            "allow_whatsapp_commercial", "warranty_conditions_accepted", "pdf_file",
+            "pdf_filename", "dms_file_id", "dms_directory_id",
+        }
+        if not signed_fields.intersection(vals):
+            return
+        self._lock_signature_content()
+        for document in self:
+            if document.state == "signed":
+                raise UserError(_("El contenido de un documento firmado no se puede modificar."))
+            if not document._has_active_signature_request():
+                continue
+            if content_fields.intersection(vals) or (
+                "state" in vals and vals["state"] not in ("pending_signature", "signed")
+            ):
+                raise UserError(_(
+                    "Cancela la solicitud pendiente y vuelve a enviarla para actualizar el contenido."
+                ))
+
     def write(self, vals):
+        self._check_frozen_content_values(vals)
         if {"repair_order_id", "document_type", "state"}.intersection(vals):
             candidates = [
                 {
@@ -338,7 +383,24 @@ class WexConsentDocument(models.Model):
             "product_name": repair.product_id.display_name,
             "serial_number": repair.x_imei,
             "accessories": repair.x_accessories,
+            "device_type": repair.x_device_type,
+            "console_format": (repair.x_device_inspection_marks or {}).get("console_format"),
+            "device_inspection": repair._prepare_device_inspection_snapshot(),
         }
+
+    def _get_document_snapshot(self):
+        self.ensure_one()
+        try:
+            snapshot = json.loads(self.snapshot_json or "{}")
+        except (ValueError, TypeError):
+            return {}
+        return snapshot if isinstance(snapshot, dict) else {}
+
+    def _get_reception_inspection_snapshot(self):
+        self.ensure_one()
+        if self.document_type != "reception":
+            return False
+        return self._get_document_snapshot().get("device_inspection") or False
 
     @api.model
     def _prepare_delivery_snapshot(self, repair):
@@ -362,8 +424,9 @@ class WexConsentDocument(models.Model):
         return self._prepare_delivery_snapshot(repair)
 
     def action_refresh_from_repair(self):
+        self._lock_signature_content()
         for rec in self:
-            if rec.state == "signed":
+            if rec.state == "signed" or rec._has_active_signature_request():
                 continue
             snapshot = rec._build_snapshot_for_document()
             values = {
@@ -466,6 +529,8 @@ class WexConsentDocument(models.Model):
         self.ensure_one()
         if not self.pdf_file:
             return False
+        if self.dms_file_id:
+            return self.dms_file_id
         directory = self._get_or_create_signature_directory()
         filename = self._get_signed_filename()
         existing = self.env["dms.file"].search(
@@ -485,12 +550,10 @@ class WexConsentDocument(models.Model):
             dms_file = existing
         else:
             dms_file = self.env["dms.file"].create(values)
-        self.write(
-            {
-                "dms_file_id": dms_file.id,
-                "dms_directory_id": directory.id,
-            }
-        )
+        super(WexConsentDocument, self).write({
+            "dms_file_id": dms_file.id,
+            "dms_directory_id": directory.id,
+        })
         return dms_file
 
     def _create_signed_pdf_attachment(self):
@@ -603,11 +666,12 @@ class WexConsentDocument(models.Model):
         return True
 
     def action_generate_signed_pdf(self):
+        self._lock_signature_content()
         for rec in self:
-            if not rec.signature_image:
-                raise UserError(_("No se puede generar el PDF sin una firma capturada."))
+            if rec.state != "signed" or not rec.signature_image:
+                raise UserError(_("No se puede generar el PDF sin una firma completada."))
             rec._check_reception_legal_text_configured()
-            if rec.pdf_file and not self.env.context.get("force_regenerate_consent_pdf"):
+            if rec.pdf_file:
                 raise UserError(
                     _("El PDF firmado ya fue generado y no debe regenerarse desde la interfaz.")
                 )
@@ -616,12 +680,10 @@ class WexConsentDocument(models.Model):
                 report.report_name,
                 res_ids=rec.ids,
             )
-            rec.write(
-                {
-                    "pdf_file": base64.b64encode(pdf_binary),
-                    "pdf_filename": rec._get_signed_filename(),
-                }
-            )
+            super(WexConsentDocument, rec).write({
+                "pdf_file": base64.b64encode(pdf_binary),
+                "pdf_filename": rec._get_signed_filename(),
+            })
             rec._store_pdf_in_dms()
             rec._message_repair_order(
                 _("Documento de %(doc_type)s firmado y archivado en DMS.")
@@ -637,7 +699,13 @@ class WexConsentDocument(models.Model):
         signer_vat=False,
         consent_values=None,
     ):
+        self._check_kiosk_access()
+        self._lock_signature_content()
         for rec in self:
+            if rec.state != "pending_signature" or not any(
+                request.state == "presented" for request in rec.request_ids
+            ):
+                raise UserError(_("El documento no tiene una solicitud de firma activa."))
             rec._check_reception_legal_text_configured()
             clean_signature_image = rec._validate_signature_image(signature_image)
             values = {
@@ -683,17 +751,18 @@ class WexConsentDocument(models.Model):
 
     def action_request_signature(self):
         self.ensure_one()
+        self._lock_signature_content()
         if self.state == "signed":
             raise UserError(
                 _("Este documento ya está firmado. No se puede reenviar una firma ya cerrada.")
             )
-        self.action_refresh_from_repair()
-        self._check_reception_legal_text_configured()
         active_request = self.request_ids.filtered(
             lambda request: request.state in ("queued", "presented")
         )[:1]
         if active_request:
             return active_request
+        self.action_refresh_from_repair()
+        self._check_reception_legal_text_configured()
         request = self.env["wex.consent.request"].create(
             {
                 "name": _("Solicitud %s") % self.name,

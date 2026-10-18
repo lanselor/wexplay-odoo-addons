@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="wexplay_repair.RepairDeviceTypePickerField">
+        <DeviceTypePicker value="value" options="options" readonly="props.readonly || state.changing"
+                          onSelect="(value) => this.selectValue(value)"/>
+    </t>
+    <t t-name="wexplay_repair.DeviceTypePicker">
         <div class="wex_repair_device_picker" t-att-class="state.isOpen ? 'wex_repair_device_picker is-open' : 'wex_repair_device_picker'">
-            <button type="button" class="wex_repair_device_picker_trigger" t-on-click="togglePicker">
+            <button type="button" class="wex_repair_device_picker_trigger" t-on-click="togglePicker"
+                    t-att-disabled="props.readonly" t-att-aria-expanded="state.isOpen"
+                    t-att-aria-label="'Tipo de dispositivo: ' + currentLabel">
                 <span class="wex_repair_device_picker_preview">
                     <i t-att-class="currentIcon"/>
                 </span>
                 <span class="wex_repair_device_picker_meta">
-                    <strong>Tipo de dispositivo</strong>
+                    <strong>Tipo de dispositivo <span t-if="props.required" class="text-danger" aria-hidden="true">*</span></strong>
                     <small><t t-esc="currentLabel"/></small>
                 </span>
                 <span class="wex_repair_device_picker_chevron" t-if="!props.readonly">

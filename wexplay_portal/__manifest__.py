@@ -1,6 +1,6 @@
 {
     "name": "Wexplay Portal",
-    "version": "18.0.1.0.2",
+    "version": "18.0.1.1.0",
     "summary": "Portal B2B para clientes empresa de Wexplay",
     "description": """
 Bridge module between the native Odoo portal and Wexplay business modules.

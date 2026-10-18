@@ -28,16 +28,6 @@
                 </button>
             </xpath>
 
-            <xpath expr="//field[@name='x_accessories']" position="after">
-                <div class="wex_repair_form_accessories">
-                    <label for="x_device_description" string="Descripción del dispositivo"/>
-                    <field name="x_device_description"
-                           widget="text"
-                           nolabel="1"
-                           placeholder="Color, estado estético, golpes visibles, capacidad, configuración entregada..."/>
-                </div>
-            </xpath>
-
             <xpath expr="//sheet" position="inside">
                 <field name="x_reception_consent_signed" invisible="1"/>
                 <field name="x_delivery_consent_signed" invisible="1"/>

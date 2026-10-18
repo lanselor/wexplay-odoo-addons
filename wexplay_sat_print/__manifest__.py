@@ -29,13 +29,13 @@ Reutiliza la integración QZ existente en wexplay_product_print (sin modificarla
     ],
     "data": [
         "views/repair_print_actions.xml",
-        "views/repair_order_form_inherit_print.xml",
 
         "reports/paperformat_sat.xml",
         "reports/reports_sat.xml",
         "reports/repair_label_29x90.xml",
         "reports/repair_label_29x42.xml",
         "reports/repair_ticket_80x170.xml",
+        "views/repair_order_form_inherit_print.xml",
 
         #"reports/report_invoice_inherit.xml",
 

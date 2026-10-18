@@ -6,7 +6,6 @@ from odoo import _, fields, models
 class RepairOrder(models.Model):
     _inherit = "repair.order"
 
-    x_device_description = fields.Text(string="Descripción del dispositivo")
     x_consent_document_ids = fields.One2many(
         comodel_name="wex.consent.document",
         inverse_name="repair_order_id",

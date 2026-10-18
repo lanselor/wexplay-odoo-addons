@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Portátil abierto, pantalla y teclado</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <rect x="27" y="48" width="266" height="181" rx="10" stroke-width="6"/>
+    <rect x="38" y="60" width="244" height="154" rx="3" stroke-width="2"/>
+    <path d="M27 231 H293 L311 339 Q312 350 301 350 H19 Q8 350 9 339 Z" stroke-width="5"/>
+    <path d="M44 246 H276 L283 303 H37 Z" stroke-width="2"/>
+    <rect x="117" y="312" width="86" height="28" rx="4" stroke-width="2"/>
+    <path d="M41 260 H278 M40 274 H280 M38 288 H282 M62 247 L58 301 M85 247 L82 301 M108 247 L106 301 M131 247 L130 301 M154 247 V301 M177 247 L178 301 M200 247 L202 301 M223 247 L226 301 M246 247 L250 301 M269 247 L274 301" stroke="#888" stroke-width="1"/>
+  </g>
+  <circle cx="160" cy="54" r="2" fill="#383838"/>
+</svg>

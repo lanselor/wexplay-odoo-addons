@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Consola portátil clásica, vista frontal</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <rect x="22" y="111" width="276" height="178" rx="40" stroke-width="6"/>
+    <rect x="84" y="131" width="152" height="125" rx="5" stroke-width="3"/>
+    <path d="M47 157 H59 V146 H70 V157 H82 V168 H70 V180 H59 V168 H47 Z" stroke-width="2"/>
+    <circle cx="61" cy="239" r="14" stroke-width="3"/>
+    <circle cx="263" cy="239" r="14" stroke-width="3"/>
+    <circle cx="262" cy="149" r="6" stroke-width="2"/>
+    <circle cx="247" cy="164" r="6" stroke-width="2"/>
+    <circle cx="277" cy="164" r="6" stroke-width="2"/>
+    <circle cx="262" cy="179" r="6" stroke-width="2"/>
+    <path d="M100 271 H116 M205 271 H221" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <circle cx="160" cy="121" r="2.5" fill="#383838"/>
+</svg>

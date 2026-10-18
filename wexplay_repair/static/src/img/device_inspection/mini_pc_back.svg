@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400" viewBox="0 0 320 400">
+  <title>Mini PC, vista trasera</title>
+  <g fill="#fff" stroke="#383838" stroke-linejoin="round">
+    <path d="M25 137 L52 103 H268 L295 137" stroke-width="5"/>
+    <rect x="25" y="137" width="270" height="127" rx="11" stroke-width="6"/>
+    <path d="M45 155 H275 M45 163 H275 M45 171 H275" stroke="#777" stroke-width="2"/>
+    <circle cx="49" cy="222" r="8" stroke-width="3"/>
+    <rect x="74" y="209" width="32" height="22" stroke-width="3"/>
+    <rect x="119" y="213" width="33" height="15" rx="2" stroke-width="3"/>
+    <rect x="165" y="213" width="33" height="15" rx="2" stroke-width="3"/>
+    <rect x="213" y="208" width="15" height="25" stroke-width="2"/>
+    <rect x="241" y="208" width="15" height="25" stroke-width="2"/>
+    <circle cx="276" cy="222" r="5" stroke-width="2"/>
+    <path d="M44 268 H79 M241 268 H276" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1516,3 +1516,53 @@
         font-size: 0.88rem;
     }
 }
+
+.wex_portal_inspection {
+    .wex_portal_inspection_source {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .wex_portal_inspection_description {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .wex_portal_inspection_tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .wex_portal_inspection_tag {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        padding: 4px 9px;
+        border: 1px solid #dce3e8;
+        border-radius: 6px;
+        background: #eef2f5;
+        color: #465563;
+        font-size: 0.85rem;
+    }
+
+    .wex_portal_inspection_disclosure {
+        margin-top: 1rem;
+
+        summary { cursor: pointer; font-weight: 600; }
+    }
+
+    .wex_portal_inspection_faces {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+
+        figure { margin: 0; text-align: center; }
+        figcaption { margin-bottom: 8px; font-weight: 600; }
+        img { width: 100%; max-width: 260px; height: auto; }
+    }
+
+    @media (max-width: 767px) {
+        .wex_portal_inspection_faces { grid-template-columns: 1fr; }
+    }
+}
