@@ -1,0 +1,31 @@
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair_advances.Footer" t-inherit="web_responsive_app_customizer.RepairFormFooter.Right" t-inherit-mode="extension">
+        <xpath expr="." position="inside">
+            <div t-if="__comp__.props.record.data.wex_advance_allowed" class="wex-advance-footer">
+                <button type="button" class="btn btn-outline-primary" t-on-click="() => __comp__.toggleWexAdvances()">Anticipos <i class="fa fa-angle-up"/></button>
+                <div t-if="__comp__.wexAdvances.open" class="wex-advance-panel shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Anticipos SAT</strong>
+                        <button type="button" class="btn btn-sm btn-light" t-on-click="() => __comp__.toggleWexAdvances()" aria-label="Cerrar">×</button>
+                    </div>
+                    <p t-if="__comp__.wexAdvances.loading">Cargando…</p>
+                    <t t-elif="__comp__.wexAdvances.summary">
+                        <p>Disponible: <strong t-out="__comp__.wexAdvances.summary.available"/></p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead><tr><th>Fecha</th><th>Importe</th><th>Disponible</th><th>Estado</th></tr></thead>
+                                <tbody><tr t-foreach="__comp__.wexAdvances.summary.payments" t-as="payment" t-key="payment.id">
+                                    <td t-out="payment.date"/><td t-out="payment.amount"/><td t-out="payment.available"/><td t-out="payment.state"/>
+                                </tr></tbody>
+                            </table>
+                        </div>
+                    </t>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary" t-on-click="() => __comp__.openWexAdvanceAction('action_register_advance')">Registrar anticipo</button>
+                        <button type="button" class="btn btn-outline-secondary" t-on-click="() => __comp__.openWexAdvanceAction('action_open_advances')">Historial y resguardos</button>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

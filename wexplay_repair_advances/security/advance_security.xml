@@ -1,0 +1,5 @@
+<odoo>
+    <record id="group_advance_operator" model="res.groups">
+        <field name="name">SAT: gestionar anticipos</field>
+    </record>
+</odoo>

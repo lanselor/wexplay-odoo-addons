@@ -1,0 +1,52 @@
+<odoo>
+    <record id="repair_form_advance_notice" model="ir.ui.view">
+        <field name="name">repair.order.form.advance.notice</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="attributes">
+                <attribute name="class" add="wex_repair_advance_title" separator=" "/>
+            </xpath>
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="inside">
+                <field name="wex_advance_notice_detail" invisible="1" groups="account.group_account_invoice"/>
+                <span class="badge text-bg-warning fs-6 px-3 py-2 wex_advance_notice_badge"
+                      invisible="not wex_advance_notice" groups="account.group_account_invoice">
+                    <i class="fa fa-exclamation-circle me-1"/>
+                    <field name="wex_advance_notice" widget="wex_advance_notice" nolabel="1" class="mb-0"/>
+                </span>
+            </xpath>
+        </field>
+    </record>
+    <record id="sale_form_advance_notice" model="ir.ui.view">
+        <field name="name">sale.order.form.advance.notice</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="after">
+                <div class="mb-3" invisible="not wex_advance_notice" groups="account.group_account_invoice">
+                    <span class="badge text-bg-warning fs-6 px-3 py-2 wex_advance_notice_badge">
+                        <i class="fa fa-exclamation-circle me-1"/>
+                        <field name="wex_advance_notice" widget="wex_advance_notice" nolabel="1" class="mb-0"/>
+                    </span>
+                    <field name="wex_advance_notice_detail" invisible="1"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="invoice_form_advance_notice" model="ir.ui.view">
+        <field name="name">account.move.form.advance.notice</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="after">
+                <div class="mb-3" invisible="not wex_advance_notice" groups="account.group_account_invoice">
+                    <span class="badge text-bg-warning fs-6 px-3 py-2 wex_advance_notice_badge">
+                        <i class="fa fa-exclamation-circle me-1"/>
+                        <field name="wex_advance_notice" widget="wex_advance_notice" nolabel="1" class="mb-0"/>
+                    </span>
+                    <field name="wex_advance_notice_detail" invisible="1"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

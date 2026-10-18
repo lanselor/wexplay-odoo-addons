@@ -1,0 +1,29 @@
+.o_form_view .wex_advance_notice_badge {
+    white-space: normal;
+    text-align: left;
+    line-height: 1.3;
+    .o_field_widget { color: inherit; font-weight: inherit; }
+}
+.o_form_view .wex_repair_advance_title {
+    width: 100%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    > label, > h1 { grid-column: 1; }
+    > .wex_advance_notice_badge { grid-column: 2; grid-row: 1 / span 2; }
+}
+.o_form_view .wex_repair_advance_title.wex_repair_portal_title {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    > .wex_repair_portal_badge { grid-column: 3; grid-row: 1 / span 2; margin: 0; }
+}
+@media (max-width: 767px) {
+    .o_form_view .wex_repair_advance_title,
+    .o_form_view .wex_repair_advance_title.wex_repair_portal_title {
+        grid-template-columns: minmax(0, 1fr) auto;
+        > label, > h1 { grid-column: 1 / -1; }
+        > .wex_advance_notice_badge { grid-column: 1; grid-row: 3; justify-self: start; }
+        > .wex_repair_portal_badge { grid-column: 2; grid-row: 3; justify-self: end; }
+    }
+}

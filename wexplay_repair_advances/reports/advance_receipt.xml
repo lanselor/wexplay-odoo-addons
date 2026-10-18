@@ -1,0 +1,88 @@
+<odoo>
+    <record id="paperformat_advance_ticket" model="report.paperformat">
+        <field name="name">Anticipo SAT 80x170</field>
+        <field name="format">custom</field>
+        <field name="page_width">80</field><field name="page_height">170</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">2</field><field name="margin_bottom">2</field>
+        <field name="margin_left">5</field><field name="margin_right">2</field>
+        <field name="header_spacing">0</field><field name="dpi">90</field>
+    </record>
+    <record id="action_advance_receipt" model="ir.actions.report">
+        <field name="name">Resguardo de anticipo SAT</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">wexplay_repair_advances.advance_receipt</field>
+        <field name="paperformat_id" ref="paperformat_advance_ticket"/>
+        <field name="print_report_name">'Anticipo - %s' % (object.name or object.id)</field>
+        <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+    <template id="advance_receipt">
+        <t t-call="web.html_container">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <meta charset="utf-8"/>
+            <style>
+                @page { size: 80mm 170mm; }
+                html, body { margin: 0 !important; padding: 0 !important; }
+                .advance-ticket {
+                    font-family: Arial, sans-serif; color: #000; background: #fff;
+                    font-size: 10pt; line-height: 1.2; width: 100%;
+                    box-sizing: border-box; padding: 2mm 1mm;
+                    word-wrap: break-word;
+                }
+                .advance-ticket .company { text-align: center; font-size: 12pt; font-weight: bold; }
+                .advance-ticket .address { text-align: center; font-size: 9pt; margin-top: 1mm; }
+                .advance-ticket .heading { text-align: center; border-top: 0.4mm solid #000;
+                    border-bottom: 0.4mm solid #000; padding: 2mm 0; margin: 3mm 0; }
+                .advance-ticket .heading strong { font-size: 12pt; }
+                .advance-ticket .sat { font-size: 15pt; font-weight: bold; margin-top: 1mm; }
+                .advance-ticket table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                .advance-ticket td { padding: 1mm 0; vertical-align: top; }
+                .advance-ticket td.advance-key { width: 26mm; padding-right: 2mm; font-weight: bold; white-space: nowrap; }
+                .advance-ticket .amount { border: 0.5mm solid #000; text-align: center;
+                    margin: 3mm 0; padding: 2.5mm 1mm; page-break-inside: avoid; }
+                .advance-ticket .amount-label { font-size: 9pt; font-weight: bold; }
+                .advance-ticket .amount-value { font-size: 22pt; font-weight: bold; margin-top: 1mm; }
+                .advance-ticket .concept { margin: 2mm 0; white-space: pre-wrap; }
+                .advance-ticket .terms { border-top: 0.3mm dashed #000; margin-top: 3mm;
+                    padding-top: 2mm; font-size: 8pt; }
+            </style>
+            <t t-foreach="docs" t-as="o">
+                <t t-if="o.wex_advance_repair_id and o.state in ('in_process', 'paid')">
+                    <div class="page advance-ticket">
+                        <div class="company" t-field="o.company_id.name"/>
+                        <div class="address">
+                            <div t-if="o.company_id.street" t-field="o.company_id.street"/>
+                            <div t-if="o.company_id.street2" t-field="o.company_id.street2"/>
+                            <div><span t-field="o.company_id.zip"/>&#160;<span t-field="o.company_id.city"/></div>
+                            <div t-if="o.company_id.vat">NIF: <span t-field="o.company_id.vat"/></div>
+                        </div>
+                        <div class="heading">
+                            <strong>RESGUARDO DE ANTICIPO</strong>
+                            <div class="sat" t-field="o.wex_advance_repair_id.name"/>
+                        </div>
+                        <table>
+                            <tr><td class="advance-key">Fecha</td><td><span t-field="o.date" t-options="{'format': 'dd/MM/yyyy'}"/></td></tr>
+                            <tr><td class="advance-key">Referencia</td><td><span t-field="o.name"/></td></tr>
+                            <tr><td class="advance-key">Cliente</td><td><span t-field="o.partner_id.name"/></td></tr>
+                            <tr><td class="advance-key">Dispositivo</td><td><span t-field="o.wex_advance_repair_id.product_id.display_name"/></td></tr>
+                        </table>
+                        <div class="amount">
+                            <div class="amount-label">IMPORTE RECIBIDO A CUENTA</div>
+                            <div class="amount-value" t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        </div>
+                        <table>
+                            <tr><td class="advance-key">Diario</td><td><span t-field="o.journal_id.name"/></td></tr>
+                            <tr><td class="advance-key">Medio</td><td><span t-field="o.payment_method_line_id.name"/></td></tr>
+                        </table>
+                        <div class="concept" t-field="o.memo"/>
+                        <div class="terms">
+                            Justificante de recepción de dinero a cuenta de la reparación indicada.
+                            Conserve este resguardo. No es una factura ni sustituye la documentación fiscal que corresponda.
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

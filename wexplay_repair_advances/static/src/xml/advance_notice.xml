@@ -1,0 +1,6 @@
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair_advances.Notice">
+        <span t-att-title="props.record.data.wex_advance_notice_detail || ''"
+              t-out="props.record.data[props.name] || ''"/>
+    </t>
+</templates>

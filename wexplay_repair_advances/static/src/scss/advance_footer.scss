@@ -1,0 +1,17 @@
+.wex-advance-footer {
+    position: relative;
+}
+.wex-advance-panel {
+    position: absolute;
+    bottom: calc(100% + 0.75rem);
+    right: 0;
+    width: 30rem;
+    max-width: calc(100vw - 2rem);
+    max-height: 65vh;
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 0.5rem;
+    background: var(--o-view-background-color, white);
+    z-index: 21;
+}

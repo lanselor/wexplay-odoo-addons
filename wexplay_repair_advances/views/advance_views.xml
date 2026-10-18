@@ -1,0 +1,77 @@
+<odoo>
+    <record id="repair_form_advances" model="ir.ui.view">
+        <field name="name">repair.order.form.advances</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="wex_advance_allowed" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="payment_form_advances" model="ir.ui.view">
+        <field name="name">account.payment.form.advances</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='mark_as_sent']" position="attributes">
+                <attribute name="invisible" add="wex_advance_repair_id" separator=" or "/>
+            </xpath>
+            <xpath expr="//button[@name='unmark_as_sent']" position="attributes">
+                <attribute name="invisible" add="wex_advance_repair_id" separator=" or "/>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_print_advance_receipt" type="object" string="Resguardo 80 × 170"
+                        invisible="not wex_advance_repair_id or state not in ['in_process', 'paid']"/>
+                <button name="action_refund_available_advance" type="object" string="Devolver disponible"
+                        groups="account.group_account_manager" invisible="not wex_advance_repair_id or wex_advance_available &lt;= 0"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <group string="Anticipo SAT" invisible="not wex_advance_repair_id">
+                    <field name="wex_advance_repair_id" readonly="1"/>
+                    <field name="wex_advance_available"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="payment_list_advances" model="ir.ui.view">
+        <field name="name">account.payment.list.advances</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="wex_advance_repair_id" optional="hide"/>
+                <field name="wex_advance_available" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="invoice_form_advances" model="ir.ui.view">
+        <field name="name">account.move.form.advances</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_apply_repair_advances" type="object" string="Aplicar anticipos SAT"
+                        groups="wexplay_repair_advances.group_advance_operator"
+                        invisible="state != 'posted' or move_type != 'out_invoice' or not has_sat_related or amount_residual &lt;= 0"
+                        confirm="Se aplicarán los anticipos disponibles del SAT hasta cubrir el saldo pendiente. ¿Continuar?"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="settings_advances" model="ir.ui.view">
+        <field name="name">res.config.settings.advances</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app name="wexplay_repair_advances" string="Anticipos SAT" groups="base.group_system">
+                    <block title="Cobros de anticipos">
+                        <setting string="Diarios permitidos" help="Vacío: se usan los diarios de banco, caja y tarjeta de crédito compatibles de la compañía. Selecciona diarios para restringirlos. Los usuarios necesitan permisos de facturación y el grupo SAT: gestionar anticipos.">
+                            <field name="wex_advance_journal_ids" widget="many2many_tags" domain="[('company_id', '=', company_id), ('type', 'in', ['cash', 'bank', 'credit'])]"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>
