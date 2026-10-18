@@ -1,0 +1,10 @@
+<odoo>
+    <template id="redirect_form">
+        <t t-set="redsys" t-value="redsys_transaction._redsys_prepare_payment_parameters()"/>
+        <form t-att-action="redsys['api_url']" method="post">
+            <input type="hidden" name="Ds_SignatureVersion" t-att-value="redsys['version']"/>
+            <input type="hidden" name="Ds_MerchantParameters" t-att-value="redsys['parameters']"/>
+            <input type="hidden" name="Ds_Signature" t-att-value="redsys['signature']"/>
+        </form>
+    </template>
+</odoo>

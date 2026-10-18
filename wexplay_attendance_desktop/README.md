@@ -37,3 +37,9 @@ node wexplay_attendance_desktop/tests/attendance_service.test.mjs
 ```
 
 Ver `ARCHITECTURE.md` para alcance, decisiones y comprobaciones de instalación.
+
+## Estado
+
+Versión 18.0.1.0.0 aceptada por el usuario el 2026-10-18 tras confirmar su
+funcionamiento. Cierre funcional completado. La confirmación no especifica
+un despliegue en producción.

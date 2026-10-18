@@ -14,8 +14,9 @@ No portal, kiosk, payroll, attendance corrections or history in this iteration.
 Acceptance: correct checked-in/out state; native attendance records; no duplicate
 clicks during requests; explicit success/error; refresh on reopening/focus and
 periodically while visible; native top button remains synchronized; notes and
-apps remain accessible on small screens. Installation and visual acceptance in
-the actual test database remain required before production rollout.
+apps remain accessible on small screens. Functional acceptance was confirmed
+by the user on 2026-10-18: the feature works correctly and is accepted. The
+confirmation does not identify a production rollout.
 
 ## ADR — separate integration and native attendance
 
@@ -68,8 +69,17 @@ native button, another tab, edit mode, notes, mobile and large resolution.
   assets: real entry/exit, bidirectional native button synchronization, company
   option disabled, user without employee, ordinary internal user, failed read
   and recovery, notes without overlap and five viewport sizes (390–1920 px).
-- Inspected desktop and mobile screenshots. Actual test-database acceptance,
-  company switching in the target setup and real-device use remain pending.
+- Inspected desktop and mobile screenshots. On 2026-10-18 the user confirmed
+  that the feature works correctly and accepted this version. This closes
+  functional acceptance; the confirmation does not establish individual
+  company-switching/device test results or a production deployment.
 - Rapid automated toggles within the same second exposed native attendance
   ordering ambiguity; browser scenarios space separate successful operations
   by over one second. No native attendance model changes are introduced.
+
+## Functional acceptance — 2026-10-18
+
+The user confirmed: “Funciona bien, lo damos por bueno.” This version is accepted
+and documented as active. No additional functional changes are requested.
+Documentation closure preserves the earlier automated/browser evidence and the
+native concurrency limits described above.

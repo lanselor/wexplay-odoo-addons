@@ -1,0 +1,19 @@
+<odoo noupdate="1">
+    <record id="order_sequence" model="ir.sequence">
+        <field name="name">Redsys payment order</field>
+        <field name="code">wex_payment_redsys.order</field>
+        <field name="prefix">1000</field>
+        <field name="padding">8</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <record id="payment_provider_redsys" model="payment.provider">
+        <field name="name">Redsys</field>
+        <field name="code">wex_redsys</field>
+        <field name="state">disabled</field>
+        <field name="is_published" eval="False"/>
+        <field name="module_id" ref="base.module_wex_payment_redsys"/>
+        <field name="redirect_form_view_id" ref="redirect_form"/>
+        <field name="payment_method_ids" eval="[(6, 0, [ref('payment.payment_method_card')])]"/>
+    </record>
+</odoo>
