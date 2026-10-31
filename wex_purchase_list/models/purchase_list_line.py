@@ -678,10 +678,10 @@ class WexPurchaseListLine(models.Model):
         )
 
     @api.model
-    def _add_from_stock_move(self, move, *, product, qty, vendor, vendor_url, state):
+    def _add_from_stock_move(self, move, *, product, qty, vendor, vendor_url, state, force_new_line=False):
         self._check_stock_move_not_already_added(move)
         repair = self._get_repair_from_move(move)
-        existing_line = self._get_mergeable_repair_line(repair, product)
+        existing_line = self.browse() if force_new_line else self._get_mergeable_repair_line(repair, product)
         if existing_line:
             return self._merge_into_existing_repair_line(existing_line, move, qty, vendor_url)
         company = repair.company_id or self.env.company

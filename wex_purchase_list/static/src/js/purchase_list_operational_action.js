@@ -242,6 +242,12 @@ class WexPurchaseListOperationalRenderer extends Component {
         await this.props.list.model.load();
     }
 
+    async prepareVendorReturn(record, ev) {
+        ev.stopPropagation();
+        const action = await this.orm.call("wex_purchase_list.line", "action_prepare_vendor_return", [[record.resId]]);
+        await this.action.doAction(action, { onClose: () => this.props.list.model.load() });
+    }
+
     async openCustomerWhatsapp(record, ev) {
         ev.stopPropagation();
         const action = await this.orm.call(

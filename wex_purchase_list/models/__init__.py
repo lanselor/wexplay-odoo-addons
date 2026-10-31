@@ -5,3 +5,9 @@ from . import product
 from . import stock_picking
 from . import product_template
 from . import ir_ui_view
+from . import res_company
+from . import res_config_settings
+from . import purchase_return
+from . import return_staging
+from . import return_dispatch
+from . import return_resolution

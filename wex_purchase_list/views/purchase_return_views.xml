@@ -1,0 +1,156 @@
+<odoo>
+    <record id="view_wex_purchase_return_list" model="ir.ui.view">
+        <field name="name">wex.purchase.return.list</field>
+        <field name="model">wex.purchase.return</field>
+        <field name="arch" type="xml">
+            <list string="Devoluciones" create="0" delete="0" decoration-success="state == 'returned'" decoration-warning="state == 'partial'" decoration-muted="state == 'cancelled'">
+                <header>
+                    <button name="action_open_dispatch" type="object" string="Crear devolución" class="btn-primary" groups="wex_purchase_list.group_wex_purchase_list_manager"/>
+                    <button name="action_open_rma_assignment" type="object" string="Asignar RMA" groups="wex_purchase_list.group_wex_purchase_list_manager"/>
+                    <button name="action_view_return_pickings" type="object" string="Abrir documentos"/>
+                </header>
+                <field name="product_id" string="Producto"/>
+                <field name="vendor_id" string="Proveedor"/>
+                <field name="quantity" string="Apartadas"/>
+                <field name="remaining_quantity" string="Pendientes"/>
+                <field name="prepared_quantity" string="En preparación" optional="show"/>
+                <field name="returned_quantity" string="Devueltas" optional="show"/>
+                <field name="rma_reference"/>
+                <field name="return_reason" optional="show"/>
+                <field name="recovered_quantity" optional="hide"/>
+                <field name="scrapped_quantity" optional="hide"/>
+                <field name="lot_id" string="Lote / serie" optional="show"/>
+                <field name="purchase_order_id" string="Compra" optional="show"/>
+                <field name="receipt_picking_id" string="Recepción" optional="show"/>
+                <field name="repair_id" string="SAT" optional="show"/>
+                <field name="sale_order_id" string="Venta" optional="hide"/>
+                <field name="staging_location_id" optional="hide"/>
+                <field name="return_picking_id" string="Primer documento" optional="show"/>
+                <field name="company_id" string="Compañía" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" string="Estado" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_wex_purchase_return_form" model="ir.ui.view">
+        <field name="name">wex.purchase.return.form</field>
+        <field name="model">wex.purchase.return</field>
+        <field name="arch" type="xml">
+            <form string="Pieza en devolución" create="0" delete="0" duplicate="0">
+                <header>
+                    <button name="action_open_dispatch" type="object" string="Crear devolución" class="btn-primary" groups="wex_purchase_list.group_wex_purchase_list_manager" invisible="state not in ('pending', 'partial') or prepared_quantity &gt; 0"/>
+                    <button name="action_view_return_pickings" type="object" string="Abrir documentos" invisible="not return_picking_ids"/>
+                    <button name="action_open_resolution" type="object" string="Resolver sin enviar" groups="wex_purchase_list.group_wex_purchase_list_manager" invisible="remaining_quantity &lt;= 0 or state not in ('pending', 'partial', 'return_prepared')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,return_prepared,partial,returned"/>
+                </header>
+                <sheet>
+                    <h1><field name="product_id" readonly="1"/></h1>
+                    <group>
+                        <group>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="vendor_id" string="Proveedor" readonly="1"/>
+                            <field name="rma_reference"/>
+                            <field name="return_reason"/>
+                            <field name="return_notes" required="return_reason == 'other'"/>
+                            <field name="quantity" string="Unidades apartadas" readonly="1"/>
+                            <field name="product_uom_id" string="Unidad" readonly="1"/>
+                            <field name="remaining_quantity"/>
+                            <field name="prepared_quantity"/>
+                            <field name="returned_quantity"/>
+                            <field name="recovered_quantity"/>
+                            <field name="scrapped_quantity"/>
+                            <field name="lot_id" string="Lote / serie" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="purchase_list_line_id" string="Línea de compra" readonly="1"/>
+                            <field name="purchase_order_id" string="Compra" readonly="1"/>
+                            <field name="receipt_picking_id" string="Recepción" readonly="1"/>
+                            <field name="repair_id" string="SAT" readonly="1"/>
+                            <field name="sale_order_id" string="Venta de origen" readonly="1"/>
+                            <field name="internal_picking_id" string="Traslado a devoluciones" readonly="1"/>
+                            <field name="staging_location_id"/>
+                            <field name="return_picking_id" string="Primer documento de devolución" readonly="1"/>
+                            <field name="replacement_move_id" string="Nueva pieza SAT solicitada" readonly="1"/>
+                            <field name="replacement_purchase_line_id" string="Nueva solicitud de compra" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Documentos e historial de inventario">
+                        <field name="return_picking_ids" widget="many2many_tags" readonly="1" nolabel="1"/>
+                        <field name="dispatch_move_ids" readonly="1" nolabel="1">
+                            <list create="0" edit="0" delete="0">
+                                <field name="picking_id" string="Documento"/>
+                                <field name="location_id" string="Origen"/>
+                                <field name="location_dest_id" string="Destino"/>
+                                <field name="product_uom_qty" string="Previstas"/>
+                                <field name="quantity" string="Cantidad"/>
+                                <field name="state" string="Estado" widget="badge"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group string="Resoluciones excepcionales">
+                        <field name="resolution_ids" nolabel="1" readonly="1">
+                            <list create="0" edit="0" delete="0">
+                                <field name="create_date" string="Fecha"/>
+                                <field name="create_uid" string="Usuario"/>
+                                <field name="disposition"/>
+                                <field name="quantity"/>
+                                <field name="state" widget="badge"/>
+                                <field name="explanation"/>
+                                <field name="picking_id"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_wex_purchase_return_search" model="ir.ui.view">
+        <field name="name">wex.purchase.return.search</field>
+        <field name="model">wex.purchase.return</field>
+        <field name="arch" type="xml">
+            <search string="Devoluciones">
+                <field name="product_id"/><field name="vendor_id"/><field name="return_reason"/><field name="return_notes"/><field name="rma_reference"/><field name="purchase_order_id"/><field name="receipt_picking_id"/><field name="repair_id"/><field name="sale_order_id"/>
+                <filter name="open" string="Pendientes de envío" domain="[('state', 'in', ['pending', 'return_prepared', 'partial'])]"/>
+                <filter name="returned" string="Devueltas" domain="[('state', '=', 'returned')]"/>
+                <filter name="resolved" string="Resueltas / completadas" domain="[('state', 'in', ['resolved', 'closed'])]"/>
+                <separator/>
+                <filter name="to_prepare" string="Sin documento activo" domain="[('state', 'in', ['pending', 'partial']), ('prepared_quantity', '=', 0)]"/>
+                <filter name="no_rma" string="Sin RMA" domain="[('rma_reference', '=', False)]"/>
+                <group string="Agrupar por">
+                    <filter name="vendor" string="Proveedor" context="{'group_by': 'vendor_id'}"/>
+                    <filter name="status" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="receipt" string="Recepción" context="{'group_by': 'receipt_picking_id'}"/>
+                    <filter name="reason" string="Motivo" context="{'group_by': 'return_reason'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_wex_purchase_returns" model="ir.actions.act_window">
+        <field name="name">Devoluciones</field>
+        <field name="res_model">wex.purchase.return</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_wex_purchase_return_list"/>
+        <field name="search_view_id" ref="view_wex_purchase_return_search"/>
+        <field name="context">{'search_default_open': 1, 'group_by': 'vendor_id'}</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">No hay piezas apartadas para devolución.</p><p>Usa «Devolver a proveedor» desde la lista de compra o las piezas del SAT.</p></field>
+    </record>
+    <menuitem id="menu_wex_purchase_returns" name="Devoluciones" parent="menu_wex_purchase_list_app" action="action_wex_purchase_returns" sequence="15" groups="wex_purchase_list.group_wex_purchase_list_user"/>
+    <record id="view_stock_picking_wex_vendor_returns" model="ir.ui.view">
+        <field name="name">stock.picking.wex.vendor.returns</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Piezas en devolución" name="wex_vendor_returns" invisible="not wex_vendor_return_ids" groups="wex_purchase_list.group_wex_purchase_list_user">
+                    <field name="wex_vendor_return_ids" readonly="1" nolabel="1">
+                        <list create="0" edit="0" delete="0">
+                            <field name="product_id" string="Producto"/><field name="lot_id" string="Lote / serie"/>
+                            <field name="rma_reference"/><field name="quantity" string="Apartadas"/>
+                            <field name="returned_quantity"/><field name="remaining_quantity"/>
+                            <field name="repair_id" string="SAT"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

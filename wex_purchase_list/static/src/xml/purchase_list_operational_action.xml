@@ -158,6 +158,9 @@
                         <span t-att-class="'wex_pl_state is-' + value(record, 'state')">
                             <t t-esc="stateLabel(value(record, 'state'))"/>
                         </span>
+                        <button t-if="value(record, 'can_prepare_vendor_return')" type="button" class="btn btn-outline-secondary btn-sm" title="Devolver a proveedor" t-on-click="(ev) => this.prepareVendorReturn(record, ev)">
+                            <i class="fa fa-undo"/> Devolver
+                        </button>
                     </div>
                 </div>
 
@@ -234,6 +237,9 @@
                         </span>
                     </div>
                     <div class="wex_pl_cell is-actions">
+                        <button t-if="value(record, 'can_prepare_vendor_return')" type="button" class="btn btn-outline-secondary btn-sm" t-on-click="(ev) => this.prepareVendorReturn(record, ev)">
+                            <i class="fa fa-undo"/> Devolver
+                        </button>
                         <button t-if="canOpenCustomerWhatsapp(record)"
                                 type="button"
                                 class="btn btn-outline-secondary btn-sm wex_pl_action_whatsapp"

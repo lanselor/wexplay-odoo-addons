@@ -1,6 +1,12 @@
 # Wex Purchase List Module Dependencies
 
+La versión `18.0.1.5.0` reutiliza los traslados internos y `stock.scrap` de `stock` para las resoluciones excepcionales, así como la creación nativa de piezas de `repair` y la entrada existente de Purchase List para solicitar otro repuesto. No añade dependencias externas.
+
 ## Dependencias declaradas
+
+### `purchase_stock`
+
+Dependencia nativa explícita desde la Fase 1 de devoluciones. Se utiliza `stock.move.purchase_line_id` para validar que una recepción pertenece a la compra original. No se presupone que otro módulo active esta integración de forma indirecta.
 
 ### `product`
 

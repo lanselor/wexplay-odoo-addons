@@ -9,7 +9,7 @@ class StockPicking(models.Model):
         reservation_lines_to_notify = self.env["wex_purchase_list.line"]
 
         # post-validación: si es recepción ligada a compra
-        for picking in self:
+        for picking in self.filtered(lambda record: record.state == "done" and record.location_id.usage == "supplier" and record.location_dest_id.usage == "internal"):
             purchase = picking.purchase_id
             if not purchase:
                 continue

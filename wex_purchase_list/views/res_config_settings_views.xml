@@ -1,0 +1,16 @@
+<odoo>
+    <record id="res_config_settings_view_form_purchase_returns" model="ir.ui.view">
+        <field name="name">res.config.settings.purchase.returns</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='purchase']" position="inside">
+                <block title="Devoluciones a proveedor" name="wex_purchase_return_settings">
+                    <setting id="wex_return_location_setting" string="Ubicación de devoluciones" company_dependent="1" help="Ubicación interna fuera del stock habitual y del suministro SAT para piezas pendientes de envío al proveedor.">
+                        <field name="wex_return_location_id" domain="[('usage', '=', 'internal'), ('scrap_location', '=', False), ('company_id', '=', company_id)]" options="{'no_create': True}"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

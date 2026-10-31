@@ -334,8 +334,6 @@
     background: transparent;
     color: #18202c;
     padding: 0;
-    font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
-    font-feature-settings: "tnum";
 }
 
 .wex_pl_selection_bar {
@@ -900,7 +898,13 @@
     max-width: none;
     border: 1px solid #cbd5e1;
     background: #ffffff;
+}
+
+.wex_pl_app,
+.wex_purchase_list_line_form .o_form_sheet,
+.wex_return_prepare {
     font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+    font-feature-settings: "tnum";
 }
 
 .wex_pl_form_title {
@@ -948,7 +952,8 @@
     gap: 12px;
 }
 
-.wex_purchase_list_line_form .wex_pl_form_panel {
+.wex_purchase_list_line_form .wex_pl_form_panel,
+.wex_return_prepare .wex_pl_form_panel {
     min-height: 152px;
     padding: 14px 16px;
     border: 1px solid #dbe3ee;
@@ -960,12 +965,15 @@
     margin-top: 12px;
 }
 
-.wex_purchase_list_line_form .wex_pl_form_panel .o_group {
+.wex_purchase_list_line_form .wex_pl_form_panel .o_group,
+.wex_return_prepare .wex_pl_form_panel .o_group {
     margin: 0;
 }
 
 .wex_purchase_list_line_form .wex_pl_form_panel .o_td_label,
-.wex_purchase_list_line_form .wex_pl_form_panel .o_field_widget {
+.wex_purchase_list_line_form .wex_pl_form_panel .o_field_widget,
+.wex_return_prepare .wex_pl_form_panel .o_td_label,
+.wex_return_prepare .wex_pl_form_panel .o_field_widget {
     font-size: 14px;
 }
 

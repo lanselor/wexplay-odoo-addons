@@ -1,0 +1,104 @@
+<odoo>
+    <record id="view_wex_return_prepare_form" model="ir.ui.view">
+        <field name="name">wex.return.prepare.form</field>
+        <field name="model">wex.return.prepare</field>
+        <field name="arch" type="xml">
+            <form string="Devolver a proveedor" class="wex_return_prepare">
+                <field name="company_id" invisible="1"/>
+                <field name="receipt_move_ids" invisible="1"/>
+                <field name="receipt_picking_ids" invisible="1"/>
+                <field name="repair_move_ids" invisible="1"/>
+                <field name="has_multiple_receipt_moves" invisible="1"/>
+                <field name="has_multiple_repair_moves" invisible="1"/>
+                <field name="tracking" invisible="1"/>
+                <field name="has_origin_document" invisible="1"/>
+                <field name="requires_origin_change" invisible="1"/>
+                <field name="origin_is_repair" invisible="1"/>
+                <field name="can_request_replacement" invisible="1"/>
+                <div class="wex_pl_form_title wex_return_heading">
+                    <div>
+                        <div class="wex_pl_form_kicker"><i class="fa fa-undo" aria-hidden="true"/> Pieza a devolver</div>
+                        <h2 class="mb-1"><field name="product_id" nolabel="1" options="{'no_open': True}"/></h2>
+                        <field name="vendor_id" nolabel="1"/>
+                    </div>
+                </div>
+                <div class="alert alert-danger" role="alert" invisible="not blocking_reason">
+                    <strong class="d-block mb-1">No puedes continuar con esta devolución</strong>
+                    <field name="blocking_reason" nolabel="1"/>
+                    <button name="action_open_origin" type="object" string="Abrir SAT" class="btn-outline-danger mt-2" invisible="not has_origin_document or not origin_is_repair"/>
+                    <button name="action_open_origin" type="object" string="Abrir venta" class="btn-outline-danger mt-2" invisible="not has_origin_document or origin_is_repair"/>
+                </div>
+                <div class="wex_pl_form_panel wex_return_section">
+                    <h4 class="wex_pl_panel_title"><i class="fa fa-cubes" aria-hidden="true"/> Preparar devolución</h4>
+                    <group>
+                        <group>
+                            <label for="quantity" string="Cantidad a apartar"/>
+                            <div class="d-flex align-items-center gap-2 wex_return_quantity">
+                                <field name="quantity" required="1" class="oe_inline"/>
+                                <field name="product_uom_id" nolabel="1" class="oe_inline" options="{'no_open': True}"/>
+                            </div>
+                            <field name="receipt_picking_id" domain="[('id', 'in', receipt_picking_ids)]" options="{'no_create': True}" required="1"/>
+                            <field name="receipt_move_id" invisible="not has_multiple_receipt_moves" domain="[('id', 'in', receipt_move_ids), ('picking_id', '=', receipt_picking_id)]" options="{'no_create': True}" required="1"/>
+                            <field name="lot_id" invisible="tracking == 'none'" required="tracking != 'none'" domain="[('product_id', '=', product_id), ('company_id', 'in', [False, company_id])]" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="source_location_id" string="Desde" required="1" domain="[('company_id', '=', company_id), ('usage', '=', 'internal'), ('scrap_location', '=', False)]" options="{'no_create': True}"/>
+                            <field name="destination_location_id" string="Zona de devoluciones" options="{'no_open': True}"/>
+                            <field name="rma_reference" placeholder="Opcional · referencia del proveedor"/>
+                            <field name="return_reason" required="1"/>
+                            <field name="return_notes" required="return_reason == 'other'" placeholder="Detalles internos de la devolución"/>
+                        </group>
+                    </group>
+                    <p class="text-muted small mb-0">La pieza se trasladará a la zona de devoluciones. La salida al proveedor se confirma después, cuando se envíe físicamente.</p>
+                </div>
+                <div class="wex_pl_form_panel wex_return_section">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <h4 class="wex_pl_panel_title mb-0"><i class="fa fa-link" aria-hidden="true"/> Asignación actual</h4>
+                        <button name="action_open_origin" type="object" string="Abrir SAT" class="btn-secondary" invisible="not has_origin_document or not origin_is_repair or blocking_reason"/>
+                        <button name="action_open_origin" type="object" string="Abrir venta" class="btn-secondary" invisible="not has_origin_document or origin_is_repair or blocking_reason"/>
+                    </div>
+                    <group invisible="not has_multiple_repair_moves">
+                        <field name="repair_move_id" domain="[('id', 'in', repair_move_ids)]" options="{'no_create': True}"/>
+                    </group>
+                    <field name="origin_description" nolabel="1" class="wex_return_origin"/>
+                    <div class="alert alert-warning mt-2 mb-0" invisible="not requires_origin_change or blocking_reason">
+                        <field name="origin_change_summary" nolabel="1" class="fw-bold"/>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <field name="confirm_origin_change" nolabel="1" class="oe_inline"/>
+                            <label for="confirm_origin_change" string="Confirmo retirar esta cantidad del documento de origen" class="mb-0"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="wex_pl_form_panel wex_return_section" invisible="not can_request_replacement">
+                    <h4 class="wex_pl_panel_title"><i class="fa fa-shopping-cart" aria-hidden="true"/> Solicitar otro repuesto</h4>
+                    <div class="d-flex align-items-center gap-2">
+                        <field name="request_replacement" nolabel="1" class="oe_inline"/>
+                        <label for="request_replacement" class="mb-0"/>
+                    </div>
+                    <group invisible="not request_replacement" class="mt-2">
+                        <field name="replacement_quantity" required="request_replacement"/>
+                    </group>
+                    <p class="text-muted small mb-0 mt-2">Se creará una pieza nueva en el SAT y su solicitud pendiente en la lista de compra.</p>
+                </div>
+                <details class="wex_pl_form_panel wex_return_details">
+                    <summary>Detalles de recepción y stock</summary>
+                    <group class="mt-3">
+                        <group>
+                            <field name="purchase_order_id" string="Compra"/>
+                            <field name="receipt_date"/>
+                            <field name="received_quantity"/>
+                        </group>
+                        <group>
+                            <field name="purchase_list_line_id" string="Línea de compra"/>
+                            <field name="package_id" options="{'no_create': True}" placeholder="Sin paquete"/>
+                        </group>
+                    </group>
+                </details>
+                <footer>
+                    <button name="action_stage" type="object" string="Apartar para devolución" class="btn-primary" invisible="blocking_reason"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

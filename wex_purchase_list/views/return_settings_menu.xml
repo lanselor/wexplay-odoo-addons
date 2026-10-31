@@ -1,0 +1,12 @@
+<odoo>
+    <record id="action_wex_purchase_return_settings" model="ir.actions.act_window">
+        <field name="name">Configuración de devoluciones</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'purchase', 'bin_size': False}</field>
+    </record>
+    <menuitem id="menu_wex_purchase_return_settings" name="Configuración"
+              parent="menu_wex_purchase_list_app" action="action_wex_purchase_return_settings"
+              sequence="100" groups="base.group_system"/>
+</odoo>

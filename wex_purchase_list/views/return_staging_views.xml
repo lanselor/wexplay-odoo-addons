@@ -1,0 +1,64 @@
+<odoo>
+    <record id="view_operational_return_staging" model="ir.ui.view">
+        <field name="name">wex.operational.return.staging</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="inherit_id" ref="view_wex_purchase_list_line_operational"/>
+        <field name="arch" type="xml">
+            <xpath expr="//wex_operational_list" position="inside"><field name="can_prepare_vendor_return"/></xpath>
+        </field>
+    </record>
+    <record id="view_reservations_return_staging" model="ir.ui.view">
+        <field name="name">wex.reservations.return.staging</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="inherit_id" ref="view_wex_purchase_reservation_line_operational"/>
+        <field name="arch" type="xml">
+            <xpath expr="//wex_operational_list" position="inside"><field name="can_prepare_vendor_return"/></xpath>
+        </field>
+    </record>
+    <record id="view_wex_purchase_line_return_staging" model="ir.ui.view">
+        <field name="name">wex.purchase.line.return.staging</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="inherit_id" ref="view_wex_purchase_list_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_prepare_vendor_return" type="object" string="Devolver a proveedor" class="btn-secondary" groups="wex_purchase_list.group_wex_purchase_list_manager" invisible="not purchase_order_line_id or state == 'cancelled'"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <group string="Devoluciones">
+                    <field name="wex_return_quantity" readonly="1"/>
+                    <field name="return_ids" nolabel="1" readonly="1">
+                        <list create="0" edit="0" delete="0" open_form_view="0">
+                            <field name="receipt_picking_id" string="Recepción"/>
+                            <field name="quantity" string="Cantidad"/>
+                            <field name="lot_id" string="Lote / serie" optional="show"/>
+                            <field name="rma_reference"/>
+                            <field name="internal_picking_id" string="Traslado"/>
+                            <field name="state" string="Estado" widget="badge"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_wex_purchase_line_list_return_staging" model="ir.ui.view">
+        <field name="name">wex.purchase.line.list.return.staging</field>
+        <field name="model">wex_purchase_list.line</field>
+        <field name="inherit_id" ref="view_wex_purchase_list_line_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="purchase_order_line_id" column_invisible="1"/>
+                <button name="action_prepare_vendor_return" type="object" string="Devolver a proveedor" groups="wex_purchase_list.group_wex_purchase_list_manager" invisible="not purchase_order_line_id or state == 'cancelled'"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_repair_parts_return_staging" model="ir.ui.view">
+        <field name="name">repair.parts.return.staging</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="view_repair_order_form_parts_inherit_wex_purchase_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids']//list" position="inside">
+                <button name="action_prepare_vendor_return" type="object" string="Devolver a proveedor" groups="wex_purchase_list.group_wex_purchase_list_manager" invisible="not purchase_list_line_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

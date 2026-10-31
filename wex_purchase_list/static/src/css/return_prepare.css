@@ -1,0 +1,50 @@
+.wex_return_prepare .wex_return_heading {
+    margin: 0 0 1rem;
+}
+
+.wex_return_prepare .wex_return_heading h2 {
+    overflow-wrap: anywhere;
+}
+
+.wex_return_prepare .wex_return_heading .o_field_widget,
+.wex_return_prepare .wex_return_origin,
+.wex_return_prepare .alert > .o_field_widget {
+    margin-bottom: 0;
+}
+
+.wex_return_prepare .wex_return_section,
+.wex_return_prepare .wex_return_details {
+    min-height: 0;
+    margin-bottom: 1rem;
+}
+
+.wex_return_prepare .wex_return_section .wex_return_quantity .o_field_widget[name="quantity"] {
+    flex: 0 0 5.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.wex_return_prepare .wex_return_origin {
+    display: block;
+    width: 100%;
+}
+
+.wex_return_prepare .wex_return_details > summary {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-weight: 700;
+}
+
+.wex_return_prepare .wex_return_section > .d-flex {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 575.98px) {
+    .wex_return_prepare .wex_return_heading {
+        padding: 12px;
+    }
+
+    .wex_return_prepare .wex_return_heading h2 {
+        font-size: 20px;
+    }
+}

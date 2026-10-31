@@ -1,0 +1,42 @@
+<odoo>
+    <record id="view_wex_return_dispatch_form" model="ir.ui.view">
+        <field name="name">wex.return.dispatch.form</field>
+        <field name="model">wex.return.dispatch</field>
+        <field name="arch" type="xml">
+            <form string="Preparar devolución al proveedor">
+                <div class="alert alert-info" role="alert">Comprueba que las piezas seleccionadas están registradas para devolución con el proveedor. Odoo conserva la trazabilidad interna; no puede verificar esa gestión externa.</div>
+                <group><field name="supplier_count"/><field name="operation_count"/></group>
+                <div class="text-muted mb-3">Se crearán documentos nativos por recepción y ubicación. La salida de inventario se registrará al validar esos documentos cuando se envíe la caja.</div>
+                <field name="return_ids" nolabel="1">
+                    <list create="0" edit="0" delete="0">
+                        <field name="product_id" string="Producto"/>
+                        <field name="vendor_id" string="Proveedor"/>
+                        <field name="receipt_picking_id" string="Recepción"/>
+                        <field name="staging_location_id"/>
+                        <field name="remaining_quantity"/>
+                        <field name="lot_id" string="Lote / serie"/>
+                        <field name="rma_reference"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_create_returns" string="Crear devolución" type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="view_wex_return_rma_form" model="ir.ui.view">
+        <field name="name">wex.return.rma.form</field>
+        <field name="model">wex.return.rma</field>
+        <field name="arch" type="xml">
+            <form string="Asignar referencia RMA">
+                <group><field name="return_ids" widget="many2many_tags"/><field name="rma_reference" placeholder="Referencia facilitada por el proveedor"/></group>
+                <div class="text-muted">La referencia se aplicará a todas las piezas seleccionadas. Dejarla vacía eliminará su referencia actual.</div>
+                <footer>
+                    <button name="action_assign" type="object" string="Aplicar a la selección" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
