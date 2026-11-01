@@ -1,6 +1,6 @@
 {
     "name": "Wex Redsys Payments",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Accounting/Payment Providers",
     "summary": "Native quotation and invoice payments through Redsys redirect",
     "author": "Wexplay, Tecnativa, Odoo Community Association (OCA)",
@@ -8,6 +8,9 @@
     "depends": ["account_payment"],
     "external_dependencies": {"python": ["cryptography"]},
     "data": [
+        "security/refund_security.xml",
+        "views/refund_views.xml",
+        "data/refund_cron.xml",
         "views/payment_templates.xml",
         "views/payment_provider_views.xml",
         "data/payment_provider_data.xml",

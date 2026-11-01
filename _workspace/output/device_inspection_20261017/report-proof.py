@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 from PIL import Image, ImageDraw
 
-out = Path("C:/odoo18/addons-wexplay/output/pdf")
+out = Path("C:/odoo18/addons-wexplay/_workspace/output/pdf")
 out.mkdir(parents=True, exist_ok=True)
 env["ir.config_parameter"].sudo().set_param("report.url", "http://127.0.0.1:8098")
 partner = env["res.partner"].create({"name": "Cliente de prueba - Informe SAT"})

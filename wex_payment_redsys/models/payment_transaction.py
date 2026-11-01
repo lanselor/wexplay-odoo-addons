@@ -27,7 +27,7 @@ class PaymentTransaction(models.Model):
     def _redsys_check_payment_flow(self):
         for tx in self.filtered(lambda t: t.provider_code == const.PROVIDER_CODE):
             if (tx.operation != "online_redirect" or tx.token_id or tx.tokenize
-                    or tx.amount <= 0 or tx.currency_id.name != "EUR"):
+                    or tx.amount <= 0 or tx.currency_id.name != "EUR") and tx.operation != "refund":
                 raise ValidationError(_("Redsys requires a positive EUR redirect payment without saved cards."))
 
     def _redsys_get_amount(self):

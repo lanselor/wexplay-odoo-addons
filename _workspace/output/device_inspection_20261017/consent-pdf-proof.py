@@ -5,8 +5,8 @@ from pathlib import Path
 from unittest.mock import patch
 from PIL import Image, ImageDraw
 assert env.cr.dbname == "codex_device_inspection_20261017"
-out=Path("C:/odoo18/addons-wexplay/output/pdf")
-meta=json.loads(Path("C:/odoo18/addons-wexplay/output/device_inspection_20261017/consent-ui-fixture.json").read_text())
+out=Path("C:/odoo18/addons-wexplay/_workspace/output/pdf")
+meta=json.loads(Path("C:/odoo18/addons-wexplay/_workspace/output/device_inspection_20261017/consent-ui-fixture.json").read_text())
 user=env["res.users"].search([("login","=","inspection_admin")],limit=1)
 doc=env["wex.consent.document"].browse(meta["document_id"])
 assert doc.state == "signed" and doc.request_ids.state == "signed"

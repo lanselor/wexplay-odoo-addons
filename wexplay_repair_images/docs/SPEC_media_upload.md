@@ -36,3 +36,11 @@ PENDIENTE: actualización y prueba end-to-end en instancia Odoo y móvil físico
 
 ## Iteración visual aprobada — 2026-11-01
 Usuario autoriza implementar: foto protagonista, herramientas compactas y barra lateral persistente de color/grosor al pintar. Trazo sólido sin controles de opacidad ni desenfoque; quitar selector redundante Pincel. Mantener descripción y galería. Se utiliza pantalla completa y banda inferior compacta; móvil mantiene banda de miniaturas sobre descripción para conservar ergonomía. Aceptación: color y grosor cambian el trazo exportado, controles visibles sin desplegables y sin nuevas opciones de transparencia. Sin cambios de servidor.
+
+## Funcionamiento final — 2026-11-01
+El área multimedia del chatter acepta selección y arrastre. La ventana muestra la galería sobre una descripción opcional por fotografía, una zona de imagen ampliada y herramientas de recorte y pintura. Al pintar se muestran color y grosor; el trazo es opaco. El exterior del recorte se oculta visualmente y el original se conserva durante la preparación. La edición no modifica el archivo original; se envía el resultado confirmado. Las imágenes no editadas mantienen su archivo, y los vídeos usan su procesamiento existente.
+
+En envíos múltiples, los archivos confirmados quedan marcados y un reintento continúa con los pendientes. Si el servidor guarda un archivo pero su respuesta se pierde, el resultado es ambiguo y no existe una garantía de idempotencia. El GIF editado se exporta como imagen estática. No se modifican las rutas de filestore, compresión ni almacenamiento DMS; la subida de imágenes recibe además la descripción opcional.
+
+## Estado de validación
+El usuario ha podido abrir y utilizar el editor en Windows después de corregir el bloqueo de diálogo. Las pruebas automatizadas cubren el ciclo de diálogo de Odoo, dibujo y exportación, máscara de recorte, deshacer y rehacer en la imagen activa, descripciones y reintento parcial simulado. Pendiente confirmar con un móvil físico, fotografías grandes y el resultado guardado en el entorno real. No está confirmado que el historial de deshacer sobreviva al cambiar de miniatura y volver; la edición y descripción sí se conservan al cambiar de imagen.

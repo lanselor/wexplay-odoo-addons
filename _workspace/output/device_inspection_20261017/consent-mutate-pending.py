@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 assert env.cr.dbname == "codex_device_inspection_20261017"
-meta=json.loads(Path("C:/odoo18/addons-wexplay/output/device_inspection_20261017/consent-ui-fixture.json").read_text())
+meta=json.loads(Path("C:/odoo18/addons-wexplay/_workspace/output/device_inspection_20261017/consent-ui-fixture.json").read_text())
 doc=env["wex.consent.document"].browse(meta["document_id"])
 original=doc.snapshot_json
 doc.repair_order_id.write({"x_device_description": "CAMBIO POSTERIOR: no debe llegar al cliente", "x_device_inspection_marks": False})

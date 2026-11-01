@@ -1,0 +1,26 @@
+<odoo>
+    <record id="refund_transaction_form" model="ir.ui.view">
+        <field name="name">payment.transaction.redsys.refund</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <group string="Redsys refunds" invisible="provider_code != 'wex_redsys'"
+                       groups="wex_payment_redsys.group_refund_operator">
+                    <field name="redsys_environment"/>
+                    <field name="redsys_refund_dispatch"/>
+                    <field name="redsys_refund_evidence"/>
+                    <button name="action_redsys_verify_environment" type="object" string="Verify legacy environment"
+                            invisible="redsys_environment or operation != 'online_redirect'"
+                            confirm="Confirm that Canales identifies this original payment in the current provider environment."/>
+                    <button name="action_redsys_confirm_refund" type="object" string="Bank confirms refunded"
+                            invisible="redsys_refund_dispatch != 'sent' or state != 'pending'"
+                            confirm="Only confirm after checking the refund and amount in Canales. This records an outgoing payment."/>
+                    <button name="action_redsys_reject_refund" type="object" string="Bank confirms NOT refunded"
+                            invisible="redsys_refund_dispatch != 'sent' or state != 'pending'"
+                            confirm="Confirm with the bank that no refund was executed or remains pending. This releases the refund limit."/>
+                </group>
+            </sheet>
+        </field>
+    </record>
+</odoo>

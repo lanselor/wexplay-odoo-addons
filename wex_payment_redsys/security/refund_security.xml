@@ -1,0 +1,5 @@
+<odoo>
+    <record id="group_refund_operator" model="res.groups">
+        <field name="name">Redsys: realizar devoluciones</field>
+    </record>
+</odoo>

@@ -1,28 +1,28 @@
-# Arquitectura / ADR â€” Editor previo a la subida SAT
-Fecha: 2026-11-01. Estado: implementado segÃºn plan aprobado.
+# Arquitectura / ADR — Editor previo a la subida SAT
+Fecha: 2026-11-01. Estado: implementado según plan aprobado.
 SPEC: SPEC_media_upload.md.
 
 ## Contexto e impacto
-Ãšnico mÃ³dulo funcional afectado: wexplay_repair_images. repair.order recibe descripciÃ³n opcional en el mÃ©todo existente; no hay modelos, campos, ACL ni migraciones nuevos. Portal, informes y compresiÃ³n no cambian.
+Único módulo funcional afectado: wexplay_repair_images. repair.order recibe descripción opcional en el método existente; no hay modelos, campos, ACL ni migraciones nuevos. Portal, informes y compresión no cambian.
 
-## DecisiÃ³n
-Componente OWL de diÃ¡logo con lote temporal, miniaturas y descripciÃ³n por fotografÃ­a. Filerobot 4.8.1 MIT vendorizado, cargado bajo demanda desde el servidor local. Se restringen dos tablas de herramientas del bundle a Crop y Pen; los reemplazos quedan documentados en static/lib/filerobot/README.md. Se deshabilitan traducciones remotas y procesamiento cloud. H5P descartado por alcance y TOAST UI por archivo del proyecto.
+## Decisión
+Componente OWL de diálogo con lote temporal, miniaturas y descripción por fotografía. Filerobot 4.8.1 MIT vendorizado, cargado bajo demanda desde el servidor local. Se restringen dos tablas de herramientas del bundle a Crop y Pen; los reemplazos quedan documentados en static/lib/filerobot/README.md. Se deshabilitan traducciones remotas y procesamiento cloud. H5P descartado por alcance y TOAST UI por archivo del proyecto.
 
-El estado de diseÃ±o se conserva junto al archivo original en memoria para reabrir ediciones. Los cambios se exportan a PNG antes de cambiar de foto o subir, sin aÃ±adir compresiÃ³n destructiva. Original no editado se envÃ­a sin transformaciÃ³n. Las URLs temporales se liberan al quitar/cerrar. Una sola instancia del editor evita multiplicar memoria por foto.
+El estado de diseño se conserva junto al archivo original en memoria para reabrir ediciones. Los cambios se exportan a PNG antes de cambiar de foto o subir, sin añadir compresión destructiva. Original no editado se envía sin transformación. Las URLs temporales se liberan al quitar/cerrar. Una sola instancia del editor evita multiplicar memoria por foto.
 
 ## Flujo
-SelecciÃ³n/arrastre -> diÃ¡logo -> archivo preparado + descripciÃ³n -> mÃ©todo existente de repair.order -> compresiÃ³n existente -> create_image_from_binary -> DMS.
-VÃ­deos -> controlador existente -> cola de procesamiento existente.
+Selección/arrastre -> diálogo -> archivo preparado + descripción -> método existente de repair.order -> compresión existente -> create_image_from_binary -> DMS.
+Vídeos -> controlador existente -> cola de procesamiento existente.
 
-## Responsabilidades y mÃ©todos
-- chatter_repair_images_patch.js: abrir diÃ¡logo, fijar repairId para evitar subir a otro SAT al navegar, callback uploadFile y refresco.
+## Responsabilidades y métodos
+- chatter_repair_images_patch.js: abrir diálogo, fijar repairId para evitar subir a otro SAT al navegar, callback uploadFile y refresco.
 - repair_media_upload_dialog.js: mountEditor/destroyEditor, captureCurrentImage, selectItem, updateDescription, removeItem y upload.
-- plantilla XML / SCSS: estructura, galerÃ­a, descripciÃ³n, estado y adaptaciÃ³n mÃ³vil.
-- repair_order.py: parÃ¡metro opcional description compatible con llamadas anteriores.
-- manifiesto: recursos y versiÃ³n 18.0.1.2.0.
+- plantilla XML / SCSS: estructura, galería, descripción, estado y adaptación móvil.
+- repair_order.py: parámetro opcional description compatible con llamadas anteriores.
+- manifiesto: recursos y versión 18.0.1.2.0.
 
-## Errores y lÃ­mites
-Subida secuencial, estado de confirmaciÃ³n por archivo y reintento de pendientes. Cierre bloqueado durante envÃ­o. Una respuesta de red perdida despuÃ©s de confirmar en servidor sigue siendo ambigua: no se introduce protocolo de idempotencia nuevo. GIF editado se convierte a imagen estÃ¡tica; formatos que el navegador no decodifica pueden subirse sin editar. Prueba aislada no sustituye validaciÃ³n en Odoo instalado ni en mÃ³vil fÃ­sico.
+## Errores y límites
+Subida secuencial, estado de confirmación por archivo y reintento de pendientes. Cierre bloqueado durante envío. Una respuesta de red perdida después de confirmar en servidor sigue siendo ambigua: no se introduce protocolo de idempotencia nuevo. GIF editado se convierte a imagen estática; formatos que el navegador no decodifica pueden subirse sin editar. Prueba aislada no sustituye validación en Odoo instalado ni en móvil físico.
 
 ## Corrección 2026-11-01: compatibilidad de estilos
 El compilador libsass de Odoo evalúa min(55dvh, 560px) como función Sass y falla por unidades incompatibles. Se usa height: 55vh más max-height: 560px; móvil usa 50vh. Se reproduce el error con el Python de Odoo antes del cambio y se añade comprobación real de compilación en tests/browser/check_styles.py. La prueba previa de navegador no compilaba SCSS y no cubría este fallo.

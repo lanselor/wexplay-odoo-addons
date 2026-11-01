@@ -73,3 +73,10 @@ Cambios de integración y seguridad: Wexplay, 2026.
 Especificación Redsys: https://pagosonline.redsys.es/desarrolladores-inicio/
 
 Ver ARCHITECTURE.md, docs/SPEC.md, docs/IMPLEMENTATION_PLAN.md y docs/TEST_RESULTS.md.
+
+## Devoluciones (18.0.1.1.0)
+
+La versión 1.1 añade devoluciones totales y parciales manuales; sustituye la
+exclusión de devoluciones de la v1 descrita arriba. Ver [guía de devoluciones](docs/REFUNDS.md).
+Actualizar el módulo y asignar el grupo específico además de responsable contable.
+No activar real antes de validar REST con el banco.

@@ -23,6 +23,6 @@ doc.write({"signer_name": "Cliente ficticio", "signer_vat": "TEST-001"})
 request = doc.action_request_signature()
 metadata = {"repair_id": repair.id, "document_id": doc.id, "request_id": request.id,
     "action_id": env.ref("wex_consent.action_wex_consent_kiosk_client").id}
-Path("C:/odoo18/addons-wexplay/output/device_inspection_20261017/consent-ui-fixture.json").write_text(json.dumps(metadata))
+Path("C:/odoo18/addons-wexplay/_workspace/output/device_inspection_20261017/consent-ui-fixture.json").write_text(json.dumps(metadata))
 env.cr.commit()
 print(metadata)

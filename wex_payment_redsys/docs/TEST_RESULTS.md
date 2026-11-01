@@ -51,3 +51,10 @@ calculations, invoice-state writes, card fields, token creation, custom JS or cr
 Fields protected in ORM, callback signature verified before state mutation,
 notifications never logged, native post-processing retained. External financial
 effects are outside automated tests. Rollback: disable/unpublish the provider.
+
+## Refund extension — 2026-11-01
+
+30 tests passed, zero failures/errors in redsys_refunds_verified.log (same isolated
+database). Includes 20 existing tests and 10 refund tests. HTTP bank responses
+and timeout are simulated. No actual refund has been sent to Redsys. See
+REFUNDS.md for external acceptance and transactional test limits.

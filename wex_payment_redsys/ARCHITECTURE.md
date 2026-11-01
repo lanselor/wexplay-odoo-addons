@@ -29,7 +29,7 @@ Crypto and notification parsing are pure private helpers. Parsing has size/type
 limits and rejects duplicate JSON keys. Never log bodies, signatures or secrets.
 QWeb invokes a model preparation method only at render time: Odoo logs the safe
 record context, not the signed form parameters. No business calculations in QWeb.
-Only online_redirect positive EUR transactions are accepted; no tokenization.
+Initial payments accept only positive EUR online_redirect; version 1.1 also accepts native negative refund children. No tokenization.
 
 ## ADR — adaptation instead of OCA dependency
 Accepted for implementation, 2026-10-18. OCA l10n-spain payment_redsys 18.0 was
@@ -46,3 +46,9 @@ No automatic recovery of missing Redsys notifications, refunds or overpayments.
 Two separately authorized attempts are distinct receipts, not a duplicate callback.
 Review such cases using native transactions/accounting and the bank console.
 Native invoice state may remain in_payment until bank reconciliation.
+
+## Refund extension 2026-11-01
+
+See docs/REFUNDS.md for the approved scope, persistence boundaries, dedicated
+cron, original environment verification and manual incident resolution. This
+supersedes the v1 exclusion of refunds, retaining the original payment callback.
