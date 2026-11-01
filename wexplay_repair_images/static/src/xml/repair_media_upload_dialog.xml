@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="wexplay_repair_images.RepairMediaUploadDialog">
+        <Dialog title="'Preparar archivos multimedia'" size="'xl'" fullscreen="true" contentClass="'wex-media-upload'" busy="state.busy">
+            <div t-if="state.error" class="alert alert-danger" role="alert" t-esc="state.error"/>
+            <div t-if="!state.ready" class="text-center p-4">Cargando editor…</div>
+            <div class="wex-media-upload__workspace" t-att-class="{ 'pe-none': state.busy || current?.uploaded }">
+                <div t-ref="editor" class="wex-media-upload__editor" t-att-class="{ 'd-none': current?.video }"/>
+                <video t-if="current?.video" t-att-src="current.url" controls="controls" preload="metadata" class="wex-media-upload__video"/>
+            </div>
+            <div class="wex-media-upload__bottom">
+            <div class="wex-media-upload__gallery" aria-label="Archivos seleccionados">
+                <button t-foreach="items" t-as="item" t-key="item.id" type="button"
+                    class="wex-media-upload__thumbnail" t-att-class="{ 'is-selected': item.id === current?.id }"
+                    t-att-disabled="state.busy" t-att-title="item.file.name" t-on-click="() => this.selectItem(item.id)">
+                    <i t-if="item.video" class="fa fa-film"/>
+                    <img t-else="" t-att-src="item.previewUrl || item.url" t-att-alt="item.file.name"/>
+                    <i t-if="item.uploaded" class="fa fa-check text-success"/>
+                </button>
+            </div>
+            <div t-if="current" class="wex-media-upload__details" t-key="current.id">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <label t-if="!current.video" for="wex_media_description" class="form-label mb-0">Descripción (opcional)</label>
+                    <small class="text-muted text-truncate flex-grow-1" t-att-title="current.file.name" t-esc="current.file.name"/>
+                    <button type="button" class="btn btn-outline-danger btn-sm" t-att-disabled="state.busy || current.uploaded" t-on-click="removeItem">Quitar</button>
+                </div>
+                <textarea t-if="!current.video" id="wex_media_description" class="form-control" rows="1" placeholder="Apuntes sobre esta imagen…"
+                    t-att-value="current.description" t-att-disabled="state.busy || current.uploaded" t-on-input="updateDescription"/>
+            </div>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-on-click="upload" t-att-disabled="state.busy || !state.ready || !pending.length">
+                    <t t-if="state.busy">Preparando / subiendo…</t><t t-else="">Subir archivos</t>
+                </button>
+                <button type="button" class="btn btn-secondary" t-on-click="props.close" t-att-disabled="state.busy">Cancelar</button>
+                <span t-if="state.completed" class="text-muted" role="status"><t t-esc="state.completed"/> archivos subidos</span>
+            </t>
+        </Dialog>
+    </t>
+</templates>

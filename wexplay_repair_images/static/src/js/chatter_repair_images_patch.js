@@ -4,6 +4,7 @@ import { Component, onWillUnmount, useEffect, useState } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
+import { RepairMediaUploadDialog } from "./repair_media_upload_dialog";
 import { Chatter } from "@mail/chatter/web_portal/chatter";
 
 function fileToBase64(file) {
@@ -247,27 +248,26 @@ patch(Chatter.prototype, {
     },
 
     async uploadRepairImages(files) {
+        if (!this.isRepairImagesSupportedThread() || this.repairImagesState.uploading || !this.canManageRepairImages) return;
+        const repairId = this.props.threadId;
         this.repairImagesState.uploading = true;
-        try {
-            for (const file of files) {
-                if (isVideoFile(file)) {
-                    await uploadVideoFile(this.props.threadId, file);
-                    continue;
+        this.dialog.add(RepairMediaUploadDialog, {
+            files,
+            uploadFile: async (file, description, video) => {
+                if (video) {
+                    await uploadVideoFile(repairId, file);
+                    return;
                 }
                 const binaryContent = await fileToBase64(file);
-                await this.orm.call("repair.order", "upload_repair_image_from_dropzone", [[this.props.threadId], file.name, binaryContent]);
-            }
-            await this.loadRepairImagesData(true);
-            this.notification.add("Archivos subidos correctamente.", { type: "success" });
-        } catch (error) {
-            const message =
-                error?.message ||
-                error?.data?.message ||
-                "No se pudo subir el archivo.";
-            this.notification.add(message, { type: "danger" });
-        } finally {
-            this.repairImagesState.uploading = false;
-        }
+                await this.orm.call("repair.order", "upload_repair_image_from_dropzone",
+                    [[repairId], file.name, binaryContent, description]);
+            },
+            onUploaded: async () => {
+                if (this.props.threadId === repairId) await this.loadRepairImagesData(true);
+            },
+        }, {
+            onClose: () => { this.repairImagesState.uploading = false; },
+        });
     },
 
     onRepairImagesDragOver(event) {

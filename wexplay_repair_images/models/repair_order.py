@@ -293,7 +293,7 @@ class RepairOrder(models.Model):
         self.ensure_one()
         return self._get_repair_media_job_values()
 
-    def upload_repair_image_from_dropzone(self, filename, binary_content):
+    def upload_repair_image_from_dropzone(self, filename, binary_content, description=False):
         self.ensure_one()
         if not binary_content:
             raise UserError(_("La imagen está vacía."))
@@ -314,7 +314,7 @@ class RepairOrder(models.Model):
             directory=directory,
             res_model="repair.order",
             res_id=self.id,
-            description=False,
+            description=description or False,
             tag_ids=[],
             sequence=sequence,
             company_id=self.company_id.id,

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Wexplay Repair Images",
-    "version": "18.0.1.1.3",
-    "summary": "Integración SAT de imágenes sobre repair.order",
+    "version": "18.0.1.3.3",
+    "summary": "IntegraciÃ³n SAT de imÃ¡genes sobre repair.order",
     "description": """
-Integración SAT del core de imágenes para repair.order.
+IntegraciÃ³n SAT del core de imÃ¡genes para repair.order.
     """,
     "category": "Services/Repair",
     "author": "Wexplay",
@@ -30,7 +30,10 @@ Integración SAT del core de imágenes para repair.order.
     ],
     "assets": {
         "web.assets_backend": [
+            "wexplay_repair_images/static/src/js/repair_media_upload_dialog.js",
             "wexplay_repair_images/static/src/js/chatter_repair_images_patch.js",
+            "wexplay_repair_images/static/src/xml/repair_media_upload_dialog.xml",
+            "wexplay_repair_images/static/src/scss/repair_media_upload_dialog.scss",
             "wexplay_repair_images/static/src/scss/repair_images.scss",
             "wexplay_repair_images/static/src/xml/chatter_repair_images.xml",
         ],

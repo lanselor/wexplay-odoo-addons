@@ -15,6 +15,7 @@
         </xpath>
 
         <xpath expr="//search/field[@name='partner_id']" position="after">
+          <field name="x_imei" string="IMEI / N.º de serie" operator="ilike"/>
           <field name="x_customer_reference" string="Referencia cliente"/>
           <field name="x_partner_phone_mobile_search" string="Teléfono/Celular"/>
         </xpath>
