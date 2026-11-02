@@ -398,21 +398,32 @@
                                 <h5 class="modal-title">Rechazar presupuesto</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"/>
                             </div>
-                            <div class="modal-body">
-                                Confirmas que rechazas este presupuesto. La cotizacion vinculada sera cancelada.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                    Volver
-                                </button>
-                                <form t-att-action="'/my/repairs/%s/budget/reject' % repair.id"
-                                      method="post">
-                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                    <button type="submit" class="btn btn-danger">
-                                        Rechazar presupuesto
-                                    </button>
-                                </form>
-                            </div>
+                            <form t-att-action="'/my/repairs/%s/budget/reject' % repair.id"
+                                  method="post" class="wex_portal_rejection_form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <div class="modal-body">
+                                    <p>Cuéntanos el motivo para ayudarnos a mejorar nuestro servicio.</p>
+                                    <label for="wexRejectSuggestion" class="form-label">¿Qué ha influido en tu decisión?</label>
+                                    <select id="wexRejectSuggestion" class="form-select mb-3">
+                                        <option value="">Selecciona una opción (opcional)</option>
+                                        <option value="El importe de la reparación supera lo que tenía previsto gastar.">Precio del presupuesto</option>
+                                        <option value="Prefiero sustituir el dispositivo en lugar de repararlo.">Prefiero sustituir el dispositivo</option>
+                                        <option value="El plazo de reparación no se ajusta a mis necesidades.">Plazo de reparación</option>
+                                        <option value="Finalmente, ya no necesito realizar esta reparación.">Ya no necesito la reparación</option>
+                                        <option value="">Otro motivo</option>
+                                    </select>
+                                    <label for="wexRejectReason" class="form-label">Motivo del rechazo — opcional</label>
+                                    <textarea id="wexRejectReason" name="rejection_reason" class="form-control"
+                                              rows="5" maxlength="4000" aria-describedby="wexRejectHelp"
+                                              placeholder="Puedes escribir o ampliar el motivo aquí."/>
+                                    <small id="wexRejectHelp" class="text-muted">Hasta 4000 caracteres. Si ya has escrito tu comentario, se conservará al cambiar de opción.</small>
+                                    <p class="mt-3 mb-0">Al confirmar, se rechazará el presupuesto y se cancelará la cotización vinculada.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-danger">Rechazar presupuesto</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

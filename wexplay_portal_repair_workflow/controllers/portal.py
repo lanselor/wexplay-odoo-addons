@@ -117,7 +117,9 @@ class WexplayRepairWorkflowPortal(WexplayCustomerPortal):
     def portal_repair_budget_reject(self, repair_id, **kw):
         repair = self._get_portal_repair_or_404(repair_id)
         try:
-            repair.action_portal_reject_budget(user=request.env.user)
+            repair.action_portal_reject_budget(
+                user=request.env.user, rejection_reason=kw.get('rejection_reason'),
+            )
         except (AccessError, UserError) as exception:
             repair._log_portal_budget_debug_snapshot(
                 "reject_error",

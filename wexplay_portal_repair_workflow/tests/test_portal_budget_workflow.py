@@ -1,10 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from odoo.exceptions import AccessError
-from odoo.tests.common import SavepointCase
+from unittest.mock import patch
+
+from odoo.exceptions import AccessError, UserError
+from odoo.tests.common import TransactionCase
 
 
-class TestPortalBudgetWorkflow(SavepointCase):
+class TestPortalBudgetWorkflow(TransactionCase):
+    def setUp(self):
+        super().setUp()
+
+        def run_in_test_transaction(repair, method_name, user=None, event_type=None,
+                                    rejection_reason=None, **context_flags):
+            # Los datos ficticios del test no están confirmados para otro cursor.
+            backend = repair.sudo().with_context(**context_flags)
+            backend._apply_portal_budget_workflow_action(
+                method_name, user or repair.env.user, event_type, rejection_reason,
+            )
+            return True
+
+        runner = patch.object(
+            type(self.env['repair.order']), '_run_portal_budget_workflow_action',
+            run_in_test_transaction,
+        )
+        runner.start()
+        self.addCleanup(runner.stop)
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -101,6 +122,61 @@ class TestPortalBudgetWorkflow(SavepointCase):
         self.assertEqual(len(event), 1)
         self.assertEqual(event.handled_state, "pending")
         self.assertEqual(event.sale_order_id, sale_order)
+
+    def test_rejection_posts_escaped_internal_note_and_prevents_repeat(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+        portal_repair = repair.with_user(self.portal_user)
+        portal_repair.action_portal_reject_budget(
+            rejection_reason='<script>alert(1)</script>\nDemasiado caro',
+        )
+        notes = repair.message_ids.filtered(
+            lambda message: 'Presupuesto rechazado desde el portal' in (message.body or '')
+        )
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes.author_id, self.contact_partner)
+        self.assertEqual(notes.subtype_id, self.env.ref('mail.mt_note'))
+        self.assertIn('&lt;script&gt;', notes.body)
+        self.assertNotIn('<script>', notes.body)
+        self.assertIn('<br', notes.body)
+        self.assertFalse(notes.notification_ids.filtered(lambda n: n.res_partner_id == self.contact_partner))
+        with self.assertRaises(UserError):
+            portal_repair.action_portal_reject_budget(rejection_reason='Segundo envío')
+        self.assertEqual(sale_order.state, 'cancel')
+        self.assertEqual(len(repair.message_ids.filtered(
+            lambda m: 'Presupuesto rechazado desde el portal' in (m.body or '')
+        )), 1)
+
+    def test_rejection_without_reason_posts_fallback(self):
+        repair, _sale_order = self._create_budget_repair(self.company_partner)
+        repair.with_user(self.portal_user).action_portal_reject_budget(rejection_reason='  ')
+        self.assertTrue(repair.message_ids.filtered(
+            lambda m: 'El cliente no ha indicado un motivo.' in (m.body or '')
+        ))
+
+    def test_rejection_validates_reason_before_changing_budget(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+        for reason in ['x' * 4001, 42, ['texto']]:
+            with self.assertRaises(UserError):
+                repair.with_user(self.portal_user).action_portal_reject_budget(rejection_reason=reason)
+        self.assertEqual(repair.x_budget_stage, 'waiting_customer')
+        self.assertEqual(sale_order.state, 'draft')
+
+    def test_foreign_rejection_is_denied(self):
+        repair, sale_order = self._create_budget_repair(self.other_partner)
+        with self.assertRaises(AccessError):
+            repair.with_user(self.portal_user).action_portal_reject_budget(rejection_reason='No')
+        self.assertEqual(sale_order.state, 'draft')
+
+    def test_note_failure_rolls_back_rejection_and_event(self):
+        repair, sale_order = self._create_budget_repair(self.company_partner)
+        with self.assertRaises(UserError), self.cr.savepoint():
+            with patch.object(type(repair), '_post_portal_budget_rejection', side_effect=UserError('Test')):
+                repair.with_user(self.portal_user).action_portal_reject_budget(rejection_reason='Precio')
+        self.assertEqual(sale_order.state, 'draft')
+        self.assertEqual(repair.x_budget_stage, 'waiting_customer')
+        self.assertFalse(self.env['wex.portal.repair.event'].search([
+            ('repair_id', '=', repair.id), ('event_type', '=', 'budget_rejected'),
+        ]))
 
     def test_portal_reject_after_reestimate_resets_budget_consistently(self):
         repair, sale_order = self._create_budget_repair(self.company_partner)

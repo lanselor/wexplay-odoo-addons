@@ -1,0 +1,10 @@
+Isolated database: wex_test_portal_rejection_02c5a6ed
+BASELINE []
+test_active_portal_repairs_only_include_customers_with_active_portal_user (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_dashboard.TestPortalDashboard.test_active_portal_repairs_only_include_customers_with_active_portal_user) ... ok
+test_dashboard_data_includes_attention_summary_and_activity (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_dashboard.TestPortalDashboard.test_dashboard_data_includes_attention_summary_and_activity) ... ok
+test_dashboard_defaults_invalid_period_to_seven_days (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_dashboard.TestPortalDashboard.test_dashboard_defaults_invalid_period_to_seven_days) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.335s
+
+OK

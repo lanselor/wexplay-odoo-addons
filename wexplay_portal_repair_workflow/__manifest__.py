@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Wexplay Portal - Repair Workflow",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Website/Portal",
     "summary": "Aceptacion de presupuestos SAT desde el portal cliente",
     "description": """
@@ -35,6 +35,7 @@ Current MVP:
             "wexplay_portal_repair_workflow/static/src/scss/portal_dashboard.scss",
         ],
         "web.assets_frontend": [
+            "wexplay_portal_repair_workflow/static/src/js/portal_budget_rejection.js",
             "wexplay_portal_repair_workflow/static/src/js/portal_pending_budget_alert.js",
             "wexplay_portal_repair_workflow/static/src/scss/portal_repair_workflow.scss",
         ],

@@ -1,7 +1,7 @@
 # Devoluciones — 18.0.1.1.0
 
 2026-11-01. Implementación autorizada del plan de devoluciones. Solo tarjeta EUR,
-REST tipo 3, firma SHA256 V1. Pendiente de aceptación bancaria en test.
+REST tipo 3, firma SHA256 V1. Devolución total acreditada por el usuario en Canales test; parciales pendientes.
 
 ## Uso
 Actualizar el módulo y asignar «Redsys: realizar devoluciones» al responsable
@@ -58,8 +58,12 @@ parcial y saldo restante, rechazo sin pago, límites, entorno, permisos, firma y
 datos alterados, resolución con evidencia y timeout sin reenvío. Los tests de
 timeout simulan fronteras de commit para compartir fixtures no confirmadas;
 no equivalen a una prueba de caída de proceso real ni concurrencia multinodo.
-Faltan prueba REST real y aceptación con factura/nota de crédito en el banco test.
+La llamada REST de devolución total al sandbox fue acreditada por el usuario. Faltan parciales/restante y aceptación completa del circuito con nota de crédito; no se han acreditado devoluciones monetarias reales.
 
 Rollback: desactivar el cron para frenar nuevas salidas; conservar solicitudes
 y pagos. Resolver operaciones enviadas antes de retirar el código. No borrar
 transacciones para liberar un límite ni reutilizar credenciales entre entornos.
+
+Estado de pagos históricos: la falta de entorno explica el rechazo inicial. La
+prueba con un cobro nuevo funcionó; no acredita que se haya resuelto la ausencia
+del bloque de verificación en las transacciones antiguas. Ver TEST_RESULTS.md.

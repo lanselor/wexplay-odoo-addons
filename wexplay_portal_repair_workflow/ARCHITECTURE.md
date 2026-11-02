@@ -146,13 +146,19 @@ Este criterio aplica tanto a aceptar como a rechazar presupuesto desde portal.
 
 ## Deuda tecnica pendiente
 
-- Registrar mensaje en chatter de la reparacion cuando el cliente acepte o
-  rechace desde portal.
+- Registrar mensaje en chatter cuando el cliente acepte desde portal.
 - Evaluar conversacion/notificacion con tecnico o responsable asociado al SAT.
-- Anadir motivo opcional de rechazo.
 - La instrumentación de diagnóstico de presupuestos se mantiene desactivada
   por defecto y solo puede activarla un administrador desde Ajustes. Sus
   trazas reducidas se escriben en el log del servidor; no existe un parámetro
   URL ni una vista de depuración para usuarios portal.
 - Evaluar recordatorios automaticos para aceptaciones pendientes de gestion
   durante varios dias.
+
+## Motivo del rechazo — 2026-11-01
+
+El rechazo permite un motivo opcional y cinco sugerencias editables. El texto (máximo 4000 caracteres) se conserva solo en una nota interna visual del chatter, con autor portal y origen, sin campos nuevos ni correo al cliente. Selector y texto son ayudas de interfaz; Python valida y decide.
+
+El controlador pasa el motivo explícitamente al modelo. La unidad _apply_portal_budget_workflow_action ejecuta workflow, evento y nota en la transacción aislada existente; el commit solo ocurre al completar todo. El rechazo se bloquea por fila SAT y revalida acceso/estado en el entorno aislado. Markup escapa datos interpolados; la nota no suscribe al autor portal.
+
+Detalles: [SPEC](docs/SPEC_BUDGET_REJECTION.md), [ADR](docs/ADR-001_BUDGET_REJECTION.md), [seguridad](docs/SECURITY_BUDGET_REJECTION.md), [plan](docs/PLAN_BUDGET_REJECTION.md) y [pruebas](docs/TEST_BUDGET_REJECTION.md).

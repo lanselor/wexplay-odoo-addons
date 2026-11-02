@@ -2,8 +2,11 @@
 
 import logging
 
+from markupsafe import Markup
+
 from odoo import SUPERUSER_ID, _, api, models
 from odoo.exceptions import AccessError, UserError
+from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 PORTAL_BUDGET_DEBUG_PARAMETER = "wexplay_portal_repair_workflow.portal_budget_debug_enabled"
@@ -15,7 +18,7 @@ class RepairOrder(models.Model):
     _PORTAL_BUDGET_QUOTATION_STATES = ("draft", "sent")
     _PORTAL_PENDING_BUDGET_ALERT_PREVIEW_LIMIT = 5
 
-    def _run_portal_budget_workflow_action(self, method_name, user=None, event_type=None, **context_flags):
+    def _run_portal_budget_workflow_action(self, method_name, user=None, event_type=None, rejection_reason=None, **context_flags):
         self.ensure_one()
         with self.env.registry.cursor() as new_cr:
             sudo_env = api.Environment(
@@ -24,19 +27,33 @@ class RepairOrder(models.Model):
                 dict(self.env.context, **context_flags),
             )
             sudo_repair = sudo_env[self._name].browse(self.id)
-            action = getattr(sudo_repair, method_name)()
-            if isinstance(action, dict):
-                raise UserError(
-                    _("La accion del presupuesto requiere una confirmacion no esperada.")
-                )
-            if event_type:
-                sudo_repair._create_portal_repair_event(event_type, user=user)
+            isolated_user = sudo_env['res.users'].browse((user or self.env.user).id)
+            sudo_repair._apply_portal_budget_workflow_action(
+                method_name, isolated_user, event_type, rejection_reason,
+            )
             sudo_repair._log_portal_budget_debug_snapshot(
                 "isolated_%s_done" % method_name,
                 user=user,
             )
             new_cr.commit()
         return True
+
+    def _apply_portal_budget_workflow_action(self, method_name, user, event_type, rejection_reason=None):
+        self.ensure_one()
+        if method_name == 'action_budget_reject':
+            # Serializa rechazos simultáneos; el ORM no ofrece bloqueo de fila.
+            self.env.execute_query(SQL(
+                'SELECT id FROM repair_order WHERE id = %s FOR UPDATE', self.id,
+            ))
+            self.invalidate_recordset()
+            self._check_can_portal_reject_budget(user=user)
+        action = getattr(self, method_name)()
+        if isinstance(action, dict):
+            raise UserError(_("La accion del presupuesto requiere una confirmacion no esperada."))
+        if event_type:
+            self._create_portal_repair_event(event_type, user=user)
+        if method_name == 'action_budget_reject':
+            self._post_portal_budget_rejection(rejection_reason, user)
 
     def _get_portal_budget_sale_order(self):
         self.ensure_one()
@@ -408,19 +425,45 @@ class RepairOrder(models.Model):
         self.browse(self.id)._log_portal_budget_debug_snapshot("after_accept", user=user)
         return True
 
-    def action_portal_reject_budget(self, user=None):
+    def _check_portal_rejection_reason(self, reason):
+        if reason is None:
+            return ''
+        if not isinstance(reason, str) or len(reason) > 4000:
+            raise UserError(_('El motivo debe ser un texto de hasta 4000 caracteres.'))
+        return reason.strip()
+
+    def _post_portal_budget_rejection(self, reason, user):
         self.ensure_one()
+        reason = self._check_portal_rejection_reason(reason)
+        body = Markup(
+            '<div style="border:1px solid #e5cdd1;border-radius:8px;overflow:hidden;">'
+            '<div style="background-color:#fbebed;padding:12px;color:#a5283a;">'
+            '<strong>Presupuesto rechazado desde el portal</strong></div>'
+            '<div style="padding:12px;"><p><strong>Motivo indicado por el cliente</strong></p>'
+            '<p>%s</p><hr/><p><strong>Cliente:</strong> %s<br/>'
+            '<strong>Origen:</strong> Portal de clientes</p></div></div>'
+        ) % (
+            Markup('<br/>').join((reason or _('El cliente no ha indicado un motivo.')).splitlines()),
+            user.partner_id.name,
+        )
+        self.with_context(mail_create_nosubscribe=True).message_post(
+            body=body, subtype_xmlid='mail.mt_note', message_type='comment',
+            author_id=user.partner_id.id,
+        )
+
+    def action_portal_reject_budget(self, user=None, rejection_reason=None):
+        self.ensure_one()
+        user = user or self.env.user
         self._check_can_portal_reject_budget(user=user)
+        rejection_reason = self._check_portal_rejection_reason(rejection_reason)
         repair = self.sudo()
         repair._log_portal_budget_debug_snapshot("before_reject", user=user)
-        if repair.x_budget_stage != "rejected":
-            repair._run_portal_budget_workflow_action(
-                "action_budget_reject",
-                user=user,
-                event_type="budget_rejected",
-                skip_budget_reject_confirm=True,
-            )
-        else:
-            repair._create_portal_repair_event("budget_rejected", user=user)
+        repair._run_portal_budget_workflow_action(
+            "action_budget_reject",
+            user=user,
+            event_type="budget_rejected",
+            rejection_reason=rejection_reason,
+            skip_budget_reject_confirm=True,
+        )
         self.browse(self.id)._log_portal_budget_debug_snapshot("after_reject", user=user)
         return True

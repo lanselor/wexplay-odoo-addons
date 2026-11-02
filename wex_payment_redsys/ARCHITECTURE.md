@@ -42,7 +42,7 @@ or modified. No new third-party payment service or library is required.
 
 ## Rollback and limitations
 Disable/unpublish the provider; retain accounting records and transactions.
-No automatic recovery of missing Redsys notifications, refunds or overpayments.
+No automatic recovery of missing notifications or overpayments. Refund scope is defined in docs/REFUNDS.md.
 Two separately authorized attempts are distinct receipts, not a duplicate callback.
 Review such cases using native transactions/accounting and the bank console.
 Native invoice state may remain in_payment until bank reconciliation.
@@ -52,3 +52,18 @@ Native invoice state may remain in_payment until bank reconciliation.
 See docs/REFUNDS.md for the approved scope, persistence boundaries, dedicated
 cron, original environment verification and manual incident resolution. This
 supersedes the v1 exclusion of refunds, retaining the original payment callback.
+
+## Fuentes y estado vigente — 2026-11-01
+Versión 18.0.1.1.0. README es la guía de entrada; SPEC define alcance;
+TEST_RESULTS separa evidencia local, evidencia del usuario y pendientes.
+Decisiones extraídas sin cambio funcional: docs/ADR-001_NATIVE_PROVIDER.md y
+ADR-002_REFUNDS.md. Los apartados originales se conservan como historial.
+No existe todavía ficha YAML. Su creación requiere autorización específica.
+
+## Revisión frente a estándares nuevos
+CODING_STANDARDS_ODOO18.md y AI_WORKFLOW.md son obligatorios para siguientes
+cambios. Pendiente de revisión formal: SQL/flush, sudo acotado, cron por lotes y
+justificación del despachador frente a queue_job; claves públicas de sandbox en
+fixtures frente a la regla de secretos en tests. No se presenta esta documentación
+como corrección ni excepción aprobada de esos puntos. El análisis de seguridad
+con SECURITY_TEMPLATE.md también queda pendiente de consolidar.

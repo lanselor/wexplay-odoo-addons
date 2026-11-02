@@ -1,0 +1,23 @@
+Isolated database: wex_test_portal_rejection_02c5a6ed
+test_budget_view_event_is_traceability_not_pending_work (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_budget_view_event_is_traceability_not_pending_work) ... ok
+test_foreign_rejection_is_denied (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_foreign_rejection_is_denied) ... ok
+test_native_quotation_is_available_again_after_budget_accept (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_native_quotation_is_available_again_after_budget_accept) ... ok
+test_native_quotation_is_hidden_while_budget_waits_for_customer (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_native_quotation_is_hidden_while_budget_waits_for_customer) ... ok
+test_note_failure_rolls_back_rejection_and_event (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_note_failure_rolls_back_rejection_and_event) ... ok
+test_pending_budget_alert_values_only_include_waiting_customer_repairs (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_pending_budget_alert_values_only_include_waiting_customer_repairs) ... ok
+test_portal_accept_confirms_sale_order_and_budget (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_accept_confirms_sale_order_and_budget) ... ok
+test_portal_budget_debug_values_include_state_snapshot (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_budget_debug_values_include_state_snapshot) ... ok
+test_portal_budget_summary_after_reject_uses_prepared_values (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_budget_summary_after_reject_uses_prepared_values) ... ok
+test_portal_reject_after_reestimate_resets_budget_consistently (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_reject_after_reestimate_resets_budget_consistently) ... ok
+test_portal_reject_cancels_sale_order_and_budget (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_reject_cancels_sale_order_and_budget) ... ok
+test_portal_user_cannot_accept_foreign_budget (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_portal_user_cannot_accept_foreign_budget) ... ok
+test_rejection_posts_escaped_internal_note_and_prevents_repeat (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_rejection_posts_escaped_internal_note_and_prevents_repeat) ... ok
+test_rejection_validates_reason_before_changing_budget (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_rejection_validates_reason_before_changing_budget) ... ok
+test_rejection_without_reason_posts_fallback (odoo.addons.wexplay_portal_repair_workflow.tests.test_portal_budget_workflow.TestPortalBudgetWorkflow.test_rejection_without_reason_posts_fallback) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 1.014s
+
+OK
+PASS actual isolated cursor and concurrent rejection: one note/event
+PASS actual isolated cursor rollback on note failure

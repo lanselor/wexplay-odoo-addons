@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase
 
 
-class TestPortalDashboard(SavepointCase):
+class TestPortalDashboard(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

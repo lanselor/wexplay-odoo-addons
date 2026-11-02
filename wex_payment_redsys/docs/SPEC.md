@@ -32,9 +32,27 @@ Native account_payment (payment and account), cryptography already available in
 the Odoo runtime. Sales integration is supplied by sale when installed. No changes
 to existing Wexplay modules or OCA checkouts. No historical data migration.
 
-## Pending external acceptance
+## Pendientes originales de v1 (histórico, no estado actual)
 PENDIENTE: public HTTPS test URL, proxy/database routing, selected journal and
 outstanding receipts account, native Sales automatic invoicing configuration,
 terminal acceptance of HMAC_SHA256_V1. Bank sandbox and real payments have not
 been tested. The bank email explicitly specifies SHA256; do not silently negotiate
 algorithms. Production activation is outside this delivery.
+
+## Alcance vigente — 2026-11-01
+La versión 18.0.1.1.0 incorpora devoluciones manuales totales/parciales según
+REFUNDS.md y ADR-002. Sustituye la exclusión de refunds de la v1. Mantiene el resto
+de exclusiones. La aceptación actual por escenario está en TEST_RESULTS.md.
+SHA256, HTTPS, pago anónimo y devolución total están acreditados en sandbox por
+el usuario; el pase bancario a real y pruebas parciales siguen pendientes.
+
+## Reglas consolidadas sin ficha YAML
+| ID | Regla | Acción |
+|---|---|---|
+| R1 | Token nativo autoriza acceso, no un cobro | Confirmar solo por respuesta bancaria verificada |
+| R2 | Datos de tarjeta pertenecen a Redsys | No capturar, persistir ni tokenizar |
+| R3 | Duplicado de notificación | No repetir efectos contables |
+| R4 | Devolución incierta | No reenviar; bloquear hasta verificación bancaria |
+| R5 | Abono fiscal y devolución bancaria | Acciones separadas, conciliación nativa |
+| R6 | Pago anterior sin entorno | Verificación explícita; no inferir por proveedor actual |
+| R7 | Producción | El agente no opera; pruebas aisladas con datos ficticios |

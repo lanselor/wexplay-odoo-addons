@@ -37,3 +37,11 @@ installation and native payment/invoice reconciliation. Native quotation and
 invoice token flow must be accepted in the public sandbox before production.
 
 Rollback: disable and unpublish. Never uninstall to remove financial history.
+
+## Estado consolidado — 2026-11-01
+
+El plan anterior corresponde a v1. Código de cobros y extensión de devoluciones
+implementados; aceptación de usuario parcial en sandbox según TEST_RESULTS.md.
+ADR-002 y REFUNDS.md describen la extensión. No iniciar SAT, tarjetas guardadas
+ni nuevas capacidades por esta actualización documental. Pendientes: pruebas
+restantes, revisión contra estándares actuales y autorización bancaria para real.
